@@ -54,8 +54,8 @@ code { background: var(--chip); padding: 0.05em 0.35em; border-radius: 3px; over
 /* hero */
 .hero { background: var(--night); color: #cfe6ee; margin-inline: -16px; padding-block: 40px 36px; padding-inline: 16px; border-bottom: 1px solid var(--night-line); }
 .hero-inner { max-width: 1160px; margin-inline: auto; display: grid; gap: 28px; }
-.art-wrap { overflow-x: auto; }
-.art { font-family: var(--font-mono); font-size: clamp(5.4px, 1.05vw, 12px); line-height: 1.22; margin: 0 auto; width: max-content; color: var(--a-front); }
+.art-wrap { overflow-x: auto; container-type: inline-size; }
+.art { font-family: var(--font-mono); font-size: min(12px, calc(100cqw / 66)); line-height: 1.22; margin: 0 auto; width: max-content; color: var(--a-front); }
 .a-sky { color: var(--a-sky); } .a-moon { color: var(--a-moon); } .a-back { color: var(--a-back); } .a-front { color: var(--a-front); }
 .a-fire { color: var(--a-fire); } .a-ember { color: var(--a-ember); } .a-log { color: var(--a-log); } .a-grass { color: var(--a-grass); }
 .hero h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(2.1rem, 5vw, 3.4rem); line-height: 1.05; margin: 0; color: #eaf6f8; text-wrap: balance; }
