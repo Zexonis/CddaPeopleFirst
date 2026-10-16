@@ -31,5 +31,5 @@ The download is built for 64-bit Windows 10 and 11 only, for now. On macOS or Li
 ## Credits and license
 
 - **Cataclysm: Dark Days Ahead** is made by [CleverRaven and its contributors](https://github.com/CleverRaven/Cataclysm-DDA) under [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/). The download contains the official 0.I "Ito" release (build 2026-06-06, commit `27939e2`), with its art, sound, fonts and bundled mods, plus the changes listed above. Everything in it that isn't People First is their work.
-- **People First** (the mods, the engine patches and the tools) is by lexator300, shared under the same license, CC BY-SA 3.0. See `LICENSE.md`.
+- **People First** (the mods, the engine patches and the tools) is by r/LexEntityOfExistence, shared under the same license, CC BY-SA 3.0. See `LICENSE.md`.
 - The game's fonts keep their own licenses (Terminus: SIL OFL; GNU Unifont: SIL OFL and GPL with the font embedding exception); see `LICENSE.txt` in the download.

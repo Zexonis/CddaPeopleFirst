@@ -39,6 +39,13 @@ New game:
 
 The full guide: https://zexonis.github.io/CddaPeopleFirst/
 
+Bugs and feedback (you need a free GitHub account):
+  Report a bug:       https://github.com/Zexonis/CddaPeopleFirst/issues/new?template=bug_report.yml
+  Feedback or ideas:  https://github.com/Zexonis/CddaPeopleFirst/issues/new?template=feedback.yml
+  Existing reports:   https://github.com/Zexonis/CddaPeopleFirst/issues
+For a bug, include the end of config/debug.log from this folder and a screenshot of any error.  The log may show your
+Windows user name in file paths; blank it out before posting.
+
 What's different from the official 0.I zip
   - cataclysm-tiles.exe is built from the 0.I source (commit 27939e2) with the People First engine patches.  It plays
     every other mod and old 0.I save like the official build.
@@ -46,8 +53,9 @@ What's different from the official 0.I zip
   - data/mods/default.json: new worlds get both mods by default.
   - data/raw/keybindings.json: the People key (,).  data/title/people_first.title: the title screen.
 
-Cataclysm: Dark Days Ahead is by CleverRaven and contributors, under CC BY-SA 3.0 (see LICENSE.txt).  People First and
-its engine patches are shared under the same license.
+Cataclysm: Dark Days Ahead is by CleverRaven and contributors, under CC BY-SA 3.0 (see LICENSE.txt).  People First (the
+mods and the engine patches) is by r/LexEntityOfExistence, shared under the same license.  Source and engine patches:
+https://github.com/Zexonis/CddaPeopleFirst
 """
 
 
