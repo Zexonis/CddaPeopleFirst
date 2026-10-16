@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: The People First guide
+    url: https://zexonis.github.io/CddaPeopleFirst/
+    about: How everything works, the settings, and known gaps.
+  - name: A bug in Cataclysm itself, not People First
+    url: https://github.com/CleverRaven/Cataclysm-DDA/issues
+    about: If it also happens in the official game without the mod, report it to the Cataclysm project.

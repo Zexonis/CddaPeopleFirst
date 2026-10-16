@@ -1,0 +1,33 @@
+name: Feedback or idea
+description: Something felt off, something you loved, or an idea for the people of the Cataclysm.
+title: "[Feedback] "
+labels: ["feedback"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Stories from your game are the most useful feedback there is: what someone did, and how it felt.  Reports are public, so leave out anything personal.
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What kind of feedback?
+      options:
+        - Something felt off or immersion-breaking
+        - An idea or a request
+        - A story from my game
+        - Balance (too often, too rare, too easy, too hard)
+        - Something else
+    validations:
+      required: true
+  - type: textarea
+    id: feedback
+    attributes:
+      label: Tell us
+    validations:
+      required: true
+  - type: input
+    id: days
+    attributes:
+      label: How far into a game were you?
+      description: Optional.  The day count, and how many people lived with you.
+      placeholder: Day 40, a household of 6

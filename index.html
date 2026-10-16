@@ -70,6 +70,12 @@ code { background: var(--chip); padding: 0.05em 0.35em; border-radius: 3px; over
 .dl p { margin: 0; font-size: 0.92rem; color: #b3cbd4; }
 .dl .meta { font-family: var(--font-mono); font-size: 0.76rem; color: #8fb2bc; letter-spacing: 0.02em; }
 .dl a:not(.dl-btn) { color: #7fd3d6; }
+.report { display: grid; grid-template-columns: 1fr; gap: 12px; margin: 16px 0; }
+@media (min-width: 620px) { .report { grid-template-columns: 1fr 1fr; } }
+.report a { display: block; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); padding: 14px 16px; text-decoration: none; color: var(--ink); }
+.report a:hover { border-color: var(--accent); }
+.report b { display: block; font-family: var(--font-display); font-size: 1.08rem; color: var(--accent); margin-bottom: 4px; }
+.report span { font-size: 0.93rem; color: var(--muted); }
 .facts b { display: block; font-family: var(--font-display); font-size: 1.5rem; color: #f2d264; font-weight: 700; font-variant-numeric: tabular-nums; }
 
 /* page */
@@ -159,7 +165,7 @@ footer { margin-top: 56px; padding-top: 16px; border-top: 1px solid var(--line);
         <a class="dl-btn" href="https://github.com/Zexonis/CddaPeopleFirst/releases/download/v0.8/cdda-0.I-people-first-0.8-windows-x64.zip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>Download for Windows (x64)</a>
         <p class="meta">v0.8 &middot; zip, 308 MB &middot; 64-bit Windows 10 or 11</p>
         <p>The whole game, ready to play: Cataclysm: DDA 0.I "Ito" with People First built in. Unzip it anywhere, run <code>cataclysm-tiles.exe</code>, and create a world: the mod is already ticked. Windows only for now. On macOS or Linux, the <code>people_first</code> mod still runs on the official 0.I game, without the engine extras.</p>
-        <p><a href="https://github.com/Zexonis/CddaPeopleFirst/releases">All releases</a> &middot; <a href="https://github.com/Zexonis/CddaPeopleFirst">Source and engine patches on GitHub</a></p>
+        <p><a href="https://github.com/Zexonis/CddaPeopleFirst/releases">All releases</a> &middot; <a href="https://github.com/Zexonis/CddaPeopleFirst">Source and engine patches on GitHub</a> &middot; <a href="#feedback">Report a bug</a></p>
       </div>
       <ul class="facts">
         <li><b>2</b>mods: people_first, people_first_engine</li>
@@ -179,6 +185,7 @@ footer { margin-top: 56px; padding-top: 16px; border-top: 1px solid var(--line);
     <ol>
       <li><a href="#overview">Overview</a></li>
       <li><a href="#install">Getting started</a></li>
+      <li><a href="#feedback">Bugs and feedback</a></li>
       <li><a href="#how">How it works</a></li>
       <li><a href="#menu">The People menu</a></li>
       <li><a href="#band">v0.1 The Band</a></li>
@@ -242,6 +249,21 @@ footer { margin-top: 56px; padding-top: 16px; border-top: 1px solid var(--line);
     <li><strong>People First: Engine</strong> (<code>people_first_engine</code>) is a small companion mod that needs the patched executable. It turns on the features JSON can't reach: naming children, the full shared meal, rotten-food checks. For now the patched executable is built for 64-bit Windows only.</li>
   </ul>
   <p>The tested mod list is <code>dda</code>, <code>no_npc_food</code>, <code>personal_portal_storms</code>, <code>mindovermatter</code>, <code>xedra_evolved</code>, <code>people_first</code> and <code>people_first_engine</code>. Only <code>dda</code> is required.</p>
+</section>
+
+<section id="feedback">
+  <h2>Bugs and feedback</h2>
+  <p class="standfirst">Found something broken, or have a story or an idea? Both go to the project's GitHub page, where every report is read.</p>
+  <div class="report">
+    <a href="https://github.com/Zexonis/CddaPeopleFirst/issues/new?template=bug_report.yml"><b>Report a bug</b><span>A crash, an error screen, or someone doing something they shouldn't. The form asks for what happened and how to make it happen again.</span></a>
+    <a href="https://github.com/Zexonis/CddaPeopleFirst/issues/new?template=feedback.yml"><b>Send feedback or an idea</b><span>Something felt off, something you loved, a balance problem, or a story from your game.</span></a>
+  </div>
+  <ul>
+    <li>You need a free GitHub account to post. That keeps bots out, and it means you'll get a notification when someone replies.</li>
+    <li>Reports are public. Before you send one, check the <a href="https://github.com/Zexonis/CddaPeopleFirst/issues?q=is%3Aissue">existing reports</a>; if yours is already there, add a comment or a thumbs-up instead.</li>
+    <li>For a bug, the most useful thing is the end of <code>config/debug.log</code> in the game folder, plus a screenshot of any error. The log may show your Windows user name in file paths, which you can blank out before pasting.</li>
+    <li>If a bug also happens in the official game without People First, it belongs to <a href="https://github.com/CleverRaven/Cataclysm-DDA/issues">the Cataclysm project</a>.</li>
+  </ul>
 </section>
 
 <section id="how">

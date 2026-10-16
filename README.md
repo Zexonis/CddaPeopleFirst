@@ -14,6 +14,10 @@ Get the zip from the [latest release](https://github.com/Zexonis/CddaPeopleFirst
 
 The download is built for 64-bit Windows 10 and 11 only, for now. On macOS or Linux, copy `mods/PeopleFirst` into the official 0.I game's `mods/` folder. It runs without the engine extras (you can't name your children, and people only defend each other up close).
 
+## Bugs and feedback
+
+[Report a bug](https://github.com/Zexonis/CddaPeopleFirst/issues/new?template=bug_report.yml) or [send feedback or an idea](https://github.com/Zexonis/CddaPeopleFirst/issues/new?template=feedback.yml). You need a free GitHub account. The end of `config/debug.log` in the game folder helps with any bug.
+
 ## What's here
 
 | Folder | Contents |

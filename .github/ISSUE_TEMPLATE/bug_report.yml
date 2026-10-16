@@ -1,0 +1,59 @@
+name: Bug report
+description: Something broke, crashed, or did something it shouldn't.
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time.  Reports are public, so leave out anything personal.
+        **debug.log tip:** it's in the game folder under `config/debug.log`.  It may show your Windows user name in file paths (`C:\Users\yourname\...`); you can replace that with `...` before pasting.
+  - type: dropdown
+    id: build
+    attributes:
+      label: Which build?
+      options:
+        - The People First download (Windows x64 zip)
+        - The official 0.I game with the People First mod added
+        - Something else (say below)
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: People First version
+      description: From the release you downloaded, e.g. 0.8.
+      placeholder: "0.8"
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you saw, and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: How can it be reproduced?
+      description: What you were doing just before.  Who was involved, the time of day, the season, a menu you used.
+      placeholder: |
+        1. Shared a meal with ...
+        2. Went to sleep at home ...
+        3. ...
+  - type: textarea
+    id: mods
+    attributes:
+      label: Mods in the world
+      description: The world's mod list (World menu, or `save/<world>/mods.json`).
+      placeholder: dda, no_npc_food, personal_portal_storms, people_first, people_first_engine
+  - type: textarea
+    id: log
+    attributes:
+      label: Error messages or debug.log
+      description: Paste any error screen text, or the end of `config/debug.log`.  To attach files instead (a screenshot, the whole log, a zipped save), use the next box.
+      render: text
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else
+      description: Screenshots, a zipped save folder, or anything that seems related.  Drag files in here.
