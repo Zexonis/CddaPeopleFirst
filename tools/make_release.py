@@ -54,7 +54,7 @@ What's different from the official 0.I zip
   - data/raw/keybindings.json: the People key (,).  data/title/people_first.title: the title screen.
 
 Cataclysm: Dark Days Ahead is by CleverRaven and contributors, under CC BY-SA 3.0 (see LICENSE.txt).  People First (the
-mods and the engine patches) is by r/LexEntityOfExistence, shared under the same license.  Source and engine patches:
+mods and the engine patches) is by u/LexEntityOfExistence, shared under the same license.  Source and engine patches:
 https://github.com/Zexonis/CddaPeopleFirst
 """
 

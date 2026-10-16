@@ -3,7 +3,7 @@
     "type": "MOD_INFO",
     "id": "people_first_engine",
     "name": "People First: Engine",
-    "authors": [ "lexator300" ],
+    "authors": [ "u/LexEntityOfExistence" ],
     "description": "Needs the People First engine build of Cataclysm 0.I (cataclysm-tiles-pf.exe).  Turns on what JSON alone can't do: you name your own children and they carry your family name, a child you take in can be renamed, shared meals are really eaten, and the household throws out rotten food and burns zombie corpses.  Without the engine build this mod fails to load: use People First alone.",
     "category": "content",
     "dependencies": [ "dda", "people_first" ],
