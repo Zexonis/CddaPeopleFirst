@@ -1,0 +1,649 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>People First Field Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bitter:wght@500;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a field guide. Night-sky title panel, then a sticky contents rail beside one reading column. */
+:root {
+  --bg: #f2f4f6;
+  --surface: #ffffff;
+  --ink: #17212c;
+  --muted: #566372;
+  --line: #d5dce3;
+  --accent: #0d767b;
+  --ember: #a85d17;
+  --chip: #e4eef0;
+  --night: #0a1017;
+  --night-line: #1c2836;
+  --a-sky: #7fa3ee;
+  --a-moon: #f4f1e6;
+  --a-back: #46b7c0;
+  --a-front: #a6eef0;
+  --a-fire: #f2d264;
+  --a-ember: #ff7a5c;
+  --a-log: #b07a45;
+  --a-grass: #6fbf73;
+  --font-display: "Bitter", "Rockwell", "Georgia", serif;
+  --font-body: "Source Serif 4", "Iowan Old Style", "Georgia", serif;
+  --font-mono: "IBM Plex Mono", "Consolas", "Menlo", monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0c131b; --surface: #111b26; --ink: #dde7ee; --muted: #93a4b4; --line: #243243;
+    --accent: #5cc8cc; --ember: #e6a55c; --chip: #16303a; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0c131b; --surface: #111b26; --ink: #dde7ee; --muted: #93a4b4; --line: #243243;
+  --accent: #5cc8cc; --ember: #e6a55c; --chip: #16303a; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 17px; line-height: 1.6; padding-inline: 16px; padding-block: 0 64px; }
+a { color: var(--accent); text-underline-offset: 2px; }
+a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+code, .mono { font-family: var(--font-mono); font-size: 0.86em; }
+code { background: var(--chip); padding: 0.05em 0.35em; border-radius: 3px; overflow-wrap: anywhere; }
+
+/* hero */
+.hero { background: var(--night); color: #cfe6ee; margin-inline: -16px; padding-block: 40px 36px; padding-inline: 16px; border-bottom: 1px solid var(--night-line); }
+.hero-inner { max-width: 1160px; margin-inline: auto; display: grid; gap: 28px; }
+.art-wrap { overflow-x: auto; }
+.art { font-family: var(--font-mono); font-size: clamp(5.4px, 1.05vw, 12px); line-height: 1.22; margin: 0 auto; width: max-content; color: var(--a-front); }
+.a-sky { color: var(--a-sky); } .a-moon { color: var(--a-moon); } .a-back { color: var(--a-back); } .a-front { color: var(--a-front); }
+.a-fire { color: var(--a-fire); } .a-ember { color: var(--a-ember); } .a-log { color: var(--a-log); } .a-grass { color: var(--a-grass); }
+.hero h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(2.1rem, 5vw, 3.4rem); line-height: 1.05; margin: 0; color: #eaf6f8; text-wrap: balance; }
+.hero .kicker { font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; color: #7fd3d6; margin: 0 0 10px; }
+.hero p.lede { max-width: 66ch; margin: 14px 0 0; font-size: 1.12rem; color: #c7dbe3; }
+.facts { display: flex; flex-wrap: wrap; gap: 10px 26px; margin: 22px 0 0; padding: 0; list-style: none; font-family: var(--font-mono); font-size: 0.8rem; color: #9ec2cc; }
+.facts b { display: block; font-family: var(--font-display); font-size: 1.5rem; color: #f2d264; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* page */
+.page { max-width: 1160px; margin-inline: auto; display: grid; grid-template-columns: 1fr; gap: 32px; padding-top: 32px; }
+@media (min-width: 980px) { .page { grid-template-columns: 230px minmax(0, 1fr); gap: 48px; } }
+nav.toc { font-family: var(--font-mono); font-size: 0.8rem; }
+@media (min-width: 980px) { nav.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 20px); align-self: start; max-height: calc(100vh - 40px); overflow-y: auto; } }
+nav.toc details { border: 1px solid var(--line); border-radius: 6px; background: var(--surface); padding: 10px 14px; }
+@media (min-width: 980px) { nav.toc details { border: 0; background: none; padding: 0; } nav.toc summary { display: none; } }
+nav.toc summary { cursor: pointer; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
+nav.toc ol { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 2px; }
+nav.toc li a { display: block; color: var(--muted); text-decoration: none; padding: 3px 0 3px 10px; border-left: 2px solid transparent; }
+nav.toc li a:hover { color: var(--ink); border-left-color: var(--accent); }
+nav.toc li.sub a { padding-left: 22px; font-size: 0.95em; }
+main { min-width: 0; }
+main > section { max-width: 76ch; }
+section { padding-top: 8px; }
+h2 { font-family: var(--font-display); font-weight: 700; font-size: 1.85rem; line-height: 1.2; margin: 48px 0 6px; text-wrap: balance; }
+h2 .ver { font-family: var(--font-mono); font-size: 0.55em; font-weight: 500; color: var(--ember); letter-spacing: 0.06em; vertical-align: 0.35em; margin-left: 8px; }
+h3 { font-family: var(--font-display); font-weight: 500; font-size: 1.28rem; margin: 30px 0 4px; text-wrap: balance; }
+h4 { font-family: var(--font-mono); font-size: 0.82rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin: 22px 0 4px; }
+p { margin: 10px 0; }
+ul, ol { padding-left: 1.3em; margin: 8px 0; }
+li { margin: 3px 0; }
+li::marker { color: var(--muted); }
+.standfirst { font-size: 1.08rem; color: var(--muted); margin-top: 0; }
+blockquote.ingame { margin: 14px 0; padding: 8px 14px; border-left: 3px solid var(--ember); background: var(--surface); font-family: var(--font-mono); font-size: 0.84rem; line-height: 1.55; color: var(--ink); }
+blockquote.ingame p { margin: 4px 0; }
+.note { border: 1px solid var(--line); background: var(--surface); border-radius: 6px; padding: 12px 16px; margin: 16px 0; }
+.note strong:first-child { color: var(--accent); }
+.tbl { overflow-x: auto; margin: 14px 0; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 0.93rem; line-height: 1.45; }
+th, td { text-align: left; vertical-align: top; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+tr:last-child td { border-bottom: 0; }
+th { font-family: var(--font-mono); font-size: 0.74rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 500; background: var(--bg); }
+td.k { font-family: var(--font-mono); font-size: 0.82rem; white-space: nowrap; color: var(--accent); }
+td.n { font-family: var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--ember); }
+.pill { display: inline-block; font-family: var(--font-mono); font-size: 0.72rem; padding: 0.05em 0.5em; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
+.pill.eng { border-color: var(--ember); color: var(--ember); }
+.pill.nat { border-color: var(--accent); color: var(--accent); }
+.loop { font-family: var(--font-mono); font-size: 0.82rem; line-height: 1.5; background: var(--night); color: #cfe6ee; border-radius: 6px; padding: 16px 18px; overflow-x: auto; margin: 14px 0; }
+.loop .h { color: #f2d264; } .loop .c { color: #7fd3d6; }
+.two { display: grid; grid-template-columns: 1fr; gap: 14px; }
+@media (min-width: 680px) { .two { grid-template-columns: 1fr 1fr; } }
+.two > div { min-width: 0; }
+.patchgroup { margin: 18px 0; }
+.patch { display: grid; grid-template-columns: 2.6em minmax(0, 1fr); gap: 4px 12px; padding: 10px 0; border-top: 1px solid var(--line); }
+.patch .no { font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; color: var(--ember); font-variant-numeric: tabular-nums; }
+.patch .t { font-weight: 600; }
+.patch p { margin: 2px 0 0; font-size: 0.95rem; }
+footer { margin-top: 56px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.9rem; max-width: 76ch; }
+</style>
+
+</head>
+<body>
+<header class="hero">
+  <div class="hero-inner">
+    <div class="art-wrap" aria-hidden="true"><pre class="art">              <span class="a-sky">C  A  T  A  C  L  Y  S  M     :     D  A  R  K     D  A  Y  S     A  H  E  A  D               </span>
+
+        <span class="a-sky">.                     *                      </span><span class="a-moon">)                       </span><span class="a-sky">*                     .        </span>
+                   <span class="a-sky">.                      .                       .                     .                   </span>
+   <span class="a-sky">*                                                                                                    *   </span>
+                    <span class="a-back">o     o     o     o     o     o     o     o     o     o     o     o                     </span>
+                   <span class="a-back">/|\___/|\___/|\___/|\___/|\___/|\___/|\___/|\___/|\___/|\___/|\___/|\                    </span>
+                    <span class="a-back">|     |     |     |     |     |     |     |     |     |     |     |                     </span>
+                   <span class="a-back">/ \   / \   / \   / \   / \   / \   / \   / \   / \   / \   / \   / \                    </span>
+                                                     <span class="a-fire">(                                                      </span>
+                                                   <span class="a-fire">)  )                                                     </span>
+                                                  <span class="a-fire">(  (  )                                                   </span>
+                                                 <span class="a-fire">) ( </span><span class="a-ember">) </span><span class="a-fire">( (                                                  </span>
+             <span class="a-front">O        O        O        O       </span><span class="a-fire">( ) </span><span class="a-ember">( </span><span class="a-fire">) ( )       </span><span class="a-front">O        O        O        O              </span>
+            <span class="a-front">/|\______/|\______/|\______/|\_    </span><span class="a-fire">( )( )</span><span class="a-ember">( </span><span class="a-fire">)( )     </span><span class="a-front">_/|\______/|\______/|\______/|\             </span>
+             <span class="a-front">|        |        |        |     </span><span class="a-log">(___)(___)(___)     </span><span class="a-front">|        |        |        |              </span>
+            <span class="a-front">/ \      / \      / \      / \     </span><span class="a-back">\___________/     </span><span class="a-front">/ \      / \      / \      / \             </span>
+
+
+    <span class="a-back">~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~  ~    </span>
+           <span class="a-grass">,               ,                  ,              ,                  ,               ,           </span>
+
+                       <span class="a-front">N  O  B  O  D  Y     M  A  K  E  S     I  T     A  L  O  N  E                        </span>
+</pre></div>
+    <div>
+      <p class="kicker">A fork of Cataclysm: Dark Days Ahead 0.I "Ito"</p>
+      <h1>People First</h1>
+      <p class="lede">A mod and a small engine patch set that give the survivors of Cataclysm an inner life. They remember what happened to you and to each other, fall in love and raise families, keep a watch, run a town, and go on living when you aren't looking. This is the full field guide to everything the fork adds.</p>
+      <ul class="facts">
+        <li><b>2</b>mods: people_first, people_first_engine</li>
+        <li><b>25</b>engine patches</li>
+        <li><b>1,112</b>effects on condition</li>
+        <li><b>8</b>versions, v0.1 to v0.8</li>
+        <li><b>183</b>game days in the full test run</li>
+      </ul>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+<nav class="toc" aria-label="Contents">
+  <details open>
+    <summary>Contents</summary>
+    <ol>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#install">Getting started</a></li>
+      <li><a href="#how">How it works</a></li>
+      <li><a href="#menu">The People menu</a></li>
+      <li><a href="#band">v0.1 The Band</a></li>
+      <li><a href="#hearts">v0.2 Hearts</a></li>
+      <li><a href="#family">v0.3 Family</a></li>
+      <li><a href="#homestead">v0.4 Homestead</a></li>
+      <li class="sub"><a href="#horn">The Horn and the Reckoning</a></li>
+      <li><a href="#town">v0.5 Town</a></li>
+      <li><a href="#keep">v0.6 The Keep</a></li>
+      <li><a href="#away">v0.7 Open threads</a></li>
+      <li><a href="#house">v0.8 Housekeeping and courting</a></li>
+      <li><a href="#engine">The engine patches</a></li>
+      <li><a href="#settings">Settings</a></li>
+      <li><a href="#compat">Compatibility</a></li>
+      <li><a href="#tested">How it was tested</a></li>
+      <li><a href="#limits">Known gaps</a></li>
+      <li><a href="#files">For developers</a></li>
+    </ol>
+  </details>
+</nav>
+
+<main>
+<section id="overview">
+  <h2>Overview</h2>
+  <p class="standfirst">Vanilla NPCs feel like tools because everything they do reacts to you or to immediate danger. People First gives them an inner life, a memory, each other, and their own will.</p>
+  <p>The guiding rule is that <strong>the player shouldn't be doing all the work</strong>. Most of what happens in People First happens around you, and sometimes to you: two people fall for each other at the fire, a child asks where the birds go in winter, the watch spots a horde at two in the morning and shouts your name, a neighbor's envoy walks up the road with an offer. You can join in, but the world doesn't wait for you.</p>
+
+  <h3>Seven pillars</h3>
+  <p>Every system was designed against a player-facing test: a sentence someone should be able to say after playing.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Pillar</th><th>The test</th></tr></thead>
+    <tbody>
+      <tr><td>Unprompted reciprocity</td><td>"I came back soaked and freezing, and she handed me hot tea before I said anything."</td></tr>
+      <tr><td>The witness</td><td>"That night by the fire he brought up the bear that nearly got me."</td></tr>
+      <tr><td>Parallel play and rituals</td><td>"One was whittling, one was cooking, someone played guitar. I just stood there."</td></tr>
+      <tr><td>Mutual care</td><td>"I went down with an infection. I woke up bandaged, and Mark had stayed up all night watching me."</td></tr>
+      <tr><td>Friction and quirks</td><td>"Those two argue every single time someone burns the food."</td></tr>
+      <tr><td>Their own hearts</td><td>"Dana fell for Theo, not me. I tried. She just wasn't into me."</td></tr>
+      <tr><td>Bonds and generations</td><td>"Our kid was born the winter the north wall fell. She's the one on watch now."</td></tr>
+    </tbody>
+  </table></div>
+  <p>And four anti-goals: chatter spam, needs bars to manage for every NPC, a world that waits for the player, and NPCs whose feelings bend completely around the player.</p>
+
+  <h3>The core loop</h3>
+  <p>The rhythm is the same at every scale, from a band at a campfire to a walled town of sixteen people.</p>
+<pre class="loop"> <span class="h">HEARTH</span> (the lull)        <span class="h">HORN</span> (the threat)          <span class="h">RECKONING</span> (the aftermath)
+ routines, rituals,  ──►  alarm, scramble,      ──►  wounds, bodies, burials,
+ banter, care, bonds      defend the people          retelling, bonding
+        ▲                 you care about                      │
+        └──────────── <span class="c">bonds deepen, home grows</span> ◄───────────────┘</pre>
+</section>
+
+<section id="install">
+  <h2>Getting started</h2>
+  <p>People First has two parts, and they work together:</p>
+  <ul>
+    <li><strong>People First</strong> (<code>people_first</code>) is the mod itself: pure JSON and effect-on-condition scripts. It loads on a stock 0.I game.</li>
+    <li><strong>People First: Engine</strong> (<code>people_first_engine</code>) is a small companion mod that needs the patched executable, <code>cataclysm-tiles-pf.exe</code>, built from the 0.I "Ito" source (commit <code>27939e2</code>) with the fork's 25 patches. It turns on the features JSON can't reach: naming children, the full shared meal, rotten-food checks.</li>
+  </ul>
+  <div class="note"><strong>To play:</strong> double-click <code>Play People First.cmd</code> in the project folder. It clears the mod cache and starts the patched build, which opens on the campfire title. Choose New Game in the world called <em>People First</em>, which already has the full mod list. The Evacuee scenario is the one the mod was tested with.</div>
+  <p>The tested mod list is <code>dda</code>, <code>no_npc_food</code>, <code>personal_portal_storms</code>, <code>mindovermatter</code>, <code>xedra_evolved</code>, <code>people_first</code> and <code>people_first_engine</code>. Only <code>dda</code> is required. Press <code>,</code> in game to open the People menu.</p>
+</section>
+
+<section id="how">
+  <h2>How it works</h2>
+  <p class="standfirst">Three ideas carry the whole mod: everything is a moment, everyone keeps their own view of everyone else, and everyone exists all the time.</p>
+
+  <h3>The moment spine</h3>
+  <p>Systems never talk to each other directly. They meet in one place. Anything that happens between people is reported as a <strong>moment</strong>: a kind, who did it, who it was for, who saw it, and how strong it was. Moments are the only thing that changes how people feel.</p>
+<pre class="loop"> SOURCES                 SPINE                               READERS
+ engine events    ─┐                                    ┌─► care     (who helps whom)
+ player actions    ├─► <span class="h">MOMENT</span> ──► <span class="h">VIEWS</span> (each pair) ──┼─► watch    (who covers whom)
+ off-screen bands ─┘     │            ▲                 ├─► fire     (who sits by whom)
+                         ▼        <span class="c">PERSONALITY</span>            ├─► witness  (who brings what up)
+                      MEMORY     (traits, quirks)       └─► friction, romance, votes, menu
+            what the readers do becomes new moments, and the loop closes</pre>
+  <p>There are 39 moment kinds, including <code>shared_danger</code>, <code>saved_life</code>, <code>care_given</code>, <code>meal_shared</code>, <code>watch_covered</code>, <code>fire_evening</code>, <code>gift</code>, <code>taught</code>, <code>argument</code>, <code>insult</code>, <code>betrayal</code>, <code>flirt</code>, <code>confession</code>, <code>wedding</code>, <code>birth</code>, <code>adopted</code>, <code>funeral</code>, <code>ran_off</code>, <code>voted_for</code>, <code>ruled_for</code>, <code>ruled_against</code>, <code>made_peace</code>, <code>welcomed</code> and <code>welcomed_back</code>.</p>
+
+  <h3>Views: how each person sees each other person</h3>
+  <p>Every person holds a <strong>view</strong> of every person they know, and views are asymmetric: A's view of B is not B's view of A. That makes room for unrequited love, one-sided grudges, and misreading people. The player is just another person in the model.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Axis</th><th>Grows from</th><th>Falls from</th><th>Drift</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Warmth</strong></td><td>shared time, meals, fire evenings, kindness</td><td>neglect, cruelty</td><td>about 10 points a month, never below 40% of its peak</td></tr>
+      <tr><td><strong>Trust</strong></td><td>being there: care, covered watches, saved lives, kept promises</td><td>abandonment, theft, betrayal, running off</td><td>slower than warmth, never below 50% of its peak</td></tr>
+      <tr><td><strong>Tension</strong></td><td>quirk clashes, arguments, rulings against you</td><td>time, making up, shared danger</td><td>fades in days</td></tr>
+      <tr><td><strong>Attraction</strong></td><td>chemistry and type, adult to adult only</td><td>breakups, cruelty</td><td>slow</td></tr>
+    </tbody>
+  </table></div>
+  <p>Warmth and trust together give a <strong>tier</strong>: Stranger, Acquaintance, Companion, Close, Devoted. Tension doesn't lower the tier, it colors it, so two people can be devoted friends who bicker. Views decay lazily, recalculated only when touched, so a large world costs storage rather than processor time. Each person keeps track of up to 50 others by default (a setting). Our trust also nudges vanilla <code>npc_trust()</code>, so stock dialogue agrees with ours.</p>
+
+  <h3>Memory and the witness</h3>
+  <p>Strong moments become <strong>memories</strong> for the people who saw them, in a small per-person ring where the weakest are forgotten first. At a calm evening, someone brings up their strongest memory about you that they haven't told yet, in words that fit what it was. Big events come back on their anniversaries: a month, three months, a year.</p>
+
+  <h3>Personality: traits and quirks</h3>
+  <p>Personality never runs its own logic. It changes how much a moment counts for that person, and sometimes adds a reaction.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Trait or quirk</th><th>Effect</th></tr></thead>
+    <tbody>
+      <tr><td>Sociable</td><td>Draws warmth from company: meals, fires and play count for more.</td></tr>
+      <tr><td>Loner</td><td>Company wears on them. Gatherings count for less, quiet kindness for more. Sits at the edge of the fire.</td></tr>
+      <tr><td>Loyal to a fault</td><td>Being covered for, cared for or saved builds trust twice as fast.</td></tr>
+      <tr><td>Hates waste</td><td>Wasted food or supplies sour their view of whoever did it.</td></tr>
+      <tr><td>Mother hen</td><td>Seeing someone in danger or being cared for makes them care more. Cooks breakfast for you first.</td></tr>
+      <tr><td>Gallows humor</td><td>Danger rattles them less, and they joke about it afterwards, which lands well or badly depending on the listener.</td></tr>
+      <tr><td>Proud</td><td>Pride and shame both hit twice as hard. Sulks after being rescued.</td></tr>
+      <tr><td>Holds grudges</td><td>Tension fades a third as fast.</td></tr>
+      <tr><td>Forgiving</td><td>Tension fades three times as fast.</td></tr>
+      <tr><td>Hopeless romantic</td><td>Falls faster and harder, and loves the little rituals of courting.</td></tr>
+    </tbody>
+  </table></div>
+  <p>Traits also drive votes, jobs, who wants which law, who answers an envoy and how, and who keeps their share of the tithe back.</p>
+
+  <h3>A-Life: the world beyond the bubble</h3>
+  <p>Every People First person exists and acts the whole time, in the style of STALKER's A-Life. Off-screen, people travel in <strong>bands</strong> (a leader and members) with a goal state machine: travel, hunt, forage, camp, settle or move on. Bands live at a virtual position, as data, so a hundred bands cost almost nothing. When a band comes into range, the scene is <strong>rebuilt from its saved state</strong>: the hunters appear where the numbers say they are, the elk they were tracking is already fleeing ahead of them, and their camp has its fire. From then on the vanilla AI drives them.</p>
+  <p>Off-screen life is coarse but real: bands bond around their camps, couples form, pregnancies progress, hunts succeed or fail, and now and then a band on the road runs into trouble (a scare, a wound and a rescue, or a death). What you hear about them is true, because it comes from the simulation.</p>
+</section>
+
+<section id="menu">
+  <h2>The People menu</h2>
+  <p class="standfirst">One key, <code>,</code>, opens a hub as central as the inventory. It shows the social world from your character's point of view.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Screen</th><th>What it shows</th></tr></thead>
+    <tbody>
+      <tr><td><strong>People nearby</strong></td><td>Everyone within about 60 tiles, with distance and what you can tell: <em>a stranger</em>, <em>travels with a band</em>, <em>lives with you</em>, <em>your sweetheart</em>, <em>married to you</em>, <em>your child, grown</em>, <em>a baby, in your arms</em>. Pick someone to open their person screen.</td></tr>
+      <tr><td><strong>People you know</strong></td><td>Everyone you've met: how you see them, how long since anything happened, who is gone, where you last saw them ("28 steps west of here, within the hour"), and the word along the road about their band ("close by, heading west").</td></tr>
+      <tr><td><strong>Who is with whom</strong></td><td>The web: couples, families, friends and rivals, as far as you know.</td></tr>
+      <tr><td><strong>Journal</strong></td><td>The moments you remember, newest first.</td></tr>
+      <tr><td><strong>Home</strong></td><td>Everything about your place: see <a href="#homemenu">the Home menu</a>.</td></tr>
+      <tr><td><strong>Settings</strong></td><td>See <a href="#settings">Settings</a>.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>The person screen</h3>
+  <p>Each option appears only when it makes sense for that person.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Key</th><th>Action</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td class="k">t</td><td>Talk</td><td>A conversation that reads their state: a child with family, an orphan, a newcomer, someone mourning, someone on the move.</td></tr>
+      <tr><td class="k">n</td><td>Tend their wounds</td><td>Stop the bleeding, clean bites, wrap what's torn. They walk over if they can; nothing hostile may be close.</td></tr>
+      <tr><td class="k">a</td><td>Share a meal with them</td><td>Once a day with each person, the surest way to get to know someone. It uses one real thing to eat, ready-to-eat food first (from the stores at home, else your pack), and you eat half.</td></tr>
+      <tr><td class="k">c</td><td>Call them over</td><td>They walk to your side. A child far away or near danger won't come alone.</td></tr>
+      <tr><td class="k">f</td><td>Ask them to sit by the fire</td><td>They walk to the nearest fire within 40 tiles and settle there.</td></tr>
+      <tr><td class="k">y</td><td>Bring their people supplies</td><td>Six things to eat for their band, from the stores or a sack you packed. Every few days. Generosity is remembered.</td></tr>
+      <tr><td class="k">r</td><td>Flirt</td><td>Lands or doesn't, depending on who they're drawn to and how they already feel about you.</td></tr>
+      <tr><td class="k">l</td><td>Tell them how you feel</td><td>They answer from their own heart.</td></tr>
+      <tr><td class="k">p</td><td>Ask them to marry you</td><td>For partners who have been together a while.</td></tr>
+      <tr><td class="k">e</td><td>End it</td><td>A breakup.</td></tr>
+      <tr><td class="k">h</td><td>Take them in</td><td>An orphan with nobody can stay with you.</td></tr>
+      <tr><td class="k">w</td><td>Raise them as your own</td><td>Your partner's child becomes yours too: one family, one name.</td></tr>
+      <tr><td class="k">u / d</td><td>Pick them up, Set them down</td><td>Carry a baby (4 kg of your carry weight); set them down, or hand them back to their mother or guardian.</td></tr>
+      <tr><td class="k">o / g</td><td>Take their hand, Let go</td><td>A toddler stays at your side until you let go.</td></tr>
+      <tr><td class="k">s</td><td>Teach them something</td><td>Show a child a skill you know better. Once a day.</td></tr>
+      <tr><td class="k">v</td><td>Ask them to come live with you</td><td>They answer from their own heart; if they travel with a band, the whole band comes.</td></tr>
+      <tr><td class="k">b</td><td>Ask them to take a different job</td><td>Cook, guard, forager, tinkerer, carer: the next one in line.</td></tr>
+      <tr><td class="k">i</td><td>What do I know about them?</td><td>How they seem to see you, how you see them, their quirks as far as you've picked them up, family and partner.</td></tr>
+    </tbody>
+  </table></div>
+  <p>The menu shows what your character knows, not the truth. Feelings you haven't picked up on read as unclear, and insight grows with closeness and time together.</p>
+</section>
+
+<section id="band">
+  <h2>The Band <span class="ver">v0.1</span></h2>
+  <p class="standfirst">The first test bed: a few people in the woods, built to feel as rich as soloing a whole city.</p>
+  <h3>Care</h3>
+  <p>People act on their own when you're cold, wet, hungry, hurt or sick, in lines that read why ("You're soaked through"). Someone brings tea, wraps your wounds once it's calm, or sits up with you while you sleep. Wounded people are tended by whoever cares most, and you can tend them yourself. Bleeding and bites are checked on every body part, not only the whole body.</p>
+  <h3>The fire evening</h3>
+  <p>Around 20:00, when it's calm, people drift to the fire (or, at home, the table and the couch). The evening is a state machine: they walk over and take seats, then each does something that fits who they are, such as whittling, cooking, a song, reading aloud, or telling a story. A loner sits at the edge. Couples sit apart together. Someone recalls a memory. Trouble scatters the fire at once, and the evening picks up again when it's calm, opening with someone producing a bottle.</p>
+  <blockquote class="ingame"><p>Emanuel Ceballos sits by the window, whittling something small.</p><p>Consuelo Porter finds your hand in the dark and holds onto it until the fire burns down.</p><p>Somebody gets out an instrument and nobody wants to go to bed.</p></blockquote>
+  <p>Whittlers sometimes make you a <strong>keepsake</strong>, a real item (a carved fox, bird, bear or dog), at most one every five days from the whole household.</p>
+  <h3>The night watch</h3>
+  <p>When you sleep, someone who cares about you takes the watch, and you sleep easier for it (noise wakes you less while someone keeps watch). The watcher wakes you if something comes. In a larger place this grows into the town watch rota of v0.5.</p>
+  <h3>Combat and saving</h3>
+  <p>Fighting side by side is a <code>shared_danger</code> moment for everyone in the fight. Saving is two-way: anyone can save anyone, by killing what's hurting them. Both people bond, the saver grows protective, and a per-pair score feeds the lines ("That's twice now", "Now we're even"). A big hit taken while guarding someone becomes "you took that hit for me".</p>
+  <h3>Friction</h3>
+  <p>Quirk clashes turn into recurring scenes. Someone with gallows humor teases a person who throws up; a proud one takes it badly. Wasteful butchery sours someone who hates waste, and a burned pot of soup starts an argument.</p>
+  <h3>Their own hearts</h3>
+  <p>Each adult rolls their own romantic nature: who they're drawn to, how steerable they are, and a commitment style (devoted, casual, or wandering-eyed). Chemistry is per pair. NPCs make the first move, with you and with each other: someone lingers near you, flirts clumsily at the fire, or confesses. Rejection is real content, and an awkward few days follow. Children are completely excluded from attraction, romance, intimacy and pregnancy, enforced in code and checked twice.</p>
+  <h3>Daily life</h3>
+  <p>By day, people do small things on their own or in pairs, chosen by temperament, weather and who they get on with: mending, card tricks, arguing about whether the dead can swim, planning the garden they'll have one day. Lines are drawn from pools that avoid recent repeats.</p>
+</section>
+
+<section id="hearts">
+  <h2>Hearts <span class="ver">v0.2</span></h2>
+  <ul>
+    <li><strong>Couples grow on their own.</strong> Sweethearts of a week with warmth and attraction of 45+ become partners at the fire; partners of two weeks with warmth 65+, trust 55+ and attraction 55+ propose. You can be proposed to, and answer yes, not yet, or no.</li>
+    <li><strong>Weddings</strong> happen at the next quiet evening's fire, in front of everyone, followed by a feast. Marriage slows drift, resists jealousy, gives "Just married" and "Together" morale, and makes loss hit harder.</li>
+    <li><strong>Jealousy and breakups.</strong> A glance at someone else's partner across the fire sours the partner's view of the one looking. Couples who sour break up, and you can be left for someone else.</li>
+    <li><strong>Grief.</strong> Mourning periods scale with the bond. A remembrance evening ("Tonight the evening is for Nyla Reedy"), a burial gathering, a grave, widowing, and anniversaries a month, three months and a year on.</li>
+    <li><strong>Your partner at your side</strong> when you nearly die.</li>
+    <li>The <strong>Web</strong>, <strong>Journal</strong> and <strong>People you know</strong> screens.</li>
+  </ul>
+</section>
+
+<section id="family">
+  <h2>Family <span class="ver">v0.3</span></h2>
+  <h3>Pregnancy and birth</h3>
+  <p>Pregnancy can happen between adult partners, the player included, about one fire evening in twelve. It has three staged effects (early, middle, late) with real gameplay costs, cravings, and a partner who carries your load (+7 kg). Birth is a community event, the strongest good moment in the mod.</p>
+  <blockquote class="ingame"><p>Hours of it, everyone pacing, nobody able to sit still.  Then a thin, furious cry: Janey Hammond is holding a newborn, Caitlyn 'Uno' Hammond, and the whole camp crowds in to see.</p></blockquote>
+  <p><strong>You name your own children</strong>, and they carry your family name (engine build). An NPC couple's baby takes its mother's surname, and children of families met in the world take a parent's. Births off-screen wait until the mother is near you.</p>
+  <h3>Babies, toddlers and children</h3>
+  <ul>
+    <li><strong>Babies</strong> are real tiny NPCs, carried by their mother (or you), settled and fed by whoever cares most. They never bark or fight.</li>
+    <li><strong>Toddlers</strong> (2 to 5) take a grown-up's hand.</li>
+    <li><strong>Children</strong> never fight. They follow their family, play (hide and seek, zombies and survivors, trading treasures), help with chores and bring you marbles, ask questions (24 of them, from "Do zombies dream?" to "If I was gone, would you come looking?"), learn skills from adults, and have nightmares that someone comes to comfort. A child out alone is drawn back toward home.</li>
+    <li><strong>Growing up</strong> happens at the pace you choose, in stages, ending in a young adult with an inherited temperament and quirk who joins the community as a grown-up.</li>
+  </ul>
+  <h3>Orphans and loss</h3>
+  <p>A child who loses a parent remembers them by name. The loss is always the strongest grief, whatever the warmth. They get grief lines of their own, more nightmares, and a guardian who comforts them; when mourning ends there is a first laugh, and a strong bond to the one who stayed. Orphans can be taken in by you or by another adult, and a child you take in can be renamed into your family.</p>
+</section>
+
+<section id="homestead">
+  <h2>Homestead <span class="ver">v0.4</span></h2>
+  <p class="standfirst">Setting up home turns a band into a household.</p>
+  <h3 id="homemenu">The Home menu</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Entry</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td>Make this place our home</td><td>Sets home. Evenings gather around the table when there's no fire, and residents come back to it.</td></tr>
+      <tr><td>Who does what</td><td>Everyone's job, and who sits on the council or holds the chair.</td></tr>
+      <tr><td>What people have heard</td><td>True rumors about bands out there.</td></tr>
+      <tr><td>How the place is doing</td><td>Households, the stores, the place's draw, and what people out there say about it.</td></tr>
+      <tr><td>Name this place</td><td>The name shows up in Home and in town lines.</td></tr>
+      <tr><td>Plant a field here</td><td>Marks a 5x5 plot for the farmer.</td></tr>
+      <tr><td>Ask the neighbors for animals</td><td>Once a week: hens, a goat or a cow arrive the next morning.</td></tr>
+      <tr><td>Tonight's watch</td><td>The rota.</td></tr>
+      <tr><td>Who's in charge, Call a meeting</td><td>The chief, lord and heir, or the council; when the next meeting sits.</td></tr>
+      <tr><td>The laws of the place, Put a law to the meeting</td><td>What's in force, and propose or repeal one.</td></tr>
+      <tr><td>Build a wall around the place</td><td>A palisade goes up, one side a day.</td></tr>
+      <tr><td>The neighbors</td><td>Each settlement: name, direction, leader, relations, agreements.</td></tr>
+      <tr><td>Keep the stores here, This is my corner</td><td>Where the household's food lives; your own patch nobody tidies.</td></tr>
+      <tr><td>Pack a sack of supplies</td><td>Six things to eat from the stores, to carry to a band you're courting.</td></tr>
+    </tbody>
+  </table></div>
+  <h3>Residents and jobs</h3>
+  <p>Bands you court can move in; the whole band comes. Residents unpack their gear, claim a bed or a corner, and get a <strong>job</strong> by skill and temperament: cook, guard, forager, tinkerer, carer (and later herder, farmer, smith, healer, teacher). Chores every few hours put real food at home: the cook's pot and water, the forager's finds. Unhappy residents can leave.</p>
+  <h3>Breakfast and evenings at home</h3>
+  <p>When you wake at home, whoever cares most has made breakfast and a mug of coffee: "You were up before any of us. Sit, eat." Coming in from a night on the road gets its own line. Leftovers are warmed up rather than piling up. Evenings at home gather around the table and couch with props and instruments, and give "An evening at home" morale.</p>
+  <h3>The world fills up</h3>
+  <p>A-Life is on by default: hunters, families and settled families live in the world. Settled families visit for the evening and ask you in, bands settle or move on, and rumors about them are true.</p>
+  <h3 id="horn">The Horn and the Reckoning</h3>
+  <p><strong>The Horn</strong> is the camp alarm. The watcher or the nearest adult shouts it, sleepers are woken ("Hands on you in the dark, shaking. 'Up. They're here.'"), and the scramble begins: children go to safety with a parent, adults go at the threat. After the fight, the all-clear head count. People defend the ones they're bonded to (engine patches 6 to 8).</p>
+  <p><strong>The Reckoning</strong> is the aftermath. The wounded are tended once it's calm, the day's rescue is retold at the evening fire, and children cling to the parent who carried them off. Anyone who broke and ran is judged once it's calm (engine patch 9): the runner loses trust with the one they left behind, though babies, children and the badly hurt are exempt. Frightening days bring nightmares, and someone comes to comfort the sleeper. Portal storms are noticed, lived through together and retold. If danger never lets up, the evening happens anyway, low: no seats, the lamp kept low, a joke anyway.</p>
+</section>
+
+<section id="town">
+  <h2>Town <span class="ver">v0.5</span></h2>
+  <ul>
+    <li><strong>Animals.</strong> Neighbors give hens, a goat or a cow, and animals you tame count too. Every morning the herder brings in milk and eggs, real items. Children name the animals and chase the hens.</li>
+    <li><strong>The field.</strong> In spring and summer the farmer plants it (dirt mounds on the map); about thirty days later it's harvested, real potatoes, carrots and cabbages, and replanted in season. Planting day is a shared moment, and the evening after a harvest is a feast.</li>
+    <li><strong>A working town.</strong> The smith keeps a smithy, the healer makes rounds, the teacher runs a morning school, and a weekly market day turns the surplus into real goods.</li>
+    <li><strong>The place's draw</strong> (0 to 95): points for a name, animals, a harvest, a school, a healer, a market, people, a watch, a wall and pacts; minus 10 after a recent fight. Settled families who know you decide to move in when their leader's warmth plus half the draw reaches 50. Word comes ahead, they walk over, you're asked at the door, and they move into an empty house nearby (up to eight households).</li>
+    <li><strong>The town watch.</strong> Once three grown-ups live here, a rota goes up at 22:00: two shifts with posts 8 to 14 tiles out, guards first, nobody two nights running if it can be helped, a second watcher who gets on with the first. The watch changes hands at 02:00 and comes in at dawn. Every two minutes each watcher looks out, and the first to see something raises the Horn by name, aiming everyone at what they saw. Newlyweds get their wedding night off, and new parents get a week (mothers) or a night (fathers).</li>
+  </ul>
+</section>
+
+<section id="keep">
+  <h2>The Keep <span class="ver">v0.6</span></h2>
+  <p class="standfirst">Who decides. Every vote and ruling comes from each person's own view of the others, never from a script.</p>
+  <h3>Meetings and the chief</h3>
+  <p>Once four grown-ups live here, the place meets one evening a week. With no chief, there's an election: everyone votes for whoever they'd follow (trust plus half their warmth, minus tension, and only for people they know). You can stand. The chief settles the worst quarrel at each meeting from their own view, and decides who may move in. When most of the meeting has turned on the chief, it holds a vote of confidence. A chief who dies, or misses two meetings, loses the chair.</p>
+  <h3>Laws</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Law</th><th>Effect</th></tr></thead>
+    <tbody>
+      <tr><td>Everyone takes a turn on the watch</td><td>The rota loses its guard bonus.</td></tr>
+      <tr><td>No strangers after dark</td><td>A family at the door after 19:00 camps outside till morning.</td></tr>
+      <tr><td>A tithe to the stores</td><td>Every chore puts a share into the common stores; anyone who keeps theirs back is fined at the meeting.</td></tr>
+      <tr><td>A rest day</td><td>Meeting day has no chores: "The rest day" morale and time together.</td></tr>
+      <tr><td>The meeting decides who moves in</td><td>The family at the door is put to everyone.</td></tr>
+      <tr><td>A lord for life</td><td>The chief rules for life and names an heir; no elections; their word is final on laws and exile; a confidence vote becomes a coup that needs two-thirds.</td></tr>
+      <tr><td>A council of three</td><td>Three seats chosen by the meeting; each councillor rules from their own view, and the first speaks for it. Excludes a lord.</td></tr>
+    </tbody>
+  </table></div>
+  <p>One law comes up per meeting, either yours (Home: Put a law to the meeting) or one somebody has a reason to want: three nights of the same guards, a fight this week, low stores, quarrels piling up. Everyone votes, you included.</p>
+  <h3>The heir, the coup and exile</h3>
+  <p>A lord names an heir at each meeting: their own grown child who lives here, else whoever they think most of. When the lord dies, the heir takes the chair. At most every two weeks, a resident most of the others can't stand is put to a vote of exile; an exile loses their home and job and becomes a band of one out there.</p>
+  <blockquote class="ingame"><p>You stand up and put it to them: a law that the chief rules for life, and their heir after them.  It passes, 6 to 0.</p><p>Mitzi Nunes names Aron 'Timber' Nunes heir, in front of everyone.</p></blockquote>
+  <h3>The wall and the siege</h3>
+  <p>A palisade on a square 12 tiles out from home, one side a day, with a gate in the middle of each, shut at 22:00 and opened at 06:00. It only replaces open ground, and nobody is walled in. Every few weeks a neighbor brings word of a horde. It comes at night in three growing waves from the warned direction: the dead, then runners and dogs, then brutes. The watch spots them, the Horn sounds, and everyone fights. Afterwards comes the tally, "The place held", and the next evening the siege is told again at the fire. A guest who fell on the wall is named at the end.</p>
+  <h3>Neighbors</h3>
+  <p>Up to three settlements appear as the place grows: <strong>a keep</strong> under a lord (starts wary), <strong>the eyeglasses</strong> (survivors of the old government's offices), and <strong>the woodlanders</strong> (forest folk). Each has a name, a leader, a direction, a strength and a relation. Weekly, agreements deliver real goods (food and seed potatoes, medicine, crossbow bolts) or cost tribute from the stores. Their envoys walk in up the road as real people and speak at your gate. A hostile settlement raids at night; the outcome is weighed from the wall, the watch and the household against their strength, and it works while you're away. A pact sends riders to thin a siege's waves. A friendly place may offer a <strong>match</strong>: someone walks in to marry one of yours, and from then on the two places are family.</p>
+</section>
+
+<section id="away">
+  <h2>Open threads <span class="ver">v0.7</span></h2>
+  <p class="standfirst">The place lives on while you're away.</p>
+  <ul>
+    <li><strong>Away</strong> starts more than 60 tiles from home. Each day away, the pantry fills from the household's jobs (capped), the field grows and is harvested, the wall goes on going up, deliveries arrive, raids happen, and a missed meeting is held by an NPC chief or waits for you. Babies due are born.</li>
+    <li><strong>The homecoming</strong>, back within 30 tiles after twelve hours or more: the one who cares most greets you in words that match how long you were gone, the news is read out in order ("Autumn, day 2: the field came in."), the pantry appears, the days are replayed (who spent evenings together, who had words), the wounded have a bandage and a story, and a grave stands behind the place for anyone lost.</li>
+    <li><strong>Danger on the road:</strong> off-screen bands meet scares, wounds and losses; they bring it up at the fire, and the rumors say it.</li>
+    <li><strong>Children and loss</strong>, and <strong>the evening when the dead won't leave</strong>: see Family and the Reckoning.</li>
+    <li><strong>The household's economy:</strong> with <code>no_npc_food</code> only you eat, so everything the household makes on a schedule has a household-wide limit.</li>
+  </ul>
+  <blockquote class="ingame"><p>Lakia Adcock spots you first.  "Look who it is."  You've been gone a day.</p><p>While you were away:</p><p>There's food at home: what the place put by while you were gone, set aside for you.</p><p>Mitzi Nunes calls you over: a pot of oatmeal, and a mug of coffee.  "You look like you walked all night.  Sit, eat."</p></blockquote>
+</section>
+
+<section id="house">
+  <h2>Housekeeping and courting <span class="ver">v0.8</span></h2>
+  <h3>The household keeps house</h3>
+  <ul>
+    <li><strong>The stores:</strong> one place for the household's food, water and supplies, picked once (a rack, counter, cupboard or locker near home) or wherever you say. Every communal spawn goes there.</li>
+    <li><strong>Corners:</strong> each grown-up keeps their own bed or patch of floor from night to night; yours is wherever you say, and nobody tidies it.</li>
+    <li><strong>Tidying</strong> every few hours by day: empty dishes are washed, stray food and drink go back to the stores, at most four mugs of coffee are kept, and (engine build) rotten food is thrown out, zombie corpses are burned and tainted bones raked away.</li>
+    <li><strong>Estates:</strong> a couple of hours after one of yours dies, their things are gathered and put with the stores, and they stop belonging to the dead (engine patch 15).</li>
+    <li><strong>Gifts</strong> handed to you (a child's marble, tea, a keepsake) go into your hands, not on the floor.</li>
+  </ul>
+  <h3>Courting a band</h3>
+  <ul>
+    <li><strong>Shared meals use real food</strong>, ready-to-eat first, and half is yours. On the engine build you actually eat it (it fills you and counts as eaten), and only what still fits.</li>
+    <li><strong>Supplies:</strong> bring a band six things to eat every few days, from the stores or a sack you packed.</li>
+    <li><strong>Progress you can see:</strong> "has started keeping a place for you when you sit down. They're warming to you." and, when an invitation would be accepted, "lingers after the meal and asks, as if it doesn't matter, how many people live at your place."</li>
+    <li><strong>Finding them:</strong> People you know says where you last saw someone, and the word along the road says where their band is heading.</li>
+    <li><strong>Tending and calling over</strong> people who aren't yours yet.</li>
+  </ul>
+  <blockquote class="ingame"><p>Emanuel Ceballos talks it over with the others, and they come back smiling.  "We're tired of walking.  We'll come."</p></blockquote>
+</section>
+
+<section id="engine">
+  <h2>The engine patches</h2>
+  <p class="standfirst">A small C++ patch set on 0.I "Ito" (commit <code>27939e2</code>), applied by an idempotent script and kept as small as the mod allows. People First stays loadable on stock 0.I; these patches make it better. Several also fix vanilla bugs.</p>
+
+  <div class="patchgroup">
+  <h4>Stability and vanilla bug fixes</h4>
+  <div class="patch"><span class="no">1</span><div><span class="t">Crash safety for stale talkers.</span><p>Running an effect on a character who left the bubble or died runs its fallback instead of segfaulting.</p></div></div>
+  <div class="patch"><span class="no">7</span><div><span class="t">Follower rules only bind followers.</span><p>Every NPC is created with the follower rule "follow close", so in stock 0.I any non-follower more than 4 tiles from the player ignored every monster. Fixed for vanilla NPCs too.</p></div></div>
+  <div class="patch"><span class="no">12</span><div><span class="t">"wields a" names the NPC.</span><p>The log read "&lt;npcname&gt; wields a hatchet."</p></div></div>
+  <div class="patch"><span class="no">13</span><div><span class="t">Shots off the edge of the map.</span><p>An overshooting shot past the reality bubble raised an error screen; it now just ends.</p></div></div>
+  <div class="patch"><span class="no">21</span><div><span class="t">A teleported NPC is there at once.</span><p>An NPC teleported into the bubble was inactive until the map shifted.</p></div></div>
+  </div>
+
+  <div class="patchgroup">
+  <h4>Defense and danger</h4>
+  <div class="patch"><span class="no">6</span><div><span class="t">Standing up for the people you're bonded to.</span><p>Kin, partner, band, household, close friends (warmth 40+), and you, join an NPC's friends list, so they defend each other. Settings can turn it off.</p></div></div>
+  <div class="patch"><span class="no">8</span><div><span class="t">Closing in.</span><p>A People First NPC whose target is out of usable range walks toward it, instead of aiming forever.</p></div></div>
+  <div class="patch"><span class="no">9</span><div><span class="t">Who ran.</span><p>A flat-out retreat is recorded, so the Reckoning can judge it later.</p></div></div>
+  <div class="patch"><span class="no">14</span><div><span class="t">Hearing the fight in the dark.</span><p>Unseen hostiles within 3 tiles, or next to someone they protect, count; protected people within 10 tiles stay friends without line of sight.</p></div></div>
+  <div class="patch"><span class="no">18</span><div><span class="t">Children run to a grown-up.</span><p>A fleeing child runs to the nearest grown-up they're bonded to within 30 tiles, not into the open. Confirmed in a forced test: "PF flee: Creola Adcock runs to=you d=8".</p></div></div>
+  <div class="patch"><span class="no">19, 20</span><div><span class="t">Running from monsters isn't running from you.</span><p>Panic no longer turns our people into enemies who flee the player for a day; they only take flight from you if you hurt them.</p></div></div>
+  </div>
+
+  <div class="patchgroup">
+  <h4>Family and identity</h4>
+  <div class="patch"><span class="no">2</span><div><span class="t"><code>u_set_name</code>.</span><p>A new effect: names you choose for your children, family surnames, renaming a child you take in. Without it, NPCs keep their random generated names.</p></div></div>
+  <div class="patch"><span class="no">4</span><div><span class="t">No corpse pulping for children and babies.</span></div></div>
+  </div>
+
+  <div class="patchgroup">
+  <h4>Getting along in a crowd</h4>
+  <div class="patch"><span class="no">3, 17</span><div><span class="t">"Let me pass" in moderation.</span><p>Once per 15 minutes per NPC and once per 10 minutes for everyone; a walk order to an occupied tile ends next to it.</p></div></div>
+  <div class="patch"><span class="no">5</span><div><span class="t">Swap places.</span><p>Walking into one of our people swaps places instead of opening the NPC menu, where the next key could be "attack".</p></div></div>
+  <div class="patch"><span class="no">22</span><div><span class="t">Around deep water.</span><p>Our people path around deep water unless they're already in it. Confirmed in a forced test: a 19-tile path with no deep water, against a 6-tile straight line.</p></div></div>
+  </div>
+
+  <div class="patchgroup">
+  <h4>Items and food</h4>
+  <div class="patch"><span class="no">15</span><div><span class="t">Moved items lose their old owner.</span><p>So a dead resident's beans don't ask "considered stealing".</p></div></div>
+  <div class="patch"><span class="no">16</span><div><span class="t">"Is it rotten?" for scripts.</span><p>Items answer <code>PF_ROTTEN</code>, <code>PF_GOING_BAD</code> and <code>PF_ZOMBIE_CORPSE</code>, so the household throws out rot and burns zombie corpses.</p></div></div>
+  <div class="patch"><span class="no">23</span><div><span class="t">A shared meal is eaten.</span><p>A new math function, <code>u_pf_eat_share()</code>, puts part of a food item in your stomach as eating does; reading it tells how much still fits (23b).</p></div></div>
+  </div>
+
+  <div class="patchgroup">
+  <h4>Interface</h4>
+  <div class="patch"><span class="no">10</span><div><span class="t">The People key.</span><p>A real input action, <code>,</code> by default, rebindable and listed in the action menu.</p></div></div>
+  <div class="patch"><span class="no">11, 25</span><div><span class="t">The title screen.</span><p>The campfire art (108 x 24), centered and clipped to the window, with "People First" under the version line. The official executable keeps the vanilla title.</p></div></div>
+  </div>
+
+  <div class="patchgroup">
+  <h4>Testing only</h4>
+  <div class="patch"><span class="no">24</span><div><span class="t">Decision traces.</span><p>With the defense trace switched on, debug.log records combat decisions, the deep-water count of each new path, and who a fleeing child runs to. Off by default.</p></div></div>
+  </div>
+</section>
+
+<section id="settings">
+  <h2>Settings</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Setting</th><th>Values</th><th>Default</th></tr></thead>
+    <tbody>
+      <tr><td>Romance</td><td>off, between NPCs only, on (people may fall for you, and you for them)</td><td>on</td></tr>
+      <tr><td>Chatter</td><td>quiet (no activity narration or glances at the fire), normal</td><td>normal</td></tr>
+      <tr><td>A-Life simulation</td><td>paused, running</td><td>running</td></tr>
+      <tr><td>People in the world</td><td>none, few (up to 4 bands), some (up to 8), many (up to 16)</td><td>some</td></tr>
+      <tr><td>People each person keeps track of</td><td>a number</td><td>50</td></tr>
+      <tr><td>Jealousy and breakups</td><td>off, on</td><td>on</td></tr>
+      <tr><td>Pregnancy</td><td>off, on</td><td>on</td></tr>
+      <tr><td>Growing up</td><td>realistic (9-month pregnancy, 18 years to adulthood), accelerated (a month's pregnancy, a year of childhood per month), fast (for testing). Switching keeps everyone's age and progress.</td><td>accelerated</td></tr>
+      <tr><td>The Horn (camp alarm)</td><td>off, on</td><td>on</td></tr>
+      <tr><td>Standing up for each other</td><td>off, on (engine build)</td><td>on</td></tr>
+      <tr><td>Test labs and debug log</td><td>hidden, shown</td><td>hidden</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="compat">
+  <h2>Compatibility</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Feature</th><th>Stock 0.I</th><th>Engine build</th></tr></thead>
+    <tbody>
+      <tr><td>Bonds, memories, evenings, romance, families, town, the Keep, A-Life</td><td>yes</td><td>yes</td></tr>
+      <tr><td>People defend each other at a distance</td><td>no (vanilla follower-rule bug)</td><td>yes</td></tr>
+      <tr><td>You name your children; family surnames</td><td>no (random names)</td><td>yes</td></tr>
+      <tr><td>Shared meals fill your stomach</td><td>calories and vitamins only</td><td>yes</td></tr>
+      <tr><td>Rotten food thrown out, zombie corpses burned</td><td>no</td><td>yes</td></tr>
+      <tr><td>One-key People menu</td><td>through the mutations menu</td><td><code>,</code></td></tr>
+      <tr><td>Swap places, children flee to adults, pathing around water, no flight from you</td><td>no</td><td>yes</td></tr>
+    </tbody>
+  </table></div>
+  <ul>
+    <li><strong><code>no_npc_food</code></strong>: meals and food gifts are social events; the household economy is capped so food doesn't pile up.</li>
+    <li><strong><code>personal_portal_storms</code></strong>: storms are noticed, someone herds everyone together, and they're retold.</li>
+    <li><strong>Mind Over Matter</strong>: a soft telepathy layer, sensing a bonded person's distress (<code>mod_interactions/mindovermatter</code>).</li>
+    <li><strong>Xedra Evolved</strong>: companions can discover a vampire's nature (<code>mod_interactions/xedra_evolved</code>).</li>
+    <li>Quest, story and unique NPCs are never moved or adopted; vanilla NPCs appear in the People menu and can be cared for.</li>
+  </ul>
+</section>
+
+<section id="tested">
+  <h2>How it was tested</h2>
+  <p>Each version was built in two directions: top-down from a story a player should be able to tell, and bottom-up from what the engine can actually report. Then each was verified in game with test labs. After that came <strong>the full run</strong>: one world, Kinfold, played from a fresh evacuee start through day 183, the way a player would, with every bug fixed as it surfaced and logged.</p>
+  <p>In that run, without labs:</p>
+  <ul>
+    <li>Band after band was courted and moved in, until 16 people lived there.</li>
+    <li>The place got a name, a field and a wall, and held off its sieges.</li>
+    <li>It elected a chief, Mitzi Nunes, made Mitzi lord for life, and saw Mitzi name a son, Aron, heir.</li>
+    <li>Babies were born, orphans were taken in, and people died and were buried.</li>
+    <li>The player married Consuelo Porter, from one of the bands they'd courted.</li>
+  </ul>
+  <p>Growing up, the vote of confidence and the coup were confirmed in fast tests on a copy of the world, as were engine patches 18 and 22. The council, walking envoys and matches were verified in their own test pass.</p>
+  <p>Three tools ran alongside the play:</p>
+  <ul>
+    <li><strong>Mod check:</strong> every change was run through the game's own <code>--check-mods</code>.</li>
+    <li><strong>Crash watcher:</strong> it caught crash dialogs and error screens during play.</li>
+    <li><strong>Text checker:</strong> it enforces CDDA's text style (two spaces after a period, real ellipses) and catches duplicate ids.</li>
+  </ul>
+</section>
+
+<section id="limits">
+  <h2>Known gaps</h2>
+  <ul>
+    <li>Off-screen simulation is abstract by design: real pathing and combat only happen inside the reality bubble.</li>
+    <li>No sitting or sleeping postures, and no visible NPC-to-NPC speech bubbles.</li>
+    <li>Not yet seen in natural play: the newest wording for a recalled kindness at the fire.</li>
+    <li>On the stock executable, NPCs keep their random generated names.</li>
+    <li>Hot or cold weather floods the vanilla message log with temperature lines; the log filter (<code>P</code>, <code>f</code>) finds People First lines.</li>
+  </ul>
+</section>
+
+<section id="files">
+  <h2>For developers</h2>
+  <p>Most content is generated: Python scripts in <code>tools/</code> write the mod's JSON, one per area, and only the A-Life core is hand-edited.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Area</th><th>Folder</th><th>Generator</th></tr></thead>
+    <tbody>
+      <tr><td>Moment spine: ids, moments, views, memories, personality</td><td class="k">spine/</td><td class="k">gen_spine.py</td></tr>
+      <tr><td>A-Life bands</td><td class="k">alife/</td><td>hand-edited</td></tr>
+      <tr><td>Care, fire, watch, friction, combat, romance, daily life</td><td class="k">life/</td><td class="k">gen_life.py</td></tr>
+      <tr><td>Couples, weddings, jealousy, grief, Web, Journal, Known people</td><td class="k">hearts/</td><td class="k">gen_hearts.py</td></tr>
+      <tr><td>Pregnancy, birth, children, orphans, teaching</td><td class="k">family/</td><td class="k">gen_family.py</td></tr>
+      <tr><td>Home, residents, jobs, Horn, Reckoning, housekeeping</td><td class="k">home/</td><td class="k">gen_home.py</td></tr>
+      <tr><td>Farm, work, joining, town watch</td><td class="k">town/</td><td class="k">gen_town.py</td></tr>
+      <tr><td>Meetings, laws, rule, walls, sieges, neighbors, council</td><td class="k">keep/</td><td class="k">gen_keep.py</td></tr>
+      <tr><td>Away days, homecoming, the road</td><td class="k">away/</td><td class="k">gen_away.py</td></tr>
+      <tr><td>The People menu and settings</td><td class="k">people/</td><td class="k">gen_people.py</td></tr>
+      <tr><td>Engine patches, build, title art</td><td class="k">engine/</td><td class="k">apply_patches.py, build.ps1, make_title.py</td></tr>
+    </tbody>
+  </table></div>
+  <p>In numbers:</p>
+  <ul>
+    <li>The mod has 1,112 effects on condition and 17 NPC templates.</li>
+    <li>14 traits (10 traits and quirks, 4 hidden markers), 12 morale types and 8 status effects.</li>
+    <li>15 terrain transforms (field, wall, graves) and 8 dialogue topics.</li>
+    <li>2 items: the carved keepsake and the sack of supplies.</li>
+  </ul>
+  <p>Hidden test labs (Settings: Test labs) can trigger every system on demand. The design history is in <code>design/people-first-concept.md</code>, and the full run is logged in <code>design/fullrun-2026-10-12.md</code>.</p>
+</section>
+
+<footer>People First, by lexator300. A fork of Cataclysm: Dark Days Ahead 0.I "Ito". "Nobody makes it alone."</footer>
+</main>
+</div>
+
+</body>
+</html>
