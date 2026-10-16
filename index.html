@@ -62,7 +62,7 @@ code { background: var(--chip); padding: 0.05em 0.35em; border-radius: 3px; over
 .hero .kicker { font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; color: #7fd3d6; margin: 0 0 10px; }
 .hero p.lede { max-width: 66ch; margin: 14px 0 0; font-size: 1.12rem; color: #c7dbe3; }
 .facts { display: flex; flex-wrap: wrap; gap: 10px 26px; margin: 22px 0 0; padding: 0; list-style: none; font-family: var(--font-mono); font-size: 0.8rem; color: #9ec2cc; }
-.dl { margin: 26px 0 0; padding: 18px 20px; border: 1px solid #2c4a52; border-radius: 8px; background: #0f1a24; display: grid; gap: 10px; max-width: 640px; }
+.dl { margin: 22px 0 0; padding: 18px 20px; border: 1px solid #2c4a52; border-radius: 8px; background: #0f1a24; display: grid; gap: 10px; max-width: 640px; }
 .dl-btn { display: inline-flex; align-items: center; gap: 10px; justify-self: start; padding: 12px 20px; border-radius: 6px; background: #f2d264; color: #1a1406; font-family: var(--font-display); font-weight: 700; font-size: 1.08rem; text-decoration: none; }
 .dl-btn:hover { background: #ffe08a; }
 .dl-btn:focus-visible { outline: 2px solid #f2d264; outline-offset: 3px; }
@@ -155,6 +155,12 @@ footer { margin-top: 56px; padding-top: 16px; border-top: 1px solid var(--line);
       <p class="kicker">A fork of Cataclysm: Dark Days Ahead 0.I "Ito"</p>
       <h1>People First</h1>
       <p class="lede">A mod and a small engine patch set that give the survivors of Cataclysm an inner life. They remember what happened to you and to each other, fall in love and raise families, keep a watch, run a town, and go on living when you aren't looking. This is the full field guide to everything the fork adds.</p>
+      <div class="dl" id="download">
+        <a class="dl-btn" href="https://github.com/Zexonis/CddaPeopleFirst/releases/download/v0.8/cdda-0.I-people-first-0.8-windows-x64.zip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>Download for Windows (x64)</a>
+        <p class="meta">v0.8 &middot; zip, 308 MB &middot; 64-bit Windows 10 or 11</p>
+        <p>The whole game, ready to play: Cataclysm: DDA 0.I "Ito" with People First built in. Unzip it anywhere, run <code>cataclysm-tiles.exe</code>, and create a world: the mod is already ticked. Windows only for now. On macOS or Linux, the <code>people_first</code> mod still runs on the official 0.I game, without the engine extras.</p>
+        <p><a href="https://github.com/Zexonis/CddaPeopleFirst/releases">All releases</a> &middot; <a href="https://github.com/Zexonis/CddaPeopleFirst">Source and engine patches on GitHub</a></p>
+      </div>
       <ul class="facts">
         <li><b>2</b>mods: people_first, people_first_engine</li>
         <li><b>25</b>engine patches</li>
@@ -162,12 +168,6 @@ footer { margin-top: 56px; padding-top: 16px; border-top: 1px solid var(--line);
         <li><b>8</b>versions, v0.1 to v0.8</li>
         <li><b>183</b>game days in the full test run</li>
       </ul>
-      <div class="dl" id="download">
-        <a class="dl-btn" href="https://github.com/Zexonis/CddaPeopleFirst/releases/download/v0.8/cdda-0.I-people-first-0.8-windows-x64.zip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>Download for Windows (x64)</a>
-        <p class="meta">v0.8 &middot; zip, 308 MB &middot; 64-bit Windows 10 or 11</p>
-        <p>The whole game, ready to play: Cataclysm: DDA 0.I "Ito" with People First built in. Unzip it anywhere, run <code>cataclysm-tiles.exe</code>, and create a world: the mod is already ticked. Windows only for now. On macOS or Linux, the <code>people_first</code> mod still runs on the official 0.I game, without the engine extras.</p>
-        <p><a href="https://github.com/Zexonis/CddaPeopleFirst/releases">All releases</a> &middot; <a href="https://github.com/Zexonis/CddaPeopleFirst">Source and engine patches on GitHub</a></p>
-      </div>
     </div>
   </div>
 </header>
