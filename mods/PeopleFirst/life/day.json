@@ -1,0 +1,1511 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_DAY_tick",
+    "//": "Every 90 minutes, 09:00-18:00, when it's calm: up to two people near you do something small on their own or with someone (variety pass, playtest 2).",
+    "recurrence": "90 minutes",
+    "global": true,
+    "condition": {
+      "and": [
+        { "math": [ "time_since('midnight', 'unit': 'hours') >= 9" ] },
+        { "math": [ "time_since('midnight', 'unit': 'hours') < 18" ] }
+      ]
+    },
+    "effect": [
+      { "run_eocs": "PF_THREAT_scan", "alpha_talker": "avatar" },
+      {
+        "if": { "math": [ "pf_threat == 0" ] },
+        "then": [ { "math": [ "pf_day_n = 0" ] }, { "u_run_npc_eocs": [ "PF_DAY_one" ], "local": true, "npc_range": 25 } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_DAY_one",
+    "//": "u = an adult near you.  Half the time they look for someone within 10 tiles to do something with (tension 30+ in that person's view of them: they avoid each other instead).  Otherwise their quirk (1 in 2, once a day each), the weather, or a general pool.",
+    "condition": {
+      "and": [
+        { "not": { "u_has_trait": "PF_CHILD" } },
+        { "math": [ "u_val('age') >= 18" ] },
+        { "math": [ "has_var(u_pf_uid)" ] },
+        { "not": { "u_has_effect": "sleep" } },
+        { "math": [ "pf_day_n < 2" ] },
+        { "or": [ { "math": [ "rand(1) == 0" ] }, { "math": [ "value_or(pf_day_force, 0) == 1" ] } ] }
+      ]
+    },
+    "effect": [
+      { "run_eocs": "PF_ID_ensure" },
+      { "math": [ "pf_day_n += 1" ] },
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+      { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_day_uid" } },
+      { "set_string_var": "", "target_var": { "global_val": "pf_day_line" } },
+      { "math": [ "pf_day_set = 0" ] },
+      { "math": [ "pf_day_pf = 0" ] },
+      { "math": [ "pf_day_mourning = time('now') < value_or(u_pf_mourn_until, 0)" ] },
+      {
+        "if": { "math": [ "(rand(1) == 0) * (pf_day_mourning == 0)" ] },
+        "then": [ { "u_run_npc_eocs": [ "PF_DAY_partner" ], "local": true, "npc_range": 10 } ]
+      },
+      {
+        "if": { "math": [ "pf_day_pf == 1" ] },
+        "then": [
+          {
+            "if": { "math": [ "pf_day_px >= 30" ] },
+            "then": [
+              {
+                "if": { "math": [ "value_or(pf_avoid_day, -1) != floor(time('now') / time('1 d'))" ] },
+                "then": [
+                  { "math": [ "pf_avoid_day = floor(time('now') / time('1 d'))" ] },
+                  { "set_string_var": "day_avoid", "target_var": { "global_val": "pf_day_line" } },
+                  { "run_eocs": "PF_MK_bicker", "beta_talker": { "global_val": "pf_day_pwho" } }
+                ],
+                "else": [
+                  { "math": [ "_p = rand(9)" ] },
+                  {
+                    "if": {
+                      "math": [
+                        "(_p == value_or(pf_day_solo_last, -1)) + (_p == value_or(pf_day_solo_last_b, -1)) + (_p == value_or(pf_day_solo_last_c, -1)) + (_p == value_or(pf_day_solo_last_d, -1)) + (_p == value_or(pf_day_solo_last_e, -1)) > 0"
+                      ]
+                    },
+                    "then": [ { "math": [ "_p = (_p + 1) % 10" ] } ]
+                  },
+                  {
+                    "if": {
+                      "math": [
+                        "(_p == value_or(pf_day_solo_last, -1)) + (_p == value_or(pf_day_solo_last_b, -1)) + (_p == value_or(pf_day_solo_last_c, -1)) + (_p == value_or(pf_day_solo_last_d, -1)) + (_p == value_or(pf_day_solo_last_e, -1)) > 0"
+                      ]
+                    },
+                    "then": [ { "math": [ "_p = (_p + 1) % 10" ] } ]
+                  },
+                  {
+                    "if": {
+                      "math": [
+                        "(_p == value_or(pf_day_solo_last, -1)) + (_p == value_or(pf_day_solo_last_b, -1)) + (_p == value_or(pf_day_solo_last_c, -1)) + (_p == value_or(pf_day_solo_last_d, -1)) + (_p == value_or(pf_day_solo_last_e, -1)) > 0"
+                      ]
+                    },
+                    "then": [ { "math": [ "_p = (_p + 1) % 10" ] } ]
+                  },
+                  {
+                    "if": {
+                      "math": [
+                        "(_p == value_or(pf_day_solo_last, -1)) + (_p == value_or(pf_day_solo_last_b, -1)) + (_p == value_or(pf_day_solo_last_c, -1)) + (_p == value_or(pf_day_solo_last_d, -1)) + (_p == value_or(pf_day_solo_last_e, -1)) > 0"
+                      ]
+                    },
+                    "then": [ { "math": [ "_p = (_p + 1) % 10" ] } ]
+                  },
+                  {
+                    "if": {
+                      "math": [
+                        "(_p == value_or(pf_day_solo_last, -1)) + (_p == value_or(pf_day_solo_last_b, -1)) + (_p == value_or(pf_day_solo_last_c, -1)) + (_p == value_or(pf_day_solo_last_d, -1)) + (_p == value_or(pf_day_solo_last_e, -1)) > 0"
+                      ]
+                    },
+                    "then": [ { "math": [ "_p = (_p + 1) % 10" ] } ]
+                  },
+                  { "math": [ "pf_day_solo_last_e = value_or(pf_day_solo_last_d, -1)" ] },
+                  { "math": [ "pf_day_solo_last_d = value_or(pf_day_solo_last_c, -1)" ] },
+                  { "math": [ "pf_day_solo_last_c = value_or(pf_day_solo_last_b, -1)" ] },
+                  { "math": [ "pf_day_solo_last_b = value_or(pf_day_solo_last, -1)" ] },
+                  { "math": [ "pf_day_solo_last = _p" ] },
+                  {
+                    "if": { "math": [ "_p == 0" ] },
+                    "then": [ { "set_string_var": "day_solo_0", "target_var": { "global_val": "pf_day_line" } } ]
+                  },
+                  {
+                    "if": { "math": [ "_p == 1" ] },
+                    "then": [ { "set_string_var": "day_solo_1", "target_var": { "global_val": "pf_day_line" } } ]
+                  },
+                  {
+                    "if": { "math": [ "_p == 2" ] },
+                    "then": [ { "set_string_var": "day_solo_2", "target_var": { "global_val": "pf_day_line" } } ]
+                  },
+                  {
+                    "if": { "math": [ "_p == 3" ] },
+                    "then": [ { "set_string_var": "day_solo_3", "target_var": { "global_val": "pf_day_line" } } ]
+                  },
+                  {
+                    "if": { "math": [ "_p == 4" ] },
+                    "then": [ { "set_string_var": "day_solo_4", "target_var": { "global_val": "pf_day_line" } } ]
+                  },
+                  {
+                    "if": { "math": [ "_p == 5" ] },
+                    "then": [ { "set_string_var": "day_solo_5", "target_var": { "global_val": "pf_day_line" } } ]
+                  },
+                  {
+                    "if": { "math": [ "_p == 6" ] },
+                    "then": [ { "set_string_var": "day_solo_6", "target_var": { "global_val": "pf_day_line" } } ]
+                  },
+                  {
+                    "if": { "math": [ "_p == 7" ] },
+                    "then": [ { "set_string_var": "day_solo_7", "target_var": { "global_val": "pf_day_line" } } ]
+                  },
+                  {
+                    "if": { "math": [ "_p == 8" ] },
+                    "then": [ { "set_string_var": "day_solo_8", "target_var": { "global_val": "pf_day_line" } } ]
+                  },
+                  {
+                    "if": { "math": [ "_p == 9" ] },
+                    "then": [ { "set_string_var": "day_solo_9", "target_var": { "global_val": "pf_day_line" } } ]
+                  }
+                ]
+              }
+            ],
+            "else": [
+              { "math": [ "_p = rand(15)" ] },
+              {
+                "if": {
+                  "math": [
+                    "(_p == value_or(pf_day_pair_last, -1)) + (_p == value_or(pf_day_pair_last_b, -1)) + (_p == value_or(pf_day_pair_last_c, -1)) + (_p == value_or(pf_day_pair_last_d, -1)) + (_p == value_or(pf_day_pair_last_e, -1)) + (_p == value_or(pf_day_pair_last_f, -1)) > 0"
+                  ]
+                },
+                "then": [ { "math": [ "_p = (_p + 1) % 16" ] } ]
+              },
+              {
+                "if": {
+                  "math": [
+                    "(_p == value_or(pf_day_pair_last, -1)) + (_p == value_or(pf_day_pair_last_b, -1)) + (_p == value_or(pf_day_pair_last_c, -1)) + (_p == value_or(pf_day_pair_last_d, -1)) + (_p == value_or(pf_day_pair_last_e, -1)) + (_p == value_or(pf_day_pair_last_f, -1)) > 0"
+                  ]
+                },
+                "then": [ { "math": [ "_p = (_p + 1) % 16" ] } ]
+              },
+              {
+                "if": {
+                  "math": [
+                    "(_p == value_or(pf_day_pair_last, -1)) + (_p == value_or(pf_day_pair_last_b, -1)) + (_p == value_or(pf_day_pair_last_c, -1)) + (_p == value_or(pf_day_pair_last_d, -1)) + (_p == value_or(pf_day_pair_last_e, -1)) + (_p == value_or(pf_day_pair_last_f, -1)) > 0"
+                  ]
+                },
+                "then": [ { "math": [ "_p = (_p + 1) % 16" ] } ]
+              },
+              {
+                "if": {
+                  "math": [
+                    "(_p == value_or(pf_day_pair_last, -1)) + (_p == value_or(pf_day_pair_last_b, -1)) + (_p == value_or(pf_day_pair_last_c, -1)) + (_p == value_or(pf_day_pair_last_d, -1)) + (_p == value_or(pf_day_pair_last_e, -1)) + (_p == value_or(pf_day_pair_last_f, -1)) > 0"
+                  ]
+                },
+                "then": [ { "math": [ "_p = (_p + 1) % 16" ] } ]
+              },
+              {
+                "if": {
+                  "math": [
+                    "(_p == value_or(pf_day_pair_last, -1)) + (_p == value_or(pf_day_pair_last_b, -1)) + (_p == value_or(pf_day_pair_last_c, -1)) + (_p == value_or(pf_day_pair_last_d, -1)) + (_p == value_or(pf_day_pair_last_e, -1)) + (_p == value_or(pf_day_pair_last_f, -1)) > 0"
+                  ]
+                },
+                "then": [ { "math": [ "_p = (_p + 1) % 16" ] } ]
+              },
+              {
+                "if": {
+                  "math": [
+                    "(_p == value_or(pf_day_pair_last, -1)) + (_p == value_or(pf_day_pair_last_b, -1)) + (_p == value_or(pf_day_pair_last_c, -1)) + (_p == value_or(pf_day_pair_last_d, -1)) + (_p == value_or(pf_day_pair_last_e, -1)) + (_p == value_or(pf_day_pair_last_f, -1)) > 0"
+                  ]
+                },
+                "then": [ { "math": [ "_p = (_p + 1) % 16" ] } ]
+              },
+              { "math": [ "pf_day_pair_last_f = value_or(pf_day_pair_last_e, -1)" ] },
+              { "math": [ "pf_day_pair_last_e = value_or(pf_day_pair_last_d, -1)" ] },
+              { "math": [ "pf_day_pair_last_d = value_or(pf_day_pair_last_c, -1)" ] },
+              { "math": [ "pf_day_pair_last_c = value_or(pf_day_pair_last_b, -1)" ] },
+              { "math": [ "pf_day_pair_last_b = value_or(pf_day_pair_last, -1)" ] },
+              { "math": [ "pf_day_pair_last = _p" ] },
+              {
+                "if": { "math": [ "_p == 0" ] },
+                "then": [ { "set_string_var": "day_pair_0", "target_var": { "global_val": "pf_day_line" } } ]
+              },
+              {
+                "if": { "math": [ "_p == 1" ] },
+                "then": [ { "set_string_var": "day_pair_1", "target_var": { "global_val": "pf_day_line" } } ]
+              },
+              {
+                "if": { "math": [ "_p == 2" ] },
+                "then": [ { "set_string_var": "day_pair_2", "target_var": { "global_val": "pf_day_line" } } ]
+              },
+              {
+                "if": { "math": [ "_p == 3" ] },
+                "then": [ { "set_string_var": "day_pair_3", "target_var": { "global_val": "pf_day_line" } } ]
+              },
+              {
+                "if": { "math": [ "_p == 4" ] },
+                "then": [ { "set_string_var": "day_pair_4", "target_var": { "global_val": "pf_day_line" } } ]
+              },
+              {
+                "if": { "math": [ "_p == 5" ] },
+                "then": [ { "set_string_var": "day_pair_5", "target_var": { "global_val": "pf_day_line" } } ]
+              },
+              {
+                "if": { "math": [ "_p == 6" ] },
+                "then": [ { "set_string_var": "day_pair_6", "target_var": { "global_val": "pf_day_line" } } ]
+              },
+              {
+                "if": { "math": [ "_p == 7" ] },
+                "then": [ { "set_string_var": "day_pair_7", "target_var": { "global_val": "pf_day_line" } } ]
+              },
+              {
+                "if": { "math": [ "_p == 8" ] },
+                "then": [ { "set_string_var": "day_pair_8", "target_var": { "global_val": "pf_day_line" } } ]
+              },
+              {
+                "if": { "math": [ "_p == 9" ] },
+                "then": [ { "set_string_var": "day_pair_9", "target_var": { "global_val": "pf_day_line" } } ]
+              },
+              {
+                "if": { "math": [ "_p == 10" ] },
+                "then": [ { "set_string_var": "day_pair_10", "target_var": { "global_val": "pf_day_line" } } ]
+              },
+              {
+                "if": { "math": [ "_p == 11" ] },
+                "then": [ { "set_string_var": "day_pair_11", "target_var": { "global_val": "pf_day_line" } } ]
+              },
+              {
+                "if": { "math": [ "_p == 12" ] },
+                "then": [ { "set_string_var": "day_pair_12", "target_var": { "global_val": "pf_day_line" } } ]
+              },
+              {
+                "if": { "math": [ "_p == 13" ] },
+                "then": [ { "set_string_var": "day_pair_13", "target_var": { "global_val": "pf_day_line" } } ]
+              },
+              {
+                "if": { "math": [ "_p == 14" ] },
+                "then": [ { "set_string_var": "day_pair_14", "target_var": { "global_val": "pf_day_line" } } ]
+              },
+              {
+                "if": { "math": [ "_p == 15" ] },
+                "then": [ { "set_string_var": "day_pair_15", "target_var": { "global_val": "pf_day_line" } } ]
+              },
+              { "math": [ "pf_m_str_in = 20" ] },
+              { "run_eocs": "PF_MK_fire_evening", "beta_talker": { "global_val": "pf_day_pwho" } }
+            ]
+          }
+        ],
+        "else": [
+          {
+            "if": { "math": [ "pf_day_mourning" ] },
+            "then": [
+              { "math": [ "_p = rand(4)" ] },
+              {
+                "if": { "math": [ "(_p == value_or(pf_day_mourn_last, -1)) + (_p == value_or(pf_day_mourn_last_b, -1)) > 0" ] },
+                "then": [ { "math": [ "_p = (_p + 1) % 5" ] } ]
+              },
+              {
+                "if": { "math": [ "(_p == value_or(pf_day_mourn_last, -1)) + (_p == value_or(pf_day_mourn_last_b, -1)) > 0" ] },
+                "then": [ { "math": [ "_p = (_p + 1) % 5" ] } ]
+              },
+              { "math": [ "pf_day_mourn_last_b = value_or(pf_day_mourn_last, -1)" ] },
+              { "math": [ "pf_day_mourn_last = _p" ] },
+              {
+                "if": { "math": [ "_p == 0" ] },
+                "then": [ { "set_string_var": "day_mourn_0", "target_var": { "global_val": "pf_day_line" } } ]
+              },
+              {
+                "if": { "math": [ "_p == 1" ] },
+                "then": [ { "set_string_var": "day_mourn_1", "target_var": { "global_val": "pf_day_line" } } ]
+              },
+              {
+                "if": { "math": [ "_p == 2" ] },
+                "then": [ { "set_string_var": "day_mourn_2", "target_var": { "global_val": "pf_day_line" } } ]
+              },
+              {
+                "if": { "math": [ "_p == 3" ] },
+                "then": [ { "set_string_var": "day_mourn_3", "target_var": { "global_val": "pf_day_line" } } ]
+              },
+              {
+                "if": { "math": [ "_p == 4" ] },
+                "then": [ { "set_string_var": "day_mourn_4", "target_var": { "global_val": "pf_day_line" } } ]
+              },
+              { "math": [ "pf_day_set = 1" ] }
+            ]
+          },
+          {
+            "if": {
+              "and": [
+                { "u_has_trait": "PF_T_LONER" },
+                { "math": [ "pf_day_set == 0" ] },
+                { "math": [ "rand(1) == 0" ] },
+                { "math": [ "value_or(u_pf_qday, -1) != floor(time('now') / time('1 d'))" ] }
+              ]
+            },
+            "then": [
+              { "set_string_var": "day_q_0", "target_var": { "global_val": "pf_day_line" } },
+              { "math": [ "pf_day_set = 1" ] },
+              { "math": [ "u_pf_qday = floor(time('now') / time('1 d'))" ] }
+            ]
+          },
+          {
+            "if": {
+              "and": [
+                { "u_has_trait": "PF_T_SOCIABLE" },
+                { "math": [ "pf_day_set == 0" ] },
+                { "math": [ "rand(1) == 0" ] },
+                { "math": [ "value_or(u_pf_qday, -1) != floor(time('now') / time('1 d'))" ] }
+              ]
+            },
+            "then": [
+              { "set_string_var": "day_q_1", "target_var": { "global_val": "pf_day_line" } },
+              { "math": [ "pf_day_set = 1" ] },
+              { "math": [ "u_pf_qday = floor(time('now') / time('1 d'))" ] }
+            ]
+          },
+          {
+            "if": {
+              "and": [
+                { "u_has_trait": "PF_Q_MOTHER_HEN" },
+                { "math": [ "pf_day_set == 0" ] },
+                { "math": [ "rand(1) == 0" ] },
+                { "math": [ "value_or(u_pf_qday, -1) != floor(time('now') / time('1 d'))" ] }
+              ]
+            },
+            "then": [
+              { "set_string_var": "day_q_2", "target_var": { "global_val": "pf_day_line" } },
+              { "math": [ "pf_day_set = 1" ] },
+              { "math": [ "u_pf_qday = floor(time('now') / time('1 d'))" ] }
+            ]
+          },
+          {
+            "if": {
+              "and": [
+                { "u_has_trait": "PF_Q_HATES_WASTE" },
+                { "math": [ "pf_day_set == 0" ] },
+                { "math": [ "rand(1) == 0" ] },
+                { "math": [ "value_or(u_pf_qday, -1) != floor(time('now') / time('1 d'))" ] }
+              ]
+            },
+            "then": [
+              { "set_string_var": "day_q_3", "target_var": { "global_val": "pf_day_line" } },
+              { "math": [ "pf_day_set = 1" ] },
+              { "math": [ "u_pf_qday = floor(time('now') / time('1 d'))" ] }
+            ]
+          },
+          {
+            "if": {
+              "and": [
+                { "u_has_trait": "PF_Q_GALLOWS" },
+                { "math": [ "pf_day_set == 0" ] },
+                { "math": [ "rand(1) == 0" ] },
+                { "math": [ "value_or(u_pf_qday, -1) != floor(time('now') / time('1 d'))" ] }
+              ]
+            },
+            "then": [
+              { "set_string_var": "day_q_4", "target_var": { "global_val": "pf_day_line" } },
+              { "math": [ "pf_day_set = 1" ] },
+              { "math": [ "u_pf_qday = floor(time('now') / time('1 d'))" ] }
+            ]
+          },
+          {
+            "if": {
+              "and": [
+                { "u_has_trait": "PF_Q_PROUD" },
+                { "math": [ "pf_day_set == 0" ] },
+                { "math": [ "rand(1) == 0" ] },
+                { "math": [ "value_or(u_pf_qday, -1) != floor(time('now') / time('1 d'))" ] }
+              ]
+            },
+            "then": [
+              { "set_string_var": "day_q_5", "target_var": { "global_val": "pf_day_line" } },
+              { "math": [ "pf_day_set = 1" ] },
+              { "math": [ "u_pf_qday = floor(time('now') / time('1 d'))" ] }
+            ]
+          },
+          {
+            "if": {
+              "and": [
+                { "u_has_trait": "PF_Q_ROMANTIC" },
+                { "math": [ "pf_day_set == 0" ] },
+                { "math": [ "rand(1) == 0" ] },
+                { "math": [ "value_or(u_pf_qday, -1) != floor(time('now') / time('1 d'))" ] }
+              ]
+            },
+            "then": [
+              { "set_string_var": "day_q_6", "target_var": { "global_val": "pf_day_line" } },
+              { "math": [ "pf_day_set = 1" ] },
+              { "math": [ "u_pf_qday = floor(time('now') / time('1 d'))" ] }
+            ]
+          },
+          {
+            "if": {
+              "and": [
+                { "u_has_trait": "PF_Q_GRUDGE" },
+                { "math": [ "pf_day_set == 0" ] },
+                { "math": [ "rand(1) == 0" ] },
+                { "math": [ "value_or(u_pf_qday, -1) != floor(time('now') / time('1 d'))" ] }
+              ]
+            },
+            "then": [
+              { "set_string_var": "day_q_7", "target_var": { "global_val": "pf_day_line" } },
+              { "math": [ "pf_day_set = 1" ] },
+              { "math": [ "u_pf_qday = floor(time('now') / time('1 d'))" ] }
+            ]
+          },
+          {
+            "if": {
+              "and": [
+                { "u_has_trait": "PF_Q_LOYAL" },
+                { "math": [ "pf_day_set == 0" ] },
+                { "math": [ "rand(1) == 0" ] },
+                { "math": [ "value_or(u_pf_qday, -1) != floor(time('now') / time('1 d'))" ] }
+              ]
+            },
+            "then": [
+              { "set_string_var": "day_q_8", "target_var": { "global_val": "pf_day_line" } },
+              { "math": [ "pf_day_set = 1" ] },
+              { "math": [ "u_pf_qday = floor(time('now') / time('1 d'))" ] }
+            ]
+          },
+          {
+            "if": {
+              "and": [
+                { "u_has_trait": "PF_Q_FORGIVING" },
+                { "math": [ "pf_day_set == 0" ] },
+                { "math": [ "rand(1) == 0" ] },
+                { "math": [ "value_or(u_pf_qday, -1) != floor(time('now') / time('1 d'))" ] }
+              ]
+            },
+            "then": [
+              { "set_string_var": "day_q_9", "target_var": { "global_val": "pf_day_line" } },
+              { "math": [ "pf_day_set = 1" ] },
+              { "math": [ "u_pf_qday = floor(time('now') / time('1 d'))" ] }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_day_set == 0" ] },
+            "then": [
+              {
+                "if": { "math": [ "weather('precipitation') > 0" ] },
+                "then": [
+                  { "math": [ "_p = rand(6)" ] },
+                  {
+                    "if": {
+                      "math": [
+                        "(_p == value_or(pf_day_wet_last, -1)) + (_p == value_or(pf_day_wet_last_b, -1)) + (_p == value_or(pf_day_wet_last_c, -1)) > 0"
+                      ]
+                    },
+                    "then": [ { "math": [ "_p = (_p + 1) % 7" ] } ]
+                  },
+                  {
+                    "if": {
+                      "math": [
+                        "(_p == value_or(pf_day_wet_last, -1)) + (_p == value_or(pf_day_wet_last_b, -1)) + (_p == value_or(pf_day_wet_last_c, -1)) > 0"
+                      ]
+                    },
+                    "then": [ { "math": [ "_p = (_p + 1) % 7" ] } ]
+                  },
+                  {
+                    "if": {
+                      "math": [
+                        "(_p == value_or(pf_day_wet_last, -1)) + (_p == value_or(pf_day_wet_last_b, -1)) + (_p == value_or(pf_day_wet_last_c, -1)) > 0"
+                      ]
+                    },
+                    "then": [ { "math": [ "_p = (_p + 1) % 7" ] } ]
+                  },
+                  { "math": [ "pf_day_wet_last_c = value_or(pf_day_wet_last_b, -1)" ] },
+                  { "math": [ "pf_day_wet_last_b = value_or(pf_day_wet_last, -1)" ] },
+                  { "math": [ "pf_day_wet_last = _p" ] },
+                  {
+                    "if": { "math": [ "_p == 0" ] },
+                    "then": [ { "set_string_var": "day_wet_0", "target_var": { "global_val": "pf_day_line" } } ]
+                  },
+                  {
+                    "if": { "math": [ "_p == 1" ] },
+                    "then": [ { "set_string_var": "day_wet_1", "target_var": { "global_val": "pf_day_line" } } ]
+                  },
+                  {
+                    "if": { "math": [ "_p == 2" ] },
+                    "then": [ { "set_string_var": "day_wet_2", "target_var": { "global_val": "pf_day_line" } } ]
+                  },
+                  {
+                    "if": { "math": [ "_p == 3" ] },
+                    "then": [ { "set_string_var": "day_wet_3", "target_var": { "global_val": "pf_day_line" } } ]
+                  },
+                  {
+                    "if": { "math": [ "_p == 4" ] },
+                    "then": [ { "set_string_var": "day_wet_4", "target_var": { "global_val": "pf_day_line" } } ]
+                  },
+                  {
+                    "if": { "math": [ "_p == 5" ] },
+                    "then": [ { "set_string_var": "day_wet_5", "target_var": { "global_val": "pf_day_line" } } ]
+                  },
+                  {
+                    "if": { "math": [ "_p == 6" ] },
+                    "then": [ { "set_string_var": "day_wet_6", "target_var": { "global_val": "pf_day_line" } } ]
+                  }
+                ],
+                "else": [
+                  {
+                    "if": { "and": [ { "is_weather": "sunny" }, { "math": [ "rand(2) == 0" ] } ] },
+                    "then": [
+                      { "math": [ "_p = rand(4)" ] },
+                      {
+                        "if": { "math": [ "(_p == value_or(pf_day_sun_last, -1)) + (_p == value_or(pf_day_sun_last_b, -1)) > 0" ] },
+                        "then": [ { "math": [ "_p = (_p + 1) % 5" ] } ]
+                      },
+                      {
+                        "if": { "math": [ "(_p == value_or(pf_day_sun_last, -1)) + (_p == value_or(pf_day_sun_last_b, -1)) > 0" ] },
+                        "then": [ { "math": [ "_p = (_p + 1) % 5" ] } ]
+                      },
+                      { "math": [ "pf_day_sun_last_b = value_or(pf_day_sun_last, -1)" ] },
+                      { "math": [ "pf_day_sun_last = _p" ] },
+                      {
+                        "if": { "math": [ "_p == 0" ] },
+                        "then": [ { "set_string_var": "day_sun_0", "target_var": { "global_val": "pf_day_line" } } ]
+                      },
+                      {
+                        "if": { "math": [ "_p == 1" ] },
+                        "then": [ { "set_string_var": "day_sun_1", "target_var": { "global_val": "pf_day_line" } } ]
+                      },
+                      {
+                        "if": { "math": [ "_p == 2" ] },
+                        "then": [ { "set_string_var": "day_sun_2", "target_var": { "global_val": "pf_day_line" } } ]
+                      },
+                      {
+                        "if": { "math": [ "_p == 3" ] },
+                        "then": [ { "set_string_var": "day_sun_3", "target_var": { "global_val": "pf_day_line" } } ]
+                      },
+                      {
+                        "if": { "math": [ "_p == 4" ] },
+                        "then": [ { "set_string_var": "day_sun_4", "target_var": { "global_val": "pf_day_line" } } ]
+                      }
+                    ],
+                    "else": [
+                      { "math": [ "_p = rand(9)" ] },
+                      {
+                        "if": {
+                          "math": [
+                            "(_p == value_or(pf_day_solo_last, -1)) + (_p == value_or(pf_day_solo_last_b, -1)) + (_p == value_or(pf_day_solo_last_c, -1)) + (_p == value_or(pf_day_solo_last_d, -1)) + (_p == value_or(pf_day_solo_last_e, -1)) > 0"
+                          ]
+                        },
+                        "then": [ { "math": [ "_p = (_p + 1) % 10" ] } ]
+                      },
+                      {
+                        "if": {
+                          "math": [
+                            "(_p == value_or(pf_day_solo_last, -1)) + (_p == value_or(pf_day_solo_last_b, -1)) + (_p == value_or(pf_day_solo_last_c, -1)) + (_p == value_or(pf_day_solo_last_d, -1)) + (_p == value_or(pf_day_solo_last_e, -1)) > 0"
+                          ]
+                        },
+                        "then": [ { "math": [ "_p = (_p + 1) % 10" ] } ]
+                      },
+                      {
+                        "if": {
+                          "math": [
+                            "(_p == value_or(pf_day_solo_last, -1)) + (_p == value_or(pf_day_solo_last_b, -1)) + (_p == value_or(pf_day_solo_last_c, -1)) + (_p == value_or(pf_day_solo_last_d, -1)) + (_p == value_or(pf_day_solo_last_e, -1)) > 0"
+                          ]
+                        },
+                        "then": [ { "math": [ "_p = (_p + 1) % 10" ] } ]
+                      },
+                      {
+                        "if": {
+                          "math": [
+                            "(_p == value_or(pf_day_solo_last, -1)) + (_p == value_or(pf_day_solo_last_b, -1)) + (_p == value_or(pf_day_solo_last_c, -1)) + (_p == value_or(pf_day_solo_last_d, -1)) + (_p == value_or(pf_day_solo_last_e, -1)) > 0"
+                          ]
+                        },
+                        "then": [ { "math": [ "_p = (_p + 1) % 10" ] } ]
+                      },
+                      {
+                        "if": {
+                          "math": [
+                            "(_p == value_or(pf_day_solo_last, -1)) + (_p == value_or(pf_day_solo_last_b, -1)) + (_p == value_or(pf_day_solo_last_c, -1)) + (_p == value_or(pf_day_solo_last_d, -1)) + (_p == value_or(pf_day_solo_last_e, -1)) > 0"
+                          ]
+                        },
+                        "then": [ { "math": [ "_p = (_p + 1) % 10" ] } ]
+                      },
+                      { "math": [ "pf_day_solo_last_e = value_or(pf_day_solo_last_d, -1)" ] },
+                      { "math": [ "pf_day_solo_last_d = value_or(pf_day_solo_last_c, -1)" ] },
+                      { "math": [ "pf_day_solo_last_c = value_or(pf_day_solo_last_b, -1)" ] },
+                      { "math": [ "pf_day_solo_last_b = value_or(pf_day_solo_last, -1)" ] },
+                      { "math": [ "pf_day_solo_last = _p" ] },
+                      {
+                        "if": { "math": [ "_p == 0" ] },
+                        "then": [ { "set_string_var": "day_solo_0", "target_var": { "global_val": "pf_day_line" } } ]
+                      },
+                      {
+                        "if": { "math": [ "_p == 1" ] },
+                        "then": [ { "set_string_var": "day_solo_1", "target_var": { "global_val": "pf_day_line" } } ]
+                      },
+                      {
+                        "if": { "math": [ "_p == 2" ] },
+                        "then": [ { "set_string_var": "day_solo_2", "target_var": { "global_val": "pf_day_line" } } ]
+                      },
+                      {
+                        "if": { "math": [ "_p == 3" ] },
+                        "then": [ { "set_string_var": "day_solo_3", "target_var": { "global_val": "pf_day_line" } } ]
+                      },
+                      {
+                        "if": { "math": [ "_p == 4" ] },
+                        "then": [ { "set_string_var": "day_solo_4", "target_var": { "global_val": "pf_day_line" } } ]
+                      },
+                      {
+                        "if": { "math": [ "_p == 5" ] },
+                        "then": [ { "set_string_var": "day_solo_5", "target_var": { "global_val": "pf_day_line" } } ]
+                      },
+                      {
+                        "if": { "math": [ "_p == 6" ] },
+                        "then": [ { "set_string_var": "day_solo_6", "target_var": { "global_val": "pf_day_line" } } ]
+                      },
+                      {
+                        "if": { "math": [ "_p == 7" ] },
+                        "then": [ { "set_string_var": "day_solo_7", "target_var": { "global_val": "pf_day_line" } } ]
+                      },
+                      {
+                        "if": { "math": [ "_p == 8" ] },
+                        "then": [ { "set_string_var": "day_solo_8", "target_var": { "global_val": "pf_day_line" } } ]
+                      },
+                      {
+                        "if": { "math": [ "_p == 9" ] },
+                        "then": [ { "set_string_var": "day_solo_9", "target_var": { "global_val": "pf_day_line" } } ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "value_or(pf_set_chatter, 1) == 1" ] },
+        "then": [ { "run_eocs": "PF_SAY_day", "alpha_talker": "avatar" } ]
+      },
+      { "math": [ "pf_day_total = value_or(pf_day_total, 0) + 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_DAY_partner",
+    "//": "u = someone within 10 tiles.  Their view of the one acting decides: warm enough (15+) to do something together, or tense enough (30+) to avoid them.",
+    "condition": {
+      "and": [
+        { "math": [ "pf_day_pf == 0" ] },
+        { "not": { "u_has_trait": "PF_CHILD" } },
+        { "math": [ "u_val('age') >= 18" ] },
+        { "math": [ "has_var(u_pf_uid)" ] },
+        { "not": { "u_has_effect": "sleep" } },
+        { "not": { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_day_uid" } ] } }
+      ]
+    },
+    "effect": [
+      { "run_eocs": "PF_ID_ensure" },
+      { "copy_var": { "global_val": "pf_day_uid" }, "target_var": { "global_val": "pf_m_other" } },
+      { "run_eocs": "PF_VIEW_read" },
+      {
+        "if": { "or": [ { "math": [ "pf_read_w >= 15" ] }, { "math": [ "pf_read_x >= 30" ] } ] },
+        "then": [
+          { "math": [ "pf_day_pf = 1" ] },
+          { "math": [ "pf_day_px = pf_read_x" ] },
+          { "u_set_talker": { "global_val": "pf_day_pwho" } },
+          { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_b" }, "parse_tags": true }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_DAY_rested",
+    "//": "Once a day around 06:00: our people wake rested.  Without it they never slept for real (non-followers aren't allowed to, and the home bed only adds an effect), so their sleep deprivation climbed past vanilla's threshold and 'lets out a huge yawn' / 'tiredly rubs their eyes' flooded the log all day (suffer.cpp without_sleep; variety pass).",
+    "recurrence": "30 minutes",
+    "global": true,
+    "condition": {
+      "and": [
+        { "math": [ "time_since('midnight', 'unit': 'hours') >= 6" ] },
+        { "math": [ "time_since('midnight', 'unit': 'hours') < 8" ] },
+        { "math": [ "value_or(pf_rest_day, -1) != floor(time('now') / time('1 d'))" ] }
+      ]
+    },
+    "effect": [
+      { "math": [ "pf_rest_day = floor(time('now') / time('1 d'))" ] },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_DAY_rested_one",
+            "condition": { "math": [ "has_var(u_pf_uid)" ] },
+            "effect": [ { "math": [ "u_val('sleepiness') = 0" ] }, { "math": [ "u_val('sleep_deprivation') = 0" ] } ]
+          }
+        ],
+        "local": true,
+        "npc_range": 60
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_NIGHT_bedroll",
+    "//": "Once a night, 23:00-01:00, at the first calm check (it retries every 30 minutes while something hostile is around): our people without a bed at home (bands, visitors, children, babies) lie down where they are and sleep about five hours (the vanilla 'sleep' effect: the tileset draws them asleep, and the Horn wakes them).  The night watcher stays up.  Residents use their beds (household.json).",
+    "recurrence": "30 minutes",
+    "global": true,
+    "condition": {
+      "and": [
+        {
+          "or": [
+            { "math": [ "time_since('midnight', 'unit': 'hours') >= 23" ] },
+            { "math": [ "time_since('midnight', 'unit': 'hours') < 1" ] }
+          ]
+        },
+        { "math": [ "value_or(pf_bedroll_night, -1) != floor((time('now') - time('12 h')) / time('1 d'))" ] }
+      ]
+    },
+    "effect": [
+      { "run_eocs": "PF_THREAT_scan", "alpha_talker": "avatar" },
+      {
+        "if": { "math": [ "pf_threat == 0" ] },
+        "then": [
+          { "math": [ "pf_bedroll_night = floor((time('now') - time('12 h')) / time('1 d'))" ] },
+          { "math": [ "pf_bedroll_n = 0" ] },
+          {
+            "u_run_npc_eocs": [
+              {
+                "id": "PF_NIGHT_bedroll_one",
+                "effect": [ { "u_add_effect": "sleep", "duration": "5 hours" }, { "math": [ "pf_bedroll_n += 1" ] } ],
+                "condition": {
+                  "and": [
+                    { "math": [ "has_var(u_pf_uid)" ] },
+                    { "math": [ "value_or(u_pf_resident, 0) == 0" ] },
+                    { "not": { "u_has_effect": "sleep" } },
+                    {
+                      "not": {
+                        "and": [
+                          { "math": [ "value_or(pf_watch_active, 0) == 1" ] },
+                          { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_watch_uid" } ] }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ],
+            "local": true,
+            "npc_range": 60
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LINE_court_you",
+    "//": "u = avatar.  Your sweetheart's moment with you at the fire.",
+    "effect": [
+      { "math": [ "_p = rand(5)" ] },
+      {
+        "if": {
+          "math": [
+            "(_p == value_or(pf_court_you_last, -1)) + (_p == value_or(pf_court_you_last_b, -1)) + (_p == value_or(pf_court_you_last_c, -1)) > 0"
+          ]
+        },
+        "then": [ { "math": [ "_p = (_p + 1) % 6" ] } ]
+      },
+      {
+        "if": {
+          "math": [
+            "(_p == value_or(pf_court_you_last, -1)) + (_p == value_or(pf_court_you_last_b, -1)) + (_p == value_or(pf_court_you_last_c, -1)) > 0"
+          ]
+        },
+        "then": [ { "math": [ "_p = (_p + 1) % 6" ] } ]
+      },
+      {
+        "if": {
+          "math": [
+            "(_p == value_or(pf_court_you_last, -1)) + (_p == value_or(pf_court_you_last_b, -1)) + (_p == value_or(pf_court_you_last_c, -1)) > 0"
+          ]
+        },
+        "then": [ { "math": [ "_p = (_p + 1) % 6" ] } ]
+      },
+      { "math": [ "pf_court_you_last_c = value_or(pf_court_you_last_b, -1)" ] },
+      { "math": [ "pf_court_you_last_b = value_or(pf_court_you_last, -1)" ] },
+      { "math": [ "pf_court_you_last = _p" ] },
+      {
+        "if": { "math": [ "_p == 0" ] },
+        "then": [ { "set_string_var": "court_you_0", "target_var": { "global_val": "pf_day_line" } } ]
+      },
+      {
+        "if": { "math": [ "_p == 1" ] },
+        "then": [ { "set_string_var": "court_you_1", "target_var": { "global_val": "pf_day_line" } } ]
+      },
+      {
+        "if": { "math": [ "_p == 2" ] },
+        "then": [ { "set_string_var": "court_you_2", "target_var": { "global_val": "pf_day_line" } } ]
+      },
+      {
+        "if": { "math": [ "_p == 3" ] },
+        "then": [ { "set_string_var": "court_you_3", "target_var": { "global_val": "pf_day_line" } } ]
+      },
+      {
+        "if": { "math": [ "_p == 4" ] },
+        "then": [ { "set_string_var": "court_you_4", "target_var": { "global_val": "pf_day_line" } } ]
+      },
+      {
+        "if": { "math": [ "_p == 5" ] },
+        "then": [ { "set_string_var": "court_you_5", "target_var": { "global_val": "pf_day_line" } } ]
+      },
+      { "run_eocs": "PF_SAY_day" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LINE_court_npc",
+    "//": "u = avatar.  A couple's moment at the fire (pf_say_a, pf_say_b).",
+    "effect": [
+      { "math": [ "_p = rand(5)" ] },
+      {
+        "if": {
+          "math": [
+            "(_p == value_or(pf_court_npc_last, -1)) + (_p == value_or(pf_court_npc_last_b, -1)) + (_p == value_or(pf_court_npc_last_c, -1)) > 0"
+          ]
+        },
+        "then": [ { "math": [ "_p = (_p + 1) % 6" ] } ]
+      },
+      {
+        "if": {
+          "math": [
+            "(_p == value_or(pf_court_npc_last, -1)) + (_p == value_or(pf_court_npc_last_b, -1)) + (_p == value_or(pf_court_npc_last_c, -1)) > 0"
+          ]
+        },
+        "then": [ { "math": [ "_p = (_p + 1) % 6" ] } ]
+      },
+      {
+        "if": {
+          "math": [
+            "(_p == value_or(pf_court_npc_last, -1)) + (_p == value_or(pf_court_npc_last_b, -1)) + (_p == value_or(pf_court_npc_last_c, -1)) > 0"
+          ]
+        },
+        "then": [ { "math": [ "_p = (_p + 1) % 6" ] } ]
+      },
+      { "math": [ "pf_court_npc_last_c = value_or(pf_court_npc_last_b, -1)" ] },
+      { "math": [ "pf_court_npc_last_b = value_or(pf_court_npc_last, -1)" ] },
+      { "math": [ "pf_court_npc_last = _p" ] },
+      {
+        "if": { "math": [ "_p == 0" ] },
+        "then": [ { "set_string_var": "court_npc_0", "target_var": { "global_val": "pf_day_line" } } ]
+      },
+      {
+        "if": { "math": [ "_p == 1" ] },
+        "then": [ { "set_string_var": "court_npc_1", "target_var": { "global_val": "pf_day_line" } } ]
+      },
+      {
+        "if": { "math": [ "_p == 2" ] },
+        "then": [ { "set_string_var": "court_npc_2", "target_var": { "global_val": "pf_day_line" } } ]
+      },
+      {
+        "if": { "math": [ "_p == 3" ] },
+        "then": [ { "set_string_var": "court_npc_3", "target_var": { "global_val": "pf_day_line" } } ]
+      },
+      {
+        "if": { "math": [ "_p == 4" ] },
+        "then": [ { "set_string_var": "court_npc_4", "target_var": { "global_val": "pf_day_line" } } ]
+      },
+      {
+        "if": { "math": [ "_p == 5" ] },
+        "then": [ { "set_string_var": "court_npc_5", "target_var": { "global_val": "pf_day_line" } } ]
+      },
+      { "run_eocs": "PF_SAY_day" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LINE_retell",
+    "//": "u = avatar.  Someone brings up an old memory (pf_say_a).",
+    "effect": [
+      { "math": [ "_p = rand(3)" ] },
+      { "if": { "math": [ "_p == value_or(pf_retell_last, -1)" ] }, "then": [ { "math": [ "_p = (_p + 1) % 4" ] } ] },
+      { "math": [ "pf_retell_last = _p" ] },
+      {
+        "if": { "math": [ "_p == 0" ] },
+        "then": [ { "set_string_var": "retell_0", "target_var": { "global_val": "pf_day_line" } } ]
+      },
+      {
+        "if": { "math": [ "_p == 1" ] },
+        "then": [ { "set_string_var": "retell_1", "target_var": { "global_val": "pf_day_line" } } ]
+      },
+      {
+        "if": { "math": [ "_p == 2" ] },
+        "then": [ { "set_string_var": "retell_2", "target_var": { "global_val": "pf_day_line" } } ]
+      },
+      {
+        "if": { "math": [ "_p == 3" ] },
+        "then": [ { "set_string_var": "retell_3", "target_var": { "global_val": "pf_day_line" } } ]
+      },
+      { "run_eocs": "PF_SAY_day" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_SAY_day",
+    "//": "u = avatar.  Daytime lines, picked by the global pf_day_line.",
+    "effect": [
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_solo_0" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> sits on an upturned bucket, sharpening a knife on a stone, slow and even.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_solo_1" ] },
+        "then": [ { "u_message": "<global_val:pf_say_a> mends a sock with a needle and a lot of muttering.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_solo_2" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> reads a battered paperback with the cover torn off, moving their lips a little.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_solo_3" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> writes something in a notebook, then crosses it out, then writes it again.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_solo_4" ] },
+        "then": [ { "u_message": "<global_val:pf_say_a> counts their ammunition, then counts it again.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_solo_5" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> stands at the edge of the place for a long while, just watching the road.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_solo_6" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> takes their boots off and stretches their toes in the air with a groan of pure joy.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_solo_7" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> sorts a pile of scavenged screws by size, for no reason anyone can see.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_solo_8" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> hums the same four bars of some song over and over, and doesn't seem to know they're doing it.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_solo_9" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> naps sitting up, chin on their chest, one hand still on their weapon.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_wet_0" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> sits in a doorway, watching the rain come down, and doesn't say anything for an hour.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_wet_1" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> sets out every pot and can they own to catch the rain, and looks very pleased with themselves.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_wet_2" ] },
+        "then": [ { "u_message": "<global_val:pf_say_a> curses the rain, the mud, and the rain again.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_wet_3" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> wrings out their socks for the third time today and gives up on them.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_wet_4" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> stands under the eaves with their face turned up, letting the rain wash it.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_wet_5" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> plays a slow game of checkers on a board scratched into the floor, listening to the rain on the roof.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_wet_6" ] },
+        "then": [ { "u_message": "<global_val:pf_say_a> patches a leak with a strip of tarp and a lot of language.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_sun_0" ] },
+        "then": [ { "u_message": "<global_val:pf_say_a> lies in the sun with their eyes closed, like a cat.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_sun_1" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> hangs washing on a line strung between two posts.  Nothing has ever looked so normal.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_sun_2" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> spreads damp gear out on the ground to dry, and guards it like treasure.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_sun_3" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> finds a warm patch of wall and leans on it with their eyes shut.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_sun_4" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> takes their shirt off to feel the sun, and gets told they're blinding everyone.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_q_0" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> wanders off alone and comes back an hour later with nothing to show for it, looking better for it.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_q_1" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> checks on everyone in turn, asking how they're holding up, and actually listens to the answers.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_q_2" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> goes round checking everyone's socks for holes.  Nobody is spared.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_q_3" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> scrapes the last bits out of every empty can and stacks the cans in a neat tower.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_q_4" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> adds another tally mark to a board by the door.  Nobody asks what they're counting.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_q_5" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> practices with their weapon where everyone can see, and pretends not to notice anyone watching.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_q_6" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> writes something in a notebook and snaps it shut whenever anyone comes near.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_q_7" ] },
+        "then": [
+          { "u_message": "<global_val:pf_say_a> sharpens a knife a little longer than a knife needs sharpening.", "type": "info" }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_q_8" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> walks the edge of the place twice, then a third time, just to be sure.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_q_9" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> brings a cup of something hot to the person they argued with last, and leaves it without a word.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_pair_0" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> shows <global_val:pf_say_b> a card trick.  <global_val:pf_say_b> pretends not to know how it works.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_pair_1" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> and <global_val:pf_say_b> argue, at length and with diagrams in the dirt, about whether the dead can swim.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_pair_2" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> and <global_val:pf_say_b> split a can of peaches, passing the fork back and forth.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_pair_3" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> cuts <global_val:pf_say_b>'s hair with a pair of kitchen scissors.  It could be worse.  It could also be better.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_pair_4" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> and <global_val:pf_say_b> talk quietly about before.  Neither of them says what they lost.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_pair_5" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> and <global_val:pf_say_b> try to fix a radio together, and get a few seconds of static that has everyone gathering round.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_pair_6" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> teaches <global_val:pf_say_b> a song from where they grew up.  <global_val:pf_say_b> gets the words wrong on purpose.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_pair_7" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> and <global_val:pf_say_b> play cards for buttons.  <global_val:pf_say_b> cheats, badly, and <global_val:pf_say_a> lets it go.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_pair_8" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> holds the ladder while <global_val:pf_say_b> fixes something on the roof, and offers advice nobody asked for.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_pair_9" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> and <global_val:pf_say_b> carry water together, swapping the heavy end without a word.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_pair_10" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> and <global_val:pf_say_b> try to remember every flavor of ice cream there ever was.  The list gets long.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_pair_11" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> patches <global_val:pf_say_b>'s jacket.  <global_val:pf_say_b> complains about the color of the thread the whole time.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_pair_12" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> and <global_val:pf_say_b> plan, in great detail, the garden they will have one day.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_pair_13" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> reads aloud to <global_val:pf_say_b> from a water-stained magazine, doing all the voices.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_pair_14" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> and <global_val:pf_say_b> take turns at the grindstone, and talk about nothing at all.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_pair_15" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> shows <global_val:pf_say_b> how they used to tie a tie.  Neither of them has a tie.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_mourn_0" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> keeps picking up something that belonged to the one they lost, and putting it down again.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_mourn_1" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> sits by themselves for a long while.  Someone leaves food next to them, and later it's gone.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_mourn_2" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> starts to say something to nobody, stops, and goes back to work.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_mourn_3" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> works twice as hard as anyone today, and won't stop when they're told to.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_mourn_4" ] },
+        "then": [ { "u_message": "<global_val:pf_say_a> laughs at something, then looks guilty for laughing.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "day_avoid" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> and <global_val:pf_say_b> spend the day carefully not being in the same place.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "court_you_0" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> sits with you, shoulder to shoulder, and for a while neither of you says anything.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "court_you_1" ] },
+        "then": [ { "u_message": "<global_val:pf_say_a> saves you the spot by the fire, and pretends they didn't.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "court_you_2" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> leans against you while the others talk, warm and heavy and half asleep.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "court_you_3" ] },
+        "then": [
+          { "u_message": "<global_val:pf_say_a> steals the last bite off your plate, and grins when you notice.", "type": "info" }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "court_you_4" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> finds your hand in the dark and holds onto it until the fire burns down.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "court_you_5" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> tells you something about themselves they haven't told anyone here, very quietly.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "court_npc_0" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> and <global_val:pf_say_b> sit a little apart from the others, talking quietly.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "court_npc_1" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> and <global_val:pf_say_b> share one blanket and argue about who's hogging it.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "court_npc_2" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> falls asleep against <global_val:pf_say_b>'s shoulder, and <global_val:pf_say_b> doesn't move for an hour.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "court_npc_3" ] },
+        "then": [
+          { "u_message": "<global_val:pf_say_a> and <global_val:pf_say_b> laugh at something nobody else heard.", "type": "info" }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "court_npc_4" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> braids <global_val:pf_say_b>'s hair by the fire, badly, and neither of them minds.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "court_npc_5" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> and <global_val:pf_say_b> sit with their knees touching, watching the fire, not talking.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "retell_0" ] },
+        "then": [ { "u_message": "<global_val:pf_say_a> brings up something from a while back, and smiles a little.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "retell_1" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> starts a story with \"Remember when\u2026\", and half the fire groans, because they do.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "retell_2" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> laughs out of nowhere at something that happened weeks ago, and has to explain it.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_day_line" }, "retell_3" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> brings up an old day on the road, and for once it sounds almost funny.",
+            "type": "info"
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,73 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_MEM_store",
+    "//": "u = someone who lived or saw a strong moment.  8 memory slots: kind, with whom, strength, when, told-yet, and their role (1 = it was done to them, 2 = they did it, 3 = they saw it).  When full, the new memory replaces the weakest one, and only if it is stronger.  Big moments outlive small ones.",
+    "effect": [
+      { "if": "u_is_avatar", "then": [ { "run_eocs": "PF_JOURNAL_add" } ] },
+      { "math": [ "u_pf_mem_count = value_or(u_pf_mem_count, 0)" ] },
+      {
+        "if": { "math": [ "u_pf_mem_count < 8" ] },
+        "then": [ { "math": [ "pf_mslot = u_pf_mem_count" ] }, { "math": [ "u_pf_mem_count += 1" ] }, { "math": [ "_ok = 1" ] } ],
+        "else": [
+          { "math": [ "pf_mi = 0" ] },
+          { "math": [ "pf_mmin = 1000" ] },
+          { "math": [ "pf_mslot = 0" ] },
+          { "run_eocs": "PF_MEM_scan_weakest", "condition": { "math": [ "pf_mi < 8" ] }, "iterations": 9 },
+          { "math": [ "_ok = pf_m_str > pf_mmin" ] }
+        ]
+      },
+      {
+        "if": { "math": [ "_ok" ] },
+        "then": [
+          { "set_string_var": "u_pf_mem_<global_val:pf_mslot>_kind", "target_var": { "context_val": "mk" }, "parse_tags": true },
+          {
+            "set_string_var": "u_pf_mem_<global_val:pf_mslot>_with",
+            "target_var": { "context_val": "mw" },
+            "parse_tags": true
+          },
+          {
+            "set_string_var": "u_pf_mem_<global_val:pf_mslot>_str",
+            "target_var": { "context_val": "ms" },
+            "parse_tags": true
+          },
+          {
+            "set_string_var": "u_pf_mem_<global_val:pf_mslot>_t",
+            "target_var": { "context_val": "mt" },
+            "parse_tags": true
+          },
+          {
+            "set_string_var": "u_pf_mem_<global_val:pf_mslot>_rc",
+            "target_var": { "context_val": "mr" },
+            "parse_tags": true
+          },
+          {
+            "set_string_var": "u_pf_mem_<global_val:pf_mslot>_role",
+            "target_var": { "context_val": "mo" },
+            "parse_tags": true
+          },
+          { "copy_var": { "global_val": "pf_m_kind" }, "target_var": { "var_val": "mk" } },
+          { "copy_var": { "global_val": "pf_m_other" }, "target_var": { "var_val": "mw" } },
+          { "math": [ "v_ms = pf_m_str" ] },
+          { "math": [ "v_mt = time('now')" ] },
+          { "math": [ "v_mr = 0" ] },
+          { "math": [ "v_mo = pf_m_role" ] },
+          { "math": [ "u_pf_mem_next = (pf_mslot + 1) % 8" ] },
+          { "math": [ "pf_memories_total = value_or(pf_memories_total, 0) + 1" ] }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_MEM_scan_weakest",
+    "effect": [
+      { "set_string_var": "u_pf_mem_<global_val:pf_mi>_str", "target_var": { "context_val": "ms" }, "parse_tags": true },
+      {
+        "if": { "math": [ "value_or(v_ms, 0) < pf_mmin" ] },
+        "then": [ { "math": [ "pf_mmin = value_or(v_ms, 0)" ] }, { "math": [ "pf_mslot = pf_mi" ] } ]
+      },
+      { "math": [ "pf_mi += 1" ] }
+    ]
+  }
+]

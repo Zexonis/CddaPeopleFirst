@@ -1,0 +1,18 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_THREAT_scan",
+    "//": "u = avatar.  pf_threat = hostile monsters you can see within 20 tiles + any hostile monster within 3 (seen or not, it's at the door) + hostile NPCs within 20.  0 means calm.  (characters_nearby ignores monsters; monsters_nearby ignores walls, so on its own it would cancel every evening next to a zombie pit.)",
+    "effect": [
+      { "math": [ "pf_threat = u_monsters_nearby('radius': 3) + u_characters_nearby('radius': 20, 'attitude': 'hostile')" ] },
+      { "u_run_monster_eocs": [ "PF_THREAT_seen" ], "monster_range": 20, "monster_must_see": true }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_THREAT_seen",
+    "//": "u = a monster you can see.  It counts itself in monsters_nearby at radius 0 only if it is hostile to you.",
+    "condition": { "math": [ "u_monsters_nearby('radius': 0) > 0" ] },
+    "effect": [ { "math": [ "pf_threat += 1" ] } ]
+  }
+]

@@ -62,6 +62,14 @@ code { background: var(--chip); padding: 0.05em 0.35em; border-radius: 3px; over
 .hero .kicker { font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; color: #7fd3d6; margin: 0 0 10px; }
 .hero p.lede { max-width: 66ch; margin: 14px 0 0; font-size: 1.12rem; color: #c7dbe3; }
 .facts { display: flex; flex-wrap: wrap; gap: 10px 26px; margin: 22px 0 0; padding: 0; list-style: none; font-family: var(--font-mono); font-size: 0.8rem; color: #9ec2cc; }
+.dl { margin: 26px 0 0; padding: 18px 20px; border: 1px solid #2c4a52; border-radius: 8px; background: #0f1a24; display: grid; gap: 10px; max-width: 640px; }
+.dl-btn { display: inline-flex; align-items: center; gap: 10px; justify-self: start; padding: 12px 20px; border-radius: 6px; background: #f2d264; color: #1a1406; font-family: var(--font-display); font-weight: 700; font-size: 1.08rem; text-decoration: none; }
+.dl-btn:hover { background: #ffe08a; }
+.dl-btn:focus-visible { outline: 2px solid #f2d264; outline-offset: 3px; }
+.dl-btn svg { width: 20px; height: 20px; flex: none; }
+.dl p { margin: 0; font-size: 0.92rem; color: #b3cbd4; }
+.dl .meta { font-family: var(--font-mono); font-size: 0.76rem; color: #8fb2bc; letter-spacing: 0.02em; }
+.dl a:not(.dl-btn) { color: #7fd3d6; }
 .facts b { display: block; font-family: var(--font-display); font-size: 1.5rem; color: #f2d264; font-weight: 700; font-variant-numeric: tabular-nums; }
 
 /* page */
@@ -154,6 +162,12 @@ footer { margin-top: 56px; padding-top: 16px; border-top: 1px solid var(--line);
         <li><b>8</b>versions, v0.1 to v0.8</li>
         <li><b>183</b>game days in the full test run</li>
       </ul>
+      <div class="dl" id="download">
+        <a class="dl-btn" href="https://github.com/Zexonis/CddaPeopleFirst/releases/download/v0.8/cdda-0.I-people-first-0.8-windows-x64.zip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>Download for Windows (x64)</a>
+        <p class="meta">v0.8 &middot; zip, 308 MB &middot; 64-bit Windows 10 or 11</p>
+        <p>The whole game, ready to play: Cataclysm: DDA 0.I "Ito" with People First built in. Unzip it anywhere, run <code>cataclysm-tiles.exe</code>, and create a world: the mod is already ticked. Windows only for now. On macOS or Linux, the <code>people_first</code> mod still runs on the official 0.I game, without the engine extras.</p>
+        <p><a href="https://github.com/Zexonis/CddaPeopleFirst/releases">All releases</a> &middot; <a href="https://github.com/Zexonis/CddaPeopleFirst">Source and engine patches on GitHub</a></p>
+      </div>
     </div>
   </div>
 </header>
@@ -182,6 +196,7 @@ footer { margin-top: 56px; padding-top: 16px; border-top: 1px solid var(--line);
       <li><a href="#tested">How it was tested</a></li>
       <li><a href="#limits">Known gaps</a></li>
       <li><a href="#files">For developers</a></li>
+      <li><a href="#credits">Credits and license</a></li>
     </ol>
   </details>
 </nav>
@@ -219,13 +234,14 @@ footer { margin-top: 56px; padding-top: 16px; border-top: 1px solid var(--line);
 
 <section id="install">
   <h2>Getting started</h2>
-  <p>People First has two parts, and they work together:</p>
+  <div class="note"><strong>To play on Windows (x64):</strong> <a href="https://github.com/Zexonis/CddaPeopleFirst/releases/download/v0.8/cdda-0.I-people-first-0.8-windows-x64.zip">download the zip</a>, unzip it anywhere, and run <code>cataclysm-tiles.exe</code>. It opens on the campfire title. Choose New Game, then Create World: People First and People First: Engine are already in the world's mod list. The Evacuee scenario is the one the mod was tested with. Press <code>,</code> in game to open the People menu.</div>
+  <p>The download is the official 0.I "Ito" game with four changes: the executable is built from the 0.I source (commit <code>27939e2</code>) with the fork's 25 patches; both mods are in <code>data/mods/</code>; new worlds include them by default; and the People key and title screen are installed. Other mods and existing 0.I saves work as in the official build. It has no saves or settings of its own, so keep it in a separate folder from any other copy of the game. The first start takes a little longer while the game builds its data cache.</p>
+  <p>People First has two parts:</p>
   <ul>
-    <li><strong>People First</strong> (<code>people_first</code>) is the mod itself: pure JSON and effect-on-condition scripts. It loads on a stock 0.I game.</li>
-    <li><strong>People First: Engine</strong> (<code>people_first_engine</code>) is a small companion mod that needs the patched executable, <code>cataclysm-tiles-pf.exe</code>, built from the 0.I "Ito" source (commit <code>27939e2</code>) with the fork's 25 patches. It turns on the features JSON can't reach: naming children, the full shared meal, rotten-food checks.</li>
+    <li><strong>People First</strong> (<code>people_first</code>) is the mod itself: pure JSON and effect-on-condition scripts. It loads on a stock 0.I game on any system, including macOS and Linux.</li>
+    <li><strong>People First: Engine</strong> (<code>people_first_engine</code>) is a small companion mod that needs the patched executable. It turns on the features JSON can't reach: naming children, the full shared meal, rotten-food checks. For now the patched executable is built for 64-bit Windows only.</li>
   </ul>
-  <div class="note"><strong>To play:</strong> double-click <code>Play People First.cmd</code> in the project folder. It clears the mod cache and starts the patched build, which opens on the campfire title. Choose New Game in the world called <em>People First</em>, which already has the full mod list. The Evacuee scenario is the one the mod was tested with.</div>
-  <p>The tested mod list is <code>dda</code>, <code>no_npc_food</code>, <code>personal_portal_storms</code>, <code>mindovermatter</code>, <code>xedra_evolved</code>, <code>people_first</code> and <code>people_first_engine</code>. Only <code>dda</code> is required. Press <code>,</code> in game to open the People menu.</p>
+  <p>The tested mod list is <code>dda</code>, <code>no_npc_food</code>, <code>personal_portal_storms</code>, <code>mindovermatter</code>, <code>xedra_evolved</code>, <code>people_first</code> and <code>people_first_engine</code>. Only <code>dda</code> is required.</p>
 </section>
 
 <section id="how">
@@ -638,10 +654,22 @@ footer { margin-top: 56px; padding-top: 16px; border-top: 1px solid var(--line);
     <li>15 terrain transforms (field, wall, graves) and 8 dialogue topics.</li>
     <li>2 items: the carved keepsake and the sack of supplies.</li>
   </ul>
-  <p>Hidden test labs (Settings: Test labs) can trigger every system on demand. The design history is in <code>design/people-first-concept.md</code>, and the full run is logged in <code>design/fullrun-2026-10-12.md</code>.</p>
+  <p>Hidden test labs (Settings: Test labs) can trigger every system on demand.</p>
+  <p>The <a href="https://github.com/Zexonis/CddaPeopleFirst">GitHub repository</a> holds the mod sources (<code>mods/</code>), the generators (<code>tools/</code>), and the engine patch set (<code>engine/</code>): <code>apply_patches.py</code> applies all 25 patches to a 0.I source checkout, <code>people-first.patch</code> is the full diff, and <code>build.ps1</code> builds the executable with Visual Studio and vcpkg. <code>tools/make_release.py</code> builds the download.</p>
 </section>
 
-<footer>People First, by lexator300. A fork of Cataclysm: Dark Days Ahead 0.I "Ito". "Nobody makes it alone."</footer>
+<section id="credits">
+  <h2>Credits and license</h2>
+  <ul>
+    <li><strong>Cataclysm: Dark Days Ahead</strong> is made by <a href="https://github.com/CleverRaven/Cataclysm-DDA">CleverRaven and its contributors</a>. People First builds on the 0.I "Ito" stable release, and the download contains that game with its art, sound, fonts and bundled mods. Everything in this fork that isn't People First is their work.</li>
+    <li><strong>People First</strong> (the mods, the engine patches and the tools) is by lexator300. It is shared under the same license as the game, <a href="https://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0</a>. The engine patches are published in full in the <a href="https://github.com/Zexonis/CddaPeopleFirst/tree/main/engine">repository's engine folder</a>.</li>
+    <li>The game's fonts keep their own licenses: Terminus under the SIL Open Font License, and GNU Unifont under the SIL OFL and the GPL with the font embedding exception. See <code>LICENSE.txt</code> in the download.</li>
+    <li>The mods it was tested with (Mind Over Matter, Xedra Evolved, No NPC Food and Personal Portal Storms) ship with the game and are by their own authors.</li>
+    <li>This guide uses the Bitter, Source Serif 4 and IBM Plex Mono typefaces (SIL Open Font License), served by Google Fonts.</li>
+  </ul>
+</section>
+
+<footer>People First, by lexator300. A fork of Cataclysm: Dark Days Ahead 0.I "Ito", by CleverRaven and contributors. <a href="https://github.com/Zexonis/CddaPeopleFirst">GitHub</a>. "Nobody makes it alone."</footer>
 </main>
 </div>
 

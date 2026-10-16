@@ -1,0 +1,713 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HEART_fire",
+    "//": "u = avatar, during the evening (after the romance beat).  Couples at the fire move along: sweethearts become partners, partners propose, and couples who have soured break up.  At most two such scenes a night.",
+    "effect": [
+      { "math": [ "pf_ht_done = 0" ] },
+      { "math": [ "pf_fi = 0" ] },
+      {
+        "run_eocs": "PF_HEART_fire_i",
+        "condition": { "and": [ { "math": [ "pf_fi < pf_fire_n" ] }, { "math": [ "pf_ht_done < 2" ] } ] },
+        "iterations": 10
+      },
+      { "run_eocs": "PF_HEART_avatar_left_check" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HEART_fire_i",
+    "effect": [
+      { "set_string_var": "pf_fire_c_<global_val:pf_fi>", "target_var": { "context_val": "ri" }, "parse_tags": true },
+      { "run_eocs": "PF_HEART_fire_one", "alpha_talker": { "var_val": "ri" } },
+      { "math": [ "pf_fi += 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HEART_fire_one",
+    "//": "u = someone at the fire who is in a relationship.  If their partner is here too, look at the relationship through their eyes.",
+    "condition": {
+      "and": [
+        { "math": [ "value_or(u_pf_has_sweet, 0) == 1" ] },
+        { "math": [ "value_or(u_pf_ht_beat, -1) != pf_beat_id" ] },
+        { "not": { "u_has_trait": "PF_CHILD" } }
+      ]
+    },
+    "effect": [
+      { "copy_var": { "u_val": "pf_sweet" }, "target_var": { "global_val": "pf_ht_s" } },
+      { "math": [ "pf_ht_sj = -9" ] },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_fire_n > 0" ] },
+            { "compare_string": [ { "global_val": "pf_ht_s" }, { "global_val": "pf_fire_u_0" } ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_ht_sj = 0" ] } ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_fire_n > 1" ] },
+            { "compare_string": [ { "global_val": "pf_ht_s" }, { "global_val": "pf_fire_u_1" } ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_ht_sj = 1" ] } ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_fire_n > 2" ] },
+            { "compare_string": [ { "global_val": "pf_ht_s" }, { "global_val": "pf_fire_u_2" } ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_ht_sj = 2" ] } ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_fire_n > 3" ] },
+            { "compare_string": [ { "global_val": "pf_ht_s" }, { "global_val": "pf_fire_u_3" } ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_ht_sj = 3" ] } ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_fire_n > 4" ] },
+            { "compare_string": [ { "global_val": "pf_ht_s" }, { "global_val": "pf_fire_u_4" } ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_ht_sj = 4" ] } ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_fire_n > 5" ] },
+            { "compare_string": [ { "global_val": "pf_ht_s" }, { "global_val": "pf_fire_u_5" } ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_ht_sj = 5" ] } ]
+      },
+      {
+        "if": { "and": [ { "math": [ "pf_fire_av_here" ] }, { "compare_string": [ { "global_val": "pf_ht_s" }, "AVATAR" ] } ] },
+        "then": [ { "math": [ "pf_ht_sj = -1" ] } ]
+      },
+      {
+        "if": { "math": [ "pf_ht_sj != -9" ] },
+        "then": [
+          { "math": [ "u_pf_ht_beat = pf_beat_id" ] },
+          { "copy_var": { "global_val": "pf_ht_s" }, "target_var": { "global_val": "pf_m_other" } },
+          { "run_eocs": "PF_VIEW_read" },
+          { "math": [ "pf_ht_aw = pf_read_w" ] },
+          { "math": [ "pf_ht_at = pf_read_t" ] },
+          { "math": [ "pf_ht_aa = pf_read_a" ] },
+          { "math": [ "pf_ht_ax = pf_read_x" ] },
+          {
+            "if": { "math": [ "pf_ht_sj == -1" ] },
+            "then": [ { "run_eocs": "PF_HEART_couple", "beta_talker": "avatar" } ],
+            "else": [
+              { "set_string_var": "pf_fire_c_<global_val:pf_ht_sj>", "target_var": { "context_val": "rj" }, "parse_tags": true },
+              { "run_eocs": "PF_HEART_couple", "beta_talker": { "var_val": "rj" } }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HEART_couple",
+    "//": "Alpha = one partner (whose view was just read into pf_ht_a*), beta = the other (an NPC at the fire, or you).  Breakup if tension passes 35 + 15 per stage, attraction falls under 25 - 5 per stage, or warmth under 10 (married couples hold on longest).  Otherwise sweethearts of a week with warmth and attraction 45+ become partners, and partners of two weeks with warmth 65+, trust 55+ and attraction 55+ propose (never the wandering-eyed).",
+    "effect": [
+      { "math": [ "pf_ht_st = value_or(u_pf_rel_stage, 1)" ] },
+      { "math": [ "pf_ht_before = pf_ht_done" ] },
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+      { "set_string_var": "<npc_name>", "target_var": { "global_val": "pf_say_b" }, "parse_tags": true },
+      {
+        "if": {
+          "and": [
+            { "math": [ "value_or(pf_set_jealousy, 1) == 1" ] },
+            {
+              "or": [
+                { "math": [ "pf_ht_ax >= 35 + 15 * pf_ht_st" ] },
+                { "math": [ "pf_ht_aa < 25 - 5 * pf_ht_st" ] },
+                { "math": [ "pf_ht_aw < 10" ] }
+              ]
+            }
+          ]
+        },
+        "then": [ { "math": [ "pf_ht_done += 1" ] }, { "run_eocs": "PF_HEART_breakup" } ],
+        "else": [
+          {
+            "if": {
+              "and": [
+                { "math": [ "pf_ht_st == 1" ] },
+                { "math": [ "time_since(u_pf_sweet_since) >= time('7 d')" ] },
+                { "math": [ "pf_ht_aw >= 45" ] },
+                { "math": [ "pf_ht_aa >= 45" ] }
+              ]
+            },
+            "then": [ { "math": [ "pf_ht_done += 1" ] }, { "run_eocs": "PF_HEART_partnered" } ],
+            "else": [
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "pf_ht_st == 2" ] },
+                    { "math": [ "time_since(value_or(u_pf_stage_since, 0)) >= time('14 d')" ] },
+                    { "math": [ "pf_ht_aw >= 65" ] },
+                    { "math": [ "pf_ht_at >= 55" ] },
+                    { "math": [ "pf_ht_aa >= 55" ] },
+                    { "math": [ "value_or(u_pf_commit, 1) != 3" ] },
+                    { "math": [ "value_or(u_pf_engaged, 0) == 0" ] },
+                    {
+                      "or": [ { "math": [ "time_since(u_pf_prop_last) < 0" ] }, { "math": [ "time_since(u_pf_prop_last) > time('14 d')" ] } ]
+                    }
+                  ]
+                },
+                "then": [
+                  { "math": [ "pf_ht_done += 1" ] },
+                  { "math": [ "u_pf_prop_last = time('now')" ] },
+                  { "run_eocs": "PF_HEART_propose" }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_ht_done > pf_ht_before" ] },
+        "then": [ { "math": [ "n_pf_ht_beat = pf_beat_id" ] } ],
+        "else": [ { "run_eocs": "PF_FAM_try_conceive" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HEART_partnered",
+    "//": "Alpha and beta stop pretending: partners now.",
+    "effect": [
+      { "math": [ "u_pf_rel_stage = 2" ] },
+      { "math": [ "n_pf_rel_stage = 2" ] },
+      { "math": [ "u_pf_stage_since = time('now')" ] },
+      { "math": [ "n_pf_stage_since = time('now')" ] },
+      {
+        "if": "npc_is_avatar",
+        "then": [ { "run_eocs": "PF_SAY_heart", "alpha_talker": "avatar", "variables": { "line": "partner_you" } } ],
+        "else": [ { "run_eocs": "PF_SAY_heart", "alpha_talker": "avatar", "variables": { "line": "partner_npc" } } ]
+      },
+      { "run_eocs": "PF_MK_partnered" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HEART_propose",
+    "//": "Alpha proposes to beta.  To you it's a conversation; between NPCs the other answers from their own heart.",
+    "effect": [
+      {
+        "if": "npc_is_avatar",
+        "then": [
+          {
+            "if": { "math": [ "value_or(pf_set_romance, 2) == 2" ] },
+            "then": [
+              { "u_set_talker": { "global_val": "pf_prop_who" } },
+              { "run_eocs": "PF_HEART_open_propose", "alpha_talker": "avatar", "beta_talker": "u" }
+            ]
+          }
+        ],
+        "else": [
+          { "run_eocs": "PF_HEART_answer_npc", "alpha_talker": "npc", "beta_talker": "u" },
+          {
+            "if": { "math": [ "pf_ht_yes == 1" ] },
+            "then": [
+              { "run_eocs": "PF_HEART_engage" },
+              { "run_eocs": "PF_SAY_heart", "alpha_talker": "avatar", "variables": { "line": "engaged_npc" } }
+            ],
+            "else": [
+              { "run_eocs": "PF_SAY_heart", "alpha_talker": "avatar", "variables": { "line": "prop_no_npc" } },
+              { "run_eocs": "PF_MK_proposal_declined", "alpha_talker": "npc", "beta_talker": "u" }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HEART_answer_npc",
+    "//": "u = the one being proposed to, npc = the one proposing.",
+    "effect": [
+      { "copy_var": { "npc_val": "pf_uid" }, "target_var": { "global_val": "pf_m_other" } },
+      { "run_eocs": "PF_VIEW_read" },
+      {
+        "math": [ "pf_ht_yes = (pf_read_w >= 60) * (pf_read_a >= 50) * (pf_read_t >= 50) * (value_or(u_pf_commit, 1) != 3)" ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HEART_engage",
+    "//": "Alpha and beta are engaged.  The wedding is a whole evening of its own, from a day later, on the first calm night (PF_HEART_wedding_try).",
+    "effect": [
+      { "math": [ "u_pf_engaged = 1" ] },
+      { "math": [ "n_pf_engaged = 1" ] },
+      { "math": [ "u_pf_wed_t = time('now') + time('1 d')" ] },
+      { "math": [ "n_pf_wed_t = time('now') + time('1 d')" ] },
+      { "math": [ "pf_engagements_total = value_or(pf_engagements_total, 0) + 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HEART_wedding_try",
+    "//": "u = you, at the start of the evening (after a remembrance would have claimed it).  If an engaged couple is at the fire and the day has come, tonight is their wedding.",
+    "condition": { "math": [ "pf_fire_service == 0" ] },
+    "effect": [
+      { "math": [ "pf_fi = 0" ] },
+      { "math": [ "pf_fire_wedding = 0" ] },
+      {
+        "run_eocs": "PF_HEART_wed_try_i",
+        "condition": { "and": [ { "math": [ "pf_fi < pf_fire_n" ] }, { "math": [ "pf_fire_wedding == 0" ] } ] },
+        "iterations": 10
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HEART_wed_try_i",
+    "effect": [
+      { "set_string_var": "pf_fire_c_<global_val:pf_fi>", "target_var": { "context_val": "ri" }, "parse_tags": true },
+      { "run_eocs": "PF_HEART_wed_try_one", "alpha_talker": { "var_val": "ri" } },
+      { "math": [ "pf_fi += 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HEART_wed_try_one",
+    "condition": {
+      "and": [
+        { "math": [ "value_or(u_pf_engaged, 0) == 1" ] },
+        { "math": [ "value_or(u_pf_has_sweet, 0) == 1" ] },
+        { "math": [ "time('now') >= value_or(u_pf_wed_t, 0)" ] },
+        { "not": { "math": [ "time('now') < value_or(u_pf_mourn_until, 0)" ] } }
+      ]
+    },
+    "effect": [
+      { "copy_var": { "u_val": "pf_sweet" }, "target_var": { "global_val": "pf_ht_s" } },
+      { "math": [ "pf_ht_sj = -9" ] },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_fire_n > 0" ] },
+            { "compare_string": [ { "global_val": "pf_ht_s" }, { "global_val": "pf_fire_u_0" } ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_ht_sj = 0" ] } ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_fire_n > 1" ] },
+            { "compare_string": [ { "global_val": "pf_ht_s" }, { "global_val": "pf_fire_u_1" } ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_ht_sj = 1" ] } ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_fire_n > 2" ] },
+            { "compare_string": [ { "global_val": "pf_ht_s" }, { "global_val": "pf_fire_u_2" } ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_ht_sj = 2" ] } ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_fire_n > 3" ] },
+            { "compare_string": [ { "global_val": "pf_ht_s" }, { "global_val": "pf_fire_u_3" } ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_ht_sj = 3" ] } ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_fire_n > 4" ] },
+            { "compare_string": [ { "global_val": "pf_ht_s" }, { "global_val": "pf_fire_u_4" } ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_ht_sj = 4" ] } ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_fire_n > 5" ] },
+            { "compare_string": [ { "global_val": "pf_ht_s" }, { "global_val": "pf_fire_u_5" } ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_ht_sj = 5" ] } ]
+      },
+      {
+        "if": { "and": [ { "math": [ "pf_fire_av_here" ] }, { "compare_string": [ { "global_val": "pf_ht_s" }, "AVATAR" ] } ] },
+        "then": [ { "math": [ "pf_ht_sj = -1" ] } ]
+      },
+      {
+        "if": { "math": [ "pf_ht_sj == -1" ] },
+        "then": [ { "math": [ "pf_fire_wedding = 1" ] }, { "run_eocs": "PF_HEART_ceremony", "beta_talker": "avatar" } ]
+      },
+      {
+        "if": { "math": [ "pf_ht_sj >= 0" ] },
+        "then": [
+          { "math": [ "pf_fire_wedding = 1" ] },
+          {
+            "set_string_var": "pf_fire_c_<global_val:pf_ht_sj>",
+            "target_var": { "context_val": "rj" },
+            "parse_tags": true
+          },
+          { "run_eocs": "PF_HEART_ceremony", "beta_talker": { "var_val": "rj" } }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HEART_ceremony",
+    "//": "Alpha and beta marry, and the evening is theirs: no ordinary activities tonight.",
+    "effect": [
+      { "math": [ "u_pf_engaged = 0" ] },
+      { "math": [ "n_pf_engaged = 0" ] },
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+      { "set_string_var": "<npc_name>", "target_var": { "global_val": "pf_say_b" }, "parse_tags": true },
+      { "run_eocs": "PF_HEART_wed" },
+      {
+        "if": "npc_is_avatar",
+        "then": [
+          { "run_eocs": "PF_SAY_heart", "alpha_talker": "avatar", "variables": { "line": "wedding_you" } },
+          { "run_eocs": "PF_HEART_wed_morale", "alpha_talker": "avatar" }
+        ],
+        "else": [ { "run_eocs": "PF_SAY_heart", "alpha_talker": "avatar", "variables": { "line": "wedding_npc" } } ]
+      },
+      { "run_eocs": "PF_SAY_heart", "alpha_talker": "avatar", "variables": { "line": "wedding_feast" } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HEART_wed_morale",
+    "effect": [ { "u_add_morale": "PF_morale_wed", "bonus": 20, "max_bonus": 30, "duration": "3 d", "decay_start": "1 d" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HEART_wed",
+    "//": "Alpha and beta marry.  Strength 85: everyone who sees it remembers it (witnesses), and the spine slows their drift from now on.",
+    "effect": [
+      { "math": [ "u_pf_rel_stage = 3" ] },
+      { "math": [ "n_pf_rel_stage = 3" ] },
+      { "math": [ "u_pf_stage_since = time('now')" ] },
+      { "math": [ "n_pf_stage_since = time('now')" ] },
+      { "math": [ "pf_m_str_in = 85" ] },
+      { "run_eocs": "PF_MK_wedding" },
+      { "math": [ "pf_weddings_total = value_or(pf_weddings_total, 0) + 1" ] },
+      { "set_string_var": "wed", "target_var": { "global_val": "pf_ev_new_kind" } },
+      {
+        "set_string_var": "<u_name> and <npc_name>",
+        "target_var": { "global_val": "pf_ev_new_name" },
+        "parse_tags": true
+      },
+      { "math": [ "pf_ev_new_you = 0" ] },
+      {
+        "if": "u_is_avatar",
+        "then": [
+          { "math": [ "pf_ev_new_you = 1" ] },
+          { "set_string_var": "<npc_name>", "target_var": { "global_val": "pf_ev_new_youname" }, "parse_tags": true }
+        ]
+      },
+      {
+        "if": "npc_is_avatar",
+        "then": [
+          { "math": [ "pf_ev_new_you = 1" ] },
+          { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_ev_new_youname" }, "parse_tags": true }
+        ]
+      },
+      { "run_eocs": "PF_HEART_event_add" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HEART_open_propose",
+    "//": "Alpha = you.  The proposer is in pf_prop_who (a topic dialogue talks to an empty talker).",
+    "effect": [ { "open_dialogue": { "topic": "TALK_PF_PROPOSE" } } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HEART_you_yes",
+    "//": "In the proposal dialogue: u = you, npc = them (via pf_prop_who).",
+    "effect": [
+      { "run_eocs": "PF_HEART_engage", "alpha_talker": "npc", "beta_talker": "u" },
+      { "u_add_morale": "PF_morale_wed", "bonus": 10, "max_bonus": 20, "duration": "2 d", "decay_start": "1 d" },
+      { "run_eocs": "PF_SAY_heart", "alpha_talker": "avatar", "variables": { "line": "engaged_you" } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HEART_you_notyet",
+    "effect": [
+      { "run_eocs": "PF_MK_proposal_declined", "beta_talker": "npc" },
+      { "u_message": "<global_val:pf_say_a> nods.  \"Okay.  I can wait.\"", "type": "info" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HEART_you_no",
+    "effect": [
+      { "math": [ "pf_m_str_in = 60" ] },
+      { "run_eocs": "PF_MK_proposal_declined", "beta_talker": "npc" },
+      {
+        "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+        "then": [ { "u_message": "<global_val:pf_say_a> looks at the floor for a long time.  \"Right.  Okay.\"", "type": "bad" } ],
+        "else": [ { "u_message": "<global_val:pf_say_a> looks at the fire for a long time.  \"Right.  Okay.\"", "type": "bad" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HEART_breakup",
+    "//": "Alpha ends it with beta.  Both remember who it was (u_pf_ex); awkward for five days.  Reconciliation needs nothing special: if attraction survives, the usual confession can happen again.",
+    "effect": [
+      { "copy_var": { "npc_val": "pf_uid" }, "target_var": { "u_val": "pf_ex" } },
+      { "copy_var": { "u_val": "pf_uid" }, "target_var": { "npc_val": "pf_ex" } },
+      { "math": [ "u_pf_has_sweet = 0" ] },
+      { "math": [ "n_pf_has_sweet = 0" ] },
+      { "math": [ "u_pf_rel_stage = 0" ] },
+      { "math": [ "n_pf_rel_stage = 0" ] },
+      { "math": [ "u_pf_awk_until = time('now') + time('5 d')" ] },
+      { "math": [ "n_pf_awk_until = time('now') + time('5 d')" ] },
+      { "set_string_var": "none", "target_var": { "u_val": "pf_sweet" } },
+      { "set_string_var": "none", "target_var": { "npc_val": "pf_sweet" } },
+      { "run_eocs": "PF_MK_breakup" },
+      {
+        "if": "npc_is_avatar",
+        "then": [
+          { "run_eocs": "PF_SAY_heart", "alpha_talker": "avatar", "variables": { "line": "breakup_you" } },
+          { "run_eocs": "PF_HEART_heartbreak", "alpha_talker": "avatar" }
+        ],
+        "else": [ { "run_eocs": "PF_SAY_heart", "alpha_talker": "avatar", "variables": { "line": "breakup_npc" } } ]
+      },
+      { "math": [ "pf_breakups_total = value_or(pf_breakups_total, 0) + 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HEART_heartbreak",
+    "//": "u = whoever's heart just broke.",
+    "effect": [ { "u_add_morale": "PF_morale_heartbreak", "bonus": -15, "max_bonus": -25, "duration": "2 d", "decay_start": "1 d" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HEART_avatar_left_check",
+    "//": "u = you.  If the one you think you're with is at the fire and has moved on (with someone else, or with no one), it's over, and tonight everyone can see it.",
+    "condition": { "math": [ "value_or(u_pf_has_sweet, 0) == 1" ] },
+    "effect": [
+      { "copy_var": { "u_val": "pf_sweet" }, "target_var": { "global_val": "pf_ht_s" } },
+      { "math": [ "pf_ht_sj = -9" ] },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_fire_n > 0" ] },
+            { "compare_string": [ { "global_val": "pf_ht_s" }, { "global_val": "pf_fire_u_0" } ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_ht_sj = 0" ] } ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_fire_n > 1" ] },
+            { "compare_string": [ { "global_val": "pf_ht_s" }, { "global_val": "pf_fire_u_1" } ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_ht_sj = 1" ] } ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_fire_n > 2" ] },
+            { "compare_string": [ { "global_val": "pf_ht_s" }, { "global_val": "pf_fire_u_2" } ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_ht_sj = 2" ] } ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_fire_n > 3" ] },
+            { "compare_string": [ { "global_val": "pf_ht_s" }, { "global_val": "pf_fire_u_3" } ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_ht_sj = 3" ] } ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_fire_n > 4" ] },
+            { "compare_string": [ { "global_val": "pf_ht_s" }, { "global_val": "pf_fire_u_4" } ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_ht_sj = 4" ] } ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_fire_n > 5" ] },
+            { "compare_string": [ { "global_val": "pf_ht_s" }, { "global_val": "pf_fire_u_5" } ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_ht_sj = 5" ] } ]
+      },
+      {
+        "if": { "and": [ { "math": [ "pf_fire_av_here" ] }, { "compare_string": [ { "global_val": "pf_ht_s" }, "AVATAR" ] } ] },
+        "then": [ { "math": [ "pf_ht_sj = -1" ] } ]
+      },
+      {
+        "if": { "math": [ "pf_ht_sj >= 0" ] },
+        "then": [
+          { "set_string_var": "pf_fire_c_<global_val:pf_ht_sj>", "target_var": { "context_val": "rj" }, "parse_tags": true },
+          { "run_eocs": "PF_HEART_left_you", "alpha_talker": { "var_val": "rj" }, "beta_talker": "avatar" }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HEART_left_you",
+    "//": "Alpha = the one who moved on, beta = you.",
+    "condition": {
+      "or": [
+        { "math": [ "value_or(u_pf_has_sweet, 0) == 0" ] },
+        { "not": { "compare_string": [ { "u_val": "pf_sweet" }, "AVATAR" ] } }
+      ]
+    },
+    "effect": [
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+      { "math": [ "n_pf_has_sweet = 0" ] },
+      { "math": [ "n_pf_rel_stage = 0" ] },
+      { "set_string_var": "none", "target_var": { "npc_val": "pf_sweet" } },
+      { "copy_var": { "u_val": "pf_uid" }, "target_var": { "npc_val": "pf_ex" } },
+      { "run_eocs": "PF_MK_breakup" },
+      {
+        "if": { "math": [ "value_or(u_pf_has_sweet, 0) == 1" ] },
+        "then": [
+          { "copy_var": { "u_val": "pf_sweet" }, "target_var": { "global_val": "pf_ht_new" } },
+          {
+            "set_string_var": "pf_name_<global_val:pf_ht_new>",
+            "target_var": { "context_val": "nref" },
+            "parse_tags": true
+          },
+          { "copy_var": { "var_val": "nref" }, "target_var": { "global_val": "pf_say_b" } },
+          { "run_eocs": "PF_SAY_heart", "alpha_talker": "avatar", "variables": { "line": "left_you_for" } }
+        ],
+        "else": [ { "run_eocs": "PF_SAY_heart", "alpha_talker": "avatar", "variables": { "line": "left_you" } } ]
+      },
+      { "run_eocs": "PF_HEART_heartbreak", "alpha_talker": "avatar" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HEART_you_propose",
+    "//": "u = you, npc = your partner.  They answer from their own heart (warmth 60+, attraction 50+, trust 50+; the wandering-eyed never).",
+    "effect": [
+      { "run_eocs": "PF_HEART_answer_npc", "alpha_talker": "npc", "beta_talker": "u" },
+      { "set_string_var": "<npc_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+      {
+        "if": { "math": [ "pf_ht_yes == 1" ] },
+        "then": [
+          { "run_eocs": "PF_HEART_engage" },
+          { "u_add_morale": "PF_morale_wed", "bonus": 10, "max_bonus": 20, "duration": "2 d", "decay_start": "1 d" },
+          {
+            "u_message": "<npc_name> laughs, and cries a little, and says yes.  The wedding will be the first quiet evening after tomorrow.",
+            "type": "good"
+          }
+        ],
+        "else": [
+          { "run_eocs": "PF_MK_proposal_declined", "alpha_talker": "npc", "beta_talker": "u" },
+          { "run_eocs": "PF_HEART_why_not", "alpha_talker": "npc" }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HEART_why_not",
+    "effect": [
+      {
+        "if": { "math": [ "value_or(u_pf_commit, 1) == 3" ] },
+        "then": [ { "run_eocs": "PF_SAY_heart", "alpha_talker": "avatar", "variables": { "line": "prop_wander" } } ],
+        "else": [ { "run_eocs": "PF_SAY_heart", "alpha_talker": "avatar", "variables": { "line": "prop_notyet" } } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HEART_you_end",
+    "//": "u = you, npc = the one you're with.  How it lands depends on how they still feel.",
+    "effect": [
+      { "run_eocs": "PF_HEART_their_side", "alpha_talker": "npc" },
+      { "set_string_var": "<npc_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+      { "copy_var": { "npc_val": "pf_uid" }, "target_var": { "u_val": "pf_ex" } },
+      { "copy_var": { "u_val": "pf_uid" }, "target_var": { "npc_val": "pf_ex" } },
+      { "math": [ "u_pf_has_sweet = 0" ] },
+      { "math": [ "n_pf_has_sweet = 0" ] },
+      { "math": [ "u_pf_rel_stage = 0" ] },
+      { "math": [ "n_pf_rel_stage = 0" ] },
+      { "math": [ "n_pf_awk_until = time('now') + time('7 d')" ] },
+      { "set_string_var": "none", "target_var": { "u_val": "pf_sweet" } },
+      { "set_string_var": "none", "target_var": { "npc_val": "pf_sweet" } },
+      { "run_eocs": "PF_MK_breakup", "beta_talker": "npc" },
+      {
+        "if": { "math": [ "pf_ht_aa >= 50" ] },
+        "then": [
+          { "u_message": "<npc_name> stares at you.  \"…Okay.\"  They walk away before you can see their face.", "type": "bad" },
+          { "run_eocs": "PF_HEART_heartbreak", "alpha_talker": "npc" }
+        ],
+        "else": [ { "u_message": "<npc_name> nods slowly.  \"Yeah.  I think I knew.\"", "type": "info" } ]
+      },
+      { "math": [ "pf_breakups_total = value_or(pf_breakups_total, 0) + 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HEART_their_side",
+    "//": "u = an NPC.  Their view of you into pf_ht_a*.",
+    "effect": [
+      { "set_string_var": "AVATAR", "target_var": { "global_val": "pf_m_other" } },
+      { "run_eocs": "PF_VIEW_read" },
+      { "math": [ "pf_ht_aw = pf_read_w" ] },
+      { "math": [ "pf_ht_aa = pf_read_a" ] },
+      { "math": [ "pf_ht_at = pf_read_t" ] }
+    ]
+  },
+  {
+    "type": "talk_topic",
+    "id": "TALK_PF_PROPOSE",
+    "dynamic_line": "*takes a breath*  I've been carrying this around for weeks.  Marry me.  Here, tonight, with everyone watching.  Or tell me to shut up.  Either way.",
+    "responses": [
+      {
+        "text": "Yes.",
+        "effect": { "run_eocs": "PF_HEART_you_yes", "alpha_talker": "avatar", "beta_talker": { "global_val": "pf_prop_who" } },
+        "topic": "TALK_DONE"
+      },
+      {
+        "text": "Not yet.  Ask me again.",
+        "effect": { "run_eocs": "PF_HEART_you_notyet", "alpha_talker": "avatar", "beta_talker": { "global_val": "pf_prop_who" } },
+        "topic": "TALK_DONE"
+      },
+      {
+        "text": "No.  I don't want that.",
+        "effect": { "run_eocs": "PF_HEART_you_no", "alpha_talker": "avatar", "beta_talker": { "global_val": "pf_prop_who" } },
+        "topic": "TALK_DONE"
+      }
+    ]
+  }
+]

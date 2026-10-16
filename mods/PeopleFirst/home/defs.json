@@ -1,0 +1,129 @@
+[
+  {
+    "type": "morale_type",
+    "id": "PF_morale_home",
+    "text": "An evening at home"
+  },
+  {
+    "type": "morale_type",
+    "id": "PF_morale_breakfast",
+    "text": "Breakfast at home"
+  },
+  {
+    "type": "npc",
+    "id": "PF_WANDERER",
+    "//": "A natural A-Life person (v0.4).  Mission 2 (shelter) turns off vanilla goal-seeking; A-Life and People First move them.",
+    "name_suffix": "wanderer",
+    "class": "NC_HUNTER",
+    "attitude": 0,
+    "mission": 2,
+    "chat": "TALK_PF_PERSON",
+    "faction": "no_faction"
+  },
+  {
+    "type": "npc",
+    "id": "PF_SETTLER",
+    "//": "A natural A-Life person in a family (v0.4).",
+    "class": "NC_SCAVENGER",
+    "attitude": 0,
+    "mission": 2,
+    "chat": "TALK_PF_PERSON",
+    "faction": "no_faction"
+  },
+  {
+    "type": "npc",
+    "id": "PF_SETTLER_F",
+    "//": "A family's mother (v0.7): PF_SETTLER, female.",
+    "gender": "female",
+    "class": "NC_SCAVENGER",
+    "attitude": 0,
+    "mission": 2,
+    "chat": "TALK_PF_PERSON",
+    "faction": "no_faction"
+  },
+  {
+    "type": "npc",
+    "id": "PF_SETTLER_M",
+    "//": "A family's other parent, usually (v0.7): PF_SETTLER, male.",
+    "gender": "male",
+    "class": "NC_SCAVENGER",
+    "attitude": 0,
+    "mission": 2,
+    "chat": "TALK_PF_PERSON",
+    "faction": "no_faction"
+  },
+  {
+    "type": "npc",
+    "id": "PF_KID",
+    "//": "A natural A-Life child (v0.4).  Tiny (SMALL2) and PF_CHILD (CANNOT_ATTACK) are added at spawn.  name_suffix: without one, the game shows a random profession after the name (v0.7: a child titled 'Convict').",
+    "name_suffix": "child",
+    "class": "NC_NONE",
+    "attitude": 0,
+    "mission": 2,
+    "chat": "TALK_PF_PERSON",
+    "faction": "no_faction"
+  },
+  {
+    "type": "talk_topic",
+    "id": "TALK_PF_PERSON",
+    "//": "v0.7 (concept 15.3): the line reads their state: a child's family (who they lost, who looks after them now), grief, a new roof, a partner, the road.",
+    "dynamic_line": {
+      "npc_has_trait": "PF_CHILD",
+      "yes": {
+        "math": [ "value_or(n_pf_orphaned, 0) == 1" ],
+        "yes": "*hugs their knees and won't look up*  Everyone's gone.  I stayed where they told me.  I stayed right here.",
+        "no": {
+          "math": [ "has_var(n_pf_lost_t) * (time('now') < value_or(n_pf_mourn_until, 0))" ],
+          "yes": {
+            "math": [ "value_or(n_pf_guard_you, 0) == 1" ],
+            "yes": "<npc_val:pf_lost_name> is gone.  *holds on to your sleeve*  You're staying, right?",
+            "no": {
+              "math": [ "has_var(n_pf_guard_name)" ],
+              "yes": "<npc_val:pf_lost_name> is gone.  <npc_val:pf_guard_name> looks after me now.",
+              "no": "<npc_val:pf_lost_name> is gone.  Nobody will tell me where."
+            }
+          },
+          "no": {
+            "math": [ "has_var(n_pf_lost_t) * (value_or(n_pf_lost_healed, 0) == 1)" ],
+            "yes": "I still miss <npc_val:pf_lost_name>.  But it's okay.  Mostly.",
+            "no": {
+              "math": [ "value_or(n_pf_resident, 0) == 1" ],
+              "yes": "Are we staying here forever?  I like it here.",
+              "no": "My family says not to talk to strangers.  Are you a stranger?"
+            }
+          }
+        }
+      },
+      "no": {
+        "math": [ "time('now') < value_or(n_pf_mourn_until, 0)" ],
+        "yes": "*doesn't quite meet your eyes*  Sorry.  It's been a hard few days.",
+        "no": {
+          "math": [ "value_or(n_pf_envoy, 0) == 1" ],
+          "yes": "I'm only here with a message.  Nothing personal.",
+          "no": {
+            "math": [ "value_or(n_pf_resident, 0) == 1" ],
+            "yes": {
+              "math": [ "time('now') - value_or(n_pf_resident_since, 0) < time('3 d')" ],
+              "yes": "Still getting used to a roof.  I keep waking up and listening for the dead.",
+              "no": {
+                "math": [ "value_or(n_pf_has_sweet, 0) == 1" ],
+                "yes": "It's good here.  We're good here.",
+                "no": "It's good to sleep under a roof again.  Thank you."
+              }
+            },
+            "no": {
+              "math": [ "value_or(n_pf_settled, 0) == 1" ],
+              "yes": "This is our place.  We don't want trouble.",
+              "no": {
+                "math": [ "time('now') - value_or(n_pf_hurt_t, -999999999) < time('3 d')" ],
+                "yes": "*favors one side*  Ran into the dead on the road.  I'll live.",
+                "no": "We keep moving.  It's safer that way."
+              }
+            }
+          }
+        }
+      }
+    },
+    "responses": [ { "text": "Take care of yourself.", "topic": "TALK_DONE" } ]
+  }
+]

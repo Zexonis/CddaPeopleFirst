@@ -1,0 +1,561 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ROM_fire_i",
+    "effect": [
+      { "set_string_var": "pf_fire_c_<global_val:pf_fi>", "target_var": { "context_val": "ri" }, "parse_tags": true },
+      { "run_eocs": "PF_ROM_fire_one", "alpha_talker": { "var_val": "ri" } },
+      { "math": [ "pf_fi += 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ROM_fire_one",
+    "//": "u = someone at the fire (a romantic adult, not feeling awkward).  Looks at who's here through their own eyes: if their sweetheart is here, the two sit apart together; if they've fallen hard (attraction 60+, warmth 35+) they confess, to you through a conversation or to another; if they're smitten (30+) they keep glancing over.  At most two romance beats per evening, so it stays special.",
+    "condition": {
+      "and": [
+        { "math": [ "value_or(u_pf_rom, 0) == 1" ] },
+        { "math": [ "value_or(u_pf_adult, 0) == 1" ] },
+        { "not": { "u_has_trait": "PF_CHILD" } },
+        { "math": [ "time('now') > value_or(u_pf_awk_until, 0)" ] },
+        { "math": [ "value_or(u_pf_rom_beat, -1) != pf_beat_id" ] },
+        { "not": { "math": [ "time('now') < value_or(u_pf_mourn_until, 0)" ] } }
+      ]
+    },
+    "effect": [
+      { "math": [ "pf_rom_best = 0" ] },
+      { "math": [ "pf_rom_bj = -9" ] },
+      { "math": [ "pf_rom_sj = -9" ] },
+      { "math": [ "pf_rom_bw = 0" ] },
+      {
+        "if": { "and": [ { "math": [ "pf_fire_n > 0" ] }, { "math": [ "pf_fi != 0" ] } ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_fire_u_0" }, "target_var": { "global_val": "pf_m_other" } },
+          { "run_eocs": "PF_VIEW_read" },
+          {
+            "if": { "math": [ "pf_read_a > pf_rom_best" ] },
+            "then": [
+              { "math": [ "pf_rom_best = pf_read_a" ] },
+              { "math": [ "pf_rom_bw = pf_read_w" ] },
+              { "math": [ "pf_rom_bj = 0" ] },
+              { "copy_var": { "global_val": "pf_fire_u_0" }, "target_var": { "global_val": "pf_rom_buid" } }
+            ]
+          },
+          {
+            "if": { "compare_string": [ { "u_val": "pf_sweet" }, { "global_val": "pf_fire_u_0" } ] },
+            "then": [ { "math": [ "pf_rom_sj = 0" ] } ]
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "math": [ "pf_fire_n > 1" ] }, { "math": [ "pf_fi != 1" ] } ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_fire_u_1" }, "target_var": { "global_val": "pf_m_other" } },
+          { "run_eocs": "PF_VIEW_read" },
+          {
+            "if": { "math": [ "pf_read_a > pf_rom_best" ] },
+            "then": [
+              { "math": [ "pf_rom_best = pf_read_a" ] },
+              { "math": [ "pf_rom_bw = pf_read_w" ] },
+              { "math": [ "pf_rom_bj = 1" ] },
+              { "copy_var": { "global_val": "pf_fire_u_1" }, "target_var": { "global_val": "pf_rom_buid" } }
+            ]
+          },
+          {
+            "if": { "compare_string": [ { "u_val": "pf_sweet" }, { "global_val": "pf_fire_u_1" } ] },
+            "then": [ { "math": [ "pf_rom_sj = 1" ] } ]
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "math": [ "pf_fire_n > 2" ] }, { "math": [ "pf_fi != 2" ] } ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_fire_u_2" }, "target_var": { "global_val": "pf_m_other" } },
+          { "run_eocs": "PF_VIEW_read" },
+          {
+            "if": { "math": [ "pf_read_a > pf_rom_best" ] },
+            "then": [
+              { "math": [ "pf_rom_best = pf_read_a" ] },
+              { "math": [ "pf_rom_bw = pf_read_w" ] },
+              { "math": [ "pf_rom_bj = 2" ] },
+              { "copy_var": { "global_val": "pf_fire_u_2" }, "target_var": { "global_val": "pf_rom_buid" } }
+            ]
+          },
+          {
+            "if": { "compare_string": [ { "u_val": "pf_sweet" }, { "global_val": "pf_fire_u_2" } ] },
+            "then": [ { "math": [ "pf_rom_sj = 2" ] } ]
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "math": [ "pf_fire_n > 3" ] }, { "math": [ "pf_fi != 3" ] } ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_fire_u_3" }, "target_var": { "global_val": "pf_m_other" } },
+          { "run_eocs": "PF_VIEW_read" },
+          {
+            "if": { "math": [ "pf_read_a > pf_rom_best" ] },
+            "then": [
+              { "math": [ "pf_rom_best = pf_read_a" ] },
+              { "math": [ "pf_rom_bw = pf_read_w" ] },
+              { "math": [ "pf_rom_bj = 3" ] },
+              { "copy_var": { "global_val": "pf_fire_u_3" }, "target_var": { "global_val": "pf_rom_buid" } }
+            ]
+          },
+          {
+            "if": { "compare_string": [ { "u_val": "pf_sweet" }, { "global_val": "pf_fire_u_3" } ] },
+            "then": [ { "math": [ "pf_rom_sj = 3" ] } ]
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "math": [ "pf_fire_n > 4" ] }, { "math": [ "pf_fi != 4" ] } ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_fire_u_4" }, "target_var": { "global_val": "pf_m_other" } },
+          { "run_eocs": "PF_VIEW_read" },
+          {
+            "if": { "math": [ "pf_read_a > pf_rom_best" ] },
+            "then": [
+              { "math": [ "pf_rom_best = pf_read_a" ] },
+              { "math": [ "pf_rom_bw = pf_read_w" ] },
+              { "math": [ "pf_rom_bj = 4" ] },
+              { "copy_var": { "global_val": "pf_fire_u_4" }, "target_var": { "global_val": "pf_rom_buid" } }
+            ]
+          },
+          {
+            "if": { "compare_string": [ { "u_val": "pf_sweet" }, { "global_val": "pf_fire_u_4" } ] },
+            "then": [ { "math": [ "pf_rom_sj = 4" ] } ]
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "math": [ "pf_fire_n > 5" ] }, { "math": [ "pf_fi != 5" ] } ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_fire_u_5" }, "target_var": { "global_val": "pf_m_other" } },
+          { "run_eocs": "PF_VIEW_read" },
+          {
+            "if": { "math": [ "pf_read_a > pf_rom_best" ] },
+            "then": [
+              { "math": [ "pf_rom_best = pf_read_a" ] },
+              { "math": [ "pf_rom_bw = pf_read_w" ] },
+              { "math": [ "pf_rom_bj = 5" ] },
+              { "copy_var": { "global_val": "pf_fire_u_5" }, "target_var": { "global_val": "pf_rom_buid" } }
+            ]
+          },
+          {
+            "if": { "compare_string": [ { "u_val": "pf_sweet" }, { "global_val": "pf_fire_u_5" } ] },
+            "then": [ { "math": [ "pf_rom_sj = 5" ] } ]
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "math": [ "pf_fire_av_here" ] }, { "math": [ "value_or(pf_set_romance, 2) == 2" ] } ] },
+        "then": [
+          { "set_string_var": "AVATAR", "target_var": { "global_val": "pf_m_other" } },
+          { "run_eocs": "PF_VIEW_read" },
+          {
+            "if": { "math": [ "pf_read_a > pf_rom_best" ] },
+            "then": [
+              { "math": [ "pf_rom_best = pf_read_a" ] },
+              { "math": [ "pf_rom_bw = pf_read_w" ] },
+              { "math": [ "pf_rom_bj = -1" ] },
+              { "set_string_var": "AVATAR", "target_var": { "global_val": "pf_rom_buid" } }
+            ]
+          },
+          {
+            "if": { "compare_string": [ { "u_val": "pf_sweet" }, "AVATAR" ] },
+            "then": [ { "math": [ "pf_rom_sj = -1" ] } ]
+          }
+        ]
+      },
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+      {
+        "if": { "math": [ "pf_rom_sj == -1" ] },
+        "then": [
+          { "math": [ "pf_rom_done += 1" ] },
+          { "run_eocs": "PF_LINE_court_you", "alpha_talker": "avatar" },
+          { "run_eocs": "PF_HEART_together", "alpha_talker": "avatar" },
+          { "run_eocs": "PF_MK_courting", "beta_talker": "avatar" }
+        ],
+        "else": [
+          {
+            "if": { "math": [ "pf_rom_sj >= 0" ] },
+            "then": [
+              { "math": [ "pf_rom_done += 1" ] },
+              { "set_string_var": "court", "target_var": { "global_val": "pf_rom_what" } },
+              { "run_eocs": "PF_ROM_with_j" }
+            ],
+            "else": [
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "pf_rom_best >= 60" ] },
+                    { "math": [ "pf_rom_bw >= 35" ] },
+                    { "math": [ "value_or(u_pf_has_sweet, 0) == 0" ] },
+                    {
+                      "or": [ { "math": [ "time_since(u_pf_conf_last) < 0" ] }, { "math": [ "time_since(u_pf_conf_last) > time('7 d')" ] } ]
+                    }
+                  ]
+                },
+                "then": [
+                  { "math": [ "pf_rom_done += 1" ] },
+                  { "math": [ "u_pf_conf_last = time('now')" ] },
+                  {
+                    "if": { "math": [ "pf_rom_bj == -1" ] },
+                    "then": [
+                      {
+                        "if": { "math": [ "value_or(pf_set_romance, 2) == 2" ] },
+                        "then": [
+                          { "u_set_talker": { "global_val": "pf_conf_who" } },
+                          {
+                            "set_string_var": "<u_name>",
+                            "target_var": { "global_val": "pf_conf_name" },
+                            "parse_tags": true
+                          },
+                          { "run_eocs": "PF_ROM_open_confess", "alpha_talker": "avatar", "beta_talker": "u" }
+                        ]
+                      }
+                    ],
+                    "else": [ { "set_string_var": "confess", "target_var": { "global_val": "pf_rom_what" } }, { "run_eocs": "PF_ROM_with_j" } ]
+                  }
+                ],
+                "else": [
+                  {
+                    "if": {
+                      "and": [
+                        { "math": [ "pf_rom_best >= 30" ] },
+                        { "math": [ "value_or(pf_set_chatter, 1) == 1" ] },
+                        { "math": [ "(rand(1) == 0) + value_or(pf_rom_force_glance, 0) > 0" ] },
+                        { "math": [ "(value_or(u_pf_has_sweet, 0) == 0) + (value_or(u_pf_commit, 1) == 3) > 0" ] },
+                        {
+                          "math": [ "(time('now') - value_or(u_pf_glance_t, -999999) >= time('3 d')) + value_or(pf_rom_force_glance, 0) > 0" ]
+                        }
+                      ]
+                    },
+                    "then": [
+                      { "math": [ "pf_rom_force_glance = 0" ] },
+                      { "math": [ "u_pf_glance_t = time('now')" ] },
+                      { "math": [ "pf_rom_done += 1" ] },
+                      {
+                        "if": { "math": [ "pf_rom_bj == -1" ] },
+                        "then": [
+                          { "run_eocs": "PF_SAY", "alpha_talker": "avatar", "variables": { "line": "smitten_you" } },
+                          { "run_eocs": "PF_MK_flirt", "beta_talker": "avatar" },
+                          { "run_eocs": "PF_HEART_jealousy", "beta_talker": "avatar" }
+                        ],
+                        "else": [ { "set_string_var": "glance", "target_var": { "global_val": "pf_rom_what" } }, { "run_eocs": "PF_ROM_with_j" } ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ROM_with_j",
+    "//": "u = the one acting; finds the other fire-goer's talker (same turn as the roll call, so it's valid).",
+    "effect": [
+      { "set_string_var": "pf_fire_c_<global_val:pf_rom_bj>", "target_var": { "context_val": "rj" }, "parse_tags": true },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_rom_what" }, "court" ] },
+        "then": [ { "set_string_var": "pf_fire_c_<global_val:pf_rom_sj>", "target_var": { "context_val": "rj" }, "parse_tags": true } ]
+      },
+      { "run_eocs": "PF_ROM_pair", "beta_talker": { "var_val": "rj" } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ROM_pair",
+    "//": "Alpha = the one who feels it, beta = the one they feel it for (both at the fire).",
+    "effect": [
+      { "math": [ "u_pf_rom_beat = pf_beat_id" ] },
+      { "math": [ "n_pf_rom_beat = pf_beat_id" ] },
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+      { "set_string_var": "<npc_name>", "target_var": { "global_val": "pf_say_b" }, "parse_tags": true },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_rom_what" }, "court" ] },
+        "then": [ { "run_eocs": "PF_LINE_court_npc", "alpha_talker": "avatar" }, { "run_eocs": "PF_MK_courting" } ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_rom_what" }, "glance" ] },
+        "then": [
+          { "run_eocs": "PF_SAY", "alpha_talker": "avatar", "variables": { "line": "smitten" } },
+          { "run_eocs": "PF_MK_flirt" },
+          { "run_eocs": "PF_HEART_jealousy" }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_rom_what" }, "confess" ] },
+        "then": [
+          { "run_eocs": "PF_ROM_answer_npc", "alpha_talker": "npc", "beta_talker": "u" },
+          { "run_eocs": "PF_MK_confession" },
+          {
+            "if": { "math": [ "pf_rom_yes == 1" ] },
+            "then": [
+              { "run_eocs": "PF_ROM_become_sweet" },
+              { "run_eocs": "PF_SAY", "alpha_talker": "avatar", "variables": { "line": "confess_yes" } },
+              { "run_eocs": "PF_MK_courting" }
+            ],
+            "else": [
+              { "math": [ "u_pf_awk_until = time('now') + time('3 d')" ] },
+              { "run_eocs": "PF_SAY", "alpha_talker": "avatar", "variables": { "line": "confess_no_npc" } },
+              { "run_eocs": "PF_MK_rejected", "alpha_talker": "npc", "beta_talker": "u" }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ROM_answer_npc",
+    "//": "u = the one being confessed to (npc = the confessor).  They answer from their own heart: yes only if they feel it too (attraction 40+), aren't taken and aren't mourning.  Loners say no bluntly.",
+    "effect": [
+      { "run_eocs": "PF_ID_ensure" },
+      { "copy_var": { "npc_val": "pf_uid" }, "target_var": { "global_val": "pf_m_other" } },
+      { "run_eocs": "PF_VIEW_read" },
+      {
+        "math": [
+          "pf_rom_yes = (pf_read_a >= 40) * (value_or(u_pf_has_sweet, 0) == 0) * (time('now') >= value_or(u_pf_mourn_until, 0))"
+        ]
+      },
+      { "set_string_var": "gentle", "target_var": { "global_val": "pf_rom_how" } },
+      {
+        "if": { "u_has_trait": "PF_T_LONER" },
+        "then": [ { "set_string_var": "blunt", "target_var": { "global_val": "pf_rom_how" } } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ROM_become_sweet",
+    "//": "Alpha and beta become sweethearts (courting; v0.2 turns this into partnership and marriage).",
+    "effect": [
+      { "copy_var": { "npc_val": "pf_uid" }, "target_var": { "u_val": "pf_sweet" } },
+      { "math": [ "u_pf_has_sweet = 1" ] },
+      { "math": [ "u_pf_sweet_since = time('now')" ] },
+      { "copy_var": { "u_val": "pf_uid" }, "target_var": { "npc_val": "pf_sweet" } },
+      { "math": [ "n_pf_has_sweet = 1" ] },
+      { "math": [ "n_pf_sweet_since = time('now')" ] },
+      { "math": [ "u_pf_rel_stage = 1" ] },
+      { "math": [ "n_pf_rel_stage = 1" ] },
+      { "math": [ "u_pf_stage_since = time('now')" ] },
+      { "math": [ "n_pf_stage_since = time('now')" ] },
+      { "math": [ "pf_couples_total = value_or(pf_couples_total, 0) + 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ROM_open_confess",
+    "//": "Alpha = avatar.  A dialogue opened with a topic talks to an empty talker, not the NPC, so the confessor is kept in pf_conf_who (set this same turn) and the answers act on it.",
+    "effect": [ { "open_dialogue": { "topic": "TALK_PF_CONFESS" } } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ROM_you_yes",
+    "//": "In the confession dialogue: u = you, npc = them.",
+    "effect": [
+      { "run_eocs": "PF_ROM_become_sweet" },
+      { "run_eocs": "PF_MK_confession", "alpha_talker": "npc", "beta_talker": "u" },
+      { "run_eocs": "PF_MK_courting", "alpha_talker": "npc", "beta_talker": "u" },
+      { "u_message": "<npc_name> lets out a breath they've been holding for weeks.", "type": "good" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ROM_you_no",
+    "effect": [
+      { "run_eocs": "PF_MK_confession", "alpha_talker": "npc", "beta_talker": "u" },
+      { "run_eocs": "PF_MK_rejected", "beta_talker": "npc" },
+      { "math": [ "n_pf_awk_until = time('now') + time('3 d')" ] },
+      { "u_message": "<npc_name> nods, too quickly.  \"Okay.  I just\u2026 needed to say it.\"", "type": "info" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ROM_you_wait",
+    "effect": [ { "u_message": "<npc_name>: \"Take all the time you need.  I'm not going anywhere.\"", "type": "info" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ROM_flirt",
+    "//": "u = you, npc = them.  Whether it lands depends on them: their nature (are they drawn to you at all?) and how they already feel.",
+    "condition": { "or": [ { "math": [ "time_since(n_pf_flirted) < 0" ] }, { "math": [ "time_since(n_pf_flirted) > time('1 h')" ] } ] },
+    "effect": [
+      { "run_eocs": "PF_ROM_their_heart", "alpha_talker": "npc" },
+      {
+        "if": { "math": [ "pf_rom_el == 0" ] },
+        "then": [ { "u_message": "<npc_name> doesn't seem to notice you're flirting.", "type": "info" } ],
+        "else": [
+          {
+            "if": { "math": [ "pf_read_a + rand(20) >= 20" ] },
+            "then": [
+              { "u_message": "<npc_name> laughs, and doesn't look away.", "type": "good" },
+              { "run_eocs": "PF_MK_flirt", "beta_talker": "npc" }
+            ],
+            "else": [ { "u_message": "<npc_name> smiles politely and changes the subject.", "type": "info" } ]
+          }
+        ]
+      },
+      { "math": [ "n_pf_flirted = time('now')" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ROM_confess_you",
+    "//": "u = you, npc = them.  Someone still mourning asks you to wait (no rejection, no answer yet).  Otherwise they answer from their own heart; some can be won over in time (open natures warm up as warmth grows), some never will.",
+    "effect": [
+      { "run_eocs": "PF_ROM_their_heart", "alpha_talker": "npc" },
+      {
+        "if": { "compare_string": [ { "npc_val": "pf_sweet" }, "AVATAR" ] },
+        "then": [ { "u_message": "<npc_name> grins.  \"You already did.  I was there.\"", "type": "good" } ],
+        "else": [
+          {
+            "if": {
+              "and": [
+                { "math": [ "time('now') < value_or(n_pf_mourn_until, 0)" ] },
+                { "math": [ "value_or(n_pf_has_sweet, 0) == 0" ] },
+                { "math": [ "pf_rom_el == 1" ] }
+              ]
+            },
+            "then": [
+              {
+                "u_message": "<npc_name> holds your hand for a moment, then gives it back.  \"Not now.  Ask me again when I can breathe.\"",
+                "type": "info"
+              }
+            ],
+            "else": [ { "run_eocs": "PF_ROM_confess_you_ans" } ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ROM_confess_you_ans",
+    "//": "u = you, npc = them (PF_ROM_confess_you, not mourning).",
+    "effect": [
+      { "run_eocs": "PF_MK_confession", "beta_talker": "npc" },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_rom_el == 1" ] },
+            { "math": [ "pf_read_a >= 45" ] },
+            { "math": [ "value_or(n_pf_has_sweet, 0) == 0" ] }
+          ]
+        },
+        "then": [
+          { "run_eocs": "PF_ROM_become_sweet" },
+          { "run_eocs": "PF_MK_courting", "beta_talker": "npc" },
+          {
+            "u_message": "<npc_name> goes quiet, then takes your hand.  \"I was hoping you'd say that.\"",
+            "type": "good"
+          }
+        ],
+        "else": [
+          { "run_eocs": "PF_MK_rejected", "alpha_talker": "npc", "beta_talker": "u" },
+          {
+            "if": { "math": [ "value_or(n_pf_has_sweet, 0) == 1" ] },
+            "then": [ { "u_message": "<npc_name> looks away.  \"I'm with someone.  You know that.\"", "type": "bad" } ],
+            "else": [
+              {
+                "if": { "math": [ "pf_rom_el == 0" ] },
+                "then": [
+                  {
+                    "if": { "math": [ "pf_rom_aro == 1" ] },
+                    "then": [
+                      {
+                        "u_message": "<npc_name> smiles, a little sadly.  \"It's not you.  I'm just not\u2026 like that.  With anyone.\"",
+                        "type": "info"
+                      }
+                    ],
+                    "else": [
+                      {
+                        "u_message": "<npc_name> looks surprised, then kind.  \"You're sweet.  But I'm not drawn to you that way.  I'm sorry.\"",
+                        "type": "info"
+                      }
+                    ]
+                  }
+                ],
+                "else": [
+                  {
+                    "if": { "compare_string": [ { "global_val": "pf_rom_how" }, "blunt" ] },
+                    "then": [ { "u_message": "<npc_name> shakes their head.  \"No.  Sorry.\"", "type": "bad" } ],
+                    "else": [
+                      {
+                        "u_message": "<npc_name> looks at you for a long moment.  \"I'm sorry.  I don't feel that way.  But I'm glad you told me.\"",
+                        "type": "info"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ROM_their_heart",
+    "//": "u = the NPC.  How they feel about you (pf_read_*), and whether you could ever be what they're drawn to (pf_rom_el).",
+    "effect": [
+      { "run_eocs": "PF_ID_ensure", "alpha_talker": "avatar" },
+      { "run_eocs": "PF_ID_ensure" },
+      { "set_string_var": "AVATAR", "target_var": { "global_val": "pf_m_other" } },
+      { "run_eocs": "PF_VIEW_read" },
+      { "set_string_var": "pf_reg_AVATAR_g", "target_var": { "context_val": "ag" }, "parse_tags": true },
+      {
+        "math": [
+          "pf_rom_el = (value_or(u_pf_rom, 0) == 1) * (value_or(u_pf_adult, 0) == 1) * ((value_or(u_pf_orient, -1) == 2) + (value_or(u_pf_orient, -1) == value_or(v_ag, -2)) > 0)"
+        ]
+      },
+      { "if": { "u_has_trait": "PF_CHILD" }, "then": [ { "math": [ "pf_rom_el = 0" ] } ] },
+      { "math": [ "pf_rom_aro = value_or(u_pf_rom, 0) == 0" ] },
+      { "set_string_var": "gentle", "target_var": { "global_val": "pf_rom_how" } },
+      {
+        "if": { "u_has_trait": "PF_T_LONER" },
+        "then": [ { "set_string_var": "blunt", "target_var": { "global_val": "pf_rom_how" } } ]
+      }
+    ]
+  },
+  {
+    "type": "talk_topic",
+    "id": "TALK_PF_CONFESS",
+    "//": "full run day 86: the window showed no speaker (a topic-based open_dialogue talks to an empty talker), so the name is in the line.",
+    "dynamic_line": {
+      "math": [ "value_or(u_pf_has_sweet, 0) == 1" ],
+      "yes": "*<global_val:pf_conf_name> looks at the fire, then at you*  I know you're with someone.  I know.  I'm saying it anyway, so it's been said: I like you.  More than like.  You don't have to say anything back.",
+      "no": "*<global_val:pf_conf_name> looks at the fire, then at you*  I keep trying to find a good way to say this, and there isn't one.  I like you.  More than like.  You don't have to say anything back."
+    },
+    "responses": [
+      {
+        "text": "I feel the same way.",
+        "condition": { "math": [ "value_or(u_pf_has_sweet, 0) == 0" ] },
+        "effect": { "run_eocs": "PF_ROM_you_yes", "alpha_talker": "avatar", "beta_talker": { "global_val": "pf_conf_who" } },
+        "topic": "TALK_DONE"
+      },
+      {
+        "text": "I'm with someone.  I'm sorry.",
+        "condition": { "math": [ "value_or(u_pf_has_sweet, 0) == 1" ] },
+        "effect": { "run_eocs": "PF_ROM_you_no", "alpha_talker": "avatar", "beta_talker": { "global_val": "pf_conf_who" } },
+        "topic": "TALK_DONE"
+      },
+      {
+        "text": "I'm sorry.  I don't feel that way about you.",
+        "effect": { "run_eocs": "PF_ROM_you_no", "alpha_talker": "avatar", "beta_talker": { "global_val": "pf_conf_who" } },
+        "topic": "TALK_DONE"
+      },
+      {
+        "text": "Can I think about it?",
+        "effect": { "run_eocs": "PF_ROM_you_wait", "alpha_talker": "avatar", "beta_talker": { "global_val": "pf_conf_who" } },
+        "topic": "TALK_DONE"
+      }
+    ]
+  }
+]

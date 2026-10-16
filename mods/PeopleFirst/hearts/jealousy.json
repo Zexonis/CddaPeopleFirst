@@ -1,0 +1,139 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HEART_jealousy",
+    "//": "u = someone making eyes at npc (another fire-goer, or you).  Whoever is with either of them, if they're at the fire, sees it and it sours their view of the one doing the looking (married people take it less hard about their spouse being looked at).",
+    "condition": { "math": [ "value_or(pf_set_jealousy, 1) == 1" ] },
+    "effect": [
+      { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_jl_a" } },
+      { "copy_var": { "npc_val": "pf_uid" }, "target_var": { "global_val": "pf_jl_b" } },
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_jl_an" }, "parse_tags": true },
+      { "set_string_var": "<npc_name>", "target_var": { "global_val": "pf_jl_bn" }, "parse_tags": true },
+      { "if": "npc_is_avatar", "then": [ { "set_string_var": "you", "target_var": { "global_val": "pf_jl_bn" } } ] },
+      { "math": [ "pf_jl_said = 0" ] },
+      {
+        "if": {
+          "and": [
+            { "math": [ "value_or(n_pf_has_sweet, 0) == 1" ] },
+            { "not": { "compare_string": [ { "npc_val": "pf_sweet" }, { "global_val": "pf_jl_a" } ] } }
+          ]
+        },
+        "then": [
+          { "copy_var": { "npc_val": "pf_sweet" }, "target_var": { "global_val": "pf_jl_c" } },
+          { "math": [ "pf_jl_str = value_or(n_pf_rel_stage, 1) >= 3 ? 25 : 50" ] },
+          { "run_eocs": "PF_HEART_jealous_where" }
+        ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_jl_said == 0" ] },
+            { "math": [ "value_or(u_pf_has_sweet, 0) == 1" ] },
+            { "not": { "compare_string": [ { "u_val": "pf_sweet" }, { "global_val": "pf_jl_b" } ] } }
+          ]
+        },
+        "then": [
+          { "copy_var": { "u_val": "pf_sweet" }, "target_var": { "global_val": "pf_jl_c" } },
+          { "math": [ "pf_jl_str = 60" ] },
+          { "run_eocs": "PF_HEART_jealous_where" }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HEART_jealous_where",
+    "//": "u = the glancer.  Finds the jealous partner among tonight's fire-goers (talkers valid this same evening).",
+    "effect": [
+      { "math": [ "pf_jl_cj = -9" ] },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_fire_n > 0" ] },
+            { "compare_string": [ { "global_val": "pf_jl_c" }, { "global_val": "pf_fire_u_0" } ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_jl_cj = 0" ] } ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_fire_n > 1" ] },
+            { "compare_string": [ { "global_val": "pf_jl_c" }, { "global_val": "pf_fire_u_1" } ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_jl_cj = 1" ] } ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_fire_n > 2" ] },
+            { "compare_string": [ { "global_val": "pf_jl_c" }, { "global_val": "pf_fire_u_2" } ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_jl_cj = 2" ] } ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_fire_n > 3" ] },
+            { "compare_string": [ { "global_val": "pf_jl_c" }, { "global_val": "pf_fire_u_3" } ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_jl_cj = 3" ] } ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_fire_n > 4" ] },
+            { "compare_string": [ { "global_val": "pf_jl_c" }, { "global_val": "pf_fire_u_4" } ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_jl_cj = 4" ] } ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_fire_n > 5" ] },
+            { "compare_string": [ { "global_val": "pf_jl_c" }, { "global_val": "pf_fire_u_5" } ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_jl_cj = 5" ] } ]
+      },
+      {
+        "if": { "and": [ { "math": [ "pf_fire_av_here" ] }, { "compare_string": [ { "global_val": "pf_jl_c" }, "AVATAR" ] } ] },
+        "then": [ { "math": [ "pf_jl_cj = -1" ] } ]
+      },
+      {
+        "if": { "math": [ "pf_jl_cj == -1" ] },
+        "then": [
+          { "run_eocs": "PF_HEART_jealous_one", "alpha_talker": "avatar" },
+          { "math": [ "pf_jl_said = 1" ] },
+          { "run_eocs": "PF_SAY_heart", "alpha_talker": "avatar", "variables": { "line": "jealous_you" } }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_jl_cj >= 0" ] },
+        "then": [
+          { "set_string_var": "pf_fire_c_<global_val:pf_jl_cj>", "target_var": { "context_val": "rc" }, "parse_tags": true },
+          { "run_eocs": "PF_HEART_jealous_one", "alpha_talker": { "var_val": "rc" } },
+          { "math": [ "pf_jl_said = 1" ] },
+          { "run_eocs": "PF_SAY_heart", "alpha_talker": "avatar", "variables": { "line": "jealous_npc" } }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HEART_jealous_one",
+    "//": "u = the jealous one.  Their view of the glancer takes a jealous half moment.",
+    "effect": [
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_jl_cn" }, "parse_tags": true },
+      { "copy_var": { "global_val": "pf_jl_a" }, "target_var": { "global_val": "pf_m_other" } },
+      { "math": [ "pf_mv_role = 1" ] },
+      { "math": [ "pf_m_str_in = pf_jl_str" ] },
+      { "run_eocs": "PF_MV_jealous" },
+      { "math": [ "pf_jealousy_total = value_or(pf_jealousy_total, 0) + 1" ] }
+    ]
+  }
+]

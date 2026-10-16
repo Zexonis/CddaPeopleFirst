@@ -1,0 +1,358 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOME_hearth",
+    "//": "u = avatar, during the evening, when no fire burns within 15 tiles.  At home (within 30 tiles of it), the evening gathers around the nearest table, else couch, else armchair, else bench (playtest 3: an evac shelter has only benches), within 12 tiles: the same evening as at a fire (seats, beats, romance, grief), with lines for indoors (pf_eve_home = 1).",
+    "condition": { "math": [ "value_or(pf_home_set, 0) == 1" ] },
+    "effect": [
+      { "u_location_variable": { "global_val": "pf_hm_av" } },
+      {
+        "if": { "math": [ "distance(pf_hm_av, pf_home_loc) <= 30" ] },
+        "then": [
+          {
+            "u_location_variable": { "global_val": "pf_fire_loc" },
+            "furniture": "f_table",
+            "target_max_radius": 12,
+            "true_eocs": [ { "id": "PF_HOME_hearth_go", "effect": [ { "math": [ "pf_eve_home = 1" ] }, { "run_eocs": "PF_FIRE_step" } ] } ],
+            "false_eocs": [
+              {
+                "id": "PF_HOME_try_sofa",
+                "effect": [
+                  {
+                    "u_location_variable": { "global_val": "pf_fire_loc" },
+                    "furniture": "f_sofa",
+                    "target_max_radius": 12,
+                    "true_eocs": [ "PF_HOME_hearth_go" ],
+                    "false_eocs": [
+                      {
+                        "id": "PF_HOME_try_chair",
+                        "effect": [
+                          {
+                            "u_location_variable": { "global_val": "pf_fire_loc" },
+                            "furniture": "f_armchair",
+                            "target_max_radius": 12,
+                            "true_eocs": [ "PF_HOME_hearth_go" ],
+                            "false_eocs": [
+                              {
+                                "id": "PF_HOME_try_bench",
+                                "effect": [
+                                  {
+                                    "u_location_variable": { "global_val": "pf_fire_loc" },
+                                    "furniture": "f_bench",
+                                    "target_max_radius": 12,
+                                    "true_eocs": [ "PF_HOME_hearth_go" ],
+                                    "false_eocs": [
+                                      {
+                                        "id": "PF_HOME_try_bench_w",
+                                        "effect": [
+                                          {
+                                            "u_location_variable": { "global_val": "pf_fire_loc" },
+                                            "furniture": "f_bench_wooden",
+                                            "target_max_radius": 12,
+                                            "true_eocs": [ "PF_HOME_hearth_go" ],
+                                            "false_eocs": [  ]
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOME_prop_act",
+    "//": "u = someone at tonight's evening, after their temperament picked an activity (life/fire.json PF_FIRE_activity_do).  Only quiet, storytelling and whittling evenings are open to change.  Anyone carrying a guitar or violin may play (at a fire too); at home, a bookcase means someone reads aloud, a piano gets played, the table gets a card game, and the couch gets a nap.",
+    "condition": {
+      "or": [
+        { "compare_string": [ { "global_val": "pf_act" }, "act_quiet", "act_story", "act_whittle" ] },
+        { "math": [ "value_or(pf_prop_force, 0) == 1" ] }
+      ]
+    },
+    "effect": [
+      { "math": [ "pf_pa = value_or(pf_prop_force, 0) == 1 ? rand(2) : rand(5)" ] },
+      {
+        "if": { "and": [ { "math": [ "pf_pa <= 1" ] }, { "u_has_items": { "item": "acoustic_guitar", "count": 1 } } ] },
+        "then": [ { "set_string_var": "act_guitar", "target_var": { "global_val": "pf_act" } }, { "math": [ "pf_pa = 9" ] } ]
+      },
+      {
+        "if": { "and": [ { "math": [ "pf_pa <= 1" ] }, { "u_has_items": { "item": "violin", "count": 1 } } ] },
+        "then": [ { "set_string_var": "act_violin", "target_var": { "global_val": "pf_act" } }, { "math": [ "pf_pa = 9" ] } ]
+      },
+      {
+        "if": { "and": [ { "math": [ "value_or(pf_eve_home, 0) == 1" ] }, { "math": [ "pf_pa < 9" ] } ] },
+        "then": [
+          {
+            "if": { "math": [ "pf_pa == 0" ] },
+            "then": [
+              {
+                "u_location_variable": { "global_val": "pf_pa_at" },
+                "furniture": "f_bookcase",
+                "target_max_radius": 12,
+                "true_eocs": [
+                  { "id": "PF_HOME_pa_read", "effect": [ { "set_string_var": "act_read", "target_var": { "global_val": "pf_act" } } ] }
+                ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_pa == 1" ] },
+            "then": [
+              {
+                "u_location_variable": { "global_val": "pf_pa_at" },
+                "furniture": "f_piano",
+                "target_max_radius": 12,
+                "true_eocs": [
+                  { "id": "PF_HOME_pa_piano", "effect": [ { "set_string_var": "act_piano", "target_var": { "global_val": "pf_act" } } ] }
+                ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_pa == 2" ] },
+            "then": [
+              {
+                "u_location_variable": { "global_val": "pf_pa_at" },
+                "furniture": "f_table",
+                "target_max_radius": 6,
+                "true_eocs": [
+                  { "id": "PF_HOME_pa_cards", "effect": [ { "set_string_var": "act_cards", "target_var": { "global_val": "pf_act" } } ] }
+                ]
+              }
+            ]
+          },
+          {
+            "if": { "and": [ { "math": [ "pf_pa == 3" ] }, { "math": [ "rand(2) == 0" ] } ] },
+            "then": [
+              {
+                "u_location_variable": { "global_val": "pf_pa_at" },
+                "furniture": "f_sofa",
+                "target_max_radius": 6,
+                "true_eocs": [
+                  { "id": "PF_HOME_pa_couch", "effect": [ { "set_string_var": "act_couch", "target_var": { "global_val": "pf_act" } } ] }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOME_beat_extra",
+    "//": "u = avatar, after an evening at home.  If you were there: 'An evening at home' (+8).  Then everyone gets up again: seats packed between furniture had people shoving past each other all night (vanilla 'excuse me' barks), so indoors the seats are let go once the evening has happened.",
+    "effect": [
+      { "u_location_variable": { "global_val": "pf_hm_av" } },
+      {
+        "if": { "math": [ "distance(pf_hm_av, pf_fire_loc) <= 10" ] },
+        "then": [
+          { "u_add_morale": "PF_morale_home", "bonus": 8, "max_bonus": 8, "duration": "8 hours", "decay_start": "4 hours" },
+          { "math": [ "pf_home_evenings_total = value_or(pf_home_evenings_total, 0) + 1" ] }
+        ]
+      },
+      { "u_run_npc_eocs": [ "PF_FIRE_unseat" ], "local": true, "npc_range": 40 }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOME_wake",
+    "//": "Signal: you wake up at home.  Whoever there cares most about you (warmth 20+, mother hens first) has made breakfast.  Once a day.",
+    "condition": {
+      "and": [
+        "u_is_avatar",
+        { "math": [ "value_or(pf_home_set, 0) == 1" ] },
+        { "math": [ "value_or(pf_bk_day, -1) != floor(time('now') / time('1 d'))" ] },
+        { "math": [ "time_since('midnight', 'unit': 'hours') >= 4" ] },
+        { "math": [ "time_since('midnight', 'unit': 'hours') < 13" ] }
+      ]
+    },
+    "eoc_type": "EVENT",
+    "required_event": "character_wakes_up",
+    "effect": [
+      { "u_location_variable": { "global_val": "pf_hm_av" } },
+      {
+        "if": { "math": [ "distance(pf_hm_av, pf_home_loc) <= 30" ] },
+        "then": [
+          { "math": [ "pf_bk_day = floor(time('now') / time('1 d'))" ] },
+          { "math": [ "pf_hm_best = -1" ] },
+          { "u_run_npc_eocs": [ "PF_HOME_cook_cand" ], "local": true, "npc_range": 20 },
+          {
+            "if": { "math": [ "pf_hm_best >= 0" ] },
+            "then": [ { "run_eocs": "PF_HOME_cook", "alpha_talker": { "global_val": "pf_hm_cook" }, "beta_talker": "avatar" } ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOME_breakfast_late_check",
+    "//": "Every 30 minutes, 07:00-11:00: if you're home and awake and nobody has made breakfast yet (full run: a night alarm woke you, which isn't a 'wakes up' event, so the morning had no breakfast), the cook makes it now.",
+    "condition": {
+      "and": [
+        { "math": [ "value_or(pf_home_set, 0) == 1" ] },
+        { "not": { "u_has_effect": "sleep" } },
+        { "math": [ "value_or(pf_bk_day, -1) != floor(time('now') / time('1 d'))" ] },
+        { "math": [ "time_since('midnight', 'unit': 'hours') >= 7" ] },
+        { "math": [ "time_since('midnight', 'unit': 'hours') < 11" ] }
+      ]
+    },
+    "recurrence": "30 minutes",
+    "global": true,
+    "effect": [
+      { "math": [ "pf_bk_awake = 1" ] },
+      { "u_location_variable": { "global_val": "pf_hm_av" } },
+      {
+        "if": { "math": [ "distance(pf_hm_av, pf_home_loc) <= 30" ] },
+        "then": [
+          { "math": [ "pf_bk_day = floor(time('now') / time('1 d'))" ] },
+          { "math": [ "pf_hm_best = -1" ] },
+          { "u_run_npc_eocs": [ "PF_HOME_cook_cand" ], "local": true, "npc_range": 20 },
+          {
+            "if": { "math": [ "pf_hm_best >= 0" ] },
+            "then": [ { "run_eocs": "PF_HOME_cook", "alpha_talker": { "global_val": "pf_hm_cook" }, "beta_talker": "avatar" } ]
+          }
+        ]
+      },
+      { "math": [ "pf_bk_awake = 0" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOME_cook_cand",
+    "condition": { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+    "effect": [
+      { "run_eocs": "PF_ID_ensure" },
+      { "set_string_var": "AVATAR", "target_var": { "global_val": "pf_m_other" } },
+      { "run_eocs": "PF_VIEW_read" },
+      { "math": [ "_s = pf_read_w" ] },
+      { "if": { "u_has_trait": "PF_Q_MOTHER_HEN" }, "then": [ { "math": [ "_s += 25" ] } ] },
+      { "if": { "math": [ "value_or(u_pf_role, 0) == 1" ] }, "then": [ { "math": [ "_s += 30" ] } ] },
+      {
+        "if": { "and": [ { "math": [ "_s >= 20" ] }, { "math": [ "_s > pf_hm_best" ] } ] },
+        "then": [ { "math": [ "pf_hm_best = _s" ] }, { "u_set_talker": { "global_val": "pf_hm_cook" } } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOME_cook",
+    "//": "Alpha = the cook, beta = you.  Breakfast and coffee at your feet, a care moment, and 'Breakfast at home' (+6).",
+    "effect": [
+      { "run_eocs": "PF_STORES_ensure" },
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+      { "math": [ "_r = rand(2)" ] },
+      { "math": [ "pf_bk_left = 0" ] },
+      {
+        "u_map_run_item_eocs": "all",
+        "loc": { "global_val": "pf_home_loc" },
+        "min_radius": 0,
+        "max_radius": 20,
+        "search_data": [ { "id": [ "pancakes", "scrambled_eggs" ] } ],
+        "true_eocs": [ { "id": "PF_HOME_bk_count", "effect": [ { "math": [ "pf_bk_left += 1" ] } ] } ]
+      },
+      {
+        "if": { "math": [ "pf_bk_left >= 6" ] },
+        "then": [
+          { "math": [ "_r = 9" ] },
+          { "set_string_var": "yesterday's leftovers, warmed up", "target_var": { "global_val": "pf_say_b" } }
+        ]
+      },
+      {
+        "if": { "math": [ "_r == 0" ] },
+        "then": [
+          { "map_spawn_item": "oatmeal", "loc": { "global_val": "pf_stores_loc" }, "count": 3 },
+          { "set_string_var": "a pot of oatmeal", "target_var": { "global_val": "pf_say_b" } }
+        ]
+      },
+      {
+        "if": { "math": [ "_r == 1" ] },
+        "then": [
+          { "map_spawn_item": "pancakes", "loc": { "global_val": "pf_stores_loc" }, "count": 3 },
+          { "set_string_var": "a stack of pancakes", "target_var": { "global_val": "pf_say_b" } }
+        ]
+      },
+      {
+        "if": { "math": [ "_r == 2" ] },
+        "then": [
+          { "map_spawn_item": "scrambled_eggs", "loc": { "global_val": "pf_stores_loc" }, "count": 2 },
+          { "set_string_var": "a pan of eggs", "target_var": { "global_val": "pf_say_b" } }
+        ]
+      },
+      { "math": [ "pf_cf_n = 0" ] },
+      {
+        "u_map_run_item_eocs": "all",
+        "loc": { "global_val": "pf_home_loc" },
+        "min_radius": 0,
+        "max_radius": 20,
+        "search_data": [ { "id": "ceramic_mug", "condition": { "math": [ "n_weight() >= 348000" ] } } ],
+        "true_eocs": [ { "id": "PF_HOME_cf_count", "effect": [ { "math": [ "pf_cf_n += 1" ] } ] } ]
+      },
+      { "if": { "math": [ "pf_cf_n < 4" ] }, "then": [ { "run_eocs": "PF_GIVE_coffee", "alpha_talker": "avatar" } ] },
+      { "math": [ "_b = rand(2)" ] },
+      { "if": { "math": [ "_b == value_or(pf_bk_last, -1)" ] }, "then": [ { "math": [ "_b = (_b + 1) % 3" ] } ] },
+      { "math": [ "pf_bk_last = _b" ] },
+      {
+        "if": { "math": [ "(value_or(pf_bk_awake, 0) == 1) * (time('now') - value_or(pf_aw_back_t, -999999) < time('3 h'))" ] },
+        "then": [
+          { "math": [ "pf_bk_awake = 0" ] },
+          { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "breakfast_back" } }
+        ],
+        "else": [
+          {
+            "if": { "math": [ "value_or(pf_bk_awake, 0) == 1" ] },
+            "then": [
+              { "math": [ "pf_bk_awake = 0" ] },
+              { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "breakfast_awake" } }
+            ],
+            "else": [
+              {
+                "if": { "math": [ "time_since('midnight', 'unit': 'hours') >= 10" ] },
+                "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "breakfast_late" } } ],
+                "else": [
+                  {
+                    "if": { "math": [ "_b == 0" ] },
+                    "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "breakfast" } } ]
+                  },
+                  {
+                    "if": { "math": [ "_b == 1" ] },
+                    "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "breakfast_1" } } ]
+                  },
+                  {
+                    "if": { "math": [ "_b == 2" ] },
+                    "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "breakfast_2" } } ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "run_eocs": {
+          "id": "PF_HOME_bk_morale",
+          "effect": [
+            { "u_add_morale": "PF_morale_breakfast", "bonus": 6, "max_bonus": 6, "duration": "4 hours", "decay_start": "2 hours" }
+          ]
+        },
+        "alpha_talker": "avatar"
+      },
+      { "math": [ "pf_m_str_in = 40" ] },
+      { "run_eocs": "PF_MK_care_given" }
+    ]
+  }
+]

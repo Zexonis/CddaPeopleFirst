@@ -1,0 +1,1427 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KL_meet",
+    "//": "Keep lab: the meeting sits now (skips the call and the 4-adult rule).",
+    "effect": [
+      { "run_eocs": "PF_KEEP_count" },
+      {
+        "if": { "math": [ "pf_kp_n >= 2" ] },
+        "then": [ { "run_eocs": "PF_KEEP_agenda" } ],
+        "else": [ { "u_message": "[keep lab] Fewer than 2 grown-ups who live here are in range.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KL_fallout",
+    "effect": [
+      { "math": [ "pf_hl_d = 99" ] },
+      { "u_location_variable": { "global_val": "pf_hl_av" } },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_KL_near_pf_kl_a",
+            "condition": {
+              "and": [
+                {
+                  "and": [
+                    { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+                    { "math": [ "value_or(u_pf_resident, 0) == 1" ] },
+                    { "math": [ "has_var(u_pf_uid)" ] }
+                  ]
+                },
+                {
+                  "not": {
+                    "and": [
+                      { "math": [ "value_or(pf_chief_set, 0) == 1" ] },
+                      { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_chief_uid" } ] }
+                    ]
+                  }
+                }
+              ]
+            },
+            "effect": [
+              { "u_location_variable": { "u_val": "pf_pos" } },
+              {
+                "if": { "math": [ "distance(u_pf_pos, pf_hl_av) < pf_hl_d" ] },
+                "then": [
+                  { "math": [ "pf_hl_d = distance(u_pf_pos, pf_hl_av)" ] },
+                  { "u_set_talker": { "global_val": "pf_kl_a" } },
+                  { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_kl_a_uid" } },
+                  { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_kl_a_name" }, "parse_tags": true }
+                ]
+              }
+            ]
+          }
+        ],
+        "local": true,
+        "npc_range": 30
+      },
+      {
+        "if": { "math": [ "pf_hl_d < 99" ] },
+        "then": [
+          { "math": [ "pf_hl_d = 99" ] },
+          { "u_location_variable": { "global_val": "pf_hl_av" } },
+          {
+            "u_run_npc_eocs": [
+              {
+                "id": "PF_KL_near_pf_kl_b",
+                "condition": {
+                  "and": [
+                    {
+                      "and": [
+                        { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+                        { "math": [ "value_or(u_pf_resident, 0) == 1" ] },
+                        { "math": [ "has_var(u_pf_uid)" ] }
+                      ]
+                    },
+                    {
+                      "not": {
+                        "and": [
+                          { "math": [ "value_or(pf_chief_set, 0) == 1" ] },
+                          { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_chief_uid" } ] }
+                        ]
+                      }
+                    },
+                    { "not": { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_kl_a_uid" } ] } }
+                  ]
+                },
+                "effect": [
+                  { "u_location_variable": { "u_val": "pf_pos" } },
+                  {
+                    "if": { "math": [ "distance(u_pf_pos, pf_hl_av) < pf_hl_d" ] },
+                    "then": [
+                      { "math": [ "pf_hl_d = distance(u_pf_pos, pf_hl_av)" ] },
+                      { "u_set_talker": { "global_val": "pf_kl_b" } },
+                      { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_kl_b_uid" } },
+                      {
+                        "set_string_var": "<u_name>",
+                        "target_var": { "global_val": "pf_kl_b_name" },
+                        "parse_tags": true
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "local": true,
+            "npc_range": 30
+          },
+          {
+            "if": { "math": [ "pf_hl_d < 99" ] },
+            "then": [
+              { "math": [ "pf_m_str_in = 100" ] },
+              {
+                "run_eocs": "PF_MK_argument",
+                "alpha_talker": { "global_val": "pf_kl_a" },
+                "beta_talker": { "global_val": "pf_kl_b" }
+              },
+              { "math": [ "pf_m_str_in = 100" ] },
+              {
+                "run_eocs": "PF_MK_argument",
+                "alpha_talker": { "global_val": "pf_kl_b" },
+                "beta_talker": { "global_val": "pf_kl_a" }
+              },
+              {
+                "u_message": "[keep lab] <global_val:pf_kl_a_name> and <global_val:pf_kl_b_name> (the two grown-ups nearest you, not the chief) have had a row, twice.",
+                "type": "info"
+              }
+            ],
+            "else": [ { "u_message": "[keep lab] Only one grown-up who lives here is near.", "type": "info" } ]
+          }
+        ],
+        "else": [ { "u_message": "[keep lab] Nobody who lives here is near.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KL_dissent",
+    "effect": [
+      {
+        "if": { "math": [ "value_or(pf_chief_set, 0) == 0" ] },
+        "then": [ { "u_message": "[keep lab] There's no chief.", "type": "info" } ],
+        "else": [
+          {
+            "if": { "math": [ "pf_chief_set == 2" ] },
+            "then": [ { "set_string_var": "AVATAR", "target_var": { "global_val": "pf_kl_target" } } ],
+            "else": [ { "copy_var": { "global_val": "pf_chief_uid" }, "target_var": { "global_val": "pf_kl_target" } } ]
+          },
+          {
+            "u_run_npc_eocs": [
+              {
+                "id": "PF_KL_turn",
+                "condition": {
+                  "and": [
+                    {
+                      "and": [
+                        { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+                        { "math": [ "value_or(u_pf_resident, 0) == 1" ] },
+                        { "math": [ "has_var(u_pf_uid)" ] }
+                      ]
+                    },
+                    {
+                      "not": {
+                        "and": [
+                          { "math": [ "value_or(pf_chief_set, 0) == 1" ] },
+                          { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_chief_uid" } ] }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                "effect": [
+                  { "copy_var": { "global_val": "pf_kl_target" }, "target_var": { "global_val": "pf_m_other" } },
+                  { "math": [ "pf_mv_role = 1" ] },
+                  { "math": [ "pf_m_str_in = 90" ] },
+                  { "run_eocs": "PF_MV_betrayal" }
+                ]
+              }
+            ],
+            "local": true,
+            "npc_range": 60
+          },
+          { "u_message": "[keep lab] Everyone who lives here now feels betrayed by the chief.", "type": "info" }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KL_vacant",
+    "effect": [
+      { "math": [ "pf_chief_set = 0" ] },
+      { "math": [ "pf_mt_due = 1" ] },
+      { "u_message": "[keep lab] The chair is empty; the next evening holds a meeting.", "type": "info" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KL_stats",
+    "effect": [
+      { "math": [ "pf_hs_a = value_or(pf_meetings_total, 0)" ] },
+      { "math": [ "pf_hs_b = value_or(pf_elections_total, 0)" ] },
+      { "math": [ "pf_hs_c = value_or(pf_disputes_total, 0)" ] },
+      { "math": [ "pf_hs_d = value_or(pf_confidence_total, 0)" ] },
+      { "math": [ "pf_hs_e = value_or(pf_chief_set, 0)" ] },
+      {
+        "u_message": "[keep lab] meetings <global_val:pf_hs_a>, elections <global_val:pf_hs_b>, quarrels <global_val:pf_hs_c>, confidence votes <global_val:pf_hs_d>, chief <global_val:pf_hs_e> (0 none, 1 someone, 2 you): <global_val:pf_chief_name>.",
+        "type": "info"
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KL_law",
+    "//": "Keep lab: somebody puts a law to a vote now (a random law not in force, or one in force to do away with; triggers ignored).",
+    "effect": [
+      { "run_eocs": "PF_KEEP_count" },
+      {
+        "if": { "math": [ "pf_kp_n >= 2" ] },
+        "then": [
+          { "u_location_variable": { "global_val": "pf_kp_av" } },
+          { "math": [ "pf_kp_events = 0" ] },
+          { "math": [ "pf_kl_force = 1" ] },
+          { "math": [ "pf_kp_prop = 0" ] },
+          { "run_eocs": "PF_KEEP_law_step" },
+          { "math": [ "pf_kl_force = 0" ] }
+        ],
+        "else": [ { "u_message": "[keep lab] Fewer than 2 grown-ups who live here are in range.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KL_shirk",
+    "effect": [
+      { "math": [ "pf_hl_d = 99" ] },
+      { "u_location_variable": { "global_val": "pf_hl_av" } },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_KL_near_pf_kl_s",
+            "condition": {
+              "and": [
+                {
+                  "and": [
+                    { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+                    { "math": [ "value_or(u_pf_resident, 0) == 1" ] },
+                    { "math": [ "has_var(u_pf_uid)" ] }
+                  ]
+                },
+                {
+                  "not": {
+                    "and": [
+                      { "math": [ "value_or(pf_chief_set, 0) == 1" ] },
+                      { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_chief_uid" } ] }
+                    ]
+                  }
+                }
+              ]
+            },
+            "effect": [
+              { "u_location_variable": { "u_val": "pf_pos" } },
+              {
+                "if": { "math": [ "distance(u_pf_pos, pf_hl_av) < pf_hl_d" ] },
+                "then": [
+                  { "math": [ "pf_hl_d = distance(u_pf_pos, pf_hl_av)" ] },
+                  { "u_set_talker": { "global_val": "pf_kl_s" } },
+                  { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_kl_s_uid" } },
+                  { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_kl_s_name" }, "parse_tags": true }
+                ]
+              }
+            ]
+          }
+        ],
+        "local": true,
+        "npc_range": 30
+      },
+      {
+        "if": { "math": [ "pf_hl_d < 99" ] },
+        "then": [
+          { "math": [ "pf_tithe_shirk = 1" ] },
+          { "copy_var": { "global_val": "pf_kl_s_uid" }, "target_var": { "global_val": "pf_tithe_shirk_uid" } },
+          { "copy_var": { "global_val": "pf_kl_s_name" }, "target_var": { "global_val": "pf_tithe_shirk_name" } },
+          { "math": [ "pf_law_tithe = 1" ] },
+          { "math": [ "pf_tithe_week = value_or(pf_tithe_week, 0) + 4" ] },
+          {
+            "u_message": "[keep lab] The tithe is law, and <global_val:pf_kl_s_name> has kept their share back (it comes up at the next meeting).",
+            "type": "info"
+          }
+        ],
+        "else": [ { "u_message": "[keep lab] Nobody who lives here is near.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KL_rest",
+    "//": "Keep lab: the rest day's morning, now.",
+    "effect": [ { "run_eocs": "PF_KEEP_rest_now" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KL_laws",
+    "effect": [
+      { "math": [ "pf_hs_a = value_or(pf_law_watch, 0)" ] },
+      { "math": [ "pf_hs_b = value_or(pf_law_dark, 0)" ] },
+      { "math": [ "pf_hs_c = value_or(pf_law_tithe, 0)" ] },
+      { "math": [ "pf_hs_d = value_or(pf_law_rest, 0)" ] },
+      { "math": [ "pf_hs_e = value_or(pf_law_door, 0)" ] },
+      { "math": [ "pf_hs_f = value_or(pf_laws_passed_total, 0)" ] },
+      { "math": [ "pf_hs_g = value_or(pf_laws_failed_total, 0)" ] },
+      { "math": [ "pf_hs_h = value_or(pf_tithe_total, 0)" ] },
+      {
+        "u_message": "[keep lab] laws: watch <global_val:pf_hs_a>, dark <global_val:pf_hs_b>, tithe <global_val:pf_hs_c>, rest <global_val:pf_hs_d>, door <global_val:pf_hs_e>.  Passed or repealed <global_val:pf_hs_f>, failed <global_val:pf_hs_g>, tithe so far <global_val:pf_hs_h>.",
+        "type": "info"
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KL_lord",
+    "effect": [
+      {
+        "if": { "math": [ "value_or(pf_chief_set, 0) > 0" ] },
+        "then": [
+          { "math": [ "pf_law_lord = 1" ] },
+          { "math": [ "pf_law_lord_t = time('now')" ] },
+          { "u_message": "[keep lab] The chief is lord for life now (the law is in force).", "type": "info" }
+        ],
+        "else": [ { "u_message": "[keep lab] There's no chief to make lord.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KL_succeed",
+    "//": "Keep lab: the lord names an heir, then hands over the chair as if they had died (they don't).",
+    "effect": [
+      {
+        "if": { "and": [ { "math": [ "value_or(pf_law_lord, 0) == 1" ] }, { "math": [ "value_or(pf_chief_set, 0) == 1" ] } ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_chief_uid" }, "target_var": { "global_val": "pf_find_uid" } },
+          { "run_eocs": "PF_FIND_by_uid" },
+          {
+            "if": { "math": [ "pf_find_ok == 1" ] },
+            "then": [
+              { "copy_var": { "global_val": "pf_find_who" }, "target_var": { "global_val": "pf_kp_chief_t" } },
+              { "math": [ "pf_kp_events = 0" ] },
+              { "run_eocs": "PF_KEEP_heir_step" },
+              { "copy_var": { "global_val": "pf_chief_name" }, "target_var": { "global_val": "pf_chief_dead_name" } },
+              { "run_eocs": "PF_KEEP_succession" }
+            ],
+            "else": [ { "u_message": "[keep lab] The lord isn't here.", "type": "info" } ]
+          }
+        ],
+        "else": [ { "u_message": "[keep lab] There's no NPC lord.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KL_outcast",
+    "effect": [
+      { "math": [ "pf_hl_d = 99" ] },
+      { "u_location_variable": { "global_val": "pf_hl_av" } },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_KL_near_pf_kl_o",
+            "condition": {
+              "and": [
+                {
+                  "and": [
+                    { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+                    { "math": [ "value_or(u_pf_resident, 0) == 1" ] },
+                    { "math": [ "has_var(u_pf_uid)" ] }
+                  ]
+                },
+                {
+                  "not": {
+                    "and": [
+                      { "math": [ "value_or(pf_chief_set, 0) == 1" ] },
+                      { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_chief_uid" } ] }
+                    ]
+                  }
+                }
+              ]
+            },
+            "effect": [
+              { "u_location_variable": { "u_val": "pf_pos" } },
+              {
+                "if": { "math": [ "distance(u_pf_pos, pf_hl_av) < pf_hl_d" ] },
+                "then": [
+                  { "math": [ "pf_hl_d = distance(u_pf_pos, pf_hl_av)" ] },
+                  { "u_set_talker": { "global_val": "pf_kl_o" } },
+                  { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_kl_o_uid" } },
+                  { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_kl_o_name" }, "parse_tags": true }
+                ]
+              }
+            ]
+          }
+        ],
+        "local": true,
+        "npc_range": 30
+      },
+      {
+        "if": { "math": [ "pf_hl_d < 99" ] },
+        "then": [
+          {
+            "u_run_npc_eocs": [
+              {
+                "id": "PF_KL_shun",
+                "condition": {
+                  "and": [
+                    {
+                      "and": [
+                        { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+                        { "math": [ "value_or(u_pf_resident, 0) == 1" ] },
+                        { "math": [ "has_var(u_pf_uid)" ] }
+                      ]
+                    },
+                    { "not": { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_kl_o_uid" } ] } }
+                  ]
+                },
+                "effect": [
+                  { "copy_var": { "global_val": "pf_kl_o_uid" }, "target_var": { "global_val": "pf_m_other" } },
+                  { "math": [ "pf_mv_role = 1" ] },
+                  { "math": [ "pf_m_str_in = 90" ] },
+                  { "run_eocs": "PF_MV_betrayal" }
+                ]
+              }
+            ],
+            "local": true,
+            "npc_range": 60
+          },
+          { "math": [ "pf_ex_last = -999999" ] },
+          {
+            "u_message": "[keep lab] Everyone who lives here now feels betrayed by <global_val:pf_kl_o_name>: the next meeting votes on putting them out.",
+            "type": "info"
+          }
+        ],
+        "else": [ { "u_message": "[keep lab] Nobody who lives here is near (not the chief).", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KL_rule",
+    "effect": [
+      { "math": [ "pf_hs_a = value_or(pf_law_lord, 0)" ] },
+      { "math": [ "pf_hs_b = value_or(pf_heir_set, 0)" ] },
+      { "math": [ "pf_hs_c = value_or(pf_successions_total, 0)" ] },
+      { "math": [ "pf_hs_d = value_or(pf_coups_total, 0)" ] },
+      { "math": [ "pf_hs_e = value_or(pf_exiles_total, 0)" ] },
+      {
+        "u_message": "[keep lab] lord law <global_val:pf_hs_a>, chief <global_val:pf_chief_name>, heir set <global_val:pf_hs_b> (<global_val:pf_heir_name>), successions <global_val:pf_hs_c>, coups <global_val:pf_hs_d>, exiles <global_val:pf_hs_e>.",
+        "type": "info"
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KL_wall_side",
+    "//": "Keep lab: the next side of the wall goes up now.",
+    "effect": [
+      {
+        "if": { "math": [ "value_or(pf_wall_state, 0) == 0" ] },
+        "then": [ { "math": [ "pf_wall_state = 1" ] }, { "math": [ "pf_wall_side = 0" ] } ]
+      },
+      {
+        "if": { "math": [ "pf_wall_state == 1" ] },
+        "then": [
+          { "run_eocs": "PF_KEEP_wall_side" },
+          {
+            "u_message": "[keep lab] Side <global_val:pf_wall_side> (<global_val:pf_wl_name>) built; <global_val:pf_wl_moved> moved off the line.",
+            "type": "info"
+          }
+        ],
+        "else": [ { "u_message": "[keep lab] The wall is finished.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KL_wall_redo",
+    "//": "Keep lab: the side of the wall nearest you goes up again (walls where it's open ground again; anyone on the line steps off first).",
+    "effect": [
+      {
+        "if": { "math": [ "value_or(pf_wall_state, 0) == 0" ] },
+        "then": [ { "u_message": "[keep lab] There's no wall.", "type": "info" } ],
+        "else": [
+          { "u_location_variable": { "global_val": "pf_kl_wpos" } },
+          { "math": [ "_x = pf_kl_wpos.x - pf_home_loc.x" ] },
+          { "math": [ "_y = pf_kl_wpos.y - pf_home_loc.y" ] },
+          { "math": [ "_s = abs(_y) >= abs(_x) ? (_y < 0 ? 1 : 3) : (_x > 0 ? 2 : 4)" ] },
+          { "math": [ "pf_kl_wstate = pf_wall_state" ] },
+          { "math": [ "pf_kl_wside = pf_wall_side" ] },
+          { "math": [ "pf_wall_state = 1" ] },
+          { "math": [ "pf_wall_side = _s - 1" ] },
+          { "run_eocs": "PF_KEEP_wall_side" },
+          { "math": [ "pf_wall_state = pf_kl_wstate" ] },
+          { "math": [ "pf_wall_side = pf_kl_wside" ] },
+          {
+            "u_message": "[keep lab] Rebuilt the <global_val:pf_wl_name> side; <global_val:pf_wl_moved> moved off the line.",
+            "type": "info"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KL_siege_warn",
+    "effect": [
+      { "math": [ "pf_sg_state = 0" ] },
+      { "run_eocs": "PF_SIEGE_warn" },
+      { "math": [ "pf_sg_day = floor(time('now') / time('1 d'))" ] },
+      { "u_message": "[keep lab] The horde comes tonight (from 21:00).", "type": "info" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KL_siege_wave",
+    "//": "Keep lab: the next wave now (it counts as the siege night).",
+    "effect": [
+      {
+        "if": { "math": [ "value_or(pf_sg_state, 0) == 1" ] },
+        "then": [
+          {
+            "if": { "math": [ "pf_sg_wave == 0" ] },
+            "then": [
+              { "math": [ "pf_sg_t0 = time('now')" ] },
+              { "math": [ "pf_sg_deaths0 = value_or(pf_ours_dead_total, 0)" ] },
+              { "math": [ "pf_sg_guest_dead = 0" ] },
+              { "math": [ "pf_sg_n = clamp(4 + value_or(pf_residents_n, 0) / 2, 4, 12)" ] }
+            ]
+          },
+          { "math": [ "pf_sg_day = floor(time('now') / time('1 d'))" ] },
+          { "math": [ "pf_sg_t0 = time('now') - time('40 m') * pf_sg_wave" ] },
+          { "run_eocs": "PF_SIEGE_wave" }
+        ],
+        "else": [ { "u_message": "[keep lab] No horde is coming (use the warning first).", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KL_siege_end",
+    "effect": [
+      {
+        "if": { "math": [ "value_or(pf_sg_state, 0) == 1" ] },
+        "then": [ { "run_eocs": "PF_SIEGE_end" } ],
+        "else": [ { "u_message": "[keep lab] There's no siege.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KL_walls",
+    "effect": [
+      { "math": [ "pf_hs_a = value_or(pf_wall_state, 0)" ] },
+      { "math": [ "pf_hs_b = value_or(pf_wall_side, 0)" ] },
+      { "math": [ "pf_hs_c = value_or(pf_sg_state, 0)" ] },
+      { "math": [ "pf_hs_d = value_or(pf_sg_wave, 0)" ] },
+      { "math": [ "pf_hs_e = value_or(pf_sieges_held, 0)" ] },
+      {
+        "u_message": "[keep lab] wall state <global_val:pf_hs_a> (0 none, 1 going up, 2 done), sides <global_val:pf_hs_b>, siege state <global_val:pf_hs_c>, wave <global_val:pf_hs_d>, sieges held <global_val:pf_hs_e>.",
+        "type": "info"
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KL_nb_contact",
+    "effect": [
+      {
+        "if": { "math": [ "value_or(pf_st_n, 0) < 3" ] },
+        "then": [ { "run_eocs": "PF_NB_found" } ],
+        "else": [ { "u_message": "[keep lab] Three settlements already know of you.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KL_nb_envoy",
+    "effect": [
+      {
+        "if": { "math": [ "value_or(pf_st_n, 0) > 0" ] },
+        "then": [
+          { "u_location_variable": { "global_val": "pf_kp_av" } },
+          { "math": [ "pf_st_rot = (value_or(pf_st_rot, -1) + 1) % pf_st_n" ] },
+          { "math": [ "pf_st_i = pf_st_rot" ] },
+          { "run_eocs": "PF_NB_envoy" }
+        ],
+        "else": [ { "u_message": "[keep lab] Nobody knows of the place yet.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KL_nb_week",
+    "//": "Keep lab: a week's agreements, tribute and arming, now.",
+    "effect": [
+      {
+        "if": { "math": [ "value_or(pf_st_n, 0) > 0" ] },
+        "then": [
+          { "math": [ "pf_st_i = 0" ] },
+          { "run_eocs": "PF_NB_upkeep", "condition": { "math": [ "pf_st_i < pf_st_n" ] }, "iterations": 4 }
+        ],
+        "else": [ { "u_message": "[keep lab] Nobody knows of the place yet.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KL_nb_raid",
+    "//": "Keep lab: the first settlement raids the place now.",
+    "effect": [
+      {
+        "if": { "math": [ "value_or(pf_st_n, 0) > 0" ] },
+        "then": [
+          { "math": [ "pf_st_i = 0" ] },
+          {
+            "set_string_var": "pf_st_kind_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rkind" },
+            "parse_tags": true
+          },
+          { "math": [ "pf_cur_kind = value_or(v_rkind, 0)" ] },
+          {
+            "set_string_var": "pf_st_rel_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rrel" },
+            "parse_tags": true
+          },
+          { "math": [ "pf_cur_rel = value_or(v_rrel, 0)" ] },
+          {
+            "set_string_var": "pf_st_pact_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rpact" },
+            "parse_tags": true
+          },
+          { "math": [ "pf_cur_pact = value_or(v_rpact, 0)" ] },
+          {
+            "set_string_var": "pf_st_trib_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rtrib" },
+            "parse_tags": true
+          },
+          { "math": [ "pf_cur_trib = value_or(v_rtrib, 0)" ] },
+          {
+            "set_string_var": "pf_st_str_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rstr" },
+            "parse_tags": true
+          },
+          { "math": [ "pf_cur_str = value_or(v_rstr, 0)" ] },
+          {
+            "set_string_var": "pf_st_raid_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rraid" },
+            "parse_tags": true
+          },
+          { "math": [ "pf_cur_raid = value_or(v_rraid, 0)" ] },
+          {
+            "set_string_var": "pf_st_kin_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rkin" },
+            "parse_tags": true
+          },
+          { "math": [ "pf_cur_kin = value_or(v_rkin, 0)" ] },
+          {
+            "set_string_var": "pf_st_name_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rname" },
+            "parse_tags": true
+          },
+          { "copy_var": { "var_val": "rname" }, "target_var": { "global_val": "pf_cur_name" } },
+          {
+            "set_string_var": "pf_st_lead_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rlead" },
+            "parse_tags": true
+          },
+          { "copy_var": { "var_val": "rlead" }, "target_var": { "global_val": "pf_cur_lead" } },
+          {
+            "set_string_var": "pf_st_dir_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rdir" },
+            "parse_tags": true
+          },
+          { "copy_var": { "var_val": "rdir" }, "target_var": { "global_val": "pf_cur_dir" } },
+          { "run_eocs": "PF_NB_raid" }
+        ],
+        "else": [ { "u_message": "[keep lab] Nobody knows of the place yet.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KL_nb_raid_win",
+    "//": "Keep lab: the first settlement raids the place now, and gets through (the stores are topped up to 12 first).",
+    "effect": [
+      {
+        "if": { "math": [ "value_or(pf_st_n, 0) > 0" ] },
+        "then": [
+          { "math": [ "pf_st_i = 0" ] },
+          { "math": [ "pf_stores = max(value_or(pf_stores, 0), 12)" ] },
+          { "math": [ "pf_kl_nb_force = 1" ] },
+          {
+            "set_string_var": "pf_st_kind_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rkind" },
+            "parse_tags": true
+          },
+          { "math": [ "pf_cur_kind = value_or(v_rkind, 0)" ] },
+          {
+            "set_string_var": "pf_st_rel_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rrel" },
+            "parse_tags": true
+          },
+          { "math": [ "pf_cur_rel = value_or(v_rrel, 0)" ] },
+          {
+            "set_string_var": "pf_st_pact_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rpact" },
+            "parse_tags": true
+          },
+          { "math": [ "pf_cur_pact = value_or(v_rpact, 0)" ] },
+          {
+            "set_string_var": "pf_st_trib_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rtrib" },
+            "parse_tags": true
+          },
+          { "math": [ "pf_cur_trib = value_or(v_rtrib, 0)" ] },
+          {
+            "set_string_var": "pf_st_str_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rstr" },
+            "parse_tags": true
+          },
+          { "math": [ "pf_cur_str = value_or(v_rstr, 0)" ] },
+          {
+            "set_string_var": "pf_st_raid_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rraid" },
+            "parse_tags": true
+          },
+          { "math": [ "pf_cur_raid = value_or(v_rraid, 0)" ] },
+          {
+            "set_string_var": "pf_st_kin_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rkin" },
+            "parse_tags": true
+          },
+          { "math": [ "pf_cur_kin = value_or(v_rkin, 0)" ] },
+          {
+            "set_string_var": "pf_st_name_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rname" },
+            "parse_tags": true
+          },
+          { "copy_var": { "var_val": "rname" }, "target_var": { "global_val": "pf_cur_name" } },
+          {
+            "set_string_var": "pf_st_lead_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rlead" },
+            "parse_tags": true
+          },
+          { "copy_var": { "var_val": "rlead" }, "target_var": { "global_val": "pf_cur_lead" } },
+          {
+            "set_string_var": "pf_st_dir_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rdir" },
+            "parse_tags": true
+          },
+          { "copy_var": { "var_val": "rdir" }, "target_var": { "global_val": "pf_cur_dir" } },
+          { "run_eocs": "PF_NB_raid" },
+          { "math": [ "pf_kl_nb_force = 0" ] }
+        ],
+        "else": [ { "u_message": "[keep lab] Nobody knows of the place yet.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KL_nb_sour",
+    "effect": [
+      {
+        "if": { "math": [ "value_or(pf_st_n, 0) > 0" ] },
+        "then": [
+          { "math": [ "pf_st_i = 0" ] },
+          {
+            "set_string_var": "pf_st_kind_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rkind" },
+            "parse_tags": true
+          },
+          { "math": [ "pf_cur_kind = value_or(v_rkind, 0)" ] },
+          {
+            "set_string_var": "pf_st_rel_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rrel" },
+            "parse_tags": true
+          },
+          { "math": [ "pf_cur_rel = value_or(v_rrel, 0)" ] },
+          {
+            "set_string_var": "pf_st_pact_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rpact" },
+            "parse_tags": true
+          },
+          { "math": [ "pf_cur_pact = value_or(v_rpact, 0)" ] },
+          {
+            "set_string_var": "pf_st_trib_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rtrib" },
+            "parse_tags": true
+          },
+          { "math": [ "pf_cur_trib = value_or(v_rtrib, 0)" ] },
+          {
+            "set_string_var": "pf_st_str_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rstr" },
+            "parse_tags": true
+          },
+          { "math": [ "pf_cur_str = value_or(v_rstr, 0)" ] },
+          {
+            "set_string_var": "pf_st_raid_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rraid" },
+            "parse_tags": true
+          },
+          { "math": [ "pf_cur_raid = value_or(v_rraid, 0)" ] },
+          {
+            "set_string_var": "pf_st_kin_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rkin" },
+            "parse_tags": true
+          },
+          { "math": [ "pf_cur_kin = value_or(v_rkin, 0)" ] },
+          {
+            "set_string_var": "pf_st_name_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rname" },
+            "parse_tags": true
+          },
+          { "copy_var": { "var_val": "rname" }, "target_var": { "global_val": "pf_cur_name" } },
+          {
+            "set_string_var": "pf_st_lead_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rlead" },
+            "parse_tags": true
+          },
+          { "copy_var": { "var_val": "rlead" }, "target_var": { "global_val": "pf_cur_lead" } },
+          {
+            "set_string_var": "pf_st_dir_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rdir" },
+            "parse_tags": true
+          },
+          { "copy_var": { "var_val": "rdir" }, "target_var": { "global_val": "pf_cur_dir" } },
+          { "math": [ "pf_cur_rel = -40" ] },
+          {
+            "set_string_var": "pf_st_kind_<global_val:pf_st_i>",
+            "target_var": { "context_val": "wkind" },
+            "parse_tags": true
+          },
+          { "math": [ "v_wkind = pf_cur_kind" ] },
+          {
+            "set_string_var": "pf_st_rel_<global_val:pf_st_i>",
+            "target_var": { "context_val": "wrel" },
+            "parse_tags": true
+          },
+          { "math": [ "v_wrel = pf_cur_rel" ] },
+          {
+            "set_string_var": "pf_st_pact_<global_val:pf_st_i>",
+            "target_var": { "context_val": "wpact" },
+            "parse_tags": true
+          },
+          { "math": [ "v_wpact = pf_cur_pact" ] },
+          {
+            "set_string_var": "pf_st_trib_<global_val:pf_st_i>",
+            "target_var": { "context_val": "wtrib" },
+            "parse_tags": true
+          },
+          { "math": [ "v_wtrib = pf_cur_trib" ] },
+          {
+            "set_string_var": "pf_st_str_<global_val:pf_st_i>",
+            "target_var": { "context_val": "wstr" },
+            "parse_tags": true
+          },
+          { "math": [ "v_wstr = pf_cur_str" ] },
+          {
+            "set_string_var": "pf_st_raid_<global_val:pf_st_i>",
+            "target_var": { "context_val": "wraid" },
+            "parse_tags": true
+          },
+          { "math": [ "v_wraid = pf_cur_raid" ] },
+          {
+            "set_string_var": "pf_st_kin_<global_val:pf_st_i>",
+            "target_var": { "context_val": "wkin" },
+            "parse_tags": true
+          },
+          { "math": [ "v_wkin = pf_cur_kin" ] },
+          {
+            "set_string_var": "pf_st_name_<global_val:pf_st_i>",
+            "target_var": { "context_val": "wname" },
+            "parse_tags": true
+          },
+          { "copy_var": { "global_val": "pf_cur_name" }, "target_var": { "var_val": "wname" } },
+          {
+            "set_string_var": "pf_st_lead_<global_val:pf_st_i>",
+            "target_var": { "context_val": "wlead" },
+            "parse_tags": true
+          },
+          { "copy_var": { "global_val": "pf_cur_lead" }, "target_var": { "var_val": "wlead" } },
+          {
+            "set_string_var": "pf_st_dir_<global_val:pf_st_i>",
+            "target_var": { "context_val": "wdir" },
+            "parse_tags": true
+          },
+          { "copy_var": { "global_val": "pf_cur_dir" }, "target_var": { "var_val": "wdir" } },
+          {
+            "u_message": "[keep lab] <global_val:pf_cur_name> is hostile now (the next week, they arm).",
+            "type": "info"
+          }
+        ],
+        "else": [ { "u_message": "[keep lab] Nobody knows of the place yet.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KL_nb_warm",
+    "effect": [
+      {
+        "if": { "math": [ "value_or(pf_st_n, 0) > 0" ] },
+        "then": [
+          { "math": [ "pf_st_i = 0" ] },
+          {
+            "set_string_var": "pf_st_kind_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rkind" },
+            "parse_tags": true
+          },
+          { "math": [ "pf_cur_kind = value_or(v_rkind, 0)" ] },
+          {
+            "set_string_var": "pf_st_rel_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rrel" },
+            "parse_tags": true
+          },
+          { "math": [ "pf_cur_rel = value_or(v_rrel, 0)" ] },
+          {
+            "set_string_var": "pf_st_pact_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rpact" },
+            "parse_tags": true
+          },
+          { "math": [ "pf_cur_pact = value_or(v_rpact, 0)" ] },
+          {
+            "set_string_var": "pf_st_trib_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rtrib" },
+            "parse_tags": true
+          },
+          { "math": [ "pf_cur_trib = value_or(v_rtrib, 0)" ] },
+          {
+            "set_string_var": "pf_st_str_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rstr" },
+            "parse_tags": true
+          },
+          { "math": [ "pf_cur_str = value_or(v_rstr, 0)" ] },
+          {
+            "set_string_var": "pf_st_raid_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rraid" },
+            "parse_tags": true
+          },
+          { "math": [ "pf_cur_raid = value_or(v_rraid, 0)" ] },
+          {
+            "set_string_var": "pf_st_kin_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rkin" },
+            "parse_tags": true
+          },
+          { "math": [ "pf_cur_kin = value_or(v_rkin, 0)" ] },
+          {
+            "set_string_var": "pf_st_name_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rname" },
+            "parse_tags": true
+          },
+          { "copy_var": { "var_val": "rname" }, "target_var": { "global_val": "pf_cur_name" } },
+          {
+            "set_string_var": "pf_st_lead_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rlead" },
+            "parse_tags": true
+          },
+          { "copy_var": { "var_val": "rlead" }, "target_var": { "global_val": "pf_cur_lead" } },
+          {
+            "set_string_var": "pf_st_dir_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rdir" },
+            "parse_tags": true
+          },
+          { "copy_var": { "var_val": "rdir" }, "target_var": { "global_val": "pf_cur_dir" } },
+          { "math": [ "pf_cur_rel = 50" ] },
+          {
+            "set_string_var": "pf_st_kind_<global_val:pf_st_i>",
+            "target_var": { "context_val": "wkind" },
+            "parse_tags": true
+          },
+          { "math": [ "v_wkind = pf_cur_kind" ] },
+          {
+            "set_string_var": "pf_st_rel_<global_val:pf_st_i>",
+            "target_var": { "context_val": "wrel" },
+            "parse_tags": true
+          },
+          { "math": [ "v_wrel = pf_cur_rel" ] },
+          {
+            "set_string_var": "pf_st_pact_<global_val:pf_st_i>",
+            "target_var": { "context_val": "wpact" },
+            "parse_tags": true
+          },
+          { "math": [ "v_wpact = pf_cur_pact" ] },
+          {
+            "set_string_var": "pf_st_trib_<global_val:pf_st_i>",
+            "target_var": { "context_val": "wtrib" },
+            "parse_tags": true
+          },
+          { "math": [ "v_wtrib = pf_cur_trib" ] },
+          {
+            "set_string_var": "pf_st_str_<global_val:pf_st_i>",
+            "target_var": { "context_val": "wstr" },
+            "parse_tags": true
+          },
+          { "math": [ "v_wstr = pf_cur_str" ] },
+          {
+            "set_string_var": "pf_st_raid_<global_val:pf_st_i>",
+            "target_var": { "context_val": "wraid" },
+            "parse_tags": true
+          },
+          { "math": [ "v_wraid = pf_cur_raid" ] },
+          {
+            "set_string_var": "pf_st_kin_<global_val:pf_st_i>",
+            "target_var": { "context_val": "wkin" },
+            "parse_tags": true
+          },
+          { "math": [ "v_wkin = pf_cur_kin" ] },
+          {
+            "set_string_var": "pf_st_name_<global_val:pf_st_i>",
+            "target_var": { "context_val": "wname" },
+            "parse_tags": true
+          },
+          { "copy_var": { "global_val": "pf_cur_name" }, "target_var": { "var_val": "wname" } },
+          {
+            "set_string_var": "pf_st_lead_<global_val:pf_st_i>",
+            "target_var": { "context_val": "wlead" },
+            "parse_tags": true
+          },
+          { "copy_var": { "global_val": "pf_cur_lead" }, "target_var": { "var_val": "wlead" } },
+          {
+            "set_string_var": "pf_st_dir_<global_val:pf_st_i>",
+            "target_var": { "context_val": "wdir" },
+            "parse_tags": true
+          },
+          { "copy_var": { "global_val": "pf_cur_dir" }, "target_var": { "var_val": "wdir" } },
+          {
+            "u_message": "[keep lab] <global_val:pf_cur_name> is friendly now (their next envoy offers a pact).",
+            "type": "info"
+          }
+        ],
+        "else": [ { "u_message": "[keep lab] Nobody knows of the place yet.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KL_council",
+    "effect": [
+      { "math": [ "pf_law_lord = 0" ] },
+      { "math": [ "pf_law_council = 1" ] },
+      { "math": [ "pf_law_council_t = time('now')" ] },
+      { "math": [ "pf_cn_n = 0" ] },
+      { "math": [ "pf_cn_term = value_or(pf_cn_term, 0) + 1" ] },
+      {
+        "u_message": "[keep lab] A council of three is law; the next meeting chooses it (no lord any more).",
+        "type": "info"
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KL_cn_elect",
+    "//": "Keep lab: the council is chosen now.",
+    "effect": [
+      {
+        "if": { "math": [ "value_or(pf_law_council, 0) == 1" ] },
+        "then": [
+          { "run_eocs": "PF_KEEP_count" },
+          {
+            "if": { "math": [ "pf_kp_n >= 2" ] },
+            "then": [ { "u_location_variable": { "global_val": "pf_kp_av" } }, { "run_eocs": "PF_KEEP_council_election" } ],
+            "else": [ { "u_message": "[keep lab] Fewer than 2 grown-ups who live here are in range.", "type": "info" } ]
+          }
+        ],
+        "else": [ { "u_message": "[keep lab] The council isn't law (use the row before this).", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KL_cn_door",
+    "//": "Keep lab: a family at the door, for the council (a dry run).",
+    "effect": [
+      {
+        "if": { "math": [ "(value_or(pf_law_council, 0) == 1) * (value_or(pf_cn_n, 0) >= 2)" ] },
+        "then": [
+          { "set_string_var": "The Testers", "target_var": { "global_val": "pf_tj_name" } },
+          { "math": [ "pf_kl_dry = 1" ] },
+          { "run_eocs": "PF_KEEP_council_door" },
+          { "math": [ "pf_kl_dry = 0" ] },
+          {
+            "u_message": "[keep lab] (dry run: nobody moves in)  Councillors here: <global_val:pf_cnv_here>.",
+            "type": "info"
+          }
+        ],
+        "else": [ { "u_message": "[keep lab] There's no council.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KL_cn_stats",
+    "effect": [
+      {
+        "if": { "math": [ "(value_or(pf_law_council, 0) == 1) * (value_or(pf_cn_n, 0) >= 2)" ] },
+        "then": [
+          { "run_eocs": "PF_KEEP_cn_list" },
+          { "run_eocs": "PF_KEEP_cn_present" },
+          {
+            "u_message": "[keep lab] council: <global_val:pf_cn_list> (<global_val:pf_cn_spk>), here now <global_val:pf_cnv_here>, term <global_val:pf_cn_term>, councils chosen <global_val:pf_councils_total>, its rulings <global_val:pf_council_rulings_total>.",
+            "type": "info"
+          }
+        ],
+        "else": [
+          { "math": [ "pf_hs_a = value_or(pf_law_council, 0)" ] },
+          { "math": [ "pf_hs_b = value_or(pf_cn_n, 0)" ] },
+          {
+            "u_message": "[keep lab] No council sits (law <global_val:pf_hs_a>, seats <global_val:pf_hs_b>).",
+            "type": "info"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KL_nb_match",
+    "effect": [
+      {
+        "if": { "math": [ "value_or(pf_st_n, 0) > 0" ] },
+        "then": [
+          { "math": [ "pf_st_i = 0" ] },
+          {
+            "set_string_var": "pf_st_kind_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rkind" },
+            "parse_tags": true
+          },
+          { "math": [ "pf_cur_kind = value_or(v_rkind, 0)" ] },
+          {
+            "set_string_var": "pf_st_rel_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rrel" },
+            "parse_tags": true
+          },
+          { "math": [ "pf_cur_rel = value_or(v_rrel, 0)" ] },
+          {
+            "set_string_var": "pf_st_pact_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rpact" },
+            "parse_tags": true
+          },
+          { "math": [ "pf_cur_pact = value_or(v_rpact, 0)" ] },
+          {
+            "set_string_var": "pf_st_trib_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rtrib" },
+            "parse_tags": true
+          },
+          { "math": [ "pf_cur_trib = value_or(v_rtrib, 0)" ] },
+          {
+            "set_string_var": "pf_st_str_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rstr" },
+            "parse_tags": true
+          },
+          { "math": [ "pf_cur_str = value_or(v_rstr, 0)" ] },
+          {
+            "set_string_var": "pf_st_raid_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rraid" },
+            "parse_tags": true
+          },
+          { "math": [ "pf_cur_raid = value_or(v_rraid, 0)" ] },
+          {
+            "set_string_var": "pf_st_kin_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rkin" },
+            "parse_tags": true
+          },
+          { "math": [ "pf_cur_kin = value_or(v_rkin, 0)" ] },
+          {
+            "set_string_var": "pf_st_name_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rname" },
+            "parse_tags": true
+          },
+          { "copy_var": { "var_val": "rname" }, "target_var": { "global_val": "pf_cur_name" } },
+          {
+            "set_string_var": "pf_st_lead_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rlead" },
+            "parse_tags": true
+          },
+          { "copy_var": { "var_val": "rlead" }, "target_var": { "global_val": "pf_cur_lead" } },
+          {
+            "set_string_var": "pf_st_dir_<global_val:pf_st_i>",
+            "target_var": { "context_val": "rdir" },
+            "parse_tags": true
+          },
+          { "copy_var": { "var_val": "rdir" }, "target_var": { "global_val": "pf_cur_dir" } },
+          { "math": [ "pf_cur_rel = max(pf_cur_rel, 60)" ] },
+          { "math": [ "pf_cur_pact = 2" ] },
+          { "math": [ "pf_st_allied = 1" ] },
+          { "copy_var": { "global_val": "pf_cur_name" }, "target_var": { "global_val": "pf_st_ally_name" } },
+          { "math": [ "pf_cur_kin = 0" ] },
+          { "math": [ "pf_cur_trib = 0" ] },
+          {
+            "set_string_var": "pf_st_kind_<global_val:pf_st_i>",
+            "target_var": { "context_val": "wkind" },
+            "parse_tags": true
+          },
+          { "math": [ "v_wkind = pf_cur_kind" ] },
+          {
+            "set_string_var": "pf_st_rel_<global_val:pf_st_i>",
+            "target_var": { "context_val": "wrel" },
+            "parse_tags": true
+          },
+          { "math": [ "v_wrel = pf_cur_rel" ] },
+          {
+            "set_string_var": "pf_st_pact_<global_val:pf_st_i>",
+            "target_var": { "context_val": "wpact" },
+            "parse_tags": true
+          },
+          { "math": [ "v_wpact = pf_cur_pact" ] },
+          {
+            "set_string_var": "pf_st_trib_<global_val:pf_st_i>",
+            "target_var": { "context_val": "wtrib" },
+            "parse_tags": true
+          },
+          { "math": [ "v_wtrib = pf_cur_trib" ] },
+          {
+            "set_string_var": "pf_st_str_<global_val:pf_st_i>",
+            "target_var": { "context_val": "wstr" },
+            "parse_tags": true
+          },
+          { "math": [ "v_wstr = pf_cur_str" ] },
+          {
+            "set_string_var": "pf_st_raid_<global_val:pf_st_i>",
+            "target_var": { "context_val": "wraid" },
+            "parse_tags": true
+          },
+          { "math": [ "v_wraid = pf_cur_raid" ] },
+          {
+            "set_string_var": "pf_st_kin_<global_val:pf_st_i>",
+            "target_var": { "context_val": "wkin" },
+            "parse_tags": true
+          },
+          { "math": [ "v_wkin = pf_cur_kin" ] },
+          {
+            "set_string_var": "pf_st_name_<global_val:pf_st_i>",
+            "target_var": { "context_val": "wname" },
+            "parse_tags": true
+          },
+          { "copy_var": { "global_val": "pf_cur_name" }, "target_var": { "var_val": "wname" } },
+          {
+            "set_string_var": "pf_st_lead_<global_val:pf_st_i>",
+            "target_var": { "context_val": "wlead" },
+            "parse_tags": true
+          },
+          { "copy_var": { "global_val": "pf_cur_lead" }, "target_var": { "var_val": "wlead" } },
+          {
+            "set_string_var": "pf_st_dir_<global_val:pf_st_i>",
+            "target_var": { "context_val": "wdir" },
+            "parse_tags": true
+          },
+          { "copy_var": { "global_val": "pf_cur_dir" }, "target_var": { "var_val": "wdir" } },
+          { "math": [ "pf_kl_nb_match = 1" ] },
+          { "math": [ "pf_nb_mpend = 0" ] },
+          { "math": [ "pf_st_rot = pf_st_n - 1" ] },
+          {
+            "u_message": "[keep lab] <global_val:pf_cur_name> is close and agreed with you; their next envoy (t) offers a match.",
+            "type": "info"
+          }
+        ],
+        "else": [ { "u_message": "[keep lab] Nobody knows of the place yet.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KL_nb_agree",
+    "//": "Keep lab: skips the offer: the nearest free grown-up who lives here is promised to the first settlement's match (made open to romance if they weren't).",
+    "effect": [
+      {
+        "if": { "math": [ "value_or(pf_st_n, 0) > 0" ] },
+        "then": [
+          { "math": [ "pf_kl_ag = 0" ] },
+          {
+            "u_run_npc_eocs": [
+              {
+                "id": "PF_KL_nb_agree_one",
+                "condition": {
+                  "and": [
+                    {
+                      "and": [
+                        { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+                        { "math": [ "value_or(u_pf_resident, 0) == 1" ] },
+                        { "math": [ "has_var(u_pf_uid)" ] }
+                      ]
+                    },
+                    { "math": [ "value_or(u_pf_has_sweet, 0) == 0" ] },
+                    { "math": [ "pf_kl_ag == 0" ] }
+                  ]
+                },
+                "effect": [
+                  { "math": [ "pf_kl_ag = 1" ] },
+                  { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_nb_mp_uid" } },
+                  {
+                    "set_string_var": "<u_name>",
+                    "target_var": { "global_val": "pf_nb_mp_name" },
+                    "parse_tags": true
+                  },
+                  { "math": [ "pf_nb_mp_or = value_or(u_pf_orient, 2)" ] },
+                  { "math": [ "u_pf_rom = 1" ] }
+                ]
+              }
+            ],
+            "local": true,
+            "npc_range": 30
+          },
+          {
+            "if": { "math": [ "pf_kl_ag == 1" ] },
+            "then": [
+              { "math": [ "pf_st_i = 0" ] },
+              { "math": [ "pf_nb_mpend = 1" ] },
+              { "math": [ "pf_nb_mst = 0" ] },
+              { "math": [ "pf_nb_mday = floor(time('now') / time('1 d'))" ] },
+              {
+                "u_message": "[keep lab] A match is agreed for <global_val:pf_nb_mp_name> (the first settlement's; 'the one from the other place arrives now' brings them).",
+                "type": "info"
+              }
+            ],
+            "else": [ { "u_message": "[keep lab] No grown-up without a partner who lives here within 30 tiles.", "type": "info" } ]
+          }
+        ],
+        "else": [ { "u_message": "[keep lab] Nobody knows of the place yet.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KL_nb_wed",
+    "//": "Keep lab: the one from the other place arrives now.",
+    "effect": [
+      {
+        "if": { "math": [ "value_or(pf_nb_mpend, 0) == 1" ] },
+        "then": [ { "run_eocs": "PF_NB_match_arrive" } ],
+        "else": [ { "u_message": "[keep lab] No match is agreed.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KL_acquaint",
+    "//": "Keep lab: everyone who lives here gets to know each other (and you).",
+    "effect": [
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_KL_acq_a",
+            "condition": {
+              "and": [
+                { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+                { "math": [ "value_or(u_pf_resident, 0) == 1" ] },
+                { "math": [ "has_var(u_pf_uid)" ] }
+              ]
+            },
+            "effect": [
+              { "u_set_talker": { "global_val": "pf_kl_acq" } },
+              { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_kl_acq_uid" } },
+              { "math": [ "pf_m_str_in = 100" ] },
+              { "run_eocs": "PF_MK_shared_danger", "beta_talker": "avatar" },
+              {
+                "u_run_npc_eocs": [
+                  {
+                    "id": "PF_KL_acq_b",
+                    "condition": {
+                      "and": [
+                        {
+                          "and": [
+                            { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+                            { "math": [ "value_or(u_pf_resident, 0) == 1" ] },
+                            { "math": [ "has_var(u_pf_uid)" ] }
+                          ]
+                        },
+                        { "not": { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_kl_acq_uid" } ] } }
+                      ]
+                    },
+                    "effect": [
+                      { "math": [ "pf_m_str_in = 100" ] },
+                      {
+                        "run_eocs": "PF_MK_shared_danger",
+                        "alpha_talker": { "global_val": "pf_kl_acq" },
+                        "beta_talker": "u"
+                      }
+                    ]
+                  }
+                ],
+                "local": true,
+                "npc_range": 60
+              }
+            ]
+          }
+        ],
+        "local": true,
+        "npc_range": 60
+      },
+      {
+        "u_message": "[keep lab] Everyone who lives here has been through something together, you included (shared danger, each pair).",
+        "type": "info"
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KL_nv_door",
+    "effect": [
+      {
+        "if": { "math": [ "value_or(pf_nv_state, 0) == 1" ] },
+        "then": [
+          {
+            "u_run_npc_eocs": [ { "id": "PF_KL_nv_tp", "effect": [ { "u_teleport": { "global_val": "pf_nv_door" }, "force_safe": true } ] } ],
+            "unique_ids": [ { "global_val": "pf_nv_uid" } ],
+            "local": false
+          },
+          {
+            "u_message": "[keep lab] The envoy is at the door (they speak on the next minute's tick).",
+            "type": "info"
+          }
+        ],
+        "else": [ { "u_message": "[keep lab] No envoy is walking in.", "type": "info" } ]
+      }
+    ]
+  }
+]

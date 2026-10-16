@@ -1,0 +1,252 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_WATCH_on_sleep",
+    "//": "Signal: the avatar falls asleep.  The person who trusts you most takes the watch; whoever watched last time steps back (a rota).  When the town watch is up (v0.5 Town pass 3), it has the watch instead.",
+    "eoc_type": "EVENT",
+    "required_event": "character_falls_asleep",
+    "condition": "u_is_avatar",
+    "effect": [
+      {
+        "if": {
+          "and": [
+            { "math": [ "value_or(pf_wt_on, 0) == 1" ] },
+            { "math": [ "value_or(pf_wt_night, -1) == floor((time('now') - time('12 h')) / time('1 d'))" ] }
+          ]
+        },
+        "then": [ { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "watch_sleep" } } ],
+        "else": [
+          { "math": [ "pf_watch_active = 0" ] },
+          { "math": [ "pf_watch_band = 0" ] },
+          { "math": [ "pf_watch_best = -1" ] },
+          {
+            "if": {
+              "or": [
+                { "math": [ "u_hp('torso') <= u_hp_max('torso') * 0.8" ] },
+                { "math": [ "u_hp('head') <= u_hp_max('head') * 0.8" ] },
+                { "math": [ "u_hp('arm_l') <= u_hp_max('arm_l') * 0.8" ] },
+                { "math": [ "u_hp('arm_r') <= u_hp_max('arm_r') * 0.8" ] },
+                { "math": [ "u_hp('leg_l') <= u_hp_max('leg_l') * 0.8" ] },
+                { "math": [ "u_hp('leg_r') <= u_hp_max('leg_r') * 0.8" ] },
+                {
+                  "or": [
+                    { "u_has_effect": "bleed", "bodypart": "torso" },
+                    { "u_has_effect": "bleed", "bodypart": "head" },
+                    { "u_has_effect": "bleed", "bodypart": "eyes" },
+                    { "u_has_effect": "bleed", "bodypart": "mouth" },
+                    { "u_has_effect": "bleed", "bodypart": "arm_l" },
+                    { "u_has_effect": "bleed", "bodypart": "arm_r" },
+                    { "u_has_effect": "bleed", "bodypart": "hand_l" },
+                    { "u_has_effect": "bleed", "bodypart": "hand_r" },
+                    { "u_has_effect": "bleed", "bodypart": "leg_l" },
+                    { "u_has_effect": "bleed", "bodypart": "leg_r" },
+                    { "u_has_effect": "bleed", "bodypart": "foot_l" },
+                    { "u_has_effect": "bleed", "bodypart": "foot_r" },
+                    { "u_has_effect": "bite", "bodypart": "torso" },
+                    { "u_has_effect": "bite", "bodypart": "head" },
+                    { "u_has_effect": "bite", "bodypart": "eyes" },
+                    { "u_has_effect": "bite", "bodypart": "mouth" },
+                    { "u_has_effect": "bite", "bodypart": "arm_l" },
+                    { "u_has_effect": "bite", "bodypart": "arm_r" },
+                    { "u_has_effect": "bite", "bodypart": "hand_l" },
+                    { "u_has_effect": "bite", "bodypart": "hand_r" },
+                    { "u_has_effect": "bite", "bodypart": "leg_l" },
+                    { "u_has_effect": "bite", "bodypart": "leg_r" },
+                    { "u_has_effect": "bite", "bodypart": "foot_l" },
+                    { "u_has_effect": "bite", "bodypart": "foot_r" },
+                    { "u_has_effect": "bleed" },
+                    { "u_has_effect": "bite" }
+                  ]
+                }
+              ]
+            },
+            "then": [ { "math": [ "pf_watch_hurt = 1" ] } ],
+            "else": [ { "math": [ "pf_watch_hurt = 0" ] } ]
+          },
+          { "u_location_variable": { "global_val": "pf_watch_av" } },
+          { "u_run_npc_eocs": [ "PF_WATCH_candidate" ], "local": true, "npc_range": 20 },
+          {
+            "if": { "math": [ "pf_watch_best >= 0" ] },
+            "then": [
+              { "math": [ "pf_watch_active = 1" ] },
+              { "run_eocs": "PF_WATCH_take", "alpha_talker": { "global_val": "pf_watch_who" } }
+            ]
+          }
+        ]
+      },
+      {
+        "if": {
+          "or": [
+            { "math": [ "value_or(pf_watch_active, 0) == 1" ] },
+            {
+              "and": [
+                { "math": [ "value_or(pf_wt_on, 0) == 1" ] },
+                { "math": [ "value_or(pf_wt_night, -1) == floor((time('now') - time('12 h')) / time('1 d'))" ] }
+              ]
+            }
+          ]
+        },
+        "then": [ { "u_add_effect": "PF_sleep_easy", "duration": "12 h" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_WATCH_candidate",
+    "//": "u = a nearby NPC.  Trust, +15 if loyal, -20 if they watched last time.",
+    "effect": [
+      { "run_eocs": "PF_ID_ensure" },
+      { "set_string_var": "AVATAR", "target_var": { "global_val": "pf_m_other" } },
+      { "run_eocs": "PF_VIEW_read" },
+      { "math": [ "_score = pf_read_t + 5" ] },
+      { "if": { "u_has_trait": "PF_Q_LOYAL" }, "then": [ { "math": [ "_score += 15" ] } ] },
+      {
+        "if": { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_watch_last" } ] },
+        "then": [ { "math": [ "_score -= 20" ] } ]
+      },
+      { "run_eocs": "PF_FAM_watch_bonus" },
+      { "math": [ "_score += pf_fm_watch_add" ] },
+      { "if": { "math": [ "value_or(u_pf_role, 0) == 2" ] }, "then": [ { "math": [ "_score += 15" ] } ] },
+      { "if": { "u_has_trait": "PF_CHILD" }, "then": [ { "math": [ "_score = -1000" ] } ] },
+      {
+        "if": { "and": [ { "math": [ "_score >= 0" ] }, { "math": [ "_score > pf_watch_best" ] } ] },
+        "then": [ { "math": [ "pf_watch_best = _score" ] }, { "u_set_talker": { "global_val": "pf_watch_who" } } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_WATCH_take",
+    "effect": [
+      { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_watch_uid" } },
+      { "math": [ "pf_watch_t = time('now')" ] },
+      { "math": [ "pf_watch_band = (value_or(u_pf_resident, 0) == 0) * value_or(u_pf_band, 0)" ] },
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_watch_name" }, "parse_tags": true },
+      { "copy_var": { "global_val": "pf_watch_av" }, "target_var": { "u_val": "pf_walk_to" } },
+      { "location_variable_adjust": { "u_val": "pf_walk_to" }, "x_adjust": 2 },
+      { "u_set_guard_pos": { "u_val": "pf_walk_to" } },
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+      { "run_eocs": "PF_SAY", "alpha_talker": "avatar", "variables": { "line": "watch_take" } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_WATCH_on_wake",
+    "eoc_type": "EVENT",
+    "required_event": "character_wakes_up",
+    "condition": {
+      "and": [
+        "u_is_avatar",
+        { "math": [ "value_or(pf_watch_active, 0) == 1" ] },
+        { "math": [ "time('now') - value_or(pf_watch_t, 0) <= time('16 h')" ] }
+      ]
+    },
+    "effect": [
+      { "math": [ "pf_watch_active = 0" ] },
+      { "u_location_variable": { "global_val": "pf_watch_av" } },
+      { "copy_var": { "global_val": "pf_watch_uid" }, "target_var": { "global_val": "pf_find_uid" } },
+      { "run_eocs": "PF_FIND_by_uid" },
+      {
+        "if": { "math": [ "pf_find_ok == 1" ] },
+        "then": [ { "run_eocs": "PF_WATCH_done", "alpha_talker": { "global_val": "pf_find_who" } } ],
+        "else": [
+          {
+            "if": { "math": [ "value_or(pf_watch_band, 0) > 0" ] },
+            "then": [
+              {
+                "u_message": "<global_val:pf_watch_name> kept watch until first light, then went on with their people.",
+                "type": "info"
+              }
+            ],
+            "else": [ { "u_message": "Whoever had the watch is gone.", "type": "bad" } ]
+          }
+        ]
+      },
+      { "math": [ "pf_watch_band = 0" ] }
+    ]
+  },
+  {
+    "type": "effect_type",
+    "id": "PF_sleep_easy",
+    "name": [ "Sleeping easy" ],
+    "desc": [ "Someone has the watch.  You sleep through the small noises." ],
+    "rating": "good",
+    "max_duration": "12 h",
+    "enchantments": [ { "values": [ { "value": "HEARING_MULT", "multiply": -0.6 } ] } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_SLEEP_easy_end",
+    "//": "Awake again: your hearing is your own.",
+    "eoc_type": "EVENT",
+    "required_event": "character_wakes_up",
+    "condition": { "and": [ "u_is_avatar", { "u_has_effect": "PF_sleep_easy" } ] },
+    "effect": [ { "u_lose_effect": "PF_sleep_easy" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_WATCH_stale",
+    "//": "A watch older than a night (you never slept) closes quietly.",
+    "eoc_type": "EVENT",
+    "required_event": "character_wakes_up",
+    "condition": {
+      "and": [
+        "u_is_avatar",
+        { "math": [ "value_or(pf_watch_active, 0) == 1" ] },
+        { "math": [ "time('now') - value_or(pf_watch_t, 0) > time('16 h')" ] }
+      ]
+    },
+    "effect": [ { "math": [ "pf_watch_active = 0" ] }, { "math": [ "pf_watch_band = 0" ] } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_WATCH_done",
+    "//": "u = the watcher when you wake.  If they stayed close, a real night (3 hours or more) counts: watch_covered (watcher to you) and \"kept watch through the night\".  A nap gets a smaller line, or none under 30 minutes (playtest 3: \"kept watch through the night\" after a one-minute doze at 20:35).",
+    "effect": [
+      { "u_location_variable": { "u_val": "pf_pos" } },
+      {
+        "if": { "math": [ "distance(u_pf_pos, pf_watch_av) <= 20" ] },
+        "then": [
+          { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+          {
+            "if": { "math": [ "pf_watch_hurt == 1" ] },
+            "then": [
+              { "run_eocs": "PF_WOUND_heal", "alpha_talker": "avatar" },
+              { "run_eocs": "PF_SAY", "alpha_talker": "avatar", "variables": { "line": "watch_bandaged" } },
+              { "math": [ "pf_m_str_in = 80" ] },
+              { "run_eocs": "PF_MK_care_given", "beta_talker": "avatar" },
+              { "math": [ "pf_wound_last = time('now')" ] }
+            ],
+            "else": [
+              {
+                "if": { "math": [ "time('now') - value_or(pf_watch_t, 0) >= time('3 h')" ] },
+                "then": [
+                  {
+                    "if": {
+                      "math": [
+                        "(floor((value_or(pf_watch_t, 0) % time('1 d')) / time('1 h')) >= 6) * (floor((value_or(pf_watch_t, 0) % time('1 d')) / time('1 h')) < 18)"
+                      ]
+                    },
+                    "then": [ { "run_eocs": "PF_SAY", "alpha_talker": "avatar", "variables": { "line": "watch_done_day" } } ],
+                    "else": [ { "run_eocs": "PF_SAY", "alpha_talker": "avatar", "variables": { "line": "watch_done" } } ]
+                  }
+                ],
+                "else": [
+                  {
+                    "if": { "math": [ "time('now') - value_or(pf_watch_t, 0) >= time('30 m')" ] },
+                    "then": [ { "run_eocs": "PF_SAY", "alpha_talker": "avatar", "variables": { "line": "watch_short" } } ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "time('now') - value_or(pf_watch_t, 0) >= time('3 h')" ] },
+            "then": [ { "run_eocs": "PF_MK_watch_covered", "beta_talker": "avatar" } ]
+          },
+          { "copy_var": { "global_val": "pf_watch_uid" }, "target_var": { "global_val": "pf_watch_last" } }
+        ]
+      }
+    ]
+  }
+]

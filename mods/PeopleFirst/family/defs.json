@@ -1,0 +1,124 @@
+[
+  {
+    "type": "effect_type",
+    "id": "PF_preg_1",
+    "name": [ "Pregnant (early)" ],
+    "desc": [ "You're pregnant.  You get hungry more often, and some mornings are rough." ],
+    "rating": "neutral",
+    "show_in_info": true,
+    "enchantments": [ { "condition": "ALWAYS", "values": [ { "value": "HUNGER", "multiply": 0.15 } ] } ]
+  },
+  {
+    "type": "effect_type",
+    "id": "PF_preg_2",
+    "name": [ "Pregnant" ],
+    "desc": [ "You're pregnant.  You tire sooner and can't carry as much." ],
+    "rating": "neutral",
+    "show_in_info": true,
+    "enchantments": [
+      {
+        "condition": "ALWAYS",
+        "values": [
+          { "value": "HUNGER", "multiply": 0.25 },
+          { "value": "CARRY_WEIGHT", "add": -5000 },
+          { "value": "MAX_STAMINA", "multiply": -0.1 }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_type",
+    "id": "PF_preg_3",
+    "name": [ "Pregnant (late)" ],
+    "desc": [ "You're heavily pregnant.  You're slower, tire quickly, need more sleep, and can't carry much." ],
+    "rating": "neutral",
+    "show_in_info": true,
+    "enchantments": [
+      {
+        "condition": "ALWAYS",
+        "values": [
+          { "value": "HUNGER", "multiply": 0.3 },
+          { "value": "CARRY_WEIGHT", "add": -10000 },
+          { "value": "MAX_STAMINA", "multiply": -0.25 },
+          { "value": "SPEED", "multiply": -0.15 },
+          { "value": "SLEEPINESS", "multiply": 0.3 }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_type",
+    "id": "PF_infant",
+    "name": [ "Infant" ],
+    "desc": [ "A baby.  Can barely move on their own." ],
+    "//": "MUTE: babies don't bark vanilla combat lines ('Fuck this, go!' from an infant, 2026-10-11 test).",
+    "rating": "neutral",
+    "show_in_info": true,
+    "flags": [ "MUTE" ],
+    "enchantments": [ { "condition": "ALWAYS", "values": [ { "value": "SPEED", "multiply": -0.9 } ] } ]
+  },
+  {
+    "type": "effect_type",
+    "id": "PF_carrying_baby",
+    "name": [ "Carrying a baby" ],
+    "desc": [ "You have a baby in your arms or on your back." ],
+    "rating": "neutral",
+    "show_in_info": true,
+    "enchantments": [ { "condition": "ALWAYS", "values": [ { "value": "CARRY_WEIGHT", "add": -4000 } ] } ]
+  },
+  {
+    "type": "effect_type",
+    "id": "PF_partner_carries",
+    "name": [ "Partner carrying the load" ],
+    "desc": [ "Your partner is carrying the heavy stuff for you." ],
+    "rating": "good",
+    "show_in_info": true,
+    "enchantments": [ { "condition": "ALWAYS", "values": [ { "value": "CARRY_WEIGHT", "add": 7000 } ] } ]
+  },
+  {
+    "type": "effect_type",
+    "id": "PF_toddler",
+    "name": [ "Toddler" ],
+    "desc": [ "Little legs.  They get tired fast and need a hand." ],
+    "rating": "neutral",
+    "show_in_info": true,
+    "enchantments": [ { "condition": "ALWAYS", "values": [ { "value": "SPEED", "multiply": -0.35 } ] } ]
+  },
+  {
+    "type": "morale_type",
+    "id": "PF_morale_newparent",
+    "text": "New parent"
+  },
+  {
+    "type": "morale_type",
+    "id": "PF_morale_childloss",
+    "text": "Lost a child"
+  },
+  {
+    "type": "npc",
+    "id": "PF_FAM_BABY",
+    "//": "A newborn: tiny, a child, nearly immobile (PF_infant).  Stays where it was laid down (mission 2).",
+    "name_suffix": "baby",
+    "class": "NC_NONE",
+    "attitude": 0,
+    "mission": 2,
+    "faction": "no_faction",
+    "chat": "TALK_PF_BABY"
+  },
+  {
+    "type": "talk_topic",
+    "id": "TALK_PF_BABY",
+    "dynamic_line": "*the baby looks up at you and grabs at your finger*",
+    "responses": [ { "text": "*let them hold on for a while*", "topic": "TALK_DONE" } ]
+  },
+  {
+    "type": "talk_topic",
+    "id": "TALK_PF_KID",
+    "dynamic_line": {
+      "math": [ "value_or(n_pf_needs_home, 0) == 1" ],
+      "yes": "*won't look at you*  Everyone keeps saying it'll be okay.  It's not okay.",
+      "no": "Did you know you can tell how far away a storm is by counting?  I can count really high."
+    },
+    "responses": [ { "text": "Stay close to the grown-ups.", "topic": "TALK_DONE" } ]
+  }
+]

@@ -1,0 +1,836 @@
+diff --git a/src/action.cpp b/src/action.cpp
+index 590144c..0cac6b3 100644
+--- a/src/action.cpp
++++ b/src/action.cpp
+@@ -275,6 +275,8 @@ std::string action_ident( action_id act )
+             return "bionics";
+         case ACTION_MUTATIONS:
+             return "mutations";
++        case ACTION_PEOPLE_FIRST: // People First
++            return "people_first";
+         case ACTION_SORT_ARMOR:
+             return "sort_armor";
+         case ACTION_WAIT:
+@@ -988,6 +990,7 @@ action_id handle_action_menu( map &here )
+             REGISTER_ACTION( ACTION_WORKOUT );
+             REGISTER_ACTION( ACTION_BIONICS );
+             REGISTER_ACTION( ACTION_MUTATIONS );
++            REGISTER_ACTION( ACTION_PEOPLE_FIRST ); // People First
+             REGISTER_ACTION( ACTION_CONTROL_VEHICLE );
+             REGISTER_ACTION( ACTION_ITEMACTION );
+             REGISTER_ACTION( ACTION_TOGGLE_THIEF_MODE );
+diff --git a/src/action.h b/src/action.h
+index 686681a..93d4220 100644
+--- a/src/action.h
++++ b/src/action.h
+@@ -353,6 +353,8 @@ enum action_id : int {
+     ACTION_DISPLAY_NPC_ATTACK_POTENTIAL,
+     /** Toggle timing of the game hours */
+     ACTION_TOGGLE_HOUR_TIMER,
++    /** People First: open the People menu (runs the mod's EOC PF_open_menu) */
++    ACTION_PEOPLE_FIRST,
+     /** Not an action, serves as count of enumerated actions */
+     NUM_ACTIONS
+     /**@}*/
+diff --git a/src/avatar_action.cpp b/src/avatar_action.cpp
+index 8b677eb..14b4c47 100644
+--- a/src/avatar_action.cpp
++++ b/src/avatar_action.cpp
+@@ -83,6 +83,8 @@ static const itype_id itype_swim_fins( "swim_fins" );
+ static const itype_id itype_underbrush( "underbrush" );
+ 
+ static const json_character_flag json_flag_CANNOT_ATTACK( "CANNOT_ATTACK" );
++// People First: NPCs with this flag swap places when you walk into them.  The flag is defined by the mod.
++static const json_character_flag json_flag_PF_SWAP( "PF_SWAP" );
+ static const json_character_flag json_flag_CANNOT_MOVE( "CANNOT_MOVE" );
+ static const json_character_flag json_flag_ITEM_WATERPROOFING( "ITEM_WATERPROOFING" );
+ static const json_character_flag json_flag_WATERWALKING( "WATERWALKING" );
+@@ -432,6 +434,14 @@ bool avatar_action::move( avatar &you, map &m, const tripoint_rel_ms &d )
+         }
+ 
+         if( !np.is_enemy() ) {
++            // People First: people of the mod (PF_SWAP) step aside instead of opening the NPC menu,
++            // whose next keypress could be "attack".
++            if( np.has_flag( json_flag_PF_SWAP ) && you.get_grab_type() == object_type::NONE ) {
++                add_msg( _( "You swap places with %s." ), np.get_name() );
++                g->swap_critters( you, np );
++                you.mod_moves( -you.get_speed() );
++                return false;
++            }
+             g->npc_menu( np );
+             return false;
+         }
+diff --git a/src/ballistics.cpp b/src/ballistics.cpp
+index 9f2b5e1..23637ec 100644
+--- a/src/ballistics.cpp
++++ b/src/ballistics.cpp
+@@ -443,7 +443,8 @@ void projectile_attack( dealt_projectile_attack &attack, const projectile &proj_
+         for( size_t i = 1; i < traj_len && ( has_momentum || stream ); ++i ) {
+             tp = t_copy[i];
+             if( !here->inbounds( tp ) ) {
+-                debugmsg( "Shot along %s out-of-bounds", tp.to_string() );
++                // People First: a shot leaving the map is expected
++                add_msg_debug( debugmode::DF_BALLISTIC, "Shot along %s out-of-bounds", tp.to_string() );
+                 break;
+             }
+             int distance = rl_dist( source, tp );
+diff --git a/src/game.cpp b/src/game.cpp
+index dc083dd..dd9a5bc 100644
+--- a/src/game.cpp
++++ b/src/game.cpp
+@@ -2739,6 +2739,7 @@ input_context get_default_mode_input_context()
+     ctxt.register_action( "drop_adj" );
+     ctxt.register_action( "bionics" );
+     ctxt.register_action( "mutations" );
++    ctxt.register_action( "people_first" ); // People First
+     ctxt.register_action( "medical" );
+     ctxt.register_action( "bodystatus" );
+     ctxt.register_action( "sort_armor" );
+diff --git a/src/handle_action.cpp b/src/handle_action.cpp
+index 2da30ee..7961860 100644
+--- a/src/handle_action.cpp
++++ b/src/handle_action.cpp
+@@ -15,6 +15,9 @@
+ #include "auto_note.h"
+ #include "auto_pickup.h"
+ #include "avatar.h"
++#include "dialogue.h" // People First: the People key
++#include "effect_on_condition.h"
++#include "talker.h"
+ #include "avatar_action.h"
+ #include "bionics.h"
+ #include "bodygraph.h"
+@@ -2749,6 +2752,17 @@ bool game::do_regular_action( action_id &act, avatar &player_character,
+             player_character.power_mutations();
+             break;
+ 
++        case ACTION_PEOPLE_FIRST: { // People First: the People menu in one keypress
++            const effect_on_condition_id pf_menu( "PF_open_menu" );
++            if( pf_menu.is_valid() ) {
++                dialogue d( get_talker_for( get_avatar() ), nullptr );
++                pf_menu->activate( d );
++            } else {
++                add_msg( m_info, _( "The People First mod isn't loaded in this world." ) );
++            }
++            break;
++        }
++
+         case ACTION_SORT_ARMOR:
+             player_character.worn.sort_armor( player_character );
+             break;
+diff --git a/src/main_menu.cpp b/src/main_menu.cpp
+index 7206964..0a883fa 100644
+--- a/src/main_menu.cpp
++++ b/src/main_menu.cpp
+@@ -337,10 +337,20 @@ void main_menu::print_menu( const catacurses::window &w_open, int iSel, const po
+     }
+ 
+     if( mmenu_title.size() > 1 ) {
++        // People First (patch 25): center on the widest line; draw only what fits
++        int pf_art_w = 0;
+         for( const std::string &i_title : mmenu_title ) {
++            pf_art_w = std::max( pf_art_w, utf8_width_notags( i_title.c_str() ) );
++        }
++        const int pf_off_x = pf_art_w > FULL_SCREEN_WIDTH ? std::max( 0, ( window_width - pf_art_w ) / 2 ) : iOffsetX;
++        const int pf_max_lines = std::max( 1, window_height - 8 );
++        for( const std::string &i_title : mmenu_title ) {
++            if( iLine >= pf_max_lines ) {
++                break;
++            }
+             nc_color cur_color = c_white;
+             nc_color base_color = c_white;
+-            print_colored_text( w_open, point( iOffsetX, iLine++ ), cur_color, base_color, i_title );
++            print_colored_text( w_open, point( pf_off_x, iLine++ ), cur_color, base_color, i_title );
+         }
+     } else {
+         center_print( w_open, iLine++, c_light_cyan, mmenu_title[0] );
+@@ -349,6 +359,10 @@ void main_menu::print_menu( const catacurses::window &w_open, int iSel, const po
+     iLine++;
+     center_print( w_open, iLine, c_light_blue, string_format( _( "Version: 0.I (Ito) Stable Release" ),
+                   getVersionString() ) );
++    // People First: the fork's name under the version line (only where it can't run into the menu bar)
++    if( iLine + 1 < getmaxy( w_open ) - 4 ) {
++        center_print( w_open, iLine + 1, c_light_cyan, "People First" );
++    }
+ 
+     int menu_length = 0;
+     for( size_t i = 0; i < vMenuItems.size(); ++i ) {
+diff --git a/src/math_parser_diag.cpp b/src/math_parser_diag.cpp
+index a17ae9d..c6e2a85 100644
+--- a/src/math_parser_diag.cpp
++++ b/src/math_parser_diag.cpp
+@@ -1,4 +1,5 @@
+ #include "math_parser_diag.h"
++#include "avatar.h" // People First (patch 23) include
+ 
+ #include <algorithm>
+ #include <cstddef>
+@@ -1541,6 +1542,45 @@ void calories_ass( double val, dialogue &d, char scope,
+     d.actor( is_beta( scope ) )->mod_stored_kcal( difference, ignore_weariness );
+ }
+ 
++// People First (patch 23): u_pf_eat_share() = P, P percent of the item into u's stomach.
++double pf_eat_share_eval( const_dialogue const &d, char scope, std::vector<diag_value> const &, diag_kwargs const & )
++{
++    // People First (patch 23b): how much of the item (percent of one unit) still fits in u's stomach
++    Character const *ch = d.const_actor( is_beta( scope ) )->get_const_character();
++    item_location const *it = d.const_actor( !is_beta( scope ) )->get_const_item();
++    if( ch == nullptr || it == nullptr || !*it ) {
++        return 0.0;
++    }
++    const units::volume vol = ( *it )->volume() / std::max( 1, ( *it )->count() );
++    if( vol <= 0_ml ) {
++        return 100.0;
++    }
++    return std::clamp( 100.0 * units::to_milliliter( ch->stomach.stomach_remaining( *ch ) ) / units::to_milliliter( vol ),
++                       0.0, 100.0 );
++}
++
++void pf_eat_share_ass( double val, dialogue &d, char scope, std::vector<diag_value> const &, diag_kwargs const & )
++{
++    Character *ch = d.actor( is_beta( scope ) )->get_character();
++    item_location *it = d.actor( !is_beta( scope ) )->get_item();
++    if( ch == nullptr || it == nullptr || !*it || !( *it )->is_comestible() ) {
++        return;
++    }
++    const item &food = **it;
++    const double f = std::clamp( val, 0.0, 100.0 ) / 100.0;
++    nutrients n = ch->compute_effective_nutrients( food );
++    n *= f;
++    const std::pair<units::volume, units::volume> vol = ch->masticated_volume( food );
++    food_summary ingested{ vol.first * f, vol.second * ( ch->compute_effective_food_volume_ratio( food ) * f ), n };
++    ch->stomach.ingest( ingested );
++    if( ch->is_avatar() ) {
++        get_avatar().add_ingested_kcal( ingested.nutr.calories / 1000 );
++    }
++    for( const auto &v : ingested.nutr.vitamins() ) {
++        ch->daily_vitamins[v.first].first += v.second;
++    }
++}
++
+ double weight_eval( const_dialogue const &d, char scope,
+                     std::vector<diag_value> const & /* params */, diag_kwargs const & /* kwargs */ )
+ {
+@@ -1752,6 +1792,7 @@ std::map<std::string_view, dialogue_func> const dialogue_funcs{
+     { "vitamin", { "un", 1, vitamin_eval, vitamin_ass } },
+     { "calories", { "un", 0, calories_eval, calories_ass, { "format", "dont_affect_weariness" } } },
+     { "weight", { "un", 0, weight_eval } },
++    { "pf_eat_share", { "un", 0, pf_eat_share_eval, pf_eat_share_ass } }, // People First (patch 23) table
+     { "volume", { "un", 0, volume_eval } },
+     { "warmth", { "un", 1, warmth_eval } },
+     { "weather", { "g", 1, weather_eval, weather_ass } },
+diff --git a/src/npc.cpp b/src/npc.cpp
+index 1e7f383..c02d7d9 100644
+--- a/src/npc.cpp
++++ b/src/npc.cpp
+@@ -27,6 +27,7 @@
+ #include "damage.h"
+ #include "debug.h"
+ #include "dialogue.h"
++#include "math_parser_diag_value.h" // People First (patch 20) include
+ #include "dialogue_chatbin.h"
+ #include "effect.h"
+ #include "effect_on_condition.h"
+@@ -1534,8 +1535,8 @@ bool npc::wield( item &it )
+         return false;
+     }
+     if( get_wielded_item() ) {
+-        add_msg_if_player_sees( *this, m_info, _( "<npcname> wields a %s." ),
+-                                get_wielded_item()->tname() );
++        add_msg_if_player_sees( *this, m_info, _( "%1$s wields a %2$s." ), /* People First: wields name */
++                                get_name(), get_wielded_item()->tname() );
+     }
+ 
+ 
+@@ -1549,8 +1550,8 @@ bool npc::wield( item_location loc, bool remove_old )
+         return false;
+     }
+     if( get_wielded_item() ) {
+-        add_msg_if_player_sees( *this, m_info, _( "<npcname> wields a %s." ),
+-                                get_wielded_item()->tname() );
++        add_msg_if_player_sees( *this, m_info, _( "%1$s wields a %2$s." ), /* People First: wields name */
++                                get_name(), get_wielded_item()->tname() );
+     }
+ 
+     invalidate_range_cache();
+@@ -3484,7 +3485,11 @@ const pathfinding_settings &npc::get_pathfinding_settings( bool no_bashing ) con
+ 
+ std::function<bool( const tripoint_bub_ms & )> npc::get_path_avoid() const
+ {
+-    return [this]( const tripoint_bub_ms & p ) {
++    // People First (patch 22): our people go around deep water unless they're already in it.
++    const diag_value *pf_uid_v = maybe_get_value( "pf_uid" );
++    const bool pf_dry = pf_uid_v != nullptr && pf_uid_v->is_str() && !pf_uid_v->str().empty() &&
++                        !get_map().has_flag( ter_furn_flag::TFLAG_DEEP_WATER, pos_bub() );
++    return [this, pf_dry]( const tripoint_bub_ms & p ) {
+         if( get_creature_tracker().creature_at( p ) ) {
+             return true;
+         }
+@@ -3499,6 +3504,9 @@ std::function<bool( const tripoint_bub_ms & )> npc::get_path_avoid() const
+         if( here.is_open_air( p ) ) {
+             return true;
+         }
++        if( pf_dry && here.has_flag( ter_furn_flag::TFLAG_DEEP_WATER, p ) ) { // People First (patch 22) avoid
++            return true;
++        }
+         if( rules.has_flag( ally_rule::hold_the_line ) &&
+             rl_dist( p, get_avatar().pos_bub() ) == 1 &&
+             ( here.close_door( p, true, true ) ||
+@@ -3719,6 +3727,14 @@ npc_attitude npc::get_attitude() const
+ void npc::set_attitude( npc_attitude new_attitude )
+ {
+     const map &here = get_map();
++    // People First (patch 20): our people don't take flight from you unless you hurt them.
++    if( ( new_attitude == NPCATT_FLEE || new_attitude == NPCATT_FLEE_TEMP ) && !hit_by_player &&
++        !( my_fac && my_fac->likes_u < -10 ) ) { // People First (patch 20b)
++        const diag_value *pf_uid = maybe_get_value( "pf_uid" );
++        if( pf_uid != nullptr && pf_uid->is_str() && !pf_uid->str().empty() ) {
++            return;
++        }
++    }
+ 
+     if( new_attitude == attitude ) {
+         return;
+diff --git a/src/npcmove.cpp b/src/npcmove.cpp
+index 5bc1962..37409ae 100644
+--- a/src/npcmove.cpp
++++ b/src/npcmove.cpp
+@@ -36,6 +36,8 @@
+ #include "clzones.h"
+ #include "coordinates.h"
+ #include "creature.h"
++#include "global_vars.h" // People First: bonded defense
++#include "math_parser_diag_value.h"
+ #include "creature_tracker.h"
+ #include "debug.h"
+ #include "dialogue_chatbin.h"
+@@ -171,6 +173,100 @@ static const itype_id itype_smoxygen_tank( "smoxygen_tank" );
+ static const itype_id itype_thorazine( "thorazine" );
+ 
+ static const json_character_flag json_flag_CANNOT_ATTACK( "CANNOT_ATTACK" );
++
++// People First: the "let me pass" bark at most once a minute per NPC (in crowds with walk orders it fired every turn).
++static std::map<int, time_point> pf_let_me_pass_last;
++static bool pf_may_say_let_me_pass( const npc &who )
++{
++    const int key = who.getID().get_value();
++    const auto it = pf_let_me_pass_last.find( key );
++    if( it != pf_let_me_pass_last.end() && calendar::turn - it->second < 15_minutes ) { // People First: 15 minutes (playtest 3)
++        return false;
++    }
++    static time_point pf_let_me_pass_any = calendar::before_time_starts; // People First (patch 17): one for everyone
++    if( calendar::turn - pf_let_me_pass_any < 10_minutes ) {
++        return false;
++    }
++    pf_let_me_pass_any = calendar::turn;
++    pf_let_me_pass_last[key] = calendar::turn;
++    return true;
++}
++
++// People First: NPCs stand up for the people they're bonded to.  Vanilla only defends faction mates who "watch your
++// back", and the mod's people are lone wolves (no_faction), so nobody defended anybody.  The bonds are the mod's
++// character variables: kin (pf_mom / pf_dad / pf_guardian / pf_sweet hold uids), the same band (pf_band), the same
++// household (pf_resident), or warmth (pf_v_<uid>_w) at or above the global pf_defend_w (default 40, the mod's "close
++// friend").  The global pf_set_defend = 0 turns it off.  NPCs without a pf_uid are untouched.
++static std::string pf_str_var( const Creature &c, const std::string &key )
++{
++    const diag_value *v = c.maybe_get_value( key );
++    return v != nullptr && v->is_str() ? v->str() : std::string();
++}
++static double pf_num_var( const Creature &c, const std::string &key )
++{
++    const diag_value *v = c.maybe_get_value( key );
++    return v != nullptr && v->is_dbl() ? v->dbl() : 0.0;
++}
++static double pf_global_num( const std::string &key, double def )
++{
++    const diag_value *v = get_globals().maybe_get_global_value( key );
++    return v != nullptr && v->is_dbl() ? v->dbl() : def;
++}
++static bool pf_protects( const npc &me, const Character &other )
++{
++    const std::string my_uid = pf_str_var( me, "pf_uid" );
++    const std::string other_uid = other.is_avatar() ? std::string( "AVATAR" ) : pf_str_var( other, "pf_uid" );
++    if( my_uid.empty() || other_uid.empty() || pf_global_num( "pf_set_defend", 1.0 ) == 0.0 ) {
++        return false;
++    }
++    for( const char *kin : { "pf_mom", "pf_dad", "pf_guardian" } ) {
++        if( pf_str_var( other, kin ) == my_uid || pf_str_var( me, kin ) == other_uid ) {
++            return true;
++        }
++    }
++    if( pf_num_var( me, "pf_has_sweet" ) == 1.0 && pf_str_var( me, "pf_sweet" ) == other_uid ) {
++        return true;
++    }
++    if( pf_num_var( me, "pf_resident" ) == 1.0 && ( other.is_avatar() ||
++            pf_num_var( other, "pf_resident" ) == 1.0 ) ) {
++        return true;
++    }
++    const double band = pf_num_var( me, "pf_band" );
++    if( !other.is_avatar() && band > 0.0 && pf_num_var( other, "pf_band" ) == band ) {
++        return true;
++    }
++    return pf_num_var( me, "pf_v_" + other_uid + "_w" ) >= pf_global_num( "pf_defend_w", 40.0 );
++}
++// People First (patch 14): what you hear in the dark.  A protected person within 10 tiles (no wall between) is known
++// without seeing them; so is a hostile monster within 3 tiles, or one right next to someone we protect.
++static bool pf_near_protected( const npc &me, const Character &other )
++{
++    return !pf_str_var( me, "pf_uid" ).empty() && rl_dist( me.pos_bub(), other.pos_bub() ) <= 10 &&
++           get_map().has_potential_los( me.pos_bub(), other.pos_bub() ) && pf_protects( me, other );
++}
++static bool pf_hears_fight( const npc &me, const monster &critter )
++{
++    if( pf_str_var( me, "pf_uid" ).empty() || pf_global_num( "pf_set_defend", 1.0 ) == 0.0 ) {
++        return false;
++    }
++    const int d = rl_dist( me.pos_bub(), critter.pos_bub() );
++    if( d <= 3 ) {
++        return true;
++    }
++    if( d > 12 ) {
++        return false;
++    }
++    const Character &you = get_player_character();
++    if( rl_dist( you.pos_bub(), critter.pos_bub() ) <= 1 && pf_near_protected( me, you ) ) {
++        return true;
++    }
++    for( const npc &guy : g->all_npcs() ) {
++        if( &guy != &me && rl_dist( guy.pos_bub(), critter.pos_bub() ) <= 1 && pf_near_protected( me, guy ) ) {
++            return true;
++        }
++    }
++    return false;
++}
+ static const json_character_flag json_flag_CANNOT_MOVE( "CANNOT_MOVE" );
+ 
+ static const npc_class_id NC_EVAC_SHOPKEEP( "NC_EVAC_SHOPKEEP" );
+@@ -295,6 +391,35 @@ tripoint_bub_ms npc::good_escape_direction( bool include_pos )
+     // if NPC is repositioning rather than fleeing, they do smarter things
+     add_msg_debug( debugmode::DF_NPC_MOVEAI,
+                    "<color_brown>good_escape_direction</color> activated by %s", name );
++    // People First (patch 18): a child runs to the nearest grown-up who looks after them, not off into the open.
++    static const trait_id pf_trait_child( "PF_CHILD" );
++    if( has_trait( pf_trait_child ) && path.empty() ) {
++        const Creature *pf_best = nullptr;
++        int pf_best_d = 31;
++        for( const weak_ptr_fast<Creature> &guy : ai_cache.friends ) {
++            const shared_ptr_fast<Creature> c = guy.lock();
++            const Character *ch = c ? c->as_character() : nullptr;
++            if( ch == nullptr || ch == this || ch->is_dead_state() || ch->has_trait( pf_trait_child ) ) {
++                continue;
++            }
++            const int d = rl_dist( pos_bub(), ch->pos_bub() );
++            if( d < pf_best_d ) {
++                pf_best_d = d;
++                pf_best = ch;
++            }
++        }
++        if( pf_global_num( "pf_debug_defend", 0.0 ) == 1.0 ) { // People First (patch 24) flee trace
++            DebugLog( D_WARNING, D_MAIN ) << "PF flee: " << get_name() << " friends=" << ai_cache.friends.size()
++                                          << " runs to=" << ( pf_best ? pf_best->disp_name() : std::string( "nobody" ) )
++                                          << " d=" << pf_best_d;
++        }
++        if( pf_best != nullptr && pf_best_d > 1 ) {
++            update_path( pf_best->pos_bub() );
++            if( !path.empty() ) {
++                return path[0];
++            }
++        }
++    }
+ 
+     // To do: Eventually careful_retreat should determine if NPC will go to previously identified
+     // safe locations.  For now it just sends them to a retreat zone if one exists.
+@@ -737,7 +862,9 @@ void npc::assess_danger()
+     float highest_priority = 1.0f;
+     int hostile_count = 0; // for tallying nearby threatening enemies
+     int friendly_count = 1; // count yourself as a friendly
+-    int def_radius = rules.has_flag( ally_rule::follow_close ) ? follow_distance() : 6;
++    // People First: follower rules (stay close to the player) only bind followers.
++    const bool pf_follows_close = is_player_ally() && rules.has_flag( ally_rule::follow_close );
++    int def_radius = pf_follows_close ? follow_distance() : 6;
+     bool npc_ranged = get_wielded_item() && get_wielded_item()->is_gun();
+ 
+     if( !confident_range_cache ) {
+@@ -757,7 +884,7 @@ void npc::assess_danger()
+     const bool self_defense_only = rules.engagement == combat_engagement::NO_MOVE ||
+                                    rules.engagement == combat_engagement::NONE;
+     const bool no_fighting = rules.has_flag( ally_rule::forbid_engage );
+-    const bool must_retreat = rules.has_flag( ally_rule::follow_close ) &&
++    const bool must_retreat = pf_follows_close &&
+                               !too_close( pos_bub(), player_character.pos_bub(), follow_distance() ) &&
+                               !is_guarding();
+ 
+@@ -831,13 +958,16 @@ void npc::assess_danger()
+             continue;
+         }
+ 
+-        if( has_faction_relationship( guy, npc_factions::relationship::watch_your_back ) ) {
++        if( has_faction_relationship( guy, npc_factions::relationship::watch_your_back ) ||
++            pf_protects( *this, guy ) ) { // People First: or someone we're bonded to
+             ai_cache.friends.emplace_back( g->shared_from( guy ) );
+         } else if( attitude_to( guy ) != Attitude::NEUTRAL && sees( here, guy.pos_bub( here ) ) ) {
+             ai_cache.hostile_guys.emplace_back( g->shared_from( guy ) );
+         }
+     }
+-    if( is_friendly( player_character ) && sees_player ) {
++    if( ( is_friendly( player_character ) || ( !is_enemy() &&
++            pf_protects( *this, player_character ) ) ) && ( sees_player ||
++                    pf_near_protected( *this, player_character ) ) ) { // People First: bonded to you (seen or heard)
+         ai_cache.friends.emplace_back( g->shared_from( player_character ) );
+     } else if( sees_player && is_enemy() && sees( here, player_character ) ) {
+         // Unlike allies, hostile npcs should not see invisible players
+@@ -858,7 +988,7 @@ void npc::assess_danger()
+             ai_cache.neutral_guys.emplace_back( g->shared_from( critter ) );
+             continue;
+         }
+-        if( !sees( here, critter ) ) {
++        if( !sees( here, critter ) && !pf_hears_fight( *this, critter ) ) { // People First: or hears it
+             continue;
+         }
+ 
+@@ -1178,9 +1308,18 @@ void npc::act_on_danger_assessment()
+             if( mem_combat.panic - personality.bravery >= mem_combat.failing_to_reposition ) {
+                 // NPC hasn't yet failed to get away
+                 add_msg_debug( debugmode::DF_NPC_COMBATAI, "%s upgrades reposition to flat out retreat.", name );
++                // People First: remember that they ran (Reckoning).
++                if( !pf_str_var( *this, "pf_uid" ).empty() ) {
++                    set_value( "pf_fled_t", diag_value{ to_turns<double>( calendar::turn - calendar::turn_zero ) } );
++                    get_globals().set_global_value( "pf_rk_need", diag_value{ 1.0 } ); // the calm-time pass judges it
++                    if( pf_global_num( "pf_debug_defend", 0.0 ) == 1.0 ) {
++                        DebugLog( D_WARNING, D_MAIN ) << "PF defend: " << get_name() << " breaks and runs (pf_fled_t)";
++                    }
++                }
+                 mem_combat.repositioning = false; // we're not just moving, we're running.
+                 warn_about( "run_away", run_away_for );
+-                if( !is_player_ally() ) {
++                // People First (patch 19): our people run from the monsters, not from you for a day.
++                if( !is_player_ally() && pf_str_var( *this, "pf_uid" ).empty() ) {
+                     set_attitude( NPCATT_FLEE_TEMP );
+                 }
+                 if( mem_combat.panic > 5 && is_player_ally() && sees( here, player_character.pos_bub( here ) ) ) {
+@@ -1338,6 +1477,11 @@ void npc::move()
+     // don't just return from this function without doing something
+     // that will eventually subtract moves, or change the NPC to a different type of action.
+     // because this will result in an infinite loop
++    // People First (patch 19): a panic from before the fix (or any other) is over once they've stopped running.
++    if( attitude == NPCATT_FLEE_TEMP && !pf_str_var( *this, "pf_uid" ).empty() &&
++        !hit_by_player && !( my_fac && my_fac->likes_u < -10 ) ) { // People First (patch 20b): at once, unless you hurt them
++        remove_effect( effect_npc_flee_player );
++    }
+     if( attitude == NPCATT_FLEE ) {
+         set_attitude( NPCATT_FLEE_TEMP );  // Only run for so many hours
+     } else if( attitude == NPCATT_FLEE_TEMP && !has_effect( effect_npc_flee_player ) ) {
+@@ -1602,7 +1746,44 @@ void npc::move()
+     }
+ 
+     add_msg_debug( debugmode::DF_NPC, "%s chose action %s.", get_name(), npc_action_name( action ) );
++    // People First: close in.  One of our people whose target is beyond the range they can use walks toward it first.
++    if( action == npc_do_attack && !pf_str_var( *this, "pf_uid" ).empty() && current_target() != nullptr &&
++        !has_flag( json_flag_CANNOT_MOVE ) ) {
++        const tripoint_bub_ms tpos = current_target()->pos_bub();
++        const int reach = std::max( confident_range_cache.value_or( 1 ), 1 );
++        if( rl_dist( pos_bub(), tpos ) > reach + 1 || // People First: in the dark, close in
++            ( rl_dist( pos_bub(), tpos ) > 1 && !sees( get_map(), *current_target() ) ) ) {
++            update_path( tpos );
++            if( !path.empty() ) {
++                ai_cache.current_attack.reset();
++                ai_cache.current_attack_evaluation = npc_attack_rating{};
++                if( pf_global_num( "pf_debug_defend", 0.0 ) == 1.0 ) {
++                    DebugLog( D_WARNING, D_MAIN ) << "PF defend: " << get_name() << " closes in (dist "
++                                                  << rl_dist( pos_bub(), tpos ) << ", reach " << reach << ")";
++                }
++                move_to_next();
++                return;
++            }
++        }
++    }
++    // People First: decision trace for testing (global pf_debug_defend = 1).
++    if( pf_global_num( "pf_debug_defend", 0.0 ) == 1.0 && !pf_str_var( *this, "pf_uid" ).empty() ) {
++        const Creature *t = current_target();
++        DebugLog( D_WARNING, D_MAIN ) << "PF defend: " << get_name() << " friends=" << ai_cache.friends.size()
++                                      << " hostiles=" << ai_cache.hostile_guys.size() << " target=" << ( t ? t->disp_name() : "none" )
++                                      << " danger=" << ai_cache.danger << " enemy=" << mem_combat.assess_enemy
++                                      << " ally=" << mem_combat.assess_ally << " att=" << static_cast<int>( attitude )
++                                      << " run_away=" << has_effect( effect_npc_run_away ) << " action=" << npc_action_name( action )
++                                      << " wield=" << ( get_wielded_item() ? get_wielded_item()->tname() : std::string( "none" ) )
++                                      << " dist=" << ( t ? rl_dist( pos_bub(), t->pos_bub() ) : -1 )
++                                      << " crange=" << confident_range_cache.value_or( -1 )
++                                      << " formation=" << mem_combat.formation_distance << " pos=" << pos_bub().to_string_writable();
++    }
+     execute_action( action );
++    if( pf_global_num( "pf_debug_defend", 0.0 ) == 1.0 && action == npc_do_attack ) {
++        DebugLog( D_WARNING, D_MAIN ) << "PF defend: " << get_name() << " after attack: path=" << path.size()
++                                      << " moves=" << get_moves() << " pos=" << pos_bub().to_string_writable();
++    }
+ }
+ 
+ void npc::execute_action( npc_action action )
+@@ -1659,7 +1840,10 @@ void npc::execute_action( npc_action action )
+         case npc_return_to_guard_pos: {
+             const tripoint_bub_ms local_guard_pos = here.get_bub( *ai_cache.guard_pos );
+             update_path( local_guard_pos );
+-            if( pos_bub() == local_guard_pos || path.empty() ) {
++            // People First: a walk order to a tile someone else stands on ends next to it.
++            const Creature *pf_occupant = get_creature_tracker().creature_at( local_guard_pos );
++            if( pos_bub() == local_guard_pos || path.empty() ||
++                ( pf_occupant != nullptr && pf_occupant != this && rl_dist( pos_bub(), local_guard_pos ) <= 1 ) ) {
+                 move_pause();
+                 ai_cache.guard_pos = std::nullopt;
+                 path.clear();
+@@ -2912,6 +3096,14 @@ bool npc::update_path( const tripoint_bub_ms &p, const bool no_bashing, bool for
+     while( !new_path.empty() && new_path[0] == pos_bub() ) {
+         new_path.erase( new_path.begin() );
+     }
++    if( pf_global_num( "pf_debug_defend", 0.0 ) == 1.0 && !pf_str_var( *this, "pf_uid" ).empty() ) { // People First (patch 24) path trace
++        int pf_deep = 0;
++        for( const tripoint_bub_ms &pt : new_path ) {
++            pf_deep += get_map().has_flag( ter_furn_flag::TFLAG_DEEP_WATER, pt ) ? 1 : 0;
++        }
++        DebugLog( D_WARNING, D_MAIN ) << "PF path: " << get_name() << " " << pos_bub().to_string_writable() << " to "
++                                      << p.to_string_writable() << " length=" << new_path.size() << " deep_water=" << pf_deep;
++    }
+ 
+     if( !new_path.empty() || force ) {
+         path = std::move( new_path );
+@@ -3022,7 +3214,7 @@ void npc::move_to( const tripoint_bub_ms &pt, bool no_bashing, std::set<tripoint
+ 
+         if( critter->is_avatar() ) {
+             if( sees( here, *critter ) ) {
+-                say( chat_snippets().snip_let_me_pass.translated() );
++                if( pf_may_say_let_me_pass( *this ) ) { /* People First: rate-limited */ say( chat_snippets().snip_let_me_pass.translated() ); }
+             } else {
+                 stumble_invis( *critter );
+             }
+@@ -3044,7 +3236,7 @@ void npc::move_to( const tripoint_bub_ms &pt, bool no_bashing, std::set<tripoint
+             // other npcs should not try to move into this npc anymore,
+             // so infinite loop can be avoided.
+             realnomove->insert( pos );
+-            say( chat_snippets().snip_let_me_pass.translated() );
++            if( pf_may_say_let_me_pass( *this ) ) { /* People First: rate-limited */ say( chat_snippets().snip_let_me_pass.translated() ); }
+             np->move_away_from( pos, true, realnomove );
+             // if we moved NPC, readjust their path, so NPCs don't jostle each other out of their activity paths.
+             if( np->attitude == NPCATT_ACTIVITY ) {
+@@ -3947,6 +4139,10 @@ std::list<item> npc::pick_up_item_vehicle( vehicle &veh, int part_index )
+ bool npc::find_corpse_to_pulp()
+ {
+     map &here = get_map();
++    // People First: children and babies (CANNOT_ATTACK) don't go pulping corpses.
++    if( has_flag( json_flag_CANNOT_ATTACK ) ) {
++        return false;
++    }
+ 
+     Character &player_character = get_player_character();
+     if( is_player_ally() ) {
+diff --git a/src/npctalk.cpp b/src/npctalk.cpp
+index b323951..6dcb517 100644
+--- a/src/npctalk.cpp
++++ b/src/npctalk.cpp
+@@ -6294,7 +6294,8 @@ std::unique_ptr<talker> get_talker( dialogue const &d, std::optional<str_or_var>
+         return get_talker_for( *crit );
+     }
+ 
+-    debugmsg( R"(run_eocs error: no valid talker\n%s)", d.get_callstack() );
++    // People First: a talker that's gone (left the bubble, died) is an expected case, not a popup.
++    DebugLog( D_WARNING, D_GAME ) << "run_eocs: no valid talker (gone?) " << d.get_callstack();
+     return {};
+ }
+ 
+@@ -6361,7 +6362,11 @@ talk_effect_fun_t::func f_run_eocs( const JsonObject &jo, std::string_view membe
+ 
+         std::unique_ptr<talker> alpha = get_talker( d, alpha_var, alpha_loc, false );
+         std::unique_ptr<talker> beta = get_talker( d, beta_var, beta_loc, true );
+-        if( !alpha && !beta ) {
++        // People First: if a talker was asked for by id or location and can't be found, don't run the EOCs
++        // with a null actor (that segfaulted); treat it like "no talker" and run the false_eocs.
++        const bool alpha_missing = !alpha && ( alpha_loc || ( alpha_var && !alpha_var->evaluate( d ).empty() ) );
++        const bool beta_missing = !beta && ( beta_loc || ( beta_var && !beta_var->evaluate( d ).empty() ) );
++        if( ( !alpha && !beta ) || alpha_missing || beta_missing ) {
+             run_eoc_vector( false_eocs, d );
+             return;
+         }
+@@ -6620,7 +6625,8 @@ talk_effect_fun_t::func f_run_npc_eocs( const JsonObject &jo,
+                             dialogue newDialog( get_talker_for( npc ), nullptr, d.get_conditionals(), d.get_context() );
+                             eoc->activate( newDialog );
+                         } else {
+-                            debugmsg( "Tried to use invalid npc: %s. %s", target.evaluate( d ), d.get_callstack() );
++                            // People First: a unique id whose NPC is gone is expected; log it instead of a popup.
++                            DebugLog( D_WARNING, D_GAME ) << "Tried to use invalid npc: " << target.evaluate( d ) << ". " << d.get_callstack();
+                         }
+                     }
+                 }
+@@ -7194,6 +7200,72 @@ talk_effect_fun_t::func f_add_morale( const JsonObject &jo, std::string_view mem
+     };
+ }
+ 
++// People First: u_set_name / npc_set_name.
++talk_effect_fun_t::func f_set_name( const JsonObject &jo, std::string_view member,
++                                    std::string_view, bool is_npc )
++{
++    JsonObject jobj = jo.get_object( member );
++    std::optional<str_or_var> full;
++    std::optional<str_or_var> first;
++    std::optional<str_or_var> last;
++    if( jobj.has_member( "full" ) ) {
++        full = get_str_or_var( jobj.get_member( "full" ), "full" );
++    }
++    if( jobj.has_member( "first" ) ) {
++        first = get_str_or_var( jobj.get_member( "first" ), "first" );
++    }
++    if( jobj.has_member( "last" ) ) {
++        last = get_str_or_var( jobj.get_member( "last" ), "last" );
++    }
++    const bool last_from_other = jobj.get_bool( "last_from_other", false );
++    return [is_npc, full, first, last, last_from_other]( dialogue const & d ) {
++        Character *ch = d.actor( is_npc )->get_character();
++        if( ch == nullptr ) {
++            return;
++        }
++        const auto split = []( const std::string & s ) -> std::pair<std::string, std::string> {
++            const size_t at = s.find_last_of( ' ' );
++            if( at == std::string::npos ) {
++                return { s, std::string() };
++            }
++            return { s.substr( 0, at ), s.substr( at + 1 ) };
++        };
++        std::pair<std::string, std::string> parts = split( ch->get_name() );
++        if( full ) {
++            const std::string f = full->evaluate( d );
++            if( !f.empty() ) {
++                parts = split( f );
++            }
++        }
++        if( first ) {
++            const std::string f = first->evaluate( d );
++            if( !f.empty() ) {
++                parts.first = f;
++            }
++        }
++        if( last ) {
++            const std::string l = last->evaluate( d );
++            if( !l.empty() ) {
++                parts.second = l;
++            }
++        }
++        if( last_from_other && d.has_actor( !is_npc ) ) {
++            Character *other = d.actor( !is_npc )->get_character();
++            if( other != nullptr ) {
++                const std::string l = split( other->get_name() ).second;
++                if( !l.empty() ) {
++                    parts.second = l;
++                }
++            }
++        }
++        const std::string result = parts.second.empty() ? parts.first : parts.first + " " + parts.second;
++        if( !result.empty() ) {
++            ch->name = result;
++            ch->play_name = result;
++        }
++    };
++}
++
+ talk_effect_fun_t::func f_lose_morale( const JsonObject &jo, std::string_view member,
+                                        std::string_view, bool is_npc )
+ {
+@@ -7847,7 +7919,10 @@ talk_effect_fun_t::func f_teleport( const JsonObject &jo, std::string_view membe
+         }
+         item_location *it = d.actor( is_npc )->get_item();
+         if( it && it->get_item() ) {
+-            map_add_item( *it->get_item(), target_pos );
++            // People First (patch 15): what's been tidied away belongs to the household now.
++            item pf_moved = *it->get_item();
++            pf_moved.remove_owner();
++            map_add_item( pf_moved, target_pos );
+             add_msg( success_message.evaluate( d ) );
+             it->remove_item();
+         }
+@@ -8049,6 +8124,8 @@ parsers = {
+     { "u_set_fac_relation", "npc_set_fac_relation", jarg::member, &talk_effect_fun::f_set_fac_relation },
+     { "u_add_morale", "npc_add_morale", jarg::member, &talk_effect_fun::f_add_morale },
+     { "u_lose_morale", "npc_lose_morale", jarg::member, &talk_effect_fun::f_lose_morale },
++    // People First
++    { "u_set_name", "npc_set_name", jarg::object, &talk_effect_fun::f_set_name },
+     { "u_add_bionic", "npc_add_bionic", jarg::member, &talk_effect_fun::f_add_bionic },
+     { "u_lose_bionic", "npc_lose_bionic", jarg::member, &talk_effect_fun::f_lose_bionic },
+     { "u_attack", "npc_attack", jarg::member, &talk_effect_fun::f_attack },
+diff --git a/src/path_info.cpp b/src/path_info.cpp
+index 65fd039..3238792 100644
+--- a/src/path_info.cpp
++++ b/src/path_info.cpp
+@@ -483,6 +483,11 @@ std::string PATH_INFO::title( const holiday current_holiday )
+         return _( "Cataclysm: Dark Days Ahead" );
+     }
+ 
++    // People First: the fork's own title art, ahead of the alternate and seasonal ones
++    if( file_exist( theme_basepath + "people_first.title" ) ) {
++        return theme_basepath + "people_first.title";
++    }
++
+     if( x_in_y( get_option<int>( "ALT_TITLE" ), 100 ) ) {
+         theme_extension = ".alt1";
+         theme_fallback = datadir_value + "title/" + "en.alt1";
+diff --git a/src/talker_item.cpp b/src/talker_item.cpp
+index 9e8f260..7a074e9 100644
+--- a/src/talker_item.cpp
++++ b/src/talker_item.cpp
+@@ -12,9 +12,36 @@
+ #include "itype.h"
+ #include "math_parser_diag_value.h"
+ #include "messages.h"
++#include "mtype.h" // People First (patch 16) include
+ #include "units.h"
+ 
+ static const ammotype ammo_battery( "battery" );
++static const species_id species_ZOMBIE_pf( "ZOMBIE" ); // People First (patch 16)
++
++static bool pf_item_pseudo_flag( const item &it, const std::string &f, bool &answer )
++{
++    if( f == "PF_ROTTEN" || f == "PF_GOING_BAD" ) {
++        const bool rotten = f == "PF_ROTTEN";
++        auto bad = [rotten]( const item & i ) {
++            return i.goes_bad() && ( rotten ? i.rotten() : i.is_going_bad() );
++        };
++        answer = bad( it );
++        if( !answer ) {
++            for( const item *c : it.all_items_top() ) {
++                if( bad( *c ) ) {
++                    answer = true;
++                    break;
++                }
++            }
++        }
++        return true;
++    }
++    if( f == "PF_ZOMBIE_CORPSE" ) {
++        answer = it.is_corpse() && it.get_mtype() != nullptr && it.get_mtype()->in_species( species_ZOMBIE_pf );
++        return true;
++    }
++    return false;
++}
+ 
+ static const itype_id itype_battery( "battery" );
+ 
+@@ -68,6 +95,10 @@ bool talker_item_const::has_flag( const flag_id &f ) const
+     add_msg_debug( debugmode::DF_TALKER, "Item %s checked for flag %s",
+                    me_it_const->get_item()->tname(),
+                    f.c_str() );
++    bool pf_answer = false; // People First (patch 16): pseudo-flags
++    if( pf_item_pseudo_flag( *me_it_const->get_item(), f.str(), pf_answer ) ) {
++        return pf_answer;
++    }
+     return me_it_const->get_item()->has_flag( f );
+ }
+ 
+diff --git a/src/teleport.cpp b/src/teleport.cpp
+index 6d801e2..b1556c5 100644
+--- a/src/teleport.cpp
++++ b/src/teleport.cpp
+@@ -373,6 +373,8 @@ bool teleport::teleport_to_point( Creature &critter, tripoint_bub_ms target, boo
+     if( c_is_u ) {
+         g->place_player( p->pos_bub() );
+         g->update_map( *p );
++    } else if( p != nullptr && here.inbounds( target ) ) {
++        g->load_npcs(); // People First (patch 21): an NPC teleported into the bubble is active at once
+     }
+     for( const effect &grab : critter.get_effects_with_flag( json_flag_GRAB ) ) {
+         critter.remove_effect( grab.get_id() );

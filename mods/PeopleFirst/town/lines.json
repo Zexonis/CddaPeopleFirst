@@ -1,0 +1,383 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_SAY_town",
+    "//": "u = avatar.  Town lines, picked by the context var 'line'.",
+    "effect": [
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "named" ] },
+        "then": [ { "u_message": "From now on, this place is <global_val:pf_town_name>.", "type": "good" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "status" ] },
+        "then": [
+          {
+            "u_message": "Home: <global_val:pf_tw_restxt> here.  Animals: cows <global_val:pf_tw_cows>, goats <global_val:pf_tw_goats>, hens <global_val:pf_tw_hens>.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "status_named" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_town_name>: <global_val:pf_tw_restxt> here.  Animals: cows <global_val:pf_tw_cows>, goats <global_val:pf_tw_goats>, hens <global_val:pf_tw_hens>.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "field_none" ] },
+        "then": [ { "u_message": "There's no field yet.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "field_fallow" ] },
+        "then": [ { "u_message": "The field lies waiting for spring or summer.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "field_growing" ] },
+        "then": [ { "u_message": "The field is growing.  About <global_val:pf_tw_days> days to the harvest.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "field_growing_1" ] },
+        "then": [ { "u_message": "The field is nearly ready.  The harvest is a day away, maybe less.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "field_ready" ] },
+        "then": [ { "u_message": "The field is ready to bring in.", "type": "good" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "field_marked" ] },
+        "then": [ { "u_message": "You pace out a plot here.  It'll be planted when the season is right.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "animals_asked" ] },
+        "then": [
+          { "u_message": "You put the word out that you could use some animals.  Someone always knows someone.", "type": "info" }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "animals_arrive" ] },
+        "then": [
+          {
+            "u_message": "Neighbors turn up in the morning with <global_val:pf_say_b>.  \"For the place.  You'd do the same.\"",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "produce_both" ] },
+        "then": [ { "u_message": "<global_val:pf_say_a> brings in the milk and a basket of eggs, still warm.", "type": "good" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "produce_milk" ] },
+        "then": [ { "u_message": "<global_val:pf_say_a> comes back from the animals with the morning's milk.", "type": "good" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "produce_eggs" ] },
+        "then": [
+          { "u_message": "<global_val:pf_say_a> checks under the hens and comes back with a handful of eggs.", "type": "good" }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "produce_you" ] },
+        "then": [ { "u_message": "You see to the animals yourself this morning: milk, eggs, the lot.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "kid_hens" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_b> chases the hens round the yard until one of them turns and chases back.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "kid_eggs" ] },
+        "then": [ { "u_message": "<global_val:pf_say_b> insists on carrying the eggs, one at a time, very slowly.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "kid_named" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_b> has given every animal a name.  None of the names make sense.  All of them stick.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "planting_day" ] },
+        "then": [
+          {
+            "u_message": "Planting day.  <global_val:pf_say_a> lays out the rows and everyone pitches in.  By noon everybody has dirt to the elbows.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "planting_you" ] },
+        "then": [ { "u_message": "You plant the field yourself, row by row.  It takes all morning.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "harvest" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> brings the harvest in: potatoes, carrots, cabbages, more than anyone expected.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "harvest_you" ] },
+        "then": [ { "u_message": "You bring the harvest in yourself: potatoes, carrots, cabbages.", "type": "good" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "feast" ] },
+        "then": [
+          {
+            "u_message": "Tonight there's more food than anyone can eat.  Somebody gets out an instrument and nobody wants to go to bed.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "feast_named" ] },
+        "then": [
+          {
+            "u_message": "Tonight <global_val:pf_town_name> eats like it's before.  Somebody gets out an instrument and nobody wants to go to bed.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "chore_herder" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> walks the animals out to graze and back again, talking to them the whole way.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "chore_farmer" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> spends the afternoon on their knees in the field, pulling weeds and swearing at slugs.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "school" ] },
+        "then": [ { "u_message": "<global_val:pf_sc_text>", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "healer_round" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> goes round with the medicine bag, checking everyone's cuts and making them drink something foul.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "smith" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> has been hammering behind the house for two days.  The result: <global_val:pf_say_b>.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "market" ] },
+        "then": [
+          {
+            "u_message": "Market day.  Neighbors come with handcarts, and by the afternoon the place's surplus has turned into <global_val:pf_mk_list>.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "market_named" ] },
+        "then": [
+          {
+            "u_message": "Market day in <global_val:pf_town_name>.  Neighbors come with handcarts, and by the afternoon the surplus has turned into <global_val:pf_mk_list>.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "market_none" ] },
+        "then": [
+          {
+            "u_message": "Neighbors come by for market day, but there's nothing to spare this week.  They stay for a cup of something anyway.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "status_hh" ] },
+        "then": [ { "u_message": "Households: <global_val:pf_tw_hh>.  <global_val:pf_tw_word_cap>.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "join_word" ] },
+        "then": [
+          {
+            "u_message": "Word comes from <global_val:pf_tj_name>'s place: they've packed up everything they own, and they're headed your way.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "join_house" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_tj_name> and their family move into the empty house down the way.  There's another lit window tonight.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "join_house_named" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_tj_name> and their family move into the empty house down the way.  <global_val:pf_town_name> has another lit window tonight.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "join_tent" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_tj_name> and their family pitch a tent at the edge of the place, until something better comes along.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "join_no" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_tj_name> nods slowly.  \"We understand.\"  They turn the handcart around and head back the way they came.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "watch_rota" ] },
+        "then": [
+          { "u_message": "Tonight's watch: <global_val:pf_wt_list_1> until two, then <global_val:pf_wt_list_2>.", "type": "info" }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "watch_rota_b" ] },
+        "then": [
+          {
+            "u_message": "First watch tonight: <global_val:pf_wt_list_1>.  Second watch, from two: <global_val:pf_wt_list_2>.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "watch_handover" ] },
+        "then": [ { "u_message": "<global_val:pf_wt_hand> hands the watch over and gets some sleep after all.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "watch_rota_one" ] },
+        "then": [ { "u_message": "Tonight's watch: <global_val:pf_wt_list_1>, all night.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "watch_change" ] },
+        "then": [
+          {
+            "u_message": "Two o'clock.  The watch changes hands with a yawn and a 'nothing yet': <global_val:pf_wt_list_1> to bed, <global_val:pf_wt_list_2> out to the posts.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "watch_change_b" ] },
+        "then": [
+          {
+            "u_message": "Second watch: <global_val:pf_wt_list_2>, shaken awake and out into the dark.  First watch: <global_val:pf_wt_list_1>, asleep before their boots are off.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "watch_loss" ] },
+        "then": [
+          {
+            "u_message": "The watch comes in at dawn, grey in the face.  Nobody says the names yet.  Somebody puts the coffee on anyway, and nobody drinks it.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "watch_held" ] },
+        "then": [
+          {
+            "u_message": "The watch comes in at dawn.  <global_val:pf_wt_hero> saw them first last night, and everyone's still here.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "watch_change_seen" ] },
+        "then": [
+          {
+            "u_message": "Two o'clock.  The watch changes hands, everyone still wired from the scare: <global_val:pf_wt_list_1> to bed, <global_val:pf_wt_list_2> out to the posts, eyes on the dark where it came from.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "watch_quiet_0" ] },
+        "then": [
+          {
+            "u_message": "Dawn.  The night watch comes in stamping their feet: <global_val:pf_wt_cur>.  A quiet night.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "watch_quiet_1" ] },
+        "then": [ { "u_message": "The watch comes in with the sun.  Nothing moved out there all night but an owl.", "type": "good" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "watch_quiet_2" ] },
+        "then": [
+          {
+            "u_message": "The watch hands in the night (<global_val:pf_wt_cur>): quiet.  Somebody's already put the coffee on.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "watch_menu" ] },
+        "then": [
+          { "u_message": "Tonight's watch: <global_val:pf_wt_list_1> until two, then <global_val:pf_wt_list_2>.", "type": "info" }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "watch_menu_one" ] },
+        "then": [ { "u_message": "Tonight's watch: <global_val:pf_wt_list_1>, all night.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "watch_menu_none" ] },
+        "then": [
+          {
+            "u_message": "Nobody is on the watch tonight yet.  It goes up at ten, once at least three grown-ups live here.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "watch_sleep" ] },
+        "then": [ { "u_message": "You sleep easy.  On the watch: <global_val:pf_wt_cur>.", "type": "good" } ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,48 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_WASTE_on_butcher",
+    "//": "Bottom-up signal for story 5 (no 'burned food' event exists): someone butchers a corpse the quick or dismember way, wasting meat, in front of someone who hates waste.",
+    "eoc_type": "EVENT",
+    "required_event": "character_butchered_corpse",
+    "condition": {
+      "and": [
+        "has_alpha",
+        { "compare_string": [ { "context_val": "butcher_type" }, "ACT_BUTCHER", "ACT_DISMEMBER" ] },
+        {
+          "or": [ { "math": [ "time_since(pf_waste_last) < 0" ] }, { "math": [ "time_since(pf_waste_last) > time('1 h')" ] } ]
+        }
+      ]
+    },
+    "effect": [
+      { "math": [ "pf_waste_last = time('now')" ] },
+      { "run_eocs": "PF_ID_ensure" },
+      { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_waste_uid" } },
+      { "u_set_talker": { "global_val": "pf_waste_who" } },
+      { "math": [ "pf_waste_done = 0" ] },
+      { "u_run_npc_eocs": [ "PF_WASTE_witness" ], "local": true, "npc_range": 10, "npc_must_see": true }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_WASTE_witness",
+    "effect": [
+      { "run_eocs": "PF_ID_ensure" },
+      {
+        "if": {
+          "and": [
+            { "u_has_trait": "PF_Q_HATES_WASTE" },
+            { "math": [ "pf_waste_done == 0" ] },
+            { "not": { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_waste_uid" } ] } }
+          ]
+        },
+        "then": [
+          { "math": [ "pf_waste_done = 1" ] },
+          { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+          { "run_eocs": "PF_SAY", "alpha_talker": "avatar", "variables": { "line": "waste" } },
+          { "run_eocs": "PF_MK_wasted_food", "alpha_talker": { "global_val": "pf_waste_who" }, "beta_talker": "u" }
+        ]
+      }
+    ]
+  }
+]

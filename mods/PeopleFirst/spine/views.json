@@ -1,0 +1,352 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_VIEW_names",
+    "//": "Sets context vars rw/rt/rx/rpw/rpt/rl to the names of u's view of pf_m_other.  Read and write them with v_rw etc. in math.",
+    "effect": [
+      { "set_string_var": "u_pf_v_<global_val:pf_m_other>_w", "target_var": { "context_val": "rw" }, "parse_tags": true },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_t",
+        "target_var": { "context_val": "rt" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_x",
+        "target_var": { "context_val": "rx" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_pw",
+        "target_var": { "context_val": "rpw" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_pt",
+        "target_var": { "context_val": "rpt" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_l",
+        "target_var": { "context_val": "rl" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_a",
+        "target_var": { "context_val": "ra" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_pa",
+        "target_var": { "context_val": "rpa" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_c",
+        "target_var": { "context_val": "rc" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_f",
+        "target_var": { "context_val": "rf" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "pf_reg_<global_val:pf_m_other>_g",
+        "target_var": { "context_val": "og" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "pf_reg_<global_val:pf_m_other>_a",
+        "target_var": { "context_val": "oa" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "pf_reg_<global_val:pf_m_other>_tm",
+        "target_var": { "context_val": "otm" },
+        "parse_tags": true
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_VIEW_update",
+    "//": "u = viewer, pf_m_other = who they are looking at, pf_m_dw/dt/dx/da = base deltas for this role.  Friendship chemistry (v_rf, 0.6-1.4, temperament match +0.15, clash -0.1) scales warmth gains: some people just click, some never will.  Romantic chemistry (v_rc) plus their 'type' scales attraction; open people warm up as warmth grows, set ones don't.  Lazy decay (months, floored at a share of the peak: old friends stay meaningful), then personality, then the deltas with diminishing returns near the top.  No per-person ticking anywhere: a view only costs CPU when something happens.",
+    "effect": [
+      { "set_string_var": "u_pf_v_<global_val:pf_m_other>_w", "target_var": { "context_val": "rw" }, "parse_tags": true },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_t",
+        "target_var": { "context_val": "rt" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_x",
+        "target_var": { "context_val": "rx" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_pw",
+        "target_var": { "context_val": "rpw" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_pt",
+        "target_var": { "context_val": "rpt" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_l",
+        "target_var": { "context_val": "rl" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_a",
+        "target_var": { "context_val": "ra" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_pa",
+        "target_var": { "context_val": "rpa" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_c",
+        "target_var": { "context_val": "rc" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_f",
+        "target_var": { "context_val": "rf" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "pf_reg_<global_val:pf_m_other>_g",
+        "target_var": { "context_val": "og" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "pf_reg_<global_val:pf_m_other>_a",
+        "target_var": { "context_val": "oa" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "pf_reg_<global_val:pf_m_other>_tm",
+        "target_var": { "context_val": "otm" },
+        "parse_tags": true
+      },
+      {
+        "if": { "math": [ "value_or(v_rl, -1) < 0" ] },
+        "then": [
+          { "math": [ "v_rw = 0" ] },
+          { "math": [ "v_rt = 0" ] },
+          { "math": [ "v_rx = 0" ] },
+          { "math": [ "v_rpw = 0" ] },
+          { "math": [ "v_rpt = 0" ] },
+          { "math": [ "v_rl = time('now')" ] },
+          { "run_eocs": "PF_KNOWN_add" },
+          { "math": [ "pf_views_created = value_or(pf_views_created, 0) + 1" ] }
+        ]
+      },
+      {
+        "if": { "math": [ "value_or(v_rf, -1) < 0" ] },
+        "then": [
+          { "math": [ "_mt = 0" ] },
+          { "if": { "u_has_trait": "PF_T_SOCIABLE" }, "then": [ { "math": [ "_mt = 1" ] } ] },
+          { "if": { "u_has_trait": "PF_T_LONER" }, "then": [ { "math": [ "_mt = 2" ] } ] },
+          {
+            "math": [
+              "v_rf = 0.6 + rand(80) / 100 + ((_mt > 0) * (_mt == value_or(v_otm, 0))) * 0.15 - ((_mt > 0) * (value_or(v_otm, 0) > 0) * (_mt != value_or(v_otm, 0))) * 0.1"
+            ]
+          },
+          { "math": [ "v_rc = rand(100) / 100" ] },
+          { "math": [ "v_ra = 0" ] },
+          { "math": [ "v_rpa = 0" ] }
+        ]
+      },
+      { "math": [ "_d = (time('now') - v_rl) / time('1 d')" ] },
+      { "math": [ "_st = 0" ] },
+      {
+        "if": {
+          "and": [
+            { "math": [ "value_or(u_pf_has_sweet, 0) == 1" ] },
+            { "compare_string": [ { "u_val": "pf_sweet" }, { "global_val": "pf_m_other" } ] }
+          ]
+        },
+        "then": [ { "math": [ "_st = value_or(u_pf_rel_stage, 1)" ] } ]
+      },
+      { "math": [ "_dm = 1 - 0.25 * _st" ] },
+      { "math": [ "_qx = 1" ] },
+      { "if": { "u_has_trait": "PF_Q_GRUDGE" }, "then": [ { "math": [ "_qx = 0.33" ] } ] },
+      { "if": { "u_has_trait": "PF_Q_FORGIVING" }, "then": [ { "math": [ "_qx = 3" ] } ] },
+      {
+        "math": [
+          "v_rw = v_rw >= 0 ? max(min(v_rw, v_rpw * pf_floor_w), v_rw - _d * pf_decay_w * _dm) : min(0, v_rw + _d * pf_decay_w)"
+        ]
+      },
+      {
+        "math": [
+          "v_rt = v_rt >= 0 ? max(min(v_rt, v_rpt * pf_floor_t), v_rt - _d * pf_decay_t * _dm) : min(0, v_rt + _d * pf_decay_t)"
+        ]
+      },
+      { "math": [ "v_rx = max(0, v_rx - _d * pf_decay_x * _qx)" ] },
+      { "math": [ "v_ra = max(min(v_ra, v_rpa * (0.3 + 0.15 * _st)), v_ra - _d * 0.25 * _dm)" ] },
+      { "run_eocs": "PF_PERSONA_weigh" },
+      { "math": [ "_s = pf_m_str / 50" ] },
+      { "math": [ "_gw = pf_m_dw * _s * pf_m_mulw" ] },
+      { "math": [ "_gw = _gw > 0 ? _gw * v_rf : _gw" ] },
+      { "math": [ "_gt = pf_m_dt * _s * pf_m_mult" ] },
+      { "math": [ "_gx = pf_m_dx * _s * pf_m_mulx" ] },
+      { "math": [ "v_rw = clamp(v_rw + (_gw > 0 ? _gw * (1 - max(v_rw, 0) / 110) : _gw), -100, 100)" ] },
+      { "math": [ "v_rt = clamp(v_rt + (_gt > 0 ? _gt * (1 - max(v_rt, 0) / 110) : _gt), -100, 100)" ] },
+      { "math": [ "v_rx = clamp(v_rx + _gx, 0, 100)" ] },
+      {
+        "math": [
+          "_el = (value_or(u_pf_rom, 0) == 1) * (value_or(u_pf_adult, 0) == 1) * (value_or(v_oa, 0) == 1) * ((value_or(u_pf_orient, -1) == 2) + (value_or(u_pf_orient, -1) == value_or(v_og, -2)) > 0)"
+        ]
+      },
+      { "if": { "u_has_trait": "PF_CHILD" }, "then": [ { "math": [ "_el = 0" ] } ] },
+      {
+        "if": { "math": [ "_el > 0" ] },
+        "then": [
+          {
+            "math": [
+              "_ch = max(v_rc + ((u_pf_rtype == 0) * (value_or(v_otm, 0) == 1) + (u_pf_rtype == 1) * (value_or(v_otm, 0) == 2)) * 0.2, u_pf_open * max(v_rw, 0) / 100)"
+            ]
+          },
+          { "math": [ "_ga = (_gw > 0 ? _gw * _ch * 1.2 : _gw * 0.5) + pf_m_da * _s" ] },
+          { "if": { "u_has_trait": "PF_Q_ROMANTIC" }, "then": [ { "math": [ "_ga = _ga > 0 ? _ga * 1.6 : _ga" ] } ] },
+          { "math": [ "v_ra = clamp(v_ra + (_ga > 0 ? _ga * (1 - v_ra / 110) : _ga), 0, 100)" ] },
+          { "math": [ "v_rpa = max(v_rpa, v_ra)" ] }
+        ]
+      },
+      { "math": [ "v_rpw = max(v_rpw, v_rw)" ] },
+      { "math": [ "v_rpt = max(v_rpt, v_rt)" ] },
+      { "math": [ "v_rl = time('now')" ] },
+      { "if": { "math": [ "pf_m_str >= pf_mem_min" ] }, "then": [ { "run_eocs": "PF_MEM_store" } ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_VIEW_read",
+    "//": "u = viewer.  Reads u's view of pf_m_other with decay applied (without writing it back) into pf_read_w/t/x, a tier 0-4 and its name.  Readers and the menu use this.",
+    "effect": [
+      { "set_string_var": "u_pf_v_<global_val:pf_m_other>_w", "target_var": { "context_val": "rw" }, "parse_tags": true },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_t",
+        "target_var": { "context_val": "rt" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_x",
+        "target_var": { "context_val": "rx" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_pw",
+        "target_var": { "context_val": "rpw" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_pt",
+        "target_var": { "context_val": "rpt" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_l",
+        "target_var": { "context_val": "rl" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_a",
+        "target_var": { "context_val": "ra" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_pa",
+        "target_var": { "context_val": "rpa" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_c",
+        "target_var": { "context_val": "rc" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_f",
+        "target_var": { "context_val": "rf" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "pf_reg_<global_val:pf_m_other>_g",
+        "target_var": { "context_val": "og" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "pf_reg_<global_val:pf_m_other>_a",
+        "target_var": { "context_val": "oa" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "pf_reg_<global_val:pf_m_other>_tm",
+        "target_var": { "context_val": "otm" },
+        "parse_tags": true
+      },
+      { "math": [ "_d = (time('now') - value_or(v_rl, time('now'))) / time('1 d')" ] },
+      { "math": [ "_st = 0" ] },
+      {
+        "if": {
+          "and": [
+            { "math": [ "value_or(u_pf_has_sweet, 0) == 1" ] },
+            { "compare_string": [ { "u_val": "pf_sweet" }, { "global_val": "pf_m_other" } ] }
+          ]
+        },
+        "then": [ { "math": [ "_st = value_or(u_pf_rel_stage, 1)" ] } ]
+      },
+      { "math": [ "_dm = 1 - 0.25 * _st" ] },
+      { "math": [ "pf_read_w = value_or(v_rw, 0)" ] },
+      { "math": [ "pf_read_t = value_or(v_rt, 0)" ] },
+      { "math": [ "pf_read_x = value_or(v_rx, 0)" ] },
+      {
+        "math": [
+          "pf_read_w = pf_read_w >= 0 ? max(min(pf_read_w, value_or(v_rpw, 0) * pf_floor_w), pf_read_w - _d * pf_decay_w * _dm) : min(0, pf_read_w + _d * pf_decay_w)"
+        ]
+      },
+      {
+        "math": [
+          "pf_read_t = pf_read_t >= 0 ? max(min(pf_read_t, value_or(v_rpt, 0) * pf_floor_t), pf_read_t - _d * pf_decay_t * _dm) : min(0, pf_read_t + _d * pf_decay_t)"
+        ]
+      },
+      { "math": [ "_qx = 1" ] },
+      { "if": { "u_has_trait": "PF_Q_GRUDGE" }, "then": [ { "math": [ "_qx = 0.33" ] } ] },
+      { "if": { "u_has_trait": "PF_Q_FORGIVING" }, "then": [ { "math": [ "_qx = 3" ] } ] },
+      { "math": [ "pf_read_x = max(0, pf_read_x - _d * pf_decay_x * _qx)" ] },
+      {
+        "math": [
+          "pf_read_a = max(min(value_or(v_ra, 0), value_or(v_rpa, 0) * (0.3 + 0.15 * _st)), value_or(v_ra, 0) - _d * 0.25 * _dm)"
+        ]
+      },
+      { "math": [ "pf_read_score = (pf_read_w + pf_read_t) / 2" ] },
+      {
+        "math": [ "pf_read_tier = (pf_read_score >= 10) + (pf_read_score >= 30) + (pf_read_score >= 55) + (pf_read_score >= 80)" ]
+      },
+      {
+        "switch": { "math": [ "pf_read_tier" ] },
+        "cases": [
+          { "case": 0, "effect": { "set_string_var": "stranger", "target_var": { "global_val": "pf_read_tier_name" } } },
+          {
+            "case": 1,
+            "effect": { "set_string_var": "acquaintance", "target_var": { "global_val": "pf_read_tier_name" } }
+          },
+          {
+            "case": 2,
+            "effect": { "set_string_var": "companion", "target_var": { "global_val": "pf_read_tier_name" } }
+          },
+          { "case": 3, "effect": { "set_string_var": "close", "target_var": { "global_val": "pf_read_tier_name" } } },
+          {
+            "case": 4,
+            "effect": { "set_string_var": "devoted", "target_var": { "global_val": "pf_read_tier_name" } }
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,1021 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KNOWN_count_one",
+    "//": "u = you.  Counts the dead in your known list (pf_kn_dn).",
+    "effect": [
+      { "set_string_var": "u_pf_known_<global_val:pf_kn_i>", "target_var": { "context_val": "kr" }, "parse_tags": true },
+      { "copy_var": { "var_val": "kr" }, "target_var": { "global_val": "pf_kn_uid" } },
+      {
+        "set_string_var": "pf_reg_<global_val:pf_kn_uid>_dead",
+        "target_var": { "context_val": "kd" },
+        "parse_tags": true
+      },
+      { "if": { "math": [ "value_or(v_kd, 0) == 1" ] }, "then": [ { "math": [ "pf_kn_dn += 1" ] } ] },
+      { "math": [ "pf_kn_i += 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KNOWN_backfill_one",
+    "//": "u = you.  Gives a dead known person a time of death from the journal, once.",
+    "effect": [
+      { "set_string_var": "u_pf_known_<global_val:pf_kn_j>", "target_var": { "context_val": "kr" }, "parse_tags": true },
+      { "copy_var": { "var_val": "kr" }, "target_var": { "global_val": "pf_kn_ju" } },
+      {
+        "set_string_var": "pf_reg_<global_val:pf_kn_ju>_dead",
+        "target_var": { "context_val": "kd" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "pf_reg_<global_val:pf_kn_ju>_dead_t",
+        "target_var": { "context_val": "kdt" },
+        "parse_tags": true
+      },
+      {
+        "if": { "and": [ { "math": [ "value_or(v_kd, 0) == 1" ] }, { "math": [ "has_var(v_kdt) == 0" ] } ] },
+        "then": [
+          { "set_string_var": "pf_name_<global_val:pf_kn_ju>", "target_var": { "context_val": "nref" }, "parse_tags": true },
+          { "copy_var": { "var_val": "nref" }, "target_var": { "global_val": "pf_kn_bfname" } },
+          { "math": [ "v_kdt = 0" ] },
+          {
+            "if": {
+              "and": [
+                { "compare_string": [ { "global_val": "pf_ev_0_kind" }, "death" ] },
+                { "compare_string": [ { "global_val": "pf_ev_0_name" }, { "global_val": "pf_kn_bfname" } ] }
+              ]
+            },
+            "then": [ { "math": [ "v_kdt = pf_ev_0_t" ] } ]
+          },
+          {
+            "if": {
+              "and": [
+                { "compare_string": [ { "global_val": "pf_ev_1_kind" }, "death" ] },
+                { "compare_string": [ { "global_val": "pf_ev_1_name" }, { "global_val": "pf_kn_bfname" } ] }
+              ]
+            },
+            "then": [ { "math": [ "v_kdt = pf_ev_1_t" ] } ]
+          },
+          {
+            "if": {
+              "and": [
+                { "compare_string": [ { "global_val": "pf_ev_2_kind" }, "death" ] },
+                { "compare_string": [ { "global_val": "pf_ev_2_name" }, { "global_val": "pf_kn_bfname" } ] }
+              ]
+            },
+            "then": [ { "math": [ "v_kdt = pf_ev_2_t" ] } ]
+          },
+          {
+            "if": {
+              "and": [
+                { "compare_string": [ { "global_val": "pf_ev_3_kind" }, "death" ] },
+                { "compare_string": [ { "global_val": "pf_ev_3_name" }, { "global_val": "pf_kn_bfname" } ] }
+              ]
+            },
+            "then": [ { "math": [ "v_kdt = pf_ev_3_t" ] } ]
+          },
+          {
+            "if": {
+              "and": [
+                { "compare_string": [ { "global_val": "pf_ev_4_kind" }, "death" ] },
+                { "compare_string": [ { "global_val": "pf_ev_4_name" }, { "global_val": "pf_kn_bfname" } ] }
+              ]
+            },
+            "then": [ { "math": [ "v_kdt = pf_ev_4_t" ] } ]
+          },
+          {
+            "if": {
+              "and": [
+                { "compare_string": [ { "global_val": "pf_ev_5_kind" }, "death" ] },
+                { "compare_string": [ { "global_val": "pf_ev_5_name" }, { "global_val": "pf_kn_bfname" } ] }
+              ]
+            },
+            "then": [ { "math": [ "v_kdt = pf_ev_5_t" ] } ]
+          },
+          {
+            "if": {
+              "and": [
+                { "compare_string": [ { "global_val": "pf_ev_6_kind" }, "death" ] },
+                { "compare_string": [ { "global_val": "pf_ev_6_name" }, { "global_val": "pf_kn_bfname" } ] }
+              ]
+            },
+            "then": [ { "math": [ "v_kdt = pf_ev_6_t" ] } ]
+          },
+          {
+            "if": {
+              "and": [
+                { "compare_string": [ { "global_val": "pf_ev_7_kind" }, "death" ] },
+                { "compare_string": [ { "global_val": "pf_ev_7_name" }, { "global_val": "pf_kn_bfname" } ] }
+              ]
+            },
+            "then": [ { "math": [ "v_kdt = pf_ev_7_t" ] } ]
+          },
+          {
+            "if": {
+              "and": [
+                { "compare_string": [ { "global_val": "pf_ev_8_kind" }, "death" ] },
+                { "compare_string": [ { "global_val": "pf_ev_8_name" }, { "global_val": "pf_kn_bfname" } ] }
+              ]
+            },
+            "then": [ { "math": [ "v_kdt = pf_ev_8_t" ] } ]
+          },
+          {
+            "if": {
+              "and": [
+                { "compare_string": [ { "global_val": "pf_ev_9_kind" }, "death" ] },
+                { "compare_string": [ { "global_val": "pf_ev_9_name" }, { "global_val": "pf_kn_bfname" } ] }
+              ]
+            },
+            "then": [ { "math": [ "v_kdt = pf_ev_9_t" ] } ]
+          },
+          {
+            "if": {
+              "and": [
+                { "compare_string": [ { "global_val": "pf_ev_10_kind" }, "death" ] },
+                { "compare_string": [ { "global_val": "pf_ev_10_name" }, { "global_val": "pf_kn_bfname" } ] }
+              ]
+            },
+            "then": [ { "math": [ "v_kdt = pf_ev_10_t" ] } ]
+          },
+          {
+            "if": {
+              "and": [
+                { "compare_string": [ { "global_val": "pf_ev_11_kind" }, "death" ] },
+                { "compare_string": [ { "global_val": "pf_ev_11_name" }, { "global_val": "pf_kn_bfname" } ] }
+              ]
+            },
+            "then": [ { "math": [ "v_kdt = pf_ev_11_t" ] } ]
+          },
+          {
+            "if": {
+              "and": [
+                { "compare_string": [ { "global_val": "pf_ev_12_kind" }, "death" ] },
+                { "compare_string": [ { "global_val": "pf_ev_12_name" }, { "global_val": "pf_kn_bfname" } ] }
+              ]
+            },
+            "then": [ { "math": [ "v_kdt = pf_ev_12_t" ] } ]
+          },
+          {
+            "if": {
+              "and": [
+                { "compare_string": [ { "global_val": "pf_ev_13_kind" }, "death" ] },
+                { "compare_string": [ { "global_val": "pf_ev_13_name" }, { "global_val": "pf_kn_bfname" } ] }
+              ]
+            },
+            "then": [ { "math": [ "v_kdt = pf_ev_13_t" ] } ]
+          },
+          {
+            "if": {
+              "and": [
+                { "compare_string": [ { "global_val": "pf_ev_14_kind" }, "death" ] },
+                { "compare_string": [ { "global_val": "pf_ev_14_name" }, { "global_val": "pf_kn_bfname" } ] }
+              ]
+            },
+            "then": [ { "math": [ "v_kdt = pf_ev_14_t" ] } ]
+          },
+          {
+            "if": {
+              "and": [
+                { "compare_string": [ { "global_val": "pf_ev_15_kind" }, "death" ] },
+                { "compare_string": [ { "global_val": "pf_ev_15_name" }, { "global_val": "pf_kn_bfname" } ] }
+              ]
+            },
+            "then": [ { "math": [ "v_kdt = pf_ev_15_t" ] } ]
+          },
+          {
+            "if": {
+              "and": [
+                { "compare_string": [ { "global_val": "pf_ev_16_kind" }, "death" ] },
+                { "compare_string": [ { "global_val": "pf_ev_16_name" }, { "global_val": "pf_kn_bfname" } ] }
+              ]
+            },
+            "then": [ { "math": [ "v_kdt = pf_ev_16_t" ] } ]
+          },
+          {
+            "if": {
+              "and": [
+                { "compare_string": [ { "global_val": "pf_ev_17_kind" }, "death" ] },
+                { "compare_string": [ { "global_val": "pf_ev_17_name" }, { "global_val": "pf_kn_bfname" } ] }
+              ]
+            },
+            "then": [ { "math": [ "v_kdt = pf_ev_17_t" ] } ]
+          },
+          {
+            "if": {
+              "and": [
+                { "compare_string": [ { "global_val": "pf_ev_18_kind" }, "death" ] },
+                { "compare_string": [ { "global_val": "pf_ev_18_name" }, { "global_val": "pf_kn_bfname" } ] }
+              ]
+            },
+            "then": [ { "math": [ "v_kdt = pf_ev_18_t" ] } ]
+          },
+          {
+            "if": {
+              "and": [
+                { "compare_string": [ { "global_val": "pf_ev_19_kind" }, "death" ] },
+                { "compare_string": [ { "global_val": "pf_ev_19_name" }, { "global_val": "pf_kn_bfname" } ] }
+              ]
+            },
+            "then": [ { "math": [ "v_kdt = pf_ev_19_t" ] } ]
+          }
+        ]
+      },
+      { "math": [ "pf_kn_j += 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KNOWN_dead_pick",
+    "//": "u = you.  One step of finding the most recent death not yet listed.",
+    "effect": [
+      { "set_string_var": "u_pf_known_<global_val:pf_kn_j>", "target_var": { "context_val": "kr" }, "parse_tags": true },
+      { "copy_var": { "var_val": "kr" }, "target_var": { "global_val": "pf_kn_ju" } },
+      {
+        "set_string_var": "pf_reg_<global_val:pf_kn_ju>_dead",
+        "target_var": { "context_val": "kd" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "pf_reg_<global_val:pf_kn_ju>_dead_t",
+        "target_var": { "context_val": "kdt" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "pf_kn_shown_<global_val:pf_kn_j>",
+        "target_var": { "context_val": "ksh" },
+        "parse_tags": true
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "value_or(v_kd, 0) == 1" ] },
+            { "math": [ "value_or(v_ksh, -1) != pf_kn_stamp" ] },
+            { "math": [ "value_or(v_kdt, 0) + pf_kn_j * 0.001 > pf_kn_best" ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_kn_best = value_or(v_kdt, 0) + pf_kn_j * 0.001" ] }, { "math": [ "pf_kn_bi = pf_kn_j" ] } ]
+      },
+      { "math": [ "pf_kn_j += 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KNOWN_dead_next",
+    "//": "u = you.  Lists the most recent death not yet listed (one row).",
+    "effect": [
+      { "math": [ "pf_kn_best = -1" ] },
+      { "math": [ "pf_kn_bi = -1" ] },
+      { "math": [ "pf_kn_j = 0" ] },
+      {
+        "run_eocs": "PF_KNOWN_dead_pick",
+        "condition": { "math": [ "pf_kn_j < value_or(u_pf_known_n, 0)" ] },
+        "iterations": 120
+      },
+      { "math": [ "pf_kn_dshown += 1" ] },
+      {
+        "if": { "math": [ "pf_kn_bi >= 0" ] },
+        "then": [
+          { "set_string_var": "pf_kn_shown_<global_val:pf_kn_bi>", "target_var": { "context_val": "ksh" }, "parse_tags": true },
+          { "math": [ "v_ksh = pf_kn_stamp" ] },
+          { "math": [ "pf_kn_i = pf_kn_bi" ] },
+          { "run_eocs": "PF_KNOWN_scan_one" }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KNOWN_scan_one",
+    "//": "u = you.  One step of the People you know scan: entry pf_kn_i of your known list, living on pass 1 (forward), the dead on pass 2 (backward, newest first).",
+    "effect": [
+      { "set_string_var": "u_pf_known_<global_val:pf_kn_i>", "target_var": { "context_val": "kr" }, "parse_tags": true },
+      { "copy_var": { "var_val": "kr" }, "target_var": { "global_val": "pf_kn_uid" } },
+      {
+        "set_string_var": "pf_reg_<global_val:pf_kn_uid>_dead",
+        "target_var": { "context_val": "kd" },
+        "parse_tags": true
+      },
+      {
+        "if": { "math": [ "(value_or(v_kd, 0) == 1) == (pf_kn_pass == 2)" ] },
+        "then": [
+          { "set_string_var": "pf_name_<global_val:pf_kn_uid>", "target_var": { "context_val": "nref" }, "parse_tags": true },
+          { "copy_var": { "var_val": "nref" }, "target_var": { "global_val": "pf_kn_name" } },
+          {
+            "if": { "compare_string": [ { "global_val": "pf_kn_name" }, "" ] },
+            "then": [ { "set_string_var": "someone you met", "target_var": { "global_val": "pf_kn_name" } } ]
+          },
+          {
+            "set_string_var": "pf_kn_l_<global_val:pf_kn_s>",
+            "target_var": { "context_val": "kt" },
+            "parse_tags": true
+          },
+          {
+            "set_string_var": "pf_kn_ix_<global_val:pf_kn_s>",
+            "target_var": { "context_val": "kx" },
+            "parse_tags": true
+          },
+          { "math": [ "v_kx = pf_kn_i" ] },
+          {
+            "if": { "math": [ "pf_kn_pass == 2" ] },
+            "then": [ { "set_string_var": "<global_val:pf_kn_name>  (gone)", "target_var": { "var_val": "kt" }, "parse_tags": true } ],
+            "else": [
+              { "copy_var": { "global_val": "pf_kn_uid" }, "target_var": { "global_val": "pf_m_other" } },
+              { "run_eocs": "PF_VIEW_read" },
+              {
+                "set_string_var": "pf_kn_l_<global_val:pf_kn_s>",
+                "target_var": { "context_val": "kt" },
+                "parse_tags": true
+              },
+              {
+                "set_string_var": "u_pf_v_<global_val:pf_kn_uid>_l",
+                "target_var": { "context_val": "kl" },
+                "parse_tags": true
+              },
+              {
+                "math": [ "pf_kn_days = floor(time('now') / time('1 d')) - floor(value_or(v_kl, time('now')) / time('1 d'))" ]
+              },
+              {
+                "if": { "math": [ "pf_kn_days == 0" ] },
+                "then": [
+                  {
+                    "set_string_var": "<global_val:pf_kn_name>: <global_val:pf_read_tier_name>, saw them today",
+                    "target_var": { "var_val": "kt" },
+                    "parse_tags": true
+                  }
+                ],
+                "else": [
+                  {
+                    "if": { "math": [ "pf_kn_days == 1" ] },
+                    "then": [
+                      {
+                        "set_string_var": "<global_val:pf_kn_name>: <global_val:pf_read_tier_name>, a day since anything happened",
+                        "target_var": { "var_val": "kt" },
+                        "parse_tags": true
+                      }
+                    ],
+                    "else": [
+                      {
+                        "set_string_var": "<global_val:pf_kn_name>: <global_val:pf_read_tier_name>, <global_val:pf_kn_days> days since anything happened",
+                        "target_var": { "var_val": "kt" },
+                        "parse_tags": true
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          { "math": [ "pf_kn_s += 1" ] }
+        ]
+      },
+      { "math": [ "pf_kn_i += pf_kn_di" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KNOWN_open",
+    "//": "u = you.  Everyone you know: how you see them, how long since anything happened between you, and who is gone.",
+    "effect": [
+      { "run_eocs": "PF_ID_ensure" },
+      { "math": [ "pf_kn_stamp = value_or(pf_kn_stamp, 0) + 1" ] },
+      { "math": [ "pf_kn_i = 0" ] },
+      { "math": [ "pf_kn_dn = 0" ] },
+      {
+        "run_eocs": "PF_KNOWN_count_one",
+        "condition": { "math": [ "pf_kn_i < value_or(u_pf_known_n, 0)" ] },
+        "iterations": 120
+      },
+      { "math": [ "pf_kn_lim = 20 - min(pf_kn_dn, 4)" ] },
+      { "math": [ "pf_kn_i = 0" ] },
+      { "math": [ "pf_kn_s = 0" ] },
+      { "math": [ "pf_kn_pass = 1" ] },
+      { "math": [ "pf_kn_di = 1" ] },
+      {
+        "run_eocs": "PF_KNOWN_scan_one",
+        "condition": { "and": [ { "math": [ "pf_kn_s < pf_kn_lim" ] }, { "math": [ "pf_kn_i < value_or(u_pf_known_n, 0)" ] } ] },
+        "iterations": 120
+      },
+      { "math": [ "pf_kn_j = 0" ] },
+      {
+        "run_eocs": "PF_KNOWN_backfill_one",
+        "condition": { "math": [ "pf_kn_j < value_or(u_pf_known_n, 0)" ] },
+        "iterations": 120
+      },
+      { "math": [ "pf_kn_pass = 2" ] },
+      { "math": [ "pf_kn_di = 0" ] },
+      { "math": [ "pf_kn_dshown = 0" ] },
+      {
+        "run_eocs": "PF_KNOWN_dead_next",
+        "condition": { "and": [ { "math": [ "pf_kn_s < 20" ] }, { "math": [ "pf_kn_dshown < pf_kn_dn" ] } ] },
+        "iterations": 20
+      },
+      { "math": [ "pf_kn_heard_n = min(value_or(pf_rumors_n, 0), 6)" ] },
+      {
+        "set_string_var": "Heard of: <global_val:pf_kn_heard_n> groups out there (rumors)",
+        "target_var": { "global_val": "pf_kn_heard" },
+        "parse_tags": true
+      },
+      {
+        "if": { "and": [ { "math": [ "value_or(u_pf_known_n, 0) == 0" ] }, { "math": [ "pf_kn_heard_n == 0" ] } ] },
+        "then": [ { "u_message": "You don't really know anyone yet.", "type": "info" } ],
+        "else": [
+          {
+            "run_eoc_selector": [
+              "PF_KNOWN_heard",
+              "PF_KNOWN_pick_0",
+              "PF_KNOWN_pick_1",
+              "PF_KNOWN_pick_2",
+              "PF_KNOWN_pick_3",
+              "PF_KNOWN_pick_4",
+              "PF_KNOWN_pick_5",
+              "PF_KNOWN_pick_6",
+              "PF_KNOWN_pick_7",
+              "PF_KNOWN_pick_8",
+              "PF_KNOWN_pick_9",
+              "PF_KNOWN_pick_10",
+              "PF_KNOWN_pick_11",
+              "PF_KNOWN_pick_12",
+              "PF_KNOWN_pick_13",
+              "PF_KNOWN_pick_14",
+              "PF_KNOWN_pick_15",
+              "PF_KNOWN_pick_16",
+              "PF_KNOWN_pick_17",
+              "PF_KNOWN_pick_18",
+              "PF_KNOWN_pick_19"
+            ],
+            "names": [
+              { "global_val": "pf_kn_heard" },
+              { "global_val": "pf_kn_l_0" },
+              { "global_val": "pf_kn_l_1" },
+              { "global_val": "pf_kn_l_2" },
+              { "global_val": "pf_kn_l_3" },
+              { "global_val": "pf_kn_l_4" },
+              { "global_val": "pf_kn_l_5" },
+              { "global_val": "pf_kn_l_6" },
+              { "global_val": "pf_kn_l_7" },
+              { "global_val": "pf_kn_l_8" },
+              { "global_val": "pf_kn_l_9" },
+              { "global_val": "pf_kn_l_10" },
+              { "global_val": "pf_kn_l_11" },
+              { "global_val": "pf_kn_l_12" },
+              { "global_val": "pf_kn_l_13" },
+              { "global_val": "pf_kn_l_14" },
+              { "global_val": "pf_kn_l_15" },
+              { "global_val": "pf_kn_l_16" },
+              { "global_val": "pf_kn_l_17" },
+              { "global_val": "pf_kn_l_18" },
+              { "global_val": "pf_kn_l_19" }
+            ],
+            "keys": [ "0", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t" ],
+            "title": "People you know (first met first; the gone last, newest first)",
+            "hide_failing": true,
+            "allow_cancel": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_SEEN_tick",
+    "//": "u = you.  Records where and when you last saw each person (pf_seen_<uid>, pf_seen_<uid>_t).",
+    "recurrence": "10 minutes",
+    "global": true,
+    "condition": { "not": { "u_has_effect": "sleep" } },
+    "effect": [
+      { "u_location_variable": { "global_val": "pf_seen_av" } },
+      { "u_run_npc_eocs": [ "PF_SEEN_one" ], "local": true, "npc_range": 40 }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_SEEN_one",
+    "condition": { "math": [ "has_var(u_pf_uid)" ] },
+    "effect": [
+      { "u_location_variable": { "global_val": "pf_seen_pos" } },
+      {
+        "if": { "line_of_sight": 40, "loc_1": { "global_val": "pf_seen_av" }, "loc_2": { "global_val": "pf_seen_pos" } },
+        "then": [
+          { "set_string_var": "pf_seen_<u_val:pf_uid>", "target_var": { "context_val": "sn" }, "parse_tags": true },
+          { "copy_var": { "global_val": "pf_seen_pos" }, "target_var": { "var_val": "sn" } },
+          { "set_string_var": "pf_seen_<u_val:pf_uid>_t", "target_var": { "context_val": "st" }, "parse_tags": true },
+          { "math": [ "v_st = time('now')" ] }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KNOWN_band_read",
+    "//": "u = a band leader (reached by unique id).  The band's position (vpos, its leader's body while on-screen) and goal for word along the road.",
+    "effect": [
+      { "math": [ "pf_kb_ok = 1" ] },
+      { "copy_var": { "u_val": "pf_vpos" }, "target_var": { "global_val": "pf_kb_v" } },
+      {
+        "if": { "math": [ "has_var(u_pf_goal)" ] },
+        "then": [ { "copy_var": { "u_val": "pf_goal" }, "target_var": { "global_val": "pf_kb_g" } }, { "math": [ "pf_kb_hg = 1" ] } ],
+        "else": [ { "math": [ "pf_kb_hg = 0" ] } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KNOWN_where",
+    "//": "u = you, pf_kn_uid = someone you know.  Where you last saw them, from where you stand now; and for someone with a band out of sight, where the band really is (A-Life data).",
+    "effect": [
+      { "set_string_var": "pf_name_<global_val:pf_kn_uid>", "target_var": { "context_val": "nref" }, "parse_tags": true },
+      { "copy_var": { "var_val": "nref" }, "target_var": { "global_val": "pf_kn_name" } },
+      { "u_location_variable": { "global_val": "pf_seen_av" } },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_KNOWN_where_live",
+            "condition": { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_kn_uid" } ] },
+            "effect": [
+              { "u_location_variable": { "global_val": "pf_seen_pos" } },
+              {
+                "set_string_var": "pf_seen_<u_val:pf_uid>",
+                "target_var": { "context_val": "sn" },
+                "parse_tags": true
+              },
+              { "copy_var": { "global_val": "pf_seen_pos" }, "target_var": { "var_val": "sn" } },
+              {
+                "set_string_var": "pf_seen_<u_val:pf_uid>_t",
+                "target_var": { "context_val": "st" },
+                "parse_tags": true
+              },
+              { "math": [ "v_st = time('now')" ] }
+            ]
+          }
+        ],
+        "local": true,
+        "npc_range": 60
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_kn_name" }, "" ] },
+        "then": [ { "set_string_var": "someone you met", "target_var": { "global_val": "pf_kn_name" } } ]
+      },
+      {
+        "set_string_var": "pf_reg_<global_val:pf_kn_uid>_dead",
+        "target_var": { "context_val": "kd" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "pf_seen_<global_val:pf_kn_uid>_t",
+        "target_var": { "context_val": "st" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "pf_seen_<global_val:pf_kn_uid>",
+        "target_var": { "context_val": "sn" },
+        "parse_tags": true
+      },
+      {
+        "if": { "math": [ "value_or(v_kd, 0) == 1" ] },
+        "then": [ { "u_message": "<global_val:pf_kn_name> is gone.", "type": "info" } ],
+        "else": [
+          {
+            "if": { "math": [ "value_or(v_st, -1) < 0" ] },
+            "then": [ { "u_message": "You haven't kept track of where <global_val:pf_kn_name> went.", "type": "info" } ],
+            "else": [
+              { "copy_var": { "var_val": "sn" }, "target_var": { "global_val": "pf_kn_seen" } },
+              { "u_location_variable": { "global_val": "pf_kn_av" } },
+              { "math": [ "pf_kn_dx = pf_kn_seen.x - pf_kn_av.x" ] },
+              { "math": [ "pf_kn_dy = pf_kn_seen.y - pf_kn_av.y" ] },
+              { "math": [ "pf_kn_d = max(abs(pf_kn_dx), abs(pf_kn_dy))" ] },
+              { "math": [ "pf_kn_mt = floor((pf_kn_d + 12) / 24)" ] },
+              { "math": [ "pf_kn_h = floor((time('now') - v_st) / time('1 h'))" ] },
+              { "math": [ "pf_kn_dd = floor(pf_kn_h / 24)" ] },
+              { "set_string_var": "", "target_var": { "global_val": "pf_kn_ns" } },
+              { "set_string_var": "", "target_var": { "global_val": "pf_kn_ew" } },
+              {
+                "if": { "math": [ "abs(pf_kn_dy) * 2 >= abs(pf_kn_dx)" ] },
+                "then": [
+                  {
+                    "if": { "math": [ "pf_kn_dy < 0" ] },
+                    "then": [ { "set_string_var": "north", "target_var": { "global_val": "pf_kn_ns" } } ],
+                    "else": [ { "set_string_var": "south", "target_var": { "global_val": "pf_kn_ns" } } ]
+                  }
+                ]
+              },
+              {
+                "if": { "math": [ "abs(pf_kn_dx) * 2 >= abs(pf_kn_dy)" ] },
+                "then": [
+                  {
+                    "if": { "math": [ "pf_kn_dx < 0" ] },
+                    "then": [ { "set_string_var": "west", "target_var": { "global_val": "pf_kn_ew" } } ],
+                    "else": [ { "set_string_var": "east", "target_var": { "global_val": "pf_kn_ew" } } ]
+                  }
+                ]
+              },
+              {
+                "set_string_var": "<global_val:pf_kn_ns><global_val:pf_kn_ew>",
+                "target_var": { "global_val": "pf_kn_dir" },
+                "parse_tags": true
+              },
+              {
+                "if": { "math": [ "pf_kn_d < 4" ] },
+                "then": [ { "set_string_var": "right about here", "target_var": { "global_val": "pf_kn_where" } } ],
+                "else": [
+                  {
+                    "if": { "math": [ "pf_kn_d < 48" ] },
+                    "then": [
+                      {
+                        "set_string_var": "<global_val:pf_kn_d> steps <global_val:pf_kn_dir> of here",
+                        "target_var": { "global_val": "pf_kn_where" },
+                        "parse_tags": true
+                      }
+                    ],
+                    "else": [
+                      {
+                        "set_string_var": "about <global_val:pf_kn_mt> map tiles <global_val:pf_kn_dir> of here",
+                        "target_var": { "global_val": "pf_kn_where" },
+                        "parse_tags": true
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "if": { "math": [ "pf_kn_h < 1" ] },
+                "then": [ { "set_string_var": "within the hour", "target_var": { "global_val": "pf_kn_when" } } ],
+                "else": [
+                  {
+                    "if": { "math": [ "pf_kn_h < 24" ] },
+                    "then": [
+                      { "set_string_var": "<global_val:pf_kn_h> hours ago", "target_var": { "global_val": "pf_kn_when" }, "parse_tags": true }
+                    ],
+                    "else": [
+                      {
+                        "if": { "math": [ "pf_kn_dd == 1" ] },
+                        "then": [ { "set_string_var": "a day ago", "target_var": { "global_val": "pf_kn_when" } } ],
+                        "else": [
+                          { "set_string_var": "<global_val:pf_kn_dd> days ago", "target_var": { "global_val": "pf_kn_when" }, "parse_tags": true }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "u_message": "You last saw <global_val:pf_kn_name> <global_val:pf_kn_where>, <global_val:pf_kn_when>.",
+                "type": "info"
+              }
+            ]
+          }
+        ]
+      },
+      { "math": [ "pf_kb_ok = 0" ] },
+      { "math": [ "pf_kb_lead = 0" ] },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_KNOWN_band_pos",
+            "effect": [
+              {
+                "if": { "math": [ "(value_or(u_pf_band, 0) > 0) * (value_or(u_pf_resident, 0) == 0)" ] },
+                "then": [
+                  {
+                    "if": { "math": [ "(value_or(u_pf_is_leader, 0) == 1) * has_var(u_pf_vpos)" ] },
+                    "then": [ { "run_eocs": "PF_KNOWN_band_read" } ],
+                    "else": [
+                      {
+                        "if": { "math": [ "has_var(u_pf_leader)" ] },
+                        "then": [
+                          { "copy_var": { "u_val": "pf_leader" }, "target_var": { "global_val": "pf_kb_leader" } },
+                          { "math": [ "pf_kb_lead = 1" ] }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "unique_ids": [ { "global_val": "pf_kn_uid" } ],
+        "local": false
+      },
+      {
+        "if": { "math": [ "(pf_kb_ok == 0) * (pf_kb_lead == 1)" ] },
+        "then": [
+          {
+            "u_run_npc_eocs": [
+              {
+                "id": "PF_KNOWN_band_lead",
+                "condition": { "math": [ "(value_or(u_pf_is_leader, 0) == 1) * has_var(u_pf_vpos)" ] },
+                "effect": [ { "run_eocs": "PF_KNOWN_band_read" } ]
+              }
+            ],
+            "unique_ids": [ { "global_val": "pf_kb_leader" } ],
+            "local": false
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kb_ok == 1" ] },
+        "then": [
+          { "u_location_variable": { "global_val": "pf_kb_av" } },
+          { "math": [ "pf_kb_dx = pf_kb_v.x - pf_kb_av.x" ] },
+          { "math": [ "pf_kb_dy = pf_kb_v.y - pf_kb_av.y" ] },
+          { "math": [ "pf_kb_mt = floor((max(abs(pf_kb_dx), abs(pf_kb_dy)) + 12) / 24)" ] },
+          { "set_string_var": "", "target_var": { "global_val": "pf_kb_dir_ns" } },
+          { "set_string_var": "", "target_var": { "global_val": "pf_kb_dir_ew" } },
+          {
+            "if": { "math": [ "abs(pf_kb_dy) * 2 >= abs(pf_kb_dx)" ] },
+            "then": [
+              {
+                "if": { "math": [ "pf_kb_dy < 0" ] },
+                "then": [ { "set_string_var": "north", "target_var": { "global_val": "pf_kb_dir_ns" } } ],
+                "else": [ { "set_string_var": "south", "target_var": { "global_val": "pf_kb_dir_ns" } } ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "abs(pf_kb_dx) * 2 >= abs(pf_kb_dy)" ] },
+            "then": [
+              {
+                "if": { "math": [ "pf_kb_dx < 0" ] },
+                "then": [ { "set_string_var": "west", "target_var": { "global_val": "pf_kb_dir_ew" } } ],
+                "else": [ { "set_string_var": "east", "target_var": { "global_val": "pf_kb_dir_ew" } } ]
+              }
+            ]
+          },
+          {
+            "set_string_var": "<global_val:pf_kb_dir_ns><global_val:pf_kb_dir_ew>",
+            "target_var": { "global_val": "pf_kb_dir" },
+            "parse_tags": true
+          },
+          {
+            "if": { "math": [ "pf_kb_hg == 1" ] },
+            "then": [
+              { "math": [ "pf_kb_hx = pf_kb_g.x - pf_kb_v.x" ] },
+              { "math": [ "pf_kb_hy = pf_kb_g.y - pf_kb_v.y" ] },
+              { "set_string_var": "", "target_var": { "global_val": "pf_kb_head_ns" } },
+              { "set_string_var": "", "target_var": { "global_val": "pf_kb_head_ew" } },
+              {
+                "if": { "math": [ "abs(pf_kb_hy) * 2 >= abs(pf_kb_hx)" ] },
+                "then": [
+                  {
+                    "if": { "math": [ "pf_kb_hy < 0" ] },
+                    "then": [ { "set_string_var": "north", "target_var": { "global_val": "pf_kb_head_ns" } } ],
+                    "else": [ { "set_string_var": "south", "target_var": { "global_val": "pf_kb_head_ns" } } ]
+                  }
+                ]
+              },
+              {
+                "if": { "math": [ "abs(pf_kb_hx) * 2 >= abs(pf_kb_hy)" ] },
+                "then": [
+                  {
+                    "if": { "math": [ "pf_kb_hx < 0" ] },
+                    "then": [ { "set_string_var": "west", "target_var": { "global_val": "pf_kb_head_ew" } } ],
+                    "else": [ { "set_string_var": "east", "target_var": { "global_val": "pf_kb_head_ew" } } ]
+                  }
+                ]
+              },
+              {
+                "set_string_var": "<global_val:pf_kb_head_ns><global_val:pf_kb_head_ew>",
+                "target_var": { "global_val": "pf_kb_head" },
+                "parse_tags": true
+              },
+              {
+                "if": { "math": [ "max(abs(pf_kb_hx), abs(pf_kb_hy)) < 12" ] },
+                "then": [ { "set_string_var": "settling there", "target_var": { "global_val": "pf_kb_heading" } } ],
+                "else": [
+                  {
+                    "set_string_var": "heading <global_val:pf_kb_head>",
+                    "target_var": { "global_val": "pf_kb_heading" },
+                    "parse_tags": true
+                  }
+                ]
+              }
+            ],
+            "else": [ { "set_string_var": "staying put", "target_var": { "global_val": "pf_kb_heading" } } ]
+          },
+          {
+            "if": { "math": [ "pf_kb_mt < 2" ] },
+            "then": [
+              {
+                "u_message": "Word along the road puts <global_val:pf_kn_name>'s people close by, <global_val:pf_kb_heading>.",
+                "type": "info"
+              }
+            ],
+            "else": [
+              {
+                "u_message": "Word along the road puts <global_val:pf_kn_name>'s people about <global_val:pf_kb_mt> map tiles <global_val:pf_kb_dir> of here, <global_val:pf_kb_heading>.",
+                "type": "info"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KNOWN_pick_0",
+    "condition": { "math": [ "value_or(pf_kn_s, 0) > 0" ] },
+    "effect": [
+      { "set_string_var": "u_pf_known_<global_val:pf_kn_ix_0>", "target_var": { "context_val": "kr" }, "parse_tags": true },
+      { "copy_var": { "var_val": "kr" }, "target_var": { "global_val": "pf_kn_uid" } },
+      { "run_eocs": "PF_KNOWN_where" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KNOWN_pick_1",
+    "condition": { "math": [ "value_or(pf_kn_s, 0) > 1" ] },
+    "effect": [
+      { "set_string_var": "u_pf_known_<global_val:pf_kn_ix_1>", "target_var": { "context_val": "kr" }, "parse_tags": true },
+      { "copy_var": { "var_val": "kr" }, "target_var": { "global_val": "pf_kn_uid" } },
+      { "run_eocs": "PF_KNOWN_where" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KNOWN_pick_2",
+    "condition": { "math": [ "value_or(pf_kn_s, 0) > 2" ] },
+    "effect": [
+      { "set_string_var": "u_pf_known_<global_val:pf_kn_ix_2>", "target_var": { "context_val": "kr" }, "parse_tags": true },
+      { "copy_var": { "var_val": "kr" }, "target_var": { "global_val": "pf_kn_uid" } },
+      { "run_eocs": "PF_KNOWN_where" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KNOWN_pick_3",
+    "condition": { "math": [ "value_or(pf_kn_s, 0) > 3" ] },
+    "effect": [
+      { "set_string_var": "u_pf_known_<global_val:pf_kn_ix_3>", "target_var": { "context_val": "kr" }, "parse_tags": true },
+      { "copy_var": { "var_val": "kr" }, "target_var": { "global_val": "pf_kn_uid" } },
+      { "run_eocs": "PF_KNOWN_where" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KNOWN_pick_4",
+    "condition": { "math": [ "value_or(pf_kn_s, 0) > 4" ] },
+    "effect": [
+      { "set_string_var": "u_pf_known_<global_val:pf_kn_ix_4>", "target_var": { "context_val": "kr" }, "parse_tags": true },
+      { "copy_var": { "var_val": "kr" }, "target_var": { "global_val": "pf_kn_uid" } },
+      { "run_eocs": "PF_KNOWN_where" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KNOWN_pick_5",
+    "condition": { "math": [ "value_or(pf_kn_s, 0) > 5" ] },
+    "effect": [
+      { "set_string_var": "u_pf_known_<global_val:pf_kn_ix_5>", "target_var": { "context_val": "kr" }, "parse_tags": true },
+      { "copy_var": { "var_val": "kr" }, "target_var": { "global_val": "pf_kn_uid" } },
+      { "run_eocs": "PF_KNOWN_where" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KNOWN_pick_6",
+    "condition": { "math": [ "value_or(pf_kn_s, 0) > 6" ] },
+    "effect": [
+      { "set_string_var": "u_pf_known_<global_val:pf_kn_ix_6>", "target_var": { "context_val": "kr" }, "parse_tags": true },
+      { "copy_var": { "var_val": "kr" }, "target_var": { "global_val": "pf_kn_uid" } },
+      { "run_eocs": "PF_KNOWN_where" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KNOWN_pick_7",
+    "condition": { "math": [ "value_or(pf_kn_s, 0) > 7" ] },
+    "effect": [
+      { "set_string_var": "u_pf_known_<global_val:pf_kn_ix_7>", "target_var": { "context_val": "kr" }, "parse_tags": true },
+      { "copy_var": { "var_val": "kr" }, "target_var": { "global_val": "pf_kn_uid" } },
+      { "run_eocs": "PF_KNOWN_where" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KNOWN_pick_8",
+    "condition": { "math": [ "value_or(pf_kn_s, 0) > 8" ] },
+    "effect": [
+      { "set_string_var": "u_pf_known_<global_val:pf_kn_ix_8>", "target_var": { "context_val": "kr" }, "parse_tags": true },
+      { "copy_var": { "var_val": "kr" }, "target_var": { "global_val": "pf_kn_uid" } },
+      { "run_eocs": "PF_KNOWN_where" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KNOWN_pick_9",
+    "condition": { "math": [ "value_or(pf_kn_s, 0) > 9" ] },
+    "effect": [
+      { "set_string_var": "u_pf_known_<global_val:pf_kn_ix_9>", "target_var": { "context_val": "kr" }, "parse_tags": true },
+      { "copy_var": { "var_val": "kr" }, "target_var": { "global_val": "pf_kn_uid" } },
+      { "run_eocs": "PF_KNOWN_where" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KNOWN_pick_10",
+    "condition": { "math": [ "value_or(pf_kn_s, 0) > 10" ] },
+    "effect": [
+      { "set_string_var": "u_pf_known_<global_val:pf_kn_ix_10>", "target_var": { "context_val": "kr" }, "parse_tags": true },
+      { "copy_var": { "var_val": "kr" }, "target_var": { "global_val": "pf_kn_uid" } },
+      { "run_eocs": "PF_KNOWN_where" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KNOWN_pick_11",
+    "condition": { "math": [ "value_or(pf_kn_s, 0) > 11" ] },
+    "effect": [
+      { "set_string_var": "u_pf_known_<global_val:pf_kn_ix_11>", "target_var": { "context_val": "kr" }, "parse_tags": true },
+      { "copy_var": { "var_val": "kr" }, "target_var": { "global_val": "pf_kn_uid" } },
+      { "run_eocs": "PF_KNOWN_where" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KNOWN_pick_12",
+    "condition": { "math": [ "value_or(pf_kn_s, 0) > 12" ] },
+    "effect": [
+      { "set_string_var": "u_pf_known_<global_val:pf_kn_ix_12>", "target_var": { "context_val": "kr" }, "parse_tags": true },
+      { "copy_var": { "var_val": "kr" }, "target_var": { "global_val": "pf_kn_uid" } },
+      { "run_eocs": "PF_KNOWN_where" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KNOWN_pick_13",
+    "condition": { "math": [ "value_or(pf_kn_s, 0) > 13" ] },
+    "effect": [
+      { "set_string_var": "u_pf_known_<global_val:pf_kn_ix_13>", "target_var": { "context_val": "kr" }, "parse_tags": true },
+      { "copy_var": { "var_val": "kr" }, "target_var": { "global_val": "pf_kn_uid" } },
+      { "run_eocs": "PF_KNOWN_where" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KNOWN_pick_14",
+    "condition": { "math": [ "value_or(pf_kn_s, 0) > 14" ] },
+    "effect": [
+      { "set_string_var": "u_pf_known_<global_val:pf_kn_ix_14>", "target_var": { "context_val": "kr" }, "parse_tags": true },
+      { "copy_var": { "var_val": "kr" }, "target_var": { "global_val": "pf_kn_uid" } },
+      { "run_eocs": "PF_KNOWN_where" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KNOWN_pick_15",
+    "condition": { "math": [ "value_or(pf_kn_s, 0) > 15" ] },
+    "effect": [
+      { "set_string_var": "u_pf_known_<global_val:pf_kn_ix_15>", "target_var": { "context_val": "kr" }, "parse_tags": true },
+      { "copy_var": { "var_val": "kr" }, "target_var": { "global_val": "pf_kn_uid" } },
+      { "run_eocs": "PF_KNOWN_where" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KNOWN_pick_16",
+    "condition": { "math": [ "value_or(pf_kn_s, 0) > 16" ] },
+    "effect": [
+      { "set_string_var": "u_pf_known_<global_val:pf_kn_ix_16>", "target_var": { "context_val": "kr" }, "parse_tags": true },
+      { "copy_var": { "var_val": "kr" }, "target_var": { "global_val": "pf_kn_uid" } },
+      { "run_eocs": "PF_KNOWN_where" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KNOWN_pick_17",
+    "condition": { "math": [ "value_or(pf_kn_s, 0) > 17" ] },
+    "effect": [
+      { "set_string_var": "u_pf_known_<global_val:pf_kn_ix_17>", "target_var": { "context_val": "kr" }, "parse_tags": true },
+      { "copy_var": { "var_val": "kr" }, "target_var": { "global_val": "pf_kn_uid" } },
+      { "run_eocs": "PF_KNOWN_where" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KNOWN_pick_18",
+    "condition": { "math": [ "value_or(pf_kn_s, 0) > 18" ] },
+    "effect": [
+      { "set_string_var": "u_pf_known_<global_val:pf_kn_ix_18>", "target_var": { "context_val": "kr" }, "parse_tags": true },
+      { "copy_var": { "var_val": "kr" }, "target_var": { "global_val": "pf_kn_uid" } },
+      { "run_eocs": "PF_KNOWN_where" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KNOWN_pick_19",
+    "condition": { "math": [ "value_or(pf_kn_s, 0) > 19" ] },
+    "effect": [
+      { "set_string_var": "u_pf_known_<global_val:pf_kn_ix_19>", "target_var": { "context_val": "kr" }, "parse_tags": true },
+      { "copy_var": { "var_val": "kr" }, "target_var": { "global_val": "pf_kn_uid" } },
+      { "run_eocs": "PF_KNOWN_where" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KNOWN_heard",
+    "//": "People you know: the groups you've only heard of (v0.4 rumors, newest first).",
+    "condition": { "math": [ "value_or(pf_rumors_n, 0) > 0" ] },
+    "effect": [ { "run_eocs": "PF_HOME_rumors" } ]
+  }
+]

@@ -1,0 +1,192 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOME_open",
+    "//": "u = avatar.  Home screen (main menu: Home).",
+    "effect": [
+      {
+        "if": { "math": [ "value_or(pf_home_set, 0) == 1" ] },
+        "then": [
+          { "u_location_variable": { "global_val": "pf_hm_av" } },
+          { "math": [ "pf_hm_dist = round(distance(pf_hm_av, pf_home_loc))" ] },
+          { "math": [ "pf_hm_res = value_or(pf_residents_n, 0)" ] },
+          {
+            "if": { "math": [ "pf_hm_res == 1" ] },
+            "then": [ { "set_string_var": "1 person has", "target_var": { "global_val": "pf_hm_restxt" } } ],
+            "else": [
+              {
+                "set_string_var": "<global_val:pf_hm_res> people have",
+                "target_var": { "global_val": "pf_hm_restxt" },
+                "parse_tags": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "run_eoc_selector": [
+          "PF_HOME_set",
+          "PF_HOME_move",
+          "PF_HOME_forget",
+          "PF_HOME_status",
+          "PF_HOME_roster_menu",
+          "PF_HOME_rumors",
+          "PF_TOWN_status",
+          "PF_TOWN_name",
+          "PF_TOWN_field_here",
+          "PF_TOWN_ask_animals",
+          "PF_TWATCH_menu",
+          "PF_KEEP_menu",
+          "PF_KEEP_call_now",
+          "PF_KEEP_laws_menu",
+          "PF_KEEP_propose_menu",
+          "PF_KEEP_wall_start",
+          "PF_NB_menu",
+          "PF_HOUSE_stores_here",
+          "PF_HOUSE_corner_here",
+          "PF_HOUSE_pack_sack"
+        ],
+        "names": [
+          "Make this place our home",
+          "Make this place our home instead",
+          "This isn't home anymore",
+          "Where is home?",
+          "Who does what",
+          "What people have heard",
+          "How the place is doing",
+          "Name this place",
+          "Plant a field here",
+          "Ask the neighbors for animals",
+          "Tonight's watch",
+          "Who's in charge",
+          "Call a meeting",
+          "The laws of the place",
+          "Put a law to the meeting",
+          "Build a wall around the place",
+          "The neighbors",
+          "Keep the stores here",
+          "This is my corner",
+          "Pack a sack of supplies"
+        ],
+        "descriptions": [
+          "Evenings here gather around the table or the couch when there's no fire, people who live with you come back here, and waking up here feels like waking up at home.",
+          "Home moves here.  The people who live with you will come here from now on.",
+          "Forget the home.  The people who live with you stay where they are.",
+          "How far home is, and how many people live there.",
+          "The jobs of the people who live with you (those nearby).  Change one on their People screen.",
+          "Rumors about other people out there, as they came up at the fire.",
+          "The animals, the field, and how many people live here.",
+          "Give your home a name.  The people who live here will use it.",
+          "Mark a 5x5 plot around you as the field.  It's planted in spring or summer and harvested about a month later (by the farmer, if someone has that job).",
+          "Put the word out that you could use some animals (once a week).  Neighbors bring hens, a goat or even a cow the next morning you're home.",
+          "Who has the watch tonight.  Once at least three grown-ups live here, a watch goes up at ten every night: two shifts, posts at the edge of the place, and whoever sees something first raises the alarm.",
+          "Who leads the place, and when the next meeting is.  Once at least four grown-ups besides you live here, they meet one evening a week: they choose a chief, and bring their quarrels for the chief to settle.",
+          "You're chief: call everyone to a meeting tomorrow evening.",
+          "The laws the meeting has made, and what's up at the next one.",
+          "Propose a law (or doing away with one) at the next meeting.  Everyone votes; you do too.",
+          "A palisade all the way round, 12 tiles out from home, a gate in each side: one side a day, from tomorrow morning, while you're home.  The gates are shut at night.",
+          "The settlements out there that know of the place: who leads them, how things stand, and what's agreed.",
+          "The household's food, water and supplies are kept where you stand (and anything stray gets carried over).  Every meal, delivery and harvest goes here from now on.",
+          "Where you stand is yours: the people who live here won't tidy anything within a step of it.  Keep your own food and gear here.",
+          "Six things to eat from the stores, tied up in a sack to carry.  Give it to a band out on the road (People: Bring their people supplies)."
+        ],
+        "keys": [ "h", "m", "f", "w", "j", "r", "s", "n", "p", "a", "t", "c", "g", "v", "o", "b", "e", "k", "y", "x" ],
+        "title": "Home",
+        "hide_failing": true,
+        "allow_cancel": true
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOME_set",
+    "condition": { "math": [ "value_or(pf_home_set, 0) == 0" ] },
+    "effect": [
+      { "u_location_variable": { "global_val": "pf_home_loc" } },
+      { "math": [ "pf_home_set = 1" ] },
+      { "run_eocs": "PF_STORES_ensure" },
+      { "math": [ "pf_home_since = time('now')" ] },
+      { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "home_set" } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOME_move",
+    "condition": { "and": [ { "math": [ "value_or(pf_home_set, 0) == 1" ] }, { "math": [ "pf_hm_dist > 30" ] } ] },
+    "effect": [
+      { "u_location_variable": { "global_val": "pf_home_loc" } },
+      { "run_eocs": "PF_STORES_ensure" },
+      { "math": [ "pf_home_since = time('now')" ] },
+      { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "home_move" } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOME_forget",
+    "condition": { "math": [ "value_or(pf_home_set, 0) == 1" ] },
+    "effect": [
+      { "math": [ "pf_home_set = 0" ] },
+      { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "home_forget" } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOME_roster_menu",
+    "condition": { "math": [ "value_or(pf_home_set, 0) == 1" ] },
+    "effect": [ { "run_eocs": "PF_HOME_roster" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOME_status",
+    "condition": { "math": [ "value_or(pf_home_set, 0) == 1" ] },
+    "effect": [
+      {
+        "if": { "math": [ "pf_hm_dist <= 30" ] },
+        "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "home_here" } } ],
+        "else": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "home_far" } } ]
+      },
+      {
+        "if": { "math": [ "has_var(pf_stores_loc)" ] },
+        "then": [
+          { "math": [ "pf_hm_sdist = round(distance(pf_hm_av, pf_stores_loc))" ] },
+          { "copy_var": { "global_val": "pf_hm_av" }, "target_var": { "global_val": "pf_sd_n" } },
+          { "location_variable_adjust": { "global_val": "pf_sd_n" }, "x_adjust": 0, "y_adjust": -1 },
+          { "copy_var": { "global_val": "pf_hm_av" }, "target_var": { "global_val": "pf_sd_s" } },
+          { "location_variable_adjust": { "global_val": "pf_sd_s" }, "x_adjust": 0, "y_adjust": 1 },
+          { "copy_var": { "global_val": "pf_hm_av" }, "target_var": { "global_val": "pf_sd_e" } },
+          { "location_variable_adjust": { "global_val": "pf_sd_e" }, "x_adjust": 1, "y_adjust": 0 },
+          { "copy_var": { "global_val": "pf_hm_av" }, "target_var": { "global_val": "pf_sd_w" } },
+          { "location_variable_adjust": { "global_val": "pf_sd_w" }, "x_adjust": -1, "y_adjust": 0 },
+          { "set_string_var": "", "target_var": { "global_val": "pf_hm_sns" } },
+          { "set_string_var": "", "target_var": { "global_val": "pf_hm_sew" } },
+          {
+            "if": { "math": [ "distance(pf_sd_n, pf_stores_loc) < distance(pf_sd_s, pf_stores_loc)" ] },
+            "then": [ { "set_string_var": "north", "target_var": { "global_val": "pf_hm_sns" } } ]
+          },
+          {
+            "if": { "math": [ "distance(pf_sd_s, pf_stores_loc) < distance(pf_sd_n, pf_stores_loc)" ] },
+            "then": [ { "set_string_var": "south", "target_var": { "global_val": "pf_hm_sns" } } ]
+          },
+          {
+            "if": { "math": [ "distance(pf_sd_e, pf_stores_loc) < distance(pf_sd_w, pf_stores_loc)" ] },
+            "then": [ { "set_string_var": "east", "target_var": { "global_val": "pf_hm_sew" } } ]
+          },
+          {
+            "if": { "math": [ "distance(pf_sd_w, pf_stores_loc) < distance(pf_sd_e, pf_stores_loc)" ] },
+            "then": [ { "set_string_var": "west", "target_var": { "global_val": "pf_hm_sew" } } ]
+          },
+          {
+            "set_string_var": "<global_val:pf_hm_sns><global_val:pf_hm_sew>",
+            "target_var": { "global_val": "pf_hm_sdir" },
+            "parse_tags": true
+          },
+          {
+            "if": { "math": [ "pf_hm_sdist <= 1" ] },
+            "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "stores_at_hand" } } ],
+            "else": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "stores_dist" } } ]
+          }
+        ]
+      }
+    ]
+  }
+]

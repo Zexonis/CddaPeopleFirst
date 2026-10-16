@@ -1,0 +1,116 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_MOM_distress",
+    "//": "Signal: an NPC is badly hurt (torso at 40% or less).  See PF_MOM_distress_do.",
+    "condition": { "and": [ "has_alpha", "u_is_npc", { "math": [ "u_hp('torso') <= u_hp_max('torso') * 0.4" ] } ] },
+    "eoc_type": "EVENT",
+    "required_event": "character_takes_damage",
+    "effect": [ { "run_eocs": "PF_MOM_distress_do" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_MOM_lab",
+    "//": "Home lab (Mind Over Matter loaded): as if the nearest adult were badly hurt and you were a telepath who cares.",
+    "effect": [
+      { "math": [ "pf_mi_d = 99" ] },
+      { "u_location_variable": { "global_val": "pf_mi_av" } },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_MI_near_mom",
+            "condition": { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+            "effect": [
+              { "u_location_variable": { "u_val": "pf_pos" } },
+              {
+                "if": { "math": [ "distance(u_pf_pos, pf_mi_av) < pf_mi_d" ] },
+                "then": [ { "math": [ "pf_mi_d = distance(u_pf_pos, pf_mi_av)" ] }, { "u_set_talker": { "global_val": "pf_mi_who" } } ]
+              }
+            ]
+          }
+        ],
+        "local": true,
+        "npc_range": 15
+      },
+      { "math": [ "pf_mi_had = 1" ] },
+      {
+        "if": { "not": { "u_has_trait": "TELEPATH" } },
+        "then": [ { "math": [ "pf_mi_had = 0" ] }, { "u_add_trait": "TELEPATH" } ]
+      },
+      { "math": [ "pf_mom_last = -1" ] },
+      { "math": [ "pf_mom_force = 1" ] },
+      {
+        "if": { "math": [ "pf_mi_d < 99" ] },
+        "then": [ { "run_eocs": "PF_MOM_distress_do", "alpha_talker": { "global_val": "pf_mi_who" } } ],
+        "else": [ { "u_message": "[home lab] Nobody within 15 tiles.", "type": "info" } ]
+      },
+      { "math": [ "pf_mom_force = 0" ] },
+      { "if": { "math": [ "pf_mi_had == 0" ] }, "then": [ { "u_lose_trait": "TELEPATH" } ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_MOM_lab_poll",
+    "//": "The Home lab only sets pf_mi_test; this file (loaded only with Mind Over Matter) picks it up, so the main mod never names an EOC that may not exist.",
+    "condition": { "and": [ { "math": [ "value_or(pf_mi_test, 0) == 1" ] }, { "math": [ "value_or(pf_mi_mom_done, 0) == 0" ] } ] },
+    "recurrence": "1 minutes",
+    "global": true,
+    "effect": [ { "run_eocs": "PF_MOM_lab" }, { "math": [ "pf_mi_mom_done = 1" ] } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_MOM_distress_do",
+    "//": "u = an NPC who is badly hurt.  If you're an awakened telepath and they're yours (partner, child, ward) or you care about them a lot (warmth 60+), you feel it, wherever they are in the bubble.  Once every 30 minutes at most.",
+    "effect": [
+      { "run_eocs": "PF_ID_ensure" },
+      { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_mom_who" } },
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_mom_name" }, "parse_tags": true },
+      { "math": [ "pf_mom_bond = 0" ] },
+      {
+        "if": {
+          "or": [
+            { "compare_string": [ { "u_val": "pf_sweet" }, "AVATAR" ] },
+            { "compare_string": [ { "u_val": "pf_mom" }, "AVATAR" ] },
+            { "compare_string": [ { "u_val": "pf_dad" }, "AVATAR" ] },
+            { "compare_string": [ { "u_val": "pf_guardian" }, "AVATAR" ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_mom_bond = 1" ] } ]
+      },
+      { "run_eocs": "PF_MOM_sense", "alpha_talker": "avatar" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_MOM_sense",
+    "//": "u = you.",
+    "condition": {
+      "and": [
+        { "u_has_trait": "TELEPATH" },
+        {
+          "or": [ { "math": [ "time_since(pf_mom_last) < 0" ] }, { "math": [ "time_since(pf_mom_last) > time('30 m')" ] } ]
+        }
+      ]
+    },
+    "effect": [
+      { "copy_var": { "global_val": "pf_mom_who" }, "target_var": { "global_val": "pf_m_other" } },
+      { "run_eocs": "PF_VIEW_read" },
+      {
+        "if": {
+          "or": [
+            { "math": [ "pf_mom_bond == 1" ] },
+            { "math": [ "pf_read_w >= 60" ] },
+            { "math": [ "value_or(pf_mom_force, 0) == 1" ] }
+          ]
+        },
+        "then": [
+          { "math": [ "pf_mom_last = time('now')" ] },
+          {
+            "u_message": "A spike of fear that isn't yours goes through you: <global_val:pf_mom_name> is hurt, and scared.",
+            "type": "bad"
+          }
+        ]
+      }
+    ]
+  }
+]

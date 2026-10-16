@@ -1,0 +1,508 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FL_open",
+    "effect": [
+      {
+        "run_eoc_selector": [
+          "PF_FL_expect",
+          "PF_FL_step",
+          "PF_FL_due",
+          "PF_FL_mid",
+          "PF_FL_babies",
+          "PF_FL_age2",
+          "PF_FL_age16",
+          "PF_FL_orphan",
+          "PF_FL_kids",
+          "PF_FL_carry",
+          "PF_FL_bandpreg",
+          "PF_FL_teach",
+          "PF_FL_stats"
+        ],
+        "names": [
+          "Pregnancy: the nearest woman with a partner is expecting",
+          "Pregnancy: run the daily step now (news, stage, birth)",
+          "Pregnancy: everyone expecting is due now",
+          "Pregnancy: everyone expecting is halfway along",
+          "Babies: run the care step now",
+          "Growth: every child born here ages two years",
+          "Growth: every child born here ages sixteen years",
+          "Orphans: children nearby look for a home now",
+          "Kids: run a kids' day step now (play, chores, questions, grief)",
+          "Babies: run the carry and help step now",
+          "Off-screen: 10 band evenings, every band couple conceives",
+          "Kids: the nearest adult teaches the nearest child now",
+          "Stats: family"
+        ],
+        "descriptions": [
+          "The nearest adult woman who is with a man conceives now (you count too, if you're a woman with a partner).  The news comes at the next daily step.",
+          "Runs the pregnancy step for every expecting mother.",
+          "Moves every pregnancy to term, then runs the step: births happen if the mother is nearby.",
+          "Moves every pregnancy to the middle stage, then runs the step (cravings, and your partner carrying the load, start here).",
+          "Every baby nearby gets looked after.",
+          "Moves every listed child's birth back two years (at the current pace) and runs the growth step.",
+          "As above, sixteen years: children who reach 18 grow up.",
+          "Runs the orphan check: any orphaned child in the bubble is taken in by the adult who cares most (if anyone does).",
+          "Runs the 2-hourly kids' step immediately (it still needs calm).",
+          "Carried babies catch up with their carrier; an expecting you gets your partner's help if they're close.",
+          "Runs 10 off-screen camp evenings for every band with the conception chance at 100%, then puts it back.  Partners camping together conceive; their pregnancies move along by unique id, and births wait until the mother is near you.",
+          "Forces a lesson between the nearest child and an adult nearby (you, if you're closer than 8 tiles).",
+          "Conceptions (and how many at a band camp), births, children listed, adoptions, grown up."
+        ],
+        "keys": [ "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m" ],
+        "title": "Family lab (v0.3)",
+        "allow_cancel": true
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FL_expect",
+    "effect": [
+      { "math": [ "pf_fl_ok = 0" ] },
+      {
+        "if": {
+          "and": [
+            { "math": [ "u_gender() == 0" ] },
+            { "math": [ "value_or(u_pf_has_sweet, 0) == 1" ] },
+            { "math": [ "value_or(u_pf_preg, 0) == 0" ] }
+          ]
+        },
+        "then": [ { "run_eocs": "PF_FL_expect_one" } ]
+      },
+      {
+        "if": { "math": [ "pf_fl_ok == 0" ] },
+        "then": [
+          { "math": [ "pf_ll_kd = 99" ] },
+          { "u_location_variable": { "global_val": "pf_ll_kav" } },
+          {
+            "u_run_npc_eocs": [
+              {
+                "id": "PF_FL_near_0",
+                "condition": {
+                  "and": [
+                    { "math": [ "u_gender() == 0" ] },
+                    { "math": [ "value_or(u_pf_has_sweet, 0) == 1" ] },
+                    { "math": [ "value_or(u_pf_preg, 0) == 0" ] },
+                    { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] }
+                  ]
+                },
+                "effect": [
+                  { "u_location_variable": { "u_val": "pf_pos" } },
+                  {
+                    "if": { "math": [ "distance(u_pf_pos, pf_ll_kav) < pf_ll_kd" ] },
+                    "then": [ { "math": [ "pf_ll_kd = distance(u_pf_pos, pf_ll_kav)" ] }, { "u_set_talker": { "global_val": "pf_ll_kwho" } } ]
+                  }
+                ]
+              }
+            ],
+            "local": true,
+            "npc_range": 6
+          },
+          {
+            "if": { "math": [ "pf_ll_kd < 99" ] },
+            "then": [ { "run_eocs": "PF_FL_expect_one", "alpha_talker": { "global_val": "pf_ll_kwho" } } ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_fl_ok == 1" ] },
+        "then": [ { "u_message": "[family lab] Someone is expecting.", "type": "info" } ],
+        "else": [ { "u_message": "[family lab] No woman with a man as partner within 6 tiles (you count first).", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FL_expect_one",
+    "effect": [
+      { "set_string_var": "pf_reg_<u_val:pf_sweet>_g", "target_var": { "context_val": "dg" }, "parse_tags": true },
+      {
+        "if": { "math": [ "value_or(v_dg, 0) != 1" ] },
+        "then": [ { "run_eocs": "PF_FL_noop" } ],
+        "else": [ { "run_eocs": "PF_FL_expect_do" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FL_noop",
+    "effect": [ { "math": [ "pf_fl_ok = 0" ] } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FL_expect_do",
+    "effect": [
+      { "math": [ "pf_fl_ok = 1" ] },
+      { "math": [ "u_pf_preg = 1" ] },
+      { "math": [ "u_pf_preg_t = time('now')" ] },
+      { "math": [ "u_pf_preg_stage = 0" ] },
+      { "math": [ "u_pf_preg_known = 0" ] },
+      { "copy_var": { "u_val": "pf_sweet" }, "target_var": { "u_val": "pf_preg_father" } },
+      { "run_eocs": "PF_FAM_track_mother" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FL_step",
+    "effect": [ { "run_eocs": "PF_FAM_preg_tick" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FL_due",
+    "effect": [
+      { "math": [ "pf_fl_frac = 1.05" ] },
+      { "math": [ "pf_fl_k = 0" ] },
+      {
+        "run_eocs": "PF_FL_due_k",
+        "condition": { "math": [ "pf_fl_k < min(value_or(pf_moms_n, 0), 12)" ] },
+        "iterations": 13
+      },
+      { "run_eocs": "PF_FAM_preg_tick" },
+      {
+        "u_message": "[family lab] Mothers due but away from you (the birth waits until they're near): <global_val:pf_fm_waiting>.",
+        "type": "info"
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FL_due_k",
+    "effect": [
+      { "set_string_var": "pf_mom_<global_val:pf_fl_k>", "target_var": { "context_val": "mr" }, "parse_tags": true },
+      { "copy_var": { "var_val": "mr" }, "target_var": { "global_val": "pf_find_uid" } },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_find_uid" }, "AVATAR" ] },
+        "then": [
+          {
+            "run_eocs": {
+              "id": "PF_FL_due_av",
+              "effect": [
+                {
+                  "math": [
+                    "u_pf_preg_t = time('now') - time('1 d') * (value_or(pf_set_grow, 1) == 0 ? 270 : (value_or(pf_set_grow, 1) == 1 ? 30 : 3)) * pf_fl_frac"
+                  ]
+                }
+              ]
+            },
+            "alpha_talker": "avatar"
+          }
+        ],
+        "else": [
+          { "run_eocs": "PF_FIND_by_uid", "alpha_talker": "avatar" },
+          {
+            "if": { "math": [ "pf_find_ok == 1" ] },
+            "then": [
+              {
+                "run_eocs": {
+                  "id": "PF_FL_due_np",
+                  "effect": [
+                    {
+                      "math": [
+                        "u_pf_preg_t = time('now') - time('1 d') * (value_or(pf_set_grow, 1) == 0 ? 270 : (value_or(pf_set_grow, 1) == 1 ? 30 : 3)) * pf_fl_frac"
+                      ]
+                    }
+                  ]
+                },
+                "alpha_talker": { "global_val": "pf_find_who" }
+              }
+            ],
+            "else": [ { "u_run_npc_eocs": [ "PF_FL_due_np" ], "unique_ids": [ { "global_val": "pf_find_uid" } ], "local": false } ]
+          }
+        ]
+      },
+      { "math": [ "pf_fl_k += 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FL_mid",
+    "effect": [
+      { "math": [ "pf_fl_frac = 0.5" ] },
+      { "math": [ "pf_fl_k = 0" ] },
+      {
+        "run_eocs": "PF_FL_due_k",
+        "condition": { "math": [ "pf_fl_k < min(value_or(pf_moms_n, 0), 12)" ] },
+        "iterations": 13
+      },
+      { "run_eocs": "PF_FAM_preg_tick" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FL_babies",
+    "effect": [ { "run_eocs": "PF_FAM_baby_tick" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FL_age2",
+    "effect": [
+      { "math": [ "pf_fl_years = 2" ] },
+      { "math": [ "pf_fl_k = 0" ] },
+      {
+        "run_eocs": "PF_FL_age_k",
+        "condition": { "math": [ "pf_fl_k < min(value_or(pf_kids_n, 0), 30)" ] },
+        "iterations": 31
+      },
+      { "run_eocs": "PF_FAM_grow_tick" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FL_age16",
+    "effect": [
+      { "math": [ "pf_fl_years = 16" ] },
+      { "math": [ "pf_fl_k = 0" ] },
+      {
+        "run_eocs": "PF_FL_age_k",
+        "condition": { "math": [ "pf_fl_k < min(value_or(pf_kids_n, 0), 30)" ] },
+        "iterations": 31
+      },
+      { "run_eocs": "PF_FAM_grow_tick" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FL_age_k",
+    "effect": [
+      { "set_string_var": "pf_kid_<global_val:pf_fl_k>", "target_var": { "context_val": "kr" }, "parse_tags": true },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_FL_age_one",
+            "effect": [
+              {
+                "math": [
+                  "u_pf_born_t = u_pf_born_t - time('1 d') * 364 * pf_fl_years / (value_or(pf_set_grow, 1) == 0 ? 1 : (value_or(pf_set_grow, 1) == 1 ? 12 : 120))"
+                ]
+              }
+            ]
+          }
+        ],
+        "unique_ids": [ { "var_val": "kr" } ],
+        "local": false
+      },
+      { "math": [ "pf_fl_k += 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FL_orphan",
+    "effect": [ { "run_eocs": "PF_FAM_orphan_tick" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FL_kids",
+    "effect": [
+      {
+        "run_eocs": {
+          "id": "PF_FL_kids_now",
+          "effect": [
+            { "run_eocs": "PF_THREAT_scan" },
+            {
+              "if": { "math": [ "pf_threat == 0" ] },
+              "then": [
+                { "math": [ "pf_kl = 0" ] },
+                { "math": [ "pf_kid_force = 1" ] },
+                { "u_location_variable": { "global_val": "pf_fm_avpos" } },
+                { "u_run_npc_eocs": [ "PF_FAM_kid_moment" ], "local": true, "npc_range": 40 },
+                { "math": [ "pf_kid_force = 0" ] }
+              ],
+              "else": [ { "u_message": "[family lab] Not calm: something hostile is near.", "type": "info" } ]
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FL_carry",
+    "effect": [ { "run_eocs": "PF_FAM_follow_tick" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FL_bandpreg",
+    "effect": [
+      { "math": [ "pf_fl_saved = value_or(pf_set_preg_chance, 8)" ] },
+      { "math": [ "pf_set_preg_chance = 100" ] },
+      { "math": [ "pf_fl_bc0 = value_or(pf_band_conceptions_total, 0)" ] },
+      { "math": [ "pf_fl_prom = 0" ] },
+      { "math": [ "pf_fl_vis = 0" ] },
+      { "math": [ "pf_fl_sw = 0" ] },
+      { "math": [ "pf_fl_p2 = 0" ] },
+      { "math": [ "pf_fl_fem = 0" ] },
+      { "math": [ "pf_fl_mo = 0" ] },
+      { "math": [ "pf_fl_pr = 0" ] },
+      { "math": [ "pf_fl_av = 0" ] },
+      { "math": [ "pf_fl_man = 0" ] },
+      { "math": [ "pf_fl_same = 0" ] },
+      { "math": [ "pf_fl_setp = value_or(pf_set_preg, 1)" ] },
+      { "math": [ "pf_band_i = 0" ] },
+      { "run_eocs": "PF_FL_bp_band_i", "condition": { "math": [ "pf_band_i < pf_band_n" ] }, "iterations": 1000 },
+      {
+        "u_message": "[family lab] Bands: <global_val:pf_band_n>, people reached <global_val:pf_fl_vis>, in a couple <global_val:pf_fl_sw> (women <global_val:pf_fl_fem>: mourning <global_val:pf_fl_mo>, expecting <global_val:pf_fl_pr>, with you <global_val:pf_fl_av>, with a man <global_val:pf_fl_man>, partner in the same band <global_val:pf_fl_same>; pregnancy setting <global_val:pf_fl_setp>; already partners <global_val:pf_fl_p2>), made partners now <global_val:pf_fl_prom>.",
+        "type": "info"
+      },
+      { "run_eocs": "PF_LL_bandeve" },
+      { "math": [ "pf_set_preg_chance = pf_fl_saved" ] },
+      { "math": [ "pf_fl_bc = value_or(pf_band_conceptions_total, 0) - pf_fl_bc0" ] },
+      { "math": [ "pf_fl_calls = value_or(pf_bc_calls, 0)" ] },
+      {
+        "u_message": "[family lab] Band conceptions this run: <global_val:pf_fl_bc> (couples camping together, all time: <global_val:pf_fl_calls>).",
+        "type": "info"
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FL_bp_band_i",
+    "effect": [
+      { "set_string_var": "pf_slot_<global_val:pf_band_i>", "target_var": { "context_val": "ref" }, "parse_tags": true },
+      {
+        "if": { "not": { "compare_string": [ { "var_val": "ref" }, "none" ] } },
+        "then": [ { "u_run_npc_eocs": [ "PF_FL_bp_band" ], "unique_ids": [ { "var_val": "ref" } ], "local": false } ]
+      },
+      { "math": [ "pf_band_i += 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FL_bp_band",
+    "effect": [
+      { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_fl_m5" } },
+      { "copy_var": { "u_val": "pf_member_0" }, "target_var": { "global_val": "pf_fl_m0" } },
+      { "copy_var": { "u_val": "pf_member_1" }, "target_var": { "global_val": "pf_fl_m1" } },
+      { "copy_var": { "u_val": "pf_member_2" }, "target_var": { "global_val": "pf_fl_m2" } },
+      { "copy_var": { "u_val": "pf_member_3" }, "target_var": { "global_val": "pf_fl_m3" } },
+      { "copy_var": { "u_val": "pf_member_4" }, "target_var": { "global_val": "pf_fl_m4" } },
+      { "run_eocs": "PF_FL_bp_promote" },
+      {
+        "if": { "not": { "compare_string": [ { "u_val": "pf_member_0" }, "none" ] } },
+        "then": [ { "u_run_npc_eocs": [ "PF_FL_bp_promote" ], "unique_ids": [ { "u_val": "pf_member_0" } ], "local": false } ]
+      },
+      {
+        "if": { "not": { "compare_string": [ { "u_val": "pf_member_1" }, "none" ] } },
+        "then": [ { "u_run_npc_eocs": [ "PF_FL_bp_promote" ], "unique_ids": [ { "u_val": "pf_member_1" } ], "local": false } ]
+      },
+      {
+        "if": { "not": { "compare_string": [ { "u_val": "pf_member_2" }, "none" ] } },
+        "then": [ { "u_run_npc_eocs": [ "PF_FL_bp_promote" ], "unique_ids": [ { "u_val": "pf_member_2" } ], "local": false } ]
+      },
+      {
+        "if": { "not": { "compare_string": [ { "u_val": "pf_member_3" }, "none" ] } },
+        "then": [ { "u_run_npc_eocs": [ "PF_FL_bp_promote" ], "unique_ids": [ { "u_val": "pf_member_3" } ], "local": false } ]
+      },
+      {
+        "if": { "not": { "compare_string": [ { "u_val": "pf_member_4" }, "none" ] } },
+        "then": [ { "u_run_npc_eocs": [ "PF_FL_bp_promote" ], "unique_ids": [ { "u_val": "pf_member_4" } ], "local": false } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FL_bp_promote",
+    "effect": [
+      { "math": [ "pf_fl_vis += 1" ] },
+      {
+        "if": { "math": [ "value_or(u_pf_has_sweet, 0) == 1" ] },
+        "then": [
+          { "math": [ "pf_fl_sw += 1" ] },
+          { "if": { "math": [ "value_or(u_pf_rel_stage, 0) >= 2" ] }, "then": [ { "math": [ "pf_fl_p2 += 1" ] } ] },
+          {
+            "if": { "math": [ "u_gender() == 0" ] },
+            "then": [
+              { "math": [ "pf_fl_fem += 1" ] },
+              {
+                "if": { "math": [ "time('now') < value_or(u_pf_mourn_until, 0)" ] },
+                "then": [ { "math": [ "pf_fl_mo += 1" ] } ]
+              },
+              { "if": { "math": [ "value_or(u_pf_preg, 0) == 1" ] }, "then": [ { "math": [ "pf_fl_pr += 1" ] } ] },
+              {
+                "if": { "compare_string": [ { "u_val": "pf_sweet" }, "AVATAR" ] },
+                "then": [ { "math": [ "pf_fl_av += 1" ] } ]
+              },
+              { "copy_var": { "u_val": "pf_sweet" }, "target_var": { "global_val": "pf_fm_dad" } },
+              {
+                "set_string_var": "pf_reg_<global_val:pf_fm_dad>_g",
+                "target_var": { "context_val": "dg" },
+                "parse_tags": true
+              },
+              { "if": { "math": [ "value_or(v_dg, -1) == 1" ] }, "then": [ { "math": [ "pf_fl_man += 1" ] } ] },
+              {
+                "if": {
+                  "or": [
+                    { "compare_string": [ { "u_val": "pf_sweet" }, { "global_val": "pf_fl_m0" } ] },
+                    { "compare_string": [ { "u_val": "pf_sweet" }, { "global_val": "pf_fl_m1" } ] },
+                    { "compare_string": [ { "u_val": "pf_sweet" }, { "global_val": "pf_fl_m2" } ] },
+                    { "compare_string": [ { "u_val": "pf_sweet" }, { "global_val": "pf_fl_m3" } ] },
+                    { "compare_string": [ { "u_val": "pf_sweet" }, { "global_val": "pf_fl_m4" } ] },
+                    { "compare_string": [ { "u_val": "pf_sweet" }, { "global_val": "pf_fl_m5" } ] }
+                  ]
+                },
+                "then": [ { "math": [ "pf_fl_same += 1" ] } ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "math": [ "value_or(u_pf_has_sweet, 0) == 1" ] }, { "math": [ "value_or(u_pf_rel_stage, 1) <= 1" ] } ] },
+        "then": [
+          { "math": [ "u_pf_rel_stage = 2" ] },
+          { "math": [ "u_pf_stage_since = time('now') - time('21 d')" ] },
+          { "math": [ "pf_fl_prom += 1" ] }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FL_teach",
+    "effect": [
+      { "math": [ "pf_kl = 0" ] },
+      { "math": [ "pf_kid_force = 1" ] },
+      { "u_location_variable": { "global_val": "pf_fm_avpos" } },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_FL_teach_one",
+            "condition": { "and": [ { "u_has_trait": "PF_CHILD" }, { "not": { "u_has_effect": "PF_infant" } }, { "math": [ "pf_kl == 0" ] } ] },
+            "effect": [
+              { "run_eocs": "PF_ID_ensure" },
+              { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_kid_uid" } },
+              { "u_location_variable": { "u_val": "pf_pos" } },
+              { "math": [ "pf_kid_avnear = distance(u_pf_pos, pf_fm_avpos) <= 8" ] },
+              { "math": [ "u_pf_taught_t = -1" ] },
+              { "run_eocs": "PF_FAM_kid_learn" }
+            ]
+          }
+        ],
+        "local": true,
+        "npc_range": 30
+      },
+      { "math": [ "pf_kid_force = 0" ] },
+      {
+        "if": { "math": [ "pf_kl == 0" ] },
+        "then": [ { "u_message": "[family lab] No child nearby, or nobody knows more than they do.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FL_stats",
+    "effect": [
+      { "math": [ "pf_fs_a = value_or(pf_conceptions_total, 0)" ] },
+      { "math": [ "pf_fs_b = value_or(pf_births_total, 0)" ] },
+      { "math": [ "pf_fs_c = value_or(pf_kids_n, 0)" ] },
+      { "math": [ "pf_fs_d = value_or(pf_adoptions_total, 0)" ] },
+      { "math": [ "pf_fs_e = value_or(pf_grownup_total, 0)" ] },
+      { "math": [ "pf_fs_f = value_or(pf_band_conceptions_total, 0)" ] },
+      { "math": [ "pf_fs_g = value_or(pf_taught_total, 0)" ] },
+      {
+        "u_message": "[family] conceptions <global_val:pf_fs_a> (at band camps <global_val:pf_fs_f>), births <global_val:pf_fs_b>, children listed <global_val:pf_fs_c>, adoptions <global_val:pf_fs_d>, grown up <global_val:pf_fs_e>, lessons <global_val:pf_fs_g>.",
+        "type": "info"
+      }
+    ]
+  }
+]

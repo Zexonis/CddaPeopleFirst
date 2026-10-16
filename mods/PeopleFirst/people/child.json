@@ -1,0 +1,12 @@
+[
+  {
+    "type": "mutation",
+    "id": "PF_CHILD",
+    "name": { "str": "Child" },
+    "points": 0,
+    "purifiable": false,
+    "valid": false,
+    "description": "A child.  Never fights, and is excluded from every romance, intimacy and pregnancy system in People First (enforced by checking this trait).",
+    "flags": [ "CANNOT_ATTACK" ]
+  }
+]

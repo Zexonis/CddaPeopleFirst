@@ -1,0 +1,909 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HL_open",
+    "effect": [
+      {
+        "run_eoc_selector": [
+          "PF_HL_ff",
+          "PF_HL_us",
+          "PF_HL_sour",
+          "PF_HL_eyes",
+          "PF_HL_bury",
+          "PF_HL_stats",
+          "PF_HL_lukewarm",
+          "PF_HL_wedday",
+          "PF_HL_anniv",
+          "PF_HL_widow"
+        ],
+        "names": [
+          "Couple: fast-forward the nearest couple three weeks (strong bonds)",
+          "Couple: you and the nearest adult are partners of three weeks",
+          "Couple: the nearest couple falls out (tension 80)",
+          "Jealousy: a free adult nearby falls for the nearest taken person",
+          "Grief: dig a grave beside you (burial test)",
+          "Stats: hearts",
+          "Proposal: the nearest couple, one eager, one lukewarm",
+          "Wedding: the nearest engaged couple's day has come",
+          "Anniversary: the newest death or wedding was a month ago",
+          "Grief: the one you're with dies (widow test)"
+        ],
+        "descriptions": [
+          "The nearest person who is with someone (you included): their relationship is three weeks old and both feel strongly, so tonight they may become partners, or propose.",
+          "Makes you and the nearest adult (not your ex) partners (stage 2, three weeks), with strong feelings on their side, so at the next fire they may propose to you.",
+          "The nearest person who is with someone now feels nothing but tension toward them.  At the next fire, they end it.",
+          "Picks the nearest person who is with someone, then another free adult within 10 tiles, who gets a crush (attraction 40) on them.  At the next fire they'll make eyes at them, and the partner may see it.",
+          "Turns the nearest bare dirt (within 3 tiles) into a fresh grave and runs the burial signal, as if you'd just finished digging it.  Needs a death someone cared about in the last two weeks.",
+          "Weddings, breakups, widowed, jealousy, and the last death waiting for a remembrance or a burial.",
+          "The nearest person who is with someone feels strongly and has waited three weeks as partners; their partner only feels so-so (warmth 40).  At the next fire the eager one proposes and is told not yet.",
+          "The nearest engaged person and their partner can marry tonight: run an evening to see the wedding.",
+          "Moves the most recent recorded death or wedding back 30 days, so the next evening remembers it.",
+          "If you're with someone who is nearby, they die, so you can see what losing them does."
+        ],
+        "keys": [ "a", "b", "c", "d", "e", "f", "g", "h", "i", "j" ],
+        "title": "Hearts lab (v0.2)",
+        "allow_cancel": true
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HL_ff",
+    "effect": [
+      { "math": [ "pf_ll_kd = 99" ] },
+      { "u_location_variable": { "global_val": "pf_ll_kav" } },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_HL_near_0",
+            "effect": [
+              { "u_location_variable": { "u_val": "pf_pos" } },
+              {
+                "if": { "math": [ "distance(u_pf_pos, pf_ll_kav) < pf_ll_kd" ] },
+                "then": [ { "math": [ "pf_ll_kd = distance(u_pf_pos, pf_ll_kav)" ] }, { "u_set_talker": { "global_val": "pf_ll_kwho" } } ]
+              }
+            ],
+            "condition": { "math": [ "value_or(u_pf_has_sweet, 0) == 1" ] }
+          }
+        ],
+        "local": true,
+        "npc_range": 6
+      },
+      {
+        "if": { "math": [ "pf_ll_kd < 99" ] },
+        "then": [
+          { "run_eocs": "PF_HL_ff_one", "alpha_talker": { "global_val": "pf_ll_kwho" } },
+          { "u_message": "[hearts lab] Three weeks pass for the nearest couple.", "type": "info" }
+        ],
+        "else": [ { "u_message": "[hearts lab] Nobody nearby is with anyone.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HL_ff_one",
+    "effect": [
+      { "math": [ "u_pf_sweet_since = time('now') - time('21 d')" ] },
+      { "math": [ "u_pf_stage_since = time('now') - time('21 d')" ] },
+      { "math": [ "u_pf_prop_last = -1" ] },
+      { "copy_var": { "u_val": "pf_sweet" }, "target_var": { "global_val": "pf_m_other" } },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_w",
+        "target_var": { "context_val": "rw" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_t",
+        "target_var": { "context_val": "rt" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_x",
+        "target_var": { "context_val": "rx" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_pw",
+        "target_var": { "context_val": "rpw" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_pt",
+        "target_var": { "context_val": "rpt" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_l",
+        "target_var": { "context_val": "rl" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_a",
+        "target_var": { "context_val": "ra" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_pa",
+        "target_var": { "context_val": "rpa" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_c",
+        "target_var": { "context_val": "rc" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_f",
+        "target_var": { "context_val": "rf" },
+        "parse_tags": true
+      },
+      { "math": [ "v_rw = 70" ] },
+      { "math": [ "v_rpw = max(v_rpw, 70)" ] },
+      { "math": [ "v_rt = 60" ] },
+      { "math": [ "v_rpt = max(v_rpt, 60)" ] },
+      { "math": [ "v_ra = 65" ] },
+      { "math": [ "v_rpa = max(v_rpa, 65)" ] },
+      { "math": [ "v_rx = 0" ] },
+      { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_hl_a" } },
+      {
+        "if": { "compare_string": [ { "u_val": "pf_sweet" }, "AVATAR" ] },
+        "then": [ { "run_eocs": "PF_HL_ff_partner", "alpha_talker": "avatar" } ],
+        "else": [
+          { "copy_var": { "u_val": "pf_sweet" }, "target_var": { "global_val": "pf_find_uid" } },
+          { "run_eocs": "PF_FIND_by_uid", "alpha_talker": "avatar" },
+          {
+            "if": { "math": [ "pf_find_ok == 1" ] },
+            "then": [ { "run_eocs": "PF_HL_ff_partner", "alpha_talker": { "global_val": "pf_find_who" } } ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HL_ff_partner",
+    "effect": [
+      { "math": [ "u_pf_sweet_since = time('now') - time('21 d')" ] },
+      { "math": [ "u_pf_stage_since = time('now') - time('21 d')" ] },
+      { "math": [ "u_pf_prop_last = -1" ] },
+      { "copy_var": { "global_val": "pf_hl_a" }, "target_var": { "global_val": "pf_m_other" } },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_w",
+        "target_var": { "context_val": "rw" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_t",
+        "target_var": { "context_val": "rt" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_x",
+        "target_var": { "context_val": "rx" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_pw",
+        "target_var": { "context_val": "rpw" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_pt",
+        "target_var": { "context_val": "rpt" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_l",
+        "target_var": { "context_val": "rl" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_a",
+        "target_var": { "context_val": "ra" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_pa",
+        "target_var": { "context_val": "rpa" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_c",
+        "target_var": { "context_val": "rc" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_f",
+        "target_var": { "context_val": "rf" },
+        "parse_tags": true
+      },
+      { "math": [ "v_rw = 70" ] },
+      { "math": [ "v_rpw = max(v_rpw, 70)" ] },
+      { "math": [ "v_rt = 60" ] },
+      { "math": [ "v_rpt = max(v_rpt, 60)" ] },
+      { "math": [ "v_ra = 65" ] },
+      { "math": [ "v_rpa = max(v_rpa, 65)" ] },
+      { "math": [ "v_rx = 0" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HL_us",
+    "effect": [
+      { "copy_var": { "u_val": "pf_ex" }, "target_var": { "global_val": "pf_hl_avex" } },
+      { "math": [ "pf_ll_kd = 99" ] },
+      { "u_location_variable": { "global_val": "pf_ll_kav" } },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_HL_near_3",
+            "effect": [
+              { "u_location_variable": { "u_val": "pf_pos" } },
+              {
+                "if": { "math": [ "distance(u_pf_pos, pf_ll_kav) < pf_ll_kd" ] },
+                "then": [ { "math": [ "pf_ll_kd = distance(u_pf_pos, pf_ll_kav)" ] }, { "u_set_talker": { "global_val": "pf_ll_kwho" } } ]
+              }
+            ],
+            "condition": {
+              "and": [
+                { "not": { "u_has_trait": "PF_CHILD" } },
+                { "math": [ "u_val('age') >= 18" ] },
+                { "not": { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_hl_avex" } ] } }
+              ]
+            }
+          }
+        ],
+        "local": true,
+        "npc_range": 6
+      },
+      {
+        "if": { "math": [ "pf_ll_kd < 99" ] },
+        "then": [
+          { "run_eocs": "PF_HL_us_one", "alpha_talker": { "global_val": "pf_ll_kwho" }, "beta_talker": "avatar" },
+          { "u_message": "[hearts lab] You and the nearest adult have been together three weeks.", "type": "info" }
+        ],
+        "else": [ { "u_message": "[hearts lab] No adult nearby.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HL_us_one",
+    "effect": [
+      { "run_eocs": "PF_ID_ensure" },
+      { "run_eocs": "PF_ID_ensure", "alpha_talker": "npc" },
+      { "set_string_var": "AVATAR", "target_var": { "u_val": "pf_sweet" } },
+      { "copy_var": { "u_val": "pf_uid" }, "target_var": { "npc_val": "pf_sweet" } },
+      { "math": [ "u_pf_has_sweet = 1" ] },
+      { "math": [ "n_pf_has_sweet = 1" ] },
+      { "math": [ "u_pf_rel_stage = 2" ] },
+      { "math": [ "n_pf_rel_stage = 2" ] },
+      { "math": [ "u_pf_sweet_since = time('now') - time('21 d')" ] },
+      { "math": [ "n_pf_sweet_since = time('now') - time('21 d')" ] },
+      { "math": [ "u_pf_stage_since = time('now') - time('21 d')" ] },
+      { "math": [ "n_pf_stage_since = time('now') - time('21 d')" ] },
+      { "math": [ "u_pf_prop_last = -1" ] },
+      { "math": [ "u_pf_rom = 1" ] },
+      { "math": [ "u_pf_orient = 2" ] },
+      { "math": [ "u_pf_commit = 1" ] },
+      { "math": [ "u_pf_awk_until = 0" ] },
+      { "set_string_var": "AVATAR", "target_var": { "global_val": "pf_m_other" } },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_w",
+        "target_var": { "context_val": "rw" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_t",
+        "target_var": { "context_val": "rt" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_x",
+        "target_var": { "context_val": "rx" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_pw",
+        "target_var": { "context_val": "rpw" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_pt",
+        "target_var": { "context_val": "rpt" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_l",
+        "target_var": { "context_val": "rl" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_a",
+        "target_var": { "context_val": "ra" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_pa",
+        "target_var": { "context_val": "rpa" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_c",
+        "target_var": { "context_val": "rc" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_f",
+        "target_var": { "context_val": "rf" },
+        "parse_tags": true
+      },
+      { "math": [ "v_rw = 70" ] },
+      { "math": [ "v_rpw = max(v_rpw, 70)" ] },
+      { "math": [ "v_rt = 60" ] },
+      { "math": [ "v_rpt = max(v_rpt, 60)" ] },
+      { "math": [ "v_ra = 65" ] },
+      { "math": [ "v_rpa = max(v_rpa, 65)" ] },
+      { "math": [ "v_rx = 0" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HL_sour",
+    "effect": [
+      { "math": [ "pf_ll_kd = 99" ] },
+      { "u_location_variable": { "global_val": "pf_ll_kav" } },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_HL_near_5",
+            "effect": [
+              { "u_location_variable": { "u_val": "pf_pos" } },
+              {
+                "if": { "math": [ "distance(u_pf_pos, pf_ll_kav) < pf_ll_kd" ] },
+                "then": [ { "math": [ "pf_ll_kd = distance(u_pf_pos, pf_ll_kav)" ] }, { "u_set_talker": { "global_val": "pf_ll_kwho" } } ]
+              }
+            ],
+            "condition": { "math": [ "value_or(u_pf_has_sweet, 0) == 1" ] }
+          }
+        ],
+        "local": true,
+        "npc_range": 6
+      },
+      {
+        "if": { "math": [ "pf_ll_kd < 99" ] },
+        "then": [
+          { "run_eocs": "PF_HL_sour_one", "alpha_talker": { "global_val": "pf_ll_kwho" } },
+          { "u_message": "[hearts lab] Something has gone wrong between them.", "type": "info" }
+        ],
+        "else": [ { "u_message": "[hearts lab] Nobody nearby is with anyone.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HL_sour_one",
+    "effect": [
+      { "copy_var": { "u_val": "pf_sweet" }, "target_var": { "global_val": "pf_m_other" } },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_w",
+        "target_var": { "context_val": "rw" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_t",
+        "target_var": { "context_val": "rt" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_x",
+        "target_var": { "context_val": "rx" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_pw",
+        "target_var": { "context_val": "rpw" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_pt",
+        "target_var": { "context_val": "rpt" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_l",
+        "target_var": { "context_val": "rl" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_a",
+        "target_var": { "context_val": "ra" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_pa",
+        "target_var": { "context_val": "rpa" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_c",
+        "target_var": { "context_val": "rc" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_f",
+        "target_var": { "context_val": "rf" },
+        "parse_tags": true
+      },
+      { "math": [ "v_rx = 80" ] },
+      { "math": [ "v_rw = min(v_rw, 20)" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HL_eyes",
+    "effect": [
+      { "math": [ "pf_ll_kd = 99" ] },
+      { "u_location_variable": { "global_val": "pf_ll_kav" } },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_HL_near_7",
+            "effect": [
+              { "u_location_variable": { "u_val": "pf_pos" } },
+              {
+                "if": { "math": [ "distance(u_pf_pos, pf_ll_kav) < pf_ll_kd" ] },
+                "then": [ { "math": [ "pf_ll_kd = distance(u_pf_pos, pf_ll_kav)" ] }, { "u_set_talker": { "global_val": "pf_ll_kwho" } } ]
+              }
+            ],
+            "condition": { "math": [ "value_or(u_pf_has_sweet, 0) == 1" ] }
+          }
+        ],
+        "local": true,
+        "npc_range": 6
+      },
+      {
+        "if": { "math": [ "pf_ll_kd < 99" ] },
+        "then": [
+          {
+            "run_eocs": {
+              "id": "PF_HL_eyes_t",
+              "effect": [
+                { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_hl_t" } },
+                { "copy_var": { "u_val": "pf_sweet" }, "target_var": { "global_val": "pf_hl_ts" } }
+              ]
+            },
+            "alpha_talker": { "global_val": "pf_ll_kwho" }
+          },
+          { "math": [ "pf_hl_g = 0" ] },
+          { "u_run_npc_eocs": [ "PF_HL_eyes_g" ], "local": true, "npc_range": 10 },
+          {
+            "if": { "math": [ "pf_hl_g == 1" ] },
+            "then": [
+              { "math": [ "pf_rom_force_glance = 1" ] },
+              { "u_message": "[hearts lab] Someone has a crush on a taken person.", "type": "info" }
+            ],
+            "else": [ { "u_message": "[hearts lab] No free adult within 10 tiles.", "type": "info" } ]
+          }
+        ],
+        "else": [ { "u_message": "[hearts lab] Nobody nearby is with anyone.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HL_eyes_g",
+    "effect": [
+      { "run_eocs": "PF_ID_ensure" },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_hl_g == 0" ] },
+            { "math": [ "value_or(u_pf_has_sweet, 0) == 0" ] },
+            { "not": { "u_has_trait": "PF_CHILD" } },
+            { "math": [ "u_val('age') >= 18" ] },
+            { "not": { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_hl_t" } ] } },
+            { "not": { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_hl_ts" } ] } }
+          ]
+        },
+        "then": [
+          { "math": [ "pf_hl_g = 1" ] },
+          { "math": [ "u_pf_rom = 1" ] },
+          { "math": [ "u_pf_orient = 2" ] },
+          { "math": [ "u_pf_conf_last = time('now')" ] },
+          { "math": [ "u_pf_awk_until = 0" ] },
+          { "copy_var": { "global_val": "pf_hl_t" }, "target_var": { "global_val": "pf_m_other" } },
+          {
+            "set_string_var": "u_pf_v_<global_val:pf_m_other>_w",
+            "target_var": { "context_val": "rw" },
+            "parse_tags": true
+          },
+          {
+            "set_string_var": "u_pf_v_<global_val:pf_m_other>_t",
+            "target_var": { "context_val": "rt" },
+            "parse_tags": true
+          },
+          {
+            "set_string_var": "u_pf_v_<global_val:pf_m_other>_x",
+            "target_var": { "context_val": "rx" },
+            "parse_tags": true
+          },
+          {
+            "set_string_var": "u_pf_v_<global_val:pf_m_other>_pw",
+            "target_var": { "context_val": "rpw" },
+            "parse_tags": true
+          },
+          {
+            "set_string_var": "u_pf_v_<global_val:pf_m_other>_pt",
+            "target_var": { "context_val": "rpt" },
+            "parse_tags": true
+          },
+          {
+            "set_string_var": "u_pf_v_<global_val:pf_m_other>_l",
+            "target_var": { "context_val": "rl" },
+            "parse_tags": true
+          },
+          {
+            "set_string_var": "u_pf_v_<global_val:pf_m_other>_a",
+            "target_var": { "context_val": "ra" },
+            "parse_tags": true
+          },
+          {
+            "set_string_var": "u_pf_v_<global_val:pf_m_other>_pa",
+            "target_var": { "context_val": "rpa" },
+            "parse_tags": true
+          },
+          {
+            "set_string_var": "u_pf_v_<global_val:pf_m_other>_c",
+            "target_var": { "context_val": "rc" },
+            "parse_tags": true
+          },
+          {
+            "set_string_var": "u_pf_v_<global_val:pf_m_other>_f",
+            "target_var": { "context_val": "rf" },
+            "parse_tags": true
+          },
+          {
+            "if": { "math": [ "value_or(v_rl, -1) < 0" ] },
+            "then": [
+              { "math": [ "v_rl = time('now')" ] },
+              { "math": [ "v_rw = 10" ] },
+              { "math": [ "v_rt = 0" ] },
+              { "math": [ "v_rx = 0" ] },
+              { "math": [ "v_rpw = 10" ] },
+              { "math": [ "v_rpt = 0" ] },
+              { "math": [ "v_rc = 0.5" ] },
+              { "math": [ "v_rf = 1" ] }
+            ]
+          },
+          { "math": [ "v_ra = 40" ] },
+          { "math": [ "v_rpa = max(value_or(v_rpa, 0), 40)" ] }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HL_bury",
+    "effect": [
+      {
+        "u_location_variable": { "global_val": "pf_hl_gr" },
+        "terrain": "t_dirt",
+        "target_max_radius": 3,
+        "true_eocs": [
+          {
+            "id": "PF_HL_dig",
+            "effect": [ { "u_transform_radius": 0, "ter_furn_transform": "PF_HL_grave", "target_var": { "global_val": "pf_hl_gr" } } ]
+          }
+        ],
+        "false_eocs": [
+          {
+            "id": "PF_HL_nodirt",
+            "effect": [ { "u_message": "[hearts lab] No bare dirt within 3 tiles to dig in.", "type": "info" } ]
+          }
+        ]
+      },
+      { "run_eocs": "PF_HEART_burial_signal", "variables": { "activity": "ACT_BUILD" } },
+      {
+        "if": { "math": [ "value_or(pf_unburied, 0) == 1" ] },
+        "then": [ { "u_message": "[hearts lab] (No grave was found, or nobody cared about the last death.)", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HL_stats",
+    "effect": [
+      { "math": [ "pf_hs_a = value_or(pf_weddings_total, 0)" ] },
+      { "math": [ "pf_hs_b = value_or(pf_breakups_total, 0)" ] },
+      { "math": [ "pf_hs_c = value_or(pf_widowed_total, 0)" ] },
+      { "math": [ "pf_hs_d = value_or(pf_jealousy_total, 0)" ] },
+      { "math": [ "pf_hs_e = value_or(pf_unmourned, 0)" ] },
+      { "math": [ "pf_hs_f = value_or(pf_unburied, 0)" ] },
+      { "math": [ "pf_hs_g = value_or(pf_jn_count, 0)" ] },
+      { "math": [ "pf_hs_h = value_or(pf_engagements_total, 0)" ] },
+      { "math": [ "pf_hs_i = value_or(pf_ev_n, 0)" ] },
+      {
+        "u_message": "[hearts] engagements <global_val:pf_hs_h>, events remembered <global_val:pf_hs_i>, weddings <global_val:pf_hs_a>, breakups <global_val:pf_hs_b>, widowed <global_val:pf_hs_c>, jealousy <global_val:pf_hs_d>, remembrance pending <global_val:pf_hs_e>, burial pending <global_val:pf_hs_f>, journal entries <global_val:pf_hs_g>.",
+        "type": "info"
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HL_lukewarm",
+    "effect": [
+      { "math": [ "pf_ll_kd = 99" ] },
+      { "u_location_variable": { "global_val": "pf_ll_kav" } },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_HL_near_11",
+            "effect": [
+              { "u_location_variable": { "u_val": "pf_pos" } },
+              {
+                "if": { "math": [ "distance(u_pf_pos, pf_ll_kav) < pf_ll_kd" ] },
+                "then": [ { "math": [ "pf_ll_kd = distance(u_pf_pos, pf_ll_kav)" ] }, { "u_set_talker": { "global_val": "pf_ll_kwho" } } ]
+              }
+            ],
+            "condition": { "math": [ "value_or(u_pf_has_sweet, 0) == 1" ] }
+          }
+        ],
+        "local": true,
+        "npc_range": 6
+      },
+      {
+        "if": { "math": [ "pf_ll_kd < 99" ] },
+        "then": [
+          { "run_eocs": "PF_HL_lw_one", "alpha_talker": { "global_val": "pf_ll_kwho" } },
+          { "u_message": "[hearts lab] One of them is ready; the other isn't.", "type": "info" }
+        ],
+        "else": [ { "u_message": "[hearts lab] Nobody nearby is with anyone.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HL_lw_one",
+    "effect": [
+      { "math": [ "u_pf_rel_stage = 2" ] },
+      { "math": [ "u_pf_stage_since = time('now') - time('21 d')" ] },
+      { "math": [ "u_pf_prop_last = -1" ] },
+      { "math": [ "u_pf_commit = 1" ] },
+      { "math": [ "u_pf_engaged = 0" ] },
+      { "copy_var": { "u_val": "pf_sweet" }, "target_var": { "global_val": "pf_m_other" } },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_w",
+        "target_var": { "context_val": "rw" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_t",
+        "target_var": { "context_val": "rt" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_x",
+        "target_var": { "context_val": "rx" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_pw",
+        "target_var": { "context_val": "rpw" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_pt",
+        "target_var": { "context_val": "rpt" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_l",
+        "target_var": { "context_val": "rl" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_a",
+        "target_var": { "context_val": "ra" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_pa",
+        "target_var": { "context_val": "rpa" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_c",
+        "target_var": { "context_val": "rc" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_f",
+        "target_var": { "context_val": "rf" },
+        "parse_tags": true
+      },
+      { "math": [ "v_rw = 70" ] },
+      { "math": [ "v_rpw = max(v_rpw, 70)" ] },
+      { "math": [ "v_rt = 60" ] },
+      { "math": [ "v_rpt = max(v_rpt, 60)" ] },
+      { "math": [ "v_ra = 65" ] },
+      { "math": [ "v_rpa = max(v_rpa, 65)" ] },
+      { "math": [ "v_rx = 0" ] },
+      { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_hl_a" } },
+      { "copy_var": { "u_val": "pf_sweet" }, "target_var": { "global_val": "pf_find_uid" } },
+      { "run_eocs": "PF_FIND_by_uid", "alpha_talker": "avatar" },
+      {
+        "if": { "math": [ "pf_find_ok == 1" ] },
+        "then": [ { "run_eocs": "PF_HL_lw_partner", "alpha_talker": { "global_val": "pf_find_who" } } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HL_lw_partner",
+    "effect": [
+      { "math": [ "u_pf_rel_stage = 2" ] },
+      { "math": [ "u_pf_stage_since = time('now') - time('21 d')" ] },
+      { "math": [ "u_pf_prop_last = time('now')" ] },
+      { "math": [ "u_pf_engaged = 0" ] },
+      { "copy_var": { "global_val": "pf_hl_a" }, "target_var": { "global_val": "pf_m_other" } },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_w",
+        "target_var": { "context_val": "rw" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_t",
+        "target_var": { "context_val": "rt" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_x",
+        "target_var": { "context_val": "rx" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_pw",
+        "target_var": { "context_val": "rpw" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_pt",
+        "target_var": { "context_val": "rpt" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_l",
+        "target_var": { "context_val": "rl" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_a",
+        "target_var": { "context_val": "ra" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_pa",
+        "target_var": { "context_val": "rpa" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_c",
+        "target_var": { "context_val": "rc" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_f",
+        "target_var": { "context_val": "rf" },
+        "parse_tags": true
+      },
+      { "math": [ "v_rw = 40" ] },
+      { "math": [ "v_rpw = 40" ] },
+      { "math": [ "v_ra = 30" ] },
+      { "math": [ "v_rpa = 30" ] },
+      { "math": [ "v_rt = 40" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HL_wedday",
+    "effect": [
+      { "math": [ "pf_ll_kd = 99" ] },
+      { "u_location_variable": { "global_val": "pf_ll_kav" } },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_HL_near_14",
+            "effect": [
+              { "u_location_variable": { "u_val": "pf_pos" } },
+              {
+                "if": { "math": [ "distance(u_pf_pos, pf_ll_kav) < pf_ll_kd" ] },
+                "then": [ { "math": [ "pf_ll_kd = distance(u_pf_pos, pf_ll_kav)" ] }, { "u_set_talker": { "global_val": "pf_ll_kwho" } } ]
+              }
+            ],
+            "condition": { "math": [ "value_or(u_pf_engaged, 0) == 1" ] }
+          }
+        ],
+        "local": true,
+        "npc_range": 6
+      },
+      {
+        "if": { "math": [ "pf_ll_kd < 99" ] },
+        "then": [
+          { "run_eocs": "PF_HL_wd_one", "alpha_talker": { "global_val": "pf_ll_kwho" } },
+          { "u_message": "[hearts lab] The wedding can be tonight.", "type": "info" }
+        ],
+        "else": [ { "u_message": "[hearts lab] Nobody nearby is engaged.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HL_wd_one",
+    "effect": [
+      { "math": [ "u_pf_wed_t = time('now') - time('1 h')" ] },
+      {
+        "if": { "compare_string": [ { "u_val": "pf_sweet" }, "AVATAR" ] },
+        "then": [
+          {
+            "run_eocs": { "id": "PF_HL_wd_av", "effect": [ { "math": [ "u_pf_wed_t = time('now') - time('1 h')" ] } ] },
+            "alpha_talker": "avatar"
+          }
+        ],
+        "else": [
+          { "copy_var": { "u_val": "pf_sweet" }, "target_var": { "global_val": "pf_find_uid" } },
+          { "run_eocs": "PF_FIND_by_uid", "alpha_talker": "avatar" },
+          {
+            "if": { "math": [ "pf_find_ok == 1" ] },
+            "then": [
+              {
+                "run_eocs": { "id": "PF_HL_wd_p", "effect": [ { "math": [ "u_pf_wed_t = time('now') - time('1 h')" ] } ] },
+                "alpha_talker": { "global_val": "pf_find_who" }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HL_anniv",
+    "effect": [
+      { "math": [ "pf_hl_ei = (value_or(pf_ev_n, 0) - 1 + 20) % 20" ] },
+      { "set_string_var": "pf_ev_<global_val:pf_hl_ei>_t", "target_var": { "context_val": "et" }, "parse_tags": true },
+      {
+        "if": { "math": [ "value_or(pf_ev_n, 0) > 0" ] },
+        "then": [
+          { "math": [ "v_et = time('now') - time('30 d')" ] },
+          { "u_message": "[hearts lab] A month has passed since the last death or wedding.", "type": "info" }
+        ],
+        "else": [ { "u_message": "[hearts lab] Nothing recorded yet.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HL_widow",
+    "effect": [
+      {
+        "if": { "math": [ "value_or(u_pf_has_sweet, 0) == 1" ] },
+        "then": [
+          { "copy_var": { "u_val": "pf_sweet" }, "target_var": { "global_val": "pf_find_uid" } },
+          { "run_eocs": "PF_FIND_by_uid" },
+          {
+            "if": { "math": [ "pf_find_ok == 1" ] },
+            "then": [ { "run_eocs": { "id": "PF_HL_widow_die", "effect": [ "u_die" ] }, "alpha_talker": { "global_val": "pf_find_who" } } ],
+            "else": [ { "u_message": "[hearts lab] They aren't nearby.", "type": "info" } ]
+          }
+        ],
+        "else": [ { "u_message": "[hearts lab] You aren't with anyone.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "ter_furn_transform",
+    "id": "PF_HL_grave",
+    "terrain": [ { "result": "t_grave_new", "valid_flags": [ "DIGGABLE" ] } ]
+  }
+]

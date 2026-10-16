@@ -1,0 +1,754 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FAM_kid_day_tick",
+    "//": "Every 2 hours by day (08:00-19:00), when it's calm: children live their lives: play, small chores, questions, and grief.  At most two lines each time.",
+    "recurrence": "2 hours",
+    "global": true,
+    "condition": {
+      "and": [
+        { "math": [ "time_since('midnight', 'unit': 'hours') >= 8" ] },
+        { "math": [ "time_since('midnight', 'unit': 'hours') < 19" ] }
+      ]
+    },
+    "effect": [
+      { "run_eocs": "PF_THREAT_scan" },
+      {
+        "if": { "math": [ "pf_threat == 0" ] },
+        "then": [
+          { "math": [ "pf_kl = 0" ] },
+          { "u_location_variable": { "global_val": "pf_fm_avpos" } },
+          { "math": [ "pf_fm_av_awake = 1" ] },
+          {
+            "if": { "or": [ { "u_has_effect": "sleep" }, { "u_has_effect": "lying_down" } ] },
+            "then": [ { "math": [ "pf_fm_av_awake = 0" ] } ]
+          },
+          { "u_run_npc_eocs": [ "PF_FAM_kid_moment" ], "local": true, "npc_range": 40 }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FAM_kid_moment",
+    "//": "u = a child (walking, not a baby).",
+    "condition": {
+      "and": [
+        { "u_has_trait": "PF_CHILD" },
+        { "not": { "u_has_effect": "PF_infant" } },
+        { "math": [ "pf_kl < 2" ] },
+        { "or": [ { "math": [ "rand(1) == 0" ] }, { "math": [ "value_or(pf_kid_force, 0) == 1" ] } ] }
+      ]
+    },
+    "effect": [
+      { "run_eocs": "PF_ID_ensure" },
+      { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_kid_uid" } },
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+      { "u_location_variable": { "u_val": "pf_pos" } },
+      { "math": [ "pf_kid_avnear = (distance(u_pf_pos, pf_fm_avpos) <= 8) * value_or(pf_fm_av_awake, 1)" ] },
+      {
+        "if": {
+          "and": [
+            { "math": [ "time('now') - value_or(pf_loss_t, -999999) < time('2 d')" ] },
+            { "math": [ "value_or(u_pf_loss_seen, 0) != value_or(pf_loss_n, 0)" ] }
+          ]
+        },
+        "then": [
+          { "math": [ "u_pf_loss_seen = pf_loss_n" ] },
+          { "math": [ "pf_kl += 1" ] },
+          {
+            "if": { "math": [ "value_or(pf_set_chatter, 1) == 1" ] },
+            "then": [
+              {
+                "if": { "math": [ "value_or(pf_loss_multi, 0) == 1" ] },
+                "then": [ { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "kid_loss_many" } } ],
+                "else": [ { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "kid_loss_one" } } ]
+              }
+            ]
+          }
+        ],
+        "else": [
+          {
+            "if": { "math": [ "time('now') < value_or(u_pf_mourn_until, 0)" ] },
+            "then": [
+              {
+                "if": { "math": [ "has_var(u_pf_lost_t) * (rand(1) == 0)" ] },
+                "then": [ { "run_eocs": "PF_FAM_kid_grief" } ],
+                "else": [ { "run_eocs": "PF_FAM_kid_comfort" } ]
+              }
+            ],
+            "else": [
+              { "run_eocs": "PF_FAM_kid_heal" },
+              { "math": [ "_a = rand(3)" ] },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "_a == 3" ] },
+                    {
+                      "or": [ { "math": [ "time_since(u_pf_taught_t) < 0" ] }, { "math": [ "time_since(u_pf_taught_t) > time('1 d')" ] } ]
+                    }
+                  ]
+                },
+                "then": [ { "run_eocs": "PF_FAM_kid_learn" } ],
+                "else": [ { "if": { "math": [ "_a == 3" ] }, "then": [ { "math": [ "_a = rand(2)" ] } ] } ]
+              },
+              { "if": { "math": [ "_a == 0" ] }, "then": [ { "run_eocs": "PF_FAM_kid_play" } ] },
+              { "if": { "math": [ "_a == 1" ] }, "then": [ { "run_eocs": "PF_FAM_kid_chore" } ] },
+              { "if": { "math": [ "_a == 2" ] }, "then": [ { "run_eocs": "PF_FAM_kid_question" } ] }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FAM_kid_learn",
+    "//": "u = a child.  They pester a grown-up (you, if you're near) to show them how something works.  Once a day per child.",
+    "effect": [
+      { "math": [ "pf_kc_found = 0" ] },
+      {
+        "if": { "math": [ "pf_kid_avnear" ] },
+        "then": [ { "math": [ "pf_kc_found = 2" ] } ],
+        "else": [ { "u_run_npc_eocs": [ "PF_FAM_kid_helper_of" ], "local": true, "npc_range": 15 } ]
+      },
+      {
+        "if": { "math": [ "pf_kc_found == 2" ] },
+        "then": [ { "math": [ "pf_kl += 1" ] }, { "run_eocs": "PF_FAM_teach_do", "alpha_talker": "avatar", "beta_talker": "u" } ]
+      },
+      {
+        "if": { "math": [ "pf_kc_found == 1" ] },
+        "then": [
+          { "math": [ "pf_kl += 1" ] },
+          { "run_eocs": "PF_FAM_teach_do", "alpha_talker": { "global_val": "pf_kc_who" }, "beta_talker": "u" }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FAM_kid_play",
+    "//": "u = a child.  With another child near, they play together (a small bond); alone, they invent something.  Pools with no back-to-back repeats (variety pass).",
+    "effect": [
+      { "math": [ "pf_kp_found = 0" ] },
+      { "u_run_npc_eocs": [ "PF_FAM_kid_playmate" ], "local": true, "npc_range": 12 },
+      {
+        "if": { "math": [ "pf_kp_found == 1" ] },
+        "then": [
+          { "math": [ "pf_kl += 1" ] },
+          {
+            "if": { "math": [ "value_or(pf_set_chatter, 1) == 1" ] },
+            "then": [
+              { "math": [ "_p = rand(5)" ] },
+              {
+                "if": { "math": [ "_p == value_or(pf_kid_tag_last, -1)" ] },
+                "then": [ { "math": [ "_p = (_p + 1) % 6" ] } ]
+              },
+              { "math": [ "pf_kid_tag_last = _p" ] },
+              {
+                "if": { "math": [ "_p == 0" ] },
+                "then": [ { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "kid_tag_0" } } ]
+              },
+              {
+                "if": { "math": [ "_p == 1" ] },
+                "then": [ { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "kid_tag_1" } } ]
+              },
+              {
+                "if": { "math": [ "_p == 2" ] },
+                "then": [ { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "kid_tag_2" } } ]
+              },
+              {
+                "if": { "math": [ "_p == 3" ] },
+                "then": [ { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "kid_tag_3" } } ]
+              },
+              {
+                "if": { "math": [ "_p == 4" ] },
+                "then": [ { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "kid_tag_4" } } ]
+              },
+              {
+                "if": { "math": [ "_p == 5" ] },
+                "then": [ { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "kid_tag_5" } } ]
+              }
+            ]
+          },
+          { "math": [ "pf_m_str_in = 25" ] },
+          { "run_eocs": "PF_MK_fire_evening", "beta_talker": { "global_val": "pf_kp_who" } }
+        ],
+        "else": [
+          { "math": [ "pf_kl += 1" ] },
+          {
+            "if": { "math": [ "value_or(pf_set_chatter, 1) == 1" ] },
+            "then": [
+              {
+                "if": { "math": [ "weather('precipitation') > 0" ] },
+                "then": [
+                  { "math": [ "_p = rand(1)" ] },
+                  {
+                    "if": { "math": [ "_p == value_or(pf_kid_wet_last, -1)" ] },
+                    "then": [ { "math": [ "_p = (_p + 1) % 2" ] } ]
+                  },
+                  { "math": [ "pf_kid_wet_last = _p" ] },
+                  {
+                    "if": { "math": [ "_p == 0" ] },
+                    "then": [ { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "kid_wet_0" } } ]
+                  },
+                  {
+                    "if": { "math": [ "_p == 1" ] },
+                    "then": [ { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "kid_wet_1" } } ]
+                  }
+                ],
+                "else": [
+                  { "math": [ "_p = rand(7)" ] },
+                  {
+                    "if": { "math": [ "_p == value_or(pf_kid_alone_last, -1)" ] },
+                    "then": [ { "math": [ "_p = (_p + 1) % 8" ] } ]
+                  },
+                  { "math": [ "pf_kid_alone_last = _p" ] },
+                  {
+                    "if": { "math": [ "_p == 0" ] },
+                    "then": [ { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "kid_alone_0" } } ]
+                  },
+                  {
+                    "if": { "math": [ "_p == 1" ] },
+                    "then": [ { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "kid_alone_1" } } ]
+                  },
+                  {
+                    "if": { "math": [ "_p == 2" ] },
+                    "then": [ { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "kid_alone_2" } } ]
+                  },
+                  {
+                    "if": { "math": [ "_p == 3" ] },
+                    "then": [ { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "kid_alone_3" } } ]
+                  },
+                  {
+                    "if": { "math": [ "_p == 4" ] },
+                    "then": [ { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "kid_alone_4" } } ]
+                  },
+                  {
+                    "if": { "math": [ "_p == 5" ] },
+                    "then": [ { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "kid_alone_5" } } ]
+                  },
+                  {
+                    "if": { "math": [ "_p == 6" ] },
+                    "then": [ { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "kid_alone_6" } } ]
+                  },
+                  {
+                    "if": { "math": [ "_p == 7" ] },
+                    "then": [ { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "kid_alone_7" } } ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FAM_kid_playmate",
+    "condition": {
+      "and": [
+        { "u_has_trait": "PF_CHILD" },
+        { "not": { "u_has_effect": "PF_infant" } },
+        { "math": [ "pf_kp_found == 0" ] },
+        { "not": { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_kid_uid" } ] } }
+      ]
+    },
+    "effect": [
+      { "math": [ "pf_kp_found = 1" ] },
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_b" }, "parse_tags": true },
+      { "u_set_talker": { "global_val": "pf_kp_who" } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FAM_kid_chore",
+    "//": "u = a child.  They tag along on a grown-up's chores; if you're close, it's your pile of junk, and they find you a marble.",
+    "effect": [
+      { "math": [ "pf_kc_found = 0" ] },
+      { "u_run_npc_eocs": [ "PF_FAM_kid_helper_of" ], "local": true, "npc_range": 15 },
+      {
+        "if": {
+          "and": [ { "math": [ "pf_kid_avnear" ] }, { "math": [ "time('now') - value_or(pf_kc_you_t, -999999) >= time('6 h')" ] } ]
+        },
+        "then": [ { "math": [ "pf_kc_found = 2" ] } ]
+      },
+      {
+        "if": { "math": [ "pf_kc_found > 0" ] },
+        "then": [
+          { "math": [ "pf_kl += 1" ] },
+          {
+            "if": { "math": [ "pf_kc_found == 2" ] },
+            "then": [
+              { "math": [ "pf_kc_you_t = time('now')" ] },
+              {
+                "if": { "math": [ "value_or(pf_set_chatter, 1) == 1" ] },
+                "then": [ { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "kid_chore_you" } } ]
+              },
+              { "run_eocs": "PF_GIVE_marble", "alpha_talker": "avatar" },
+              { "math": [ "pf_m_str_in = 30" ] },
+              { "run_eocs": "PF_MK_gift", "beta_talker": "avatar" }
+            ],
+            "else": [
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_set_chatter, 1) == 1" ] },
+                    { "math": [ "time('now') - value_or(pf_kc_line_t, -999999) >= time('3 h')" ] }
+                  ]
+                },
+                "then": [
+                  { "math": [ "pf_kc_line_t = time('now')" ] },
+                  { "math": [ "_v = rand(2)" ] },
+                  {
+                    "if": { "math": [ "_v == value_or(pf_kc_line_last, -1)" ] },
+                    "then": [ { "math": [ "_v = (_v + 1) % 3" ] } ]
+                  },
+                  { "math": [ "pf_kc_line_last = _v" ] },
+                  {
+                    "if": { "math": [ "_v == 0" ] },
+                    "then": [ { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "kid_chore" } } ]
+                  },
+                  {
+                    "if": { "math": [ "_v == 1" ] },
+                    "then": [ { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "kid_chore_1" } } ]
+                  },
+                  {
+                    "if": { "math": [ "_v == 2" ] },
+                    "then": [ { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "kid_chore_2" } } ]
+                  }
+                ]
+              },
+              { "math": [ "pf_m_str_in = 25" ] },
+              { "run_eocs": "PF_MK_fire_evening", "beta_talker": { "global_val": "pf_kc_who" } }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FAM_kid_helper_of",
+    "condition": {
+      "and": [
+        { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+        { "math": [ "pf_kc_found == 0" ] }
+      ]
+    },
+    "effect": [
+      { "math": [ "pf_kc_found = 1" ] },
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_b" }, "parse_tags": true },
+      { "u_set_talker": { "global_val": "pf_kc_who" } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FAM_kid_question",
+    "//": "u = a child.  They ask you (if you're near) or a grown-up one of the questions children ask.",
+    "effect": [
+      { "math": [ "pf_kc_found = 0" ] },
+      {
+        "if": { "math": [ "pf_kid_avnear" ] },
+        "then": [ { "math": [ "pf_kc_found = 2" ] } ],
+        "else": [ { "u_run_npc_eocs": [ "PF_FAM_kid_helper_of" ], "local": true, "npc_range": 15 } ]
+      },
+      {
+        "if": { "math": [ "pf_kc_found > 0" ] },
+        "then": [
+          {
+            "if": { "math": [ "value_or(pf_kq_used, 0) >= 16777215" ] },
+            "then": [ { "math": [ "pf_kq_used = 2 ^ value_or(pf_kq_used_last, 0)" ] } ]
+          },
+          { "math": [ "_p = rand(23)" ] },
+          {
+            "if": { "math": [ "floor(value_or(pf_kq_used, 0) / (2 ^ _p)) % 2 == 1" ] },
+            "then": [ { "math": [ "_p = (_p + 1) % 24" ] } ]
+          },
+          {
+            "if": { "math": [ "floor(value_or(pf_kq_used, 0) / (2 ^ _p)) % 2 == 1" ] },
+            "then": [ { "math": [ "_p = (_p + 1) % 24" ] } ]
+          },
+          {
+            "if": { "math": [ "floor(value_or(pf_kq_used, 0) / (2 ^ _p)) % 2 == 1" ] },
+            "then": [ { "math": [ "_p = (_p + 1) % 24" ] } ]
+          },
+          {
+            "if": { "math": [ "floor(value_or(pf_kq_used, 0) / (2 ^ _p)) % 2 == 1" ] },
+            "then": [ { "math": [ "_p = (_p + 1) % 24" ] } ]
+          },
+          {
+            "if": { "math": [ "floor(value_or(pf_kq_used, 0) / (2 ^ _p)) % 2 == 1" ] },
+            "then": [ { "math": [ "_p = (_p + 1) % 24" ] } ]
+          },
+          {
+            "if": { "math": [ "floor(value_or(pf_kq_used, 0) / (2 ^ _p)) % 2 == 1" ] },
+            "then": [ { "math": [ "_p = (_p + 1) % 24" ] } ]
+          },
+          {
+            "if": { "math": [ "floor(value_or(pf_kq_used, 0) / (2 ^ _p)) % 2 == 1" ] },
+            "then": [ { "math": [ "_p = (_p + 1) % 24" ] } ]
+          },
+          {
+            "if": { "math": [ "floor(value_or(pf_kq_used, 0) / (2 ^ _p)) % 2 == 1" ] },
+            "then": [ { "math": [ "_p = (_p + 1) % 24" ] } ]
+          },
+          {
+            "if": { "math": [ "floor(value_or(pf_kq_used, 0) / (2 ^ _p)) % 2 == 1" ] },
+            "then": [ { "math": [ "_p = (_p + 1) % 24" ] } ]
+          },
+          {
+            "if": { "math": [ "floor(value_or(pf_kq_used, 0) / (2 ^ _p)) % 2 == 1" ] },
+            "then": [ { "math": [ "_p = (_p + 1) % 24" ] } ]
+          },
+          {
+            "if": { "math": [ "floor(value_or(pf_kq_used, 0) / (2 ^ _p)) % 2 == 1" ] },
+            "then": [ { "math": [ "_p = (_p + 1) % 24" ] } ]
+          },
+          {
+            "if": { "math": [ "floor(value_or(pf_kq_used, 0) / (2 ^ _p)) % 2 == 1" ] },
+            "then": [ { "math": [ "_p = (_p + 1) % 24" ] } ]
+          },
+          {
+            "if": { "math": [ "floor(value_or(pf_kq_used, 0) / (2 ^ _p)) % 2 == 1" ] },
+            "then": [ { "math": [ "_p = (_p + 1) % 24" ] } ]
+          },
+          {
+            "if": { "math": [ "floor(value_or(pf_kq_used, 0) / (2 ^ _p)) % 2 == 1" ] },
+            "then": [ { "math": [ "_p = (_p + 1) % 24" ] } ]
+          },
+          {
+            "if": { "math": [ "floor(value_or(pf_kq_used, 0) / (2 ^ _p)) % 2 == 1" ] },
+            "then": [ { "math": [ "_p = (_p + 1) % 24" ] } ]
+          },
+          {
+            "if": { "math": [ "floor(value_or(pf_kq_used, 0) / (2 ^ _p)) % 2 == 1" ] },
+            "then": [ { "math": [ "_p = (_p + 1) % 24" ] } ]
+          },
+          {
+            "if": { "math": [ "floor(value_or(pf_kq_used, 0) / (2 ^ _p)) % 2 == 1" ] },
+            "then": [ { "math": [ "_p = (_p + 1) % 24" ] } ]
+          },
+          {
+            "if": { "math": [ "floor(value_or(pf_kq_used, 0) / (2 ^ _p)) % 2 == 1" ] },
+            "then": [ { "math": [ "_p = (_p + 1) % 24" ] } ]
+          },
+          {
+            "if": { "math": [ "floor(value_or(pf_kq_used, 0) / (2 ^ _p)) % 2 == 1" ] },
+            "then": [ { "math": [ "_p = (_p + 1) % 24" ] } ]
+          },
+          {
+            "if": { "math": [ "floor(value_or(pf_kq_used, 0) / (2 ^ _p)) % 2 == 1" ] },
+            "then": [ { "math": [ "_p = (_p + 1) % 24" ] } ]
+          },
+          {
+            "if": { "math": [ "floor(value_or(pf_kq_used, 0) / (2 ^ _p)) % 2 == 1" ] },
+            "then": [ { "math": [ "_p = (_p + 1) % 24" ] } ]
+          },
+          {
+            "if": { "math": [ "floor(value_or(pf_kq_used, 0) / (2 ^ _p)) % 2 == 1" ] },
+            "then": [ { "math": [ "_p = (_p + 1) % 24" ] } ]
+          },
+          {
+            "if": { "math": [ "floor(value_or(pf_kq_used, 0) / (2 ^ _p)) % 2 == 1" ] },
+            "then": [ { "math": [ "_p = (_p + 1) % 24" ] } ]
+          },
+          { "math": [ "pf_kq_used = value_or(pf_kq_used, 0) + 2 ^ _p" ] },
+          { "math": [ "pf_kq_used_last = _p" ] },
+          { "math": [ "pf_kq = _p" ] },
+          {
+            "if": { "math": [ "pf_kq == 0" ] },
+            "then": [ { "set_string_var": "Why don't the dead ever get tired?", "target_var": { "global_val": "pf_kq_text" } } ]
+          },
+          {
+            "if": { "math": [ "pf_kq == 1" ] },
+            "then": [
+              {
+                "set_string_var": "Were there really stores with nothing but shoes in them?",
+                "target_var": { "global_val": "pf_kq_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kq == 2" ] },
+            "then": [ { "set_string_var": "What's the ocean like?", "target_var": { "global_val": "pf_kq_text" } } ]
+          },
+          {
+            "if": { "math": [ "pf_kq == 3" ] },
+            "then": [ { "set_string_var": "If we find a dog, can we keep it?", "target_var": { "global_val": "pf_kq_text" } } ]
+          },
+          {
+            "if": { "math": [ "pf_kq == 4" ] },
+            "then": [ { "set_string_var": "Why do grown-ups keep looking at the dark?", "target_var": { "global_val": "pf_kq_text" } } ]
+          },
+          {
+            "if": { "math": [ "pf_kq == 5" ] },
+            "then": [ { "set_string_var": "Did you have a mom?  What was she like?", "target_var": { "global_val": "pf_kq_text" } } ]
+          },
+          {
+            "if": { "math": [ "pf_kq == 6" ] },
+            "then": [ { "set_string_var": "What did people do all day, before?", "target_var": { "global_val": "pf_kq_text" } } ]
+          },
+          {
+            "if": { "math": [ "pf_kq == 7" ] },
+            "then": [ { "set_string_var": "Do zombies dream?", "target_var": { "global_val": "pf_kq_text" } } ]
+          },
+          {
+            "if": { "math": [ "pf_kq == 8" ] },
+            "then": [ { "set_string_var": "Is the moon the same moon as before?", "target_var": { "global_val": "pf_kq_text" } } ]
+          },
+          {
+            "if": { "math": [ "pf_kq == 9" ] },
+            "then": [ { "set_string_var": "Why do you talk to the sky sometimes?", "target_var": { "global_val": "pf_kq_text" } } ]
+          },
+          {
+            "if": { "math": [ "pf_kq == 10" ] },
+            "then": [ { "set_string_var": "What was your favorite food?  Like, ever?", "target_var": { "global_val": "pf_kq_text" } } ]
+          },
+          {
+            "if": { "math": [ "pf_kq == 11" ] },
+            "then": [ { "set_string_var": "Can I have a gun when I am bigger?", "target_var": { "global_val": "pf_kq_text" } } ]
+          },
+          {
+            "if": { "math": [ "pf_kq == 12" ] },
+            "then": [ { "set_string_var": "Where do the birds go when it's cold?", "target_var": { "global_val": "pf_kq_text" } } ]
+          },
+          {
+            "if": { "math": [ "pf_kq == 13" ] },
+            "then": [ { "set_string_var": "Will we always live here?", "target_var": { "global_val": "pf_kq_text" } } ]
+          },
+          {
+            "if": { "math": [ "pf_kq == 14" ] },
+            "then": [ { "set_string_var": "Why is the sky that color at night now?", "target_var": { "global_val": "pf_kq_text" } } ]
+          },
+          {
+            "if": { "math": [ "pf_kq == 15" ] },
+            "then": [ { "set_string_var": "Did you ever ride in an airplane?", "target_var": { "global_val": "pf_kq_text" } } ]
+          },
+          {
+            "if": { "math": [ "pf_kq == 16" ] },
+            "then": [ { "set_string_var": "Can dead people hear us?", "target_var": { "global_val": "pf_kq_text" } } ]
+          },
+          {
+            "if": { "math": [ "pf_kq == 17" ] },
+            "then": [
+              { "set_string_var": "How old is the oldest person in the whole world?", "target_var": { "global_val": "pf_kq_text" } }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kq == 18" ] },
+            "then": [ { "set_string_var": "Who decided which plants you can eat?", "target_var": { "global_val": "pf_kq_text" } } ]
+          },
+          {
+            "if": { "math": [ "pf_kq == 19" ] },
+            "then": [ { "set_string_var": "Are there other kids anywhere?", "target_var": { "global_val": "pf_kq_text" } } ]
+          },
+          {
+            "if": { "math": [ "pf_kq == 20" ] },
+            "then": [ { "set_string_var": "What happens to the zombies in the winter?", "target_var": { "global_val": "pf_kq_text" } } ]
+          },
+          {
+            "if": { "math": [ "pf_kq == 21" ] },
+            "then": [ { "set_string_var": "Why do you always check the door twice?", "target_var": { "global_val": "pf_kq_text" } } ]
+          },
+          {
+            "if": { "math": [ "pf_kq == 22" ] },
+            "then": [ { "set_string_var": "Can you teach me to whistle with two fingers?", "target_var": { "global_val": "pf_kq_text" } } ]
+          },
+          {
+            "if": { "math": [ "pf_kq == 23" ] },
+            "then": [ { "set_string_var": "If I was gone, would you come looking?", "target_var": { "global_val": "pf_kq_text" } } ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kc_found == 2" ] },
+        "then": [
+          { "math": [ "pf_kl += 1" ] },
+          {
+            "if": { "math": [ "value_or(pf_set_chatter, 1) == 1" ] },
+            "then": [ { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "kid_ask_you" } } ]
+          },
+          { "math": [ "pf_m_str_in = 25" ] },
+          { "run_eocs": "PF_MK_memory_recalled", "beta_talker": "avatar" }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kc_found == 1" ] },
+        "then": [
+          { "math": [ "pf_kl += 1" ] },
+          {
+            "if": { "math": [ "value_or(pf_set_chatter, 1) == 1" ] },
+            "then": [ { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "kid_ask" } } ]
+          },
+          { "math": [ "pf_m_str_in = 25" ] },
+          { "run_eocs": "PF_MK_fire_evening", "beta_talker": { "global_val": "pf_kc_who" } }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FAM_kid_grief",
+    "//": "u = a child mourning a parent or guardian (v0.7).  A line of their own, by name: who they lost and who looks after them now.",
+    "effect": [
+      { "math": [ "pf_kl += 1" ] },
+      { "copy_var": { "u_val": "pf_lost_name" }, "target_var": { "global_val": "pf_say_b" } },
+      { "set_string_var": "the grown-ups", "target_var": { "global_val": "pf_say_c" } },
+      {
+        "if": { "math": [ "has_var(u_pf_guard_name)" ] },
+        "then": [ { "copy_var": { "u_val": "pf_guard_name" }, "target_var": { "global_val": "pf_say_c" } } ]
+      },
+      { "math": [ "_p = rand(3)" ] },
+      { "if": { "math": [ "_p == value_or(pf_kg_last, -1)" ] }, "then": [ { "math": [ "_p = (_p + 1) % 4" ] } ] },
+      { "math": [ "pf_kg_last = _p" ] },
+      {
+        "if": { "math": [ "value_or(pf_set_chatter, 1) == 1" ] },
+        "then": [
+          {
+            "if": { "math": [ "_p == 0" ] },
+            "then": [ { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "kid_grief_0" } } ]
+          },
+          {
+            "if": { "math": [ "_p == 1" ] },
+            "then": [ { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "kid_grief_1" } } ]
+          },
+          {
+            "if": { "math": [ "_p == 2" ] },
+            "then": [ { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "kid_grief_2" } } ]
+          },
+          {
+            "if": { "math": [ "_p == 3" ] },
+            "then": [ { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "kid_grief_3" } } ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FAM_kid_heal",
+    "//": "u = a child whose mourning just ended (v0.7).  A first real laugh, and a strong bond to whoever stayed (care, 70).",
+    "condition": {
+      "and": [
+        { "math": [ "has_var(u_pf_lost_t)" ] },
+        { "math": [ "value_or(u_pf_lost_healed, 0) == 0" ] },
+        { "math": [ "time('now') >= value_or(u_pf_mourn_until, 0)" ] }
+      ]
+    },
+    "effect": [
+      { "math": [ "u_pf_lost_healed = 1" ] },
+      { "math": [ "pf_kl += 1" ] },
+      {
+        "if": { "math": [ "value_or(u_pf_guard_you, 0) == 1" ] },
+        "then": [
+          {
+            "if": { "math": [ "value_or(pf_set_chatter, 1) == 1" ] },
+            "then": [ { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "kid_heal_you" } } ]
+          },
+          { "math": [ "pf_m_str_in = 70" ] },
+          { "run_eocs": "PF_MK_care_given", "alpha_talker": "avatar", "beta_talker": "u" }
+        ],
+        "else": [
+          { "math": [ "pf_find_ok = 0" ] },
+          {
+            "if": { "math": [ "has_var(u_pf_guardian)" ] },
+            "then": [
+              { "copy_var": { "u_val": "pf_guardian" }, "target_var": { "global_val": "pf_find_uid" } },
+              { "run_eocs": "PF_FIND_by_uid" }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_find_ok == 1" ] },
+            "then": [
+              { "copy_var": { "u_val": "pf_guard_name" }, "target_var": { "global_val": "pf_say_b" } },
+              {
+                "if": { "math": [ "value_or(pf_set_chatter, 1) == 1" ] },
+                "then": [ { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "kid_heal" } } ]
+              },
+              { "math": [ "pf_m_str_in = 70" ] },
+              { "run_eocs": "PF_MK_care_given", "alpha_talker": { "global_val": "pf_find_who" }, "beta_talker": "u" }
+            ],
+            "else": [
+              {
+                "if": { "math": [ "value_or(pf_set_chatter, 1) == 1" ] },
+                "then": [ { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "kid_heal_alone" } } ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FAM_kid_comfort",
+    "//": "u = a grieving child.  An adult who cares sits with them (a day less of mourning); with nobody, they sit alone.",
+    "effect": [
+      { "math": [ "pf_fm_best = -1" ] },
+      { "u_run_npc_eocs": [ "PF_FAM_comforter" ], "local": true, "npc_range": 15 },
+      { "math": [ "pf_kl += 1" ] },
+      {
+        "if": { "math": [ "pf_fm_best >= 0" ] },
+        "then": [ { "run_eocs": "PF_FAM_comfort_do", "alpha_talker": { "global_val": "pf_fm_carer" }, "beta_talker": "u" } ],
+        "else": [
+          {
+            "if": { "math": [ "value_or(pf_set_chatter, 1) == 1" ] },
+            "then": [ { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "kid_alone_grief" } } ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FAM_comforter",
+    "condition": { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+    "effect": [
+      { "copy_var": { "global_val": "pf_kid_uid" }, "target_var": { "global_val": "pf_m_other" } },
+      { "run_eocs": "PF_VIEW_read" },
+      { "math": [ "_score = pf_read_w + (u_has_trait('PF_Q_MOTHER_HEN') ? 20 : 0)" ] },
+      {
+        "if": { "and": [ { "math": [ "_score >= 10" ] }, { "math": [ "_score > pf_fm_best" ] } ] },
+        "then": [ { "math": [ "pf_fm_best = _score" ] }, { "u_set_talker": { "global_val": "pf_fm_carer" } } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FAM_comfort_do",
+    "//": "Alpha = the adult, beta = the grieving child.",
+    "effect": [
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+      { "set_string_var": "<npc_name>", "target_var": { "global_val": "pf_say_b" }, "parse_tags": true },
+      { "math": [ "n_pf_mourn_until = max(time('now'), value_or(n_pf_mourn_until, 0) - time('1 d'))" ] },
+      {
+        "if": {
+          "and": [
+            { "math": [ "value_or(pf_set_chatter, 1) == 1" ] },
+            { "math": [ "time('now') - value_or(pf_kcom_t, -999999) >= time('4 h')" ] }
+          ]
+        },
+        "then": [
+          { "math": [ "pf_kcom_t = time('now')" ] },
+          { "math": [ "pf_kcom_rot = (value_or(pf_kcom_rot, -1) + 1) % 3" ] },
+          {
+            "if": { "math": [ "pf_kcom_rot == 0" ] },
+            "then": [ { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "kid_comforted" } } ]
+          },
+          {
+            "if": { "math": [ "pf_kcom_rot == 1" ] },
+            "then": [ { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "kid_comforted_1" } } ]
+          },
+          {
+            "if": { "math": [ "pf_kcom_rot == 2" ] },
+            "then": [ { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "kid_comforted_2" } } ]
+          }
+        ]
+      },
+      { "math": [ "pf_m_str_in = 45" ] },
+      { "run_eocs": "PF_MK_care_given" }
+    ]
+  }
+]

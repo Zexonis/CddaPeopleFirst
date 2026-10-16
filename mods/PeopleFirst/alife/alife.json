@@ -1,0 +1,461 @@
+[
+  {
+    "type": "mutation",
+    "id": "PF_AGENT",
+    "name": { "str": "A-Life agent" },
+    "points": 0,
+    "purifiable": false,
+    "valid": false,
+    "player_display": false,
+    "description": "Marks a person simulated by People First's A-Life, including while outside the reality bubble."
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ALIFE_tick",
+    "//": "A-Life heartbeat.  Runs once on the avatar, then steps every band in the roster.",
+    "recurrence": [ "1 minutes", "1 minutes" ],
+    "global": true,
+    "condition": { "math": [ "value_or(pf_alife_on, 1) == 1" ] },
+    "effect": [ { "run_eocs": "PF_ALIFE_run_tick" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ALIFE_run_tick",
+    "//": "Separate from the recurring EOC so the lab can trigger a tick manually.",
+    "effect": [
+      { "u_location_variable": { "global_val": "pf_player_pos" } },
+      { "math": [ "pf_dbg_agents = 0" ] },
+      { "math": [ "pf_dbg_members = 0" ] },
+      { "math": [ "pf_dbg_spread = 0" ] },
+      { "math": [ "pf_dbg_moved = 0" ] },
+      { "math": [ "pf_dbg_failed = 0" ] },
+      { "math": [ "pf_dbg_online = 0" ] },
+      { "math": [ "pf_dbg_walks = 0" ] },
+      { "math": [ "pf_dbg_walked = 0" ] },
+      { "math": [ "pf_dbg_stuck = 0" ] },
+      { "math": [ "pf_dbg_handoffs = 0" ] },
+      { "math": [ "pf_dbg_reparks = 0" ] },
+      { "math": [ "pf_dbg_quarry = 0" ] },
+      { "math": [ "pf_dbg_quarry_fail = 0" ] },
+      { "math": [ "pf_band_i = 0" ] },
+      { "run_eocs": "PF_ALIFE_step_band", "condition": { "math": [ "pf_band_i < pf_band_n" ] }, "iterations": 100000 },
+      {
+        "run_eocs": {
+          "id": "PF_ALIFE_tick_log",
+          "condition": { "math": [ "pf_debug == 1" ] },
+          "effect": [
+            {
+              "u_message": "[A-Life] tick: <global_val:pf_dbg_agents> bands, <global_val:pf_dbg_members> members | <global_val:pf_dbg_moved> moved, <global_val:pf_dbg_failed> failed | <global_val:pf_dbg_online> online, <global_val:pf_dbg_walks> walk orders, leaders walked <global_val:pf_dbg_walked>, <global_val:pf_dbg_stuck> stuck | <global_val:pf_dbg_handoffs> handoffs, <global_val:pf_dbg_reparks> reparks | quarry <global_val:pf_dbg_quarry>, <global_val:pf_dbg_quarry_fail> failed | max spread <global_val:pf_dbg_spread> | deaths <global_val:pf_deaths_total>, successions <global_val:pf_successions_total>, dissolved <global_val:pf_dissolved_total>",
+              "type": "info"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ALIFE_step_band",
+    "//": "Steps band pf_band_i.  The roster is an array of global string vars pf_slot_<n>, each holding the unique id of that band's current leader, or 'none' once the band is gone.  var_val reads a variable whose name is built at runtime.  0.I can only reach NPCs outside the bubble by unique id, and reaching a dead id raises a debugmsg, so dead bands must read 'none'.",
+    "effect": [
+      { "set_string_var": "pf_slot_<global_val:pf_band_i>", "target_var": { "context_val": "ref" }, "parse_tags": true },
+      {
+        "if": { "not": { "compare_string": [ { "var_val": "ref" }, "none" ] } },
+        "then": [ { "u_run_npc_eocs": [ "PF_ALIFE_agent_step" ], "unique_ids": [ { "var_val": "ref" } ], "local": false } ]
+      },
+      { "math": [ "pf_band_i += 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ALIFE_register_person",
+    "//": "Reserves a unique id for a new person and writes it to pf_person_uid.  Ids are never reused: the engine never frees a unique id, and spawning with a taken id silently fails.  After spawning, run PF_ALIFE_store_uid on the NPC.",
+    "effect": [
+      {
+        "set_string_var": "PF_P_<global_val:pf_people_n>",
+        "target_var": { "global_val": "pf_person_uid" },
+        "parse_tags": true
+      },
+      { "math": [ "pf_people_n += 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ALIFE_store_uid",
+    "//": "u = the NPC just spawned with unique id pf_person_uid.  Lets it name itself later (the death hook needs this).",
+    "effect": [ { "copy_var": { "global_val": "pf_person_uid" }, "target_var": { "u_val": "pf_uid" } } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ALIFE_register_band",
+    "//": "Makes the NPC with unique id pf_band_new_leader the leader of a new band.  Writes the band's index to pf_band_new_idx.",
+    "effect": [
+      { "set_string_var": "pf_slot_<global_val:pf_band_n>", "target_var": { "context_val": "ref" }, "parse_tags": true },
+      { "copy_var": { "global_val": "pf_band_new_leader" }, "target_var": { "var_val": "ref" } },
+      { "math": [ "pf_band_new_idx = pf_band_n" ] },
+      { "math": [ "pf_band_n += 1" ] },
+      {
+        "u_run_npc_eocs": [ "PF_BAND_init_leader" ],
+        "unique_ids": [ { "global_val": "pf_band_new_leader" } ],
+        "local": false
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ALIFE_agent_step",
+    "//": "Runs with the band leader as u, wherever its body is.  Off-screen a band lives at a virtual position (u_pf_vpos) and its NPCs stay parked where they were last seen.  Never read an off-screen body's position: u_location_variable on a talker outside the bubble loads a full map (npctalk.cpp f_location_variable).  The body's spot is tracked in u_pf_body instead, and only re-read while it is inside the bubble.",
+    "condition": { "and": [ { "u_has_trait": "PF_AGENT" }, { "math": [ "value_or(u_pf_is_leader, 0) == 1" ] } ] },
+    "effect": [
+      { "math": [ "pf_dbg_agents += 1" ] },
+      {
+        "//": "Once per band, for saves from before the band id fix: 1-based id from the roster index, copied to every member (by unique id, cheap off-screen).",
+        "if": { "math": [ "value_or(u_pf_band_v2, 0) == 0" ] },
+        "then": [
+          { "math": [ "u_pf_band = pf_band_i + 1" ] },
+          { "math": [ "u_pf_band_v2 = 1" ] },
+          { "math": [ "pf_link_band = u_pf_band" ] },
+          {
+            "u_run_npc_eocs": [ { "id": "PF_BAND_mig_member", "effect": [ { "math": [ "u_pf_band = pf_link_band" ] } ] } ],
+            "unique_ids": [
+              { "u_val": "pf_member_0" },
+              { "u_val": "pf_member_1" },
+              { "u_val": "pf_member_2" },
+              { "u_val": "pf_member_3" },
+              { "u_val": "pf_member_4" }
+            ],
+            "local": false
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "has_var(u_pf_body) == 0" ] },
+        "then": [ { "u_location_variable": { "u_val": "pf_body" } } ]
+      },
+      {
+        "if": { "math": [ "distance(pf_player_pos, u_pf_body) <= pf_online_range" ] },
+        "then": [ { "u_location_variable": { "u_val": "pf_body" } } ]
+      },
+      { "copy_var": { "u_val": "pf_body" }, "target_var": { "u_val": "pf_pos" } },
+      {
+        "if": { "or": [ { "math": [ "has_var(u_pf_vpos) == 0" ] }, { "math": [ "value_or(u_pf_online, 0) == 1" ] } ] },
+        "then": [ { "copy_var": { "u_val": "pf_pos" }, "target_var": { "u_val": "pf_vpos" } } ]
+      },
+      { "math": [ "u_pf_dist_player = distance(pf_player_pos, u_pf_vpos)" ] },
+      {
+        "run_eocs": {
+          "id": "PF_ALIFE_agent_mode",
+          "condition": { "math": [ "u_pf_dist_player <= pf_online_range" ] },
+          "effect": [
+            { "math": [ "pf_dbg_online += 1" ] },
+            { "run_eocs": "PF_ALIFE_go_online" },
+            { "run_eocs": "PF_ALIFE_online_step" },
+            { "run_eocs": "PF_BAND_measure" }
+          ],
+          "false_effect": [
+            {
+              "//": "Full run day 151: the band walked out of range and its newborn (carried on a slower step) stayed in the grass near the player.  On the tick a band goes off-screen, its members (a baby in arms too) close up around the leader's last spot, still inside the bubble, so nobody is left behind.",
+              "if": { "math": [ "value_or(u_pf_online, 0) == 1" ] },
+              "then": [
+                { "math": [ "pf_band_dx = 0" ] },
+                { "math": [ "pf_band_dy = 0" ] },
+                {
+                  "if": { "math": [ "has_var(u_pf_goal)" ] },
+                  "then": [ { "math": [ "pf_band_dx = u_pf_goal.x - u_pf_body.x" ] }, { "math": [ "pf_band_dy = u_pf_goal.y - u_pf_body.y" ] } ]
+                },
+                { "run_eocs": "PF_BAND_heading" },
+                { "copy_var": { "u_val": "pf_body" }, "target_var": { "global_val": "pf_band_anchor" } },
+                { "run_eocs": "PF_BAND_members_snap" }
+              ]
+            },
+            { "math": [ "u_pf_online = 0" ] },
+            { "run_eocs": "PF_ALIFE_offline_step" },
+            { "run_eocs": "PF_ALIFE_repark" },
+            {
+              "//": "Off-screen social life (life/social.json): once a day after 20:00 the band makes camp.  rand() spreads the bands over the first minutes so they don't all run in one tick.",
+              "if": {
+                "and": [
+                  { "math": [ "time_since('midnight', 'unit': 'hours') >= 20" ] },
+                  { "math": [ "value_or(u_pf_social_day, -1) != floor(time('now') / time('1 d'))" ] },
+                  { "math": [ "rand(4) == 0" ] }
+                ]
+              },
+              "then": [ { "run_eocs": "PF_SOCIAL_band_evening" } ]
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ALIFE_check_arrival",
+    "//": "Shared by both modes: near the current waypoint, turn around.  Uses vpos, which equals the body's position while on-screen.",
+    "condition": { "math": [ "distance(u_pf_vpos, u_pf_goal) <= pf_arrive_radius" ] },
+    "effect": [ { "run_eocs": "PF_ALIFE_next_waypoint" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ALIFE_offline_step",
+    "//": "Abstract travel: one straight-line step of the band's virtual position.  Pure data, nothing in the world moves.  The step shrinks near the reality bubble so bands arrive at its edge and walk in.  Bands travel by day (06:00-21:00) and camp at night, on-screen and off: at night they stay put, so they can sit at a fire instead of walking formation past it.",
+    "condition": {
+      "and": [
+        { "math": [ "has_var(u_pf_goal)" ] },
+        {
+          "math": [ "(time_since('midnight', 'unit': 'hours') >= 6) * (time_since('midnight', 'unit': 'hours') < 21)" ]
+        }
+      ]
+    },
+    "effect": [
+      { "run_eocs": "PF_ALIFE_check_arrival" },
+      { "math": [ "_step = clamp(u_pf_dist_player - pf_online_range, 1, pf_step)" ] },
+      { "math": [ "_dx = clamp(u_pf_goal.x - u_pf_vpos.x, 0 - _step, _step)" ] },
+      { "math": [ "_dy = clamp(u_pf_goal.y - u_pf_vpos.y, 0 - _step, _step)" ] },
+      {
+        "location_variable_adjust": { "u_val": "pf_vpos" },
+        "x_adjust": { "math": [ "_dx" ] },
+        "y_adjust": { "math": [ "_dy" ] }
+      },
+      { "math": [ "pf_dbg_moved += 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ALIFE_online_step",
+    "//": "Inside the bubble the engine's own pathfinding moves the band.  The leader gets a walk order a few tiles toward the goal (u_set_guard_pos: an idle NPC walks to it, then forgets it), and members get walk orders to their formation spots around that point.  Bands travel by day (06:00-21:00) and camp at night, on-screen and off: at night they stay put, so they can sit at a fire instead of walking formation past it.",
+    "condition": {
+      "and": [
+        { "math": [ "has_var(u_pf_goal)" ] },
+        {
+          "math": [ "(time_since('midnight', 'unit': 'hours') >= 6) * (time_since('midnight', 'unit': 'hours') < 21)" ]
+        },
+        {
+          "//": "A leader who was waved over (People menu, pf_wave_until) holds the band for 30 minutes (full run: Mariano walked off with his band instead of coming).",
+          "math": [ "time('now') >= value_or(u_pf_wave_until, 0)" ]
+        },
+        {
+          "//": "Full run day 150: Golly lit a camp fire beside Dante at 19:00, everyone was seated, and the band walked on until 21:00; nobody sat down and the evening never happened.  A leader seated at tonight's fire makes camp there.",
+          "math": [ "value_or(u_pf_fire_seated, -1) != floor(time('now') / time('1 d'))" ]
+        },
+        {
+          "//": "Full run day 151: Golly took the watch over Dante, and her band set off at 06:00 while he slept.  A band with one of its own on watch for you holds camp until you wake (gen_life PF_WATCH_take sets pf_watch_band).",
+          "math": [
+            "(value_or(pf_watch_active, 0) == 0) + (value_or(pf_watch_band, 0) != value_or(u_pf_band, -1)) + (time('now') - value_or(pf_watch_t, 0) > time('12 h')) > 0"
+          ]
+        }
+      ]
+    },
+    "effect": [
+      {
+        "//": "Debug: how far the leader really walked since the last on-screen tick.",
+        "run_eocs": {
+          "id": "PF_ALIFE_measure_walk",
+          "condition": { "math": [ "has_var(u_pf_last_online_pos)" ] },
+          "effect": [
+            { "math": [ "_walked = distance(u_pf_last_online_pos, u_pf_pos)" ] },
+            { "math": [ "pf_dbg_walked += _walked" ] },
+            { "math": [ "u_pf_stuck = (_walked < 2) * (value_or(u_pf_stuck, 0) + 1)" ] },
+            { "math": [ "pf_dbg_stuck += (u_pf_stuck >= 1)" ] }
+          ]
+        }
+      },
+      { "copy_var": { "u_val": "pf_pos" }, "target_var": { "u_val": "pf_last_online_pos" } },
+      { "run_eocs": "PF_ALIFE_check_arrival" },
+      { "math": [ "pf_band_dx = clamp(u_pf_goal.x - u_pf_pos.x, 0 - pf_walk_step, pf_walk_step)" ] },
+      { "math": [ "pf_band_dy = clamp(u_pf_goal.y - u_pf_pos.y, 0 - pf_walk_step, pf_walk_step)" ] },
+      {
+        "//": "Jitter grows while the leader is stuck (a walk order that lands on a tree, in water, or behind a wall gets no path), so a blocked band tries ever wider detours.",
+        "math": [ "_j = min(1 + value_or(u_pf_stuck, 0) * 3, 12)" ]
+      },
+      {
+        "//": "Full run: bands waded through the river (walk targets landed in water), and a beaver hidden there killed a child.  Pick a dry target: re-roll up to 6 times with wider jitter; if it's still water, don't walk this tick.",
+        "math": [ "pf_ad_j = _j" ]
+      },
+      { "math": [ "pf_ad_try = 0" ] },
+      {
+        "run_eocs": {
+          "id": "PF_ALIFE_pick_dry",
+          "effect": [
+            { "math": [ "pf_ad_dx = pf_band_dx + rand(2 * pf_ad_j) - pf_ad_j" ] },
+            { "math": [ "pf_ad_dy = pf_band_dy + rand(2 * pf_ad_j) - pf_ad_j" ] },
+            {
+              "u_location_variable": { "u_val": "pf_walk_to" },
+              "x_adjust": { "math": [ "pf_ad_dx" ] },
+              "y_adjust": { "math": [ "pf_ad_dy" ] }
+            },
+            { "math": [ "pf_ad_try += 1" ] },
+            { "math": [ "pf_ad_j = min(pf_ad_j + 4, 24)" ] }
+          ]
+        },
+        "condition": {
+          "or": [ { "math": [ "pf_ad_try == 0" ] }, { "map_terrain_with_flag": "SWIMMABLE", "loc": { "u_val": "pf_walk_to" } } ]
+        },
+        "iterations": 6
+      },
+      {
+        "if": { "map_terrain_with_flag": "SWIMMABLE", "loc": { "u_val": "pf_walk_to" } },
+        "then": [ { "math": [ "u_pf_stuck = value_or(u_pf_stuck, 0) + 1" ] }, { "math": [ "pf_dbg_wet += 1" ] } ],
+        "else": [
+          { "u_set_guard_pos": { "u_val": "pf_walk_to" } },
+          { "math": [ "pf_dbg_walks += 1" ] },
+          { "run_eocs": "PF_BAND_heading" },
+          { "copy_var": { "u_val": "pf_walk_to" }, "target_var": { "global_val": "pf_band_anchor" } },
+          { "run_eocs": "PF_BAND_members_walk" }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ALIFE_next_waypoint",
+    "//": "Reached a waypoint: head for the other one, and start a fresh hunt.",
+    "effect": [
+      {
+        "run_eocs": {
+          "id": "PF_ALIFE_swap_goal",
+          "condition": { "math": [ "u_pf_goal_is_b == 1" ] },
+          "effect": [ { "copy_var": { "u_val": "pf_wp_a" }, "target_var": { "u_val": "pf_goal" } }, { "math": [ "u_pf_goal_is_b = 0" ] } ],
+          "false_effect": [ { "copy_var": { "u_val": "pf_wp_b" }, "target_var": { "u_val": "pf_goal" } }, { "math": [ "u_pf_goal_is_b = 1" ] } ]
+        }
+      },
+      { "math": [ "u_pf_quarry_spawned = 0" ] },
+      {
+        "//": "Off-screen, a finished hunt leg is shared danger for the band (life/social.json).  On-screen, real kills report it instead.",
+        "if": { "math": [ "value_or(u_pf_online, 0) == 0" ] },
+        "then": [ { "run_eocs": "PF_SOCIAL_band_hunt" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ALIFE_go_online",
+    "//": "Handoff: the band's virtual position just entered the player's range.  Place its bodies there (an in-bubble teleport, cheap), members in formation facing the line of travel, and one quarry for the whole band, ahead of it.",
+    "condition": { "math": [ "u_pf_online != 1" ] },
+    "effect": [
+      { "u_teleport": { "u_val": "pf_vpos" }, "force_safe": true },
+      { "copy_var": { "u_val": "pf_vpos" }, "target_var": { "global_val": "pf_place_at" } },
+      { "run_eocs": "PF_ALIFE_avoid_water" },
+      { "u_location_variable": { "u_val": "pf_pos" } },
+      { "copy_var": { "u_val": "pf_pos" }, "target_var": { "u_val": "pf_body" } },
+      { "copy_var": { "u_val": "pf_pos" }, "target_var": { "u_val": "pf_vpos" } },
+      { "math": [ "u_pf_online = 1" ] },
+      { "math": [ "pf_dbg_handoffs += 1" ] },
+      { "copy_var": { "u_val": "pf_pos" }, "target_var": { "u_val": "pf_last_online_pos" } },
+      {
+        "//": "-1 so the handoff tick (which measures 0 tiles walked) does not count as stuck.",
+        "math": [ "u_pf_stuck = -1" ]
+      },
+      { "math": [ "pf_band_dx = 0" ] },
+      { "math": [ "pf_band_dy = 0" ] },
+      {
+        "if": { "math": [ "has_var(u_pf_goal)" ] },
+        "then": [ { "math": [ "pf_band_dx = u_pf_goal.x - u_pf_pos.x" ] }, { "math": [ "pf_band_dy = u_pf_goal.y - u_pf_pos.y" ] } ]
+      },
+      { "run_eocs": "PF_BAND_heading" },
+      { "copy_var": { "u_val": "pf_pos" }, "target_var": { "global_val": "pf_band_anchor" } },
+      { "run_eocs": "PF_BAND_members_snap" },
+      {
+        "run_eocs": {
+          "id": "PF_ALIFE_rebuild_hunt",
+          "//": "Playtest 3: bands pacing short legs near home spawned a deer (and the line) every 20 minutes.  One quarry on screen per 2 hours, world-wide; a leg without one is just a leg.",
+          "condition": { "and": [ { "math": [ "u_pf_task == 1" ] }, { "math": [ "u_pf_quarry_spawned != 1" ] } ] },
+          "effect": [
+            { "math": [ "u_pf_quarry_spawned = 1" ] },
+            {
+              "if": { "math": [ "time('now') - value_or(pf_quarry_last_t, 0) < time('2 h')" ] },
+              "then": [ { "math": [ "pf_dbg_quarry_skip = value_or(pf_dbg_quarry_skip, 0) + 1" ] } ],
+              "else": [
+                { "math": [ "pf_quarry_last_t = time('now')" ] },
+                { "math": [ "_qx = clamp(u_pf_goal.x - u_pf_pos.x, -10, 10)" ] },
+                { "math": [ "_qy = clamp(u_pf_goal.y - u_pf_pos.y, -10, 10)" ] },
+                {
+                  "u_location_variable": { "u_val": "pf_quarry_at" },
+                  "x_adjust": { "math": [ "_qx" ] },
+                  "y_adjust": { "math": [ "_qy" ] }
+                },
+                {
+                  "u_spawn_monster": "mon_deer",
+                  "real_count": 1,
+                  "target_var": { "u_val": "pf_quarry_at" },
+                  "min_radius": 0,
+                  "max_radius": 4,
+                  "outdoor_only": true,
+                  "spawn_message": "A deer bolts from cover, hunters close behind it.",
+                  "true_eocs": [ { "id": "PF_ALIFE_quarry_ok", "effect": [ { "math": [ "pf_dbg_quarry += 1" ] } ] } ],
+                  "false_eocs": [
+                    {
+                      "id": "PF_ALIFE_quarry_fallback",
+                      "//": "The spot ahead was unusable (indoors, water, a wall).  Put the deer anywhere outdoors near the band instead.",
+                      "effect": [
+                        {
+                          "u_spawn_monster": "mon_deer",
+                          "real_count": 1,
+                          "min_radius": 6,
+                          "max_radius": 15,
+                          "outdoor_only": true,
+                          "spawn_message": "A deer bolts from cover, hunters close behind it.",
+                          "true_eocs": [ "PF_ALIFE_quarry_ok" ],
+                          "false_eocs": [ { "id": "PF_ALIFE_quarry_fail", "effect": [ { "math": [ "pf_dbg_quarry_fail += 1" ] } ] } ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ALIFE_repark",
+    "//": "Off-screen band whose parked bodies are now inside the player's range (the player walked toward where it was last seen, but the band has moved on).  Moves the bodies to the virtual position.  Expensive (a map load per NPC), but rare.",
+    "condition": { "math": [ "distance(pf_player_pos, u_pf_body) <= pf_online_range" ] },
+    "effect": [
+      { "u_teleport": { "u_val": "pf_vpos" }, "force_safe": true },
+      {
+        "//": "Full run: bands left standing in the river.  Like going online, a repark never leaves the leader in deep water.",
+        "copy_var": { "u_val": "pf_vpos" },
+        "target_var": { "global_val": "pf_place_at" }
+      },
+      { "run_eocs": "PF_ALIFE_avoid_water" },
+      { "copy_var": { "u_val": "pf_vpos" }, "target_var": { "u_val": "pf_body" } },
+      { "math": [ "pf_band_dx = 0" ] },
+      { "math": [ "pf_band_dy = -1" ] },
+      { "run_eocs": "PF_BAND_heading" },
+      { "copy_var": { "u_val": "pf_vpos" }, "target_var": { "global_val": "pf_band_anchor" } },
+      { "run_eocs": "PF_BAND_members_snap" },
+      { "math": [ "pf_dbg_reparks += 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ALIFE_avoid_water",
+    "//": "u = anyone just teleported near pf_place_at inside the reality bubble.  force_safe only avoids impassable tiles, and deep water is passable, so retry nearby spots with a widening radius until u stands out of deep water.  Never use off-screen: each off-screen teleport is a full map load.",
+    "effect": [
+      { "math": [ "u_pf_try = 0" ] },
+      {
+        "run_eocs": "PF_ALIFE_avoid_water_try",
+        "condition": { "u_is_on_terrain_with_flag": "DEEP_WATER" },
+        "iterations": 20
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ALIFE_avoid_water_try",
+    "effect": [
+      { "math": [ "u_pf_try += 1" ] },
+      { "math": [ "_r = min(4 + u_pf_try * 3, 40)" ] },
+      { "copy_var": { "global_val": "pf_place_at" }, "target_var": { "u_val": "pf_try_at" } },
+      {
+        "location_variable_adjust": { "u_val": "pf_try_at" },
+        "x_adjust": { "math": [ "rand(2 * _r) - _r" ] },
+        "y_adjust": { "math": [ "rand(2 * _r) - _r" ] }
+      },
+      { "u_teleport": { "u_val": "pf_try_at" }, "force_safe": true }
+    ]
+  }
+]

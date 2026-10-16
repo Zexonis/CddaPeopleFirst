@@ -1,0 +1,471 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FAM_on_parent_death",
+    "//": "u = a child whose parent or guardian just died (called from hearts grief).  v0.7: a living parent keeps them; they remember who they lost (pf_lost_name).  Children mourn twice as long, and the adults around them decide who takes them in, once it's calm (the playtest had Yetta comforting the babies while the zombie was still there); otherwise the 2-hourly orphan check does it later.",
+    "condition": { "u_has_trait": "PF_CHILD" },
+    "effect": [
+      {
+        "if": {
+          "or": [
+            { "compare_string": [ { "u_val": "pf_mom" }, { "global_val": "pf_dead_uid" } ] },
+            { "compare_string": [ { "u_val": "pf_dad" }, { "global_val": "pf_dead_uid" } ] },
+            { "compare_string": [ { "u_val": "pf_guardian" }, { "global_val": "pf_dead_uid" } ] }
+          ]
+        },
+        "then": [
+          { "copy_var": { "global_val": "pf_dead_name" }, "target_var": { "u_val": "pf_lost_name" } },
+          { "math": [ "u_pf_lost_t = time('now')" ] },
+          { "math": [ "u_pf_lost_healed = 0" ] },
+          { "math": [ "u_pf_mourn_until = max(value_or(u_pf_mourn_until, 0), time('now') + time('14 d'))" ] }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "u_val": "pf_guardian" }, { "global_val": "pf_dead_uid" } ] },
+        "then": [ { "set_string_var": "none", "target_var": { "u_val": "pf_guardian" } } ]
+      },
+      { "set_string_var": "none", "target_var": { "global_val": "pf_fm_other" } },
+      {
+        "if": {
+          "and": [
+            { "math": [ "has_var(u_pf_mom)" ] },
+            { "not": { "compare_string": [ { "u_val": "pf_mom" }, "none" ] } },
+            { "not": { "compare_string": [ { "u_val": "pf_mom" }, { "global_val": "pf_dead_uid" } ] } },
+            { "compare_string": [ { "global_val": "pf_fm_other" }, "none" ] }
+          ]
+        },
+        "then": [
+          { "set_string_var": "pf_reg_<u_val:pf_mom>_dead", "target_var": { "context_val": "od" }, "parse_tags": true },
+          {
+            "if": { "math": [ "value_or(v_od, 0) == 0" ] },
+            "then": [ { "copy_var": { "u_val": "pf_mom" }, "target_var": { "global_val": "pf_fm_other" } } ]
+          }
+        ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "has_var(u_pf_dad)" ] },
+            { "not": { "compare_string": [ { "u_val": "pf_dad" }, "none" ] } },
+            { "not": { "compare_string": [ { "u_val": "pf_dad" }, { "global_val": "pf_dead_uid" } ] } },
+            { "compare_string": [ { "global_val": "pf_fm_other" }, "none" ] }
+          ]
+        },
+        "then": [
+          { "set_string_var": "pf_reg_<u_val:pf_dad>_dead", "target_var": { "context_val": "od" }, "parse_tags": true },
+          {
+            "if": { "math": [ "value_or(v_od, 0) == 0" ] },
+            "then": [ { "copy_var": { "u_val": "pf_dad" }, "target_var": { "global_val": "pf_fm_other" } } ]
+          }
+        ]
+      },
+      {
+        "if": { "not": { "compare_string": [ { "global_val": "pf_fm_other" }, "none" ] } },
+        "then": [
+          { "math": [ "u_pf_needs_home = 0" ] },
+          { "math": [ "u_pf_orphaned = 0" ] },
+          { "copy_var": { "global_val": "pf_fm_other" }, "target_var": { "u_val": "pf_guardian" } },
+          {
+            "if": {
+              "and": [
+                { "math": [ "value_or(u_pf_follow, 0) == 2" ] },
+                { "compare_string": [ { "u_val": "pf_carrier" }, { "global_val": "pf_dead_uid" } ] }
+              ]
+            },
+            "then": [ { "copy_var": { "global_val": "pf_fm_other" }, "target_var": { "u_val": "pf_carrier" } } ]
+          },
+          {
+            "if": { "compare_string": [ { "global_val": "pf_fm_other" }, "AVATAR" ] },
+            "then": [ { "math": [ "u_pf_guard_you = 1" ] }, { "set_string_var": "you", "target_var": { "u_val": "pf_guard_name" } } ],
+            "else": [
+              { "math": [ "u_pf_guard_you = 0" ] },
+              {
+                "set_string_var": "pf_name_<global_val:pf_fm_other>",
+                "target_var": { "context_val": "on" },
+                "parse_tags": true
+              },
+              { "copy_var": { "var_val": "on" }, "target_var": { "u_val": "pf_guard_name" } }
+            ]
+          }
+        ],
+        "else": [
+          { "math": [ "u_pf_needs_home = 1" ] },
+          { "math": [ "u_pf_orphaned = 1" ] },
+          { "run_eocs": "PF_THREAT_scan", "alpha_talker": "avatar" },
+          { "if": { "math": [ "pf_threat == 0" ] }, "then": [ { "run_eocs": "PF_FAM_find_home" } ] }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FAM_parent_check",
+    "//": "u = someone who outlived pf_dead_uid (called for every survivor from PF_GRIEF_one).  If they're a child and the dead was their parent, guardian or band leader, they're an orphan now.",
+    "condition": {
+      "and": [
+        { "u_has_trait": "PF_CHILD" },
+        {
+          "or": [
+            { "compare_string": [ { "u_val": "pf_mom" }, { "global_val": "pf_dead_uid" } ] },
+            { "compare_string": [ { "u_val": "pf_dad" }, { "global_val": "pf_dead_uid" } ] },
+            { "compare_string": [ { "u_val": "pf_guardian" }, { "global_val": "pf_dead_uid" } ] },
+            { "compare_string": [ { "u_val": "pf_leader" }, { "global_val": "pf_dead_uid" } ] }
+          ]
+        }
+      ]
+    },
+    "effect": [ { "run_eocs": "PF_FAM_on_parent_death" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FAM_find_home",
+    "//": "u = a child who needs a home.  Every adult nearby weighs in from their own view of the child; the one who cares most takes them in (warmth plus mother hen +20, loyal +10).  Needs warmth 10: strangers walk past.",
+    "condition": { "math": [ "value_or(u_pf_needs_home, 0) == 1" ] },
+    "effect": [
+      { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_fm_kid" } },
+      { "math": [ "pf_fm_best = -1" ] },
+      { "u_run_npc_eocs": [ "PF_FAM_home_cand" ], "local": true, "npc_range": 30 },
+      {
+        "if": { "math": [ "pf_fm_best >= 0" ] },
+        "then": [ { "run_eocs": "PF_FAM_adopt", "alpha_talker": { "global_val": "pf_fm_carer" }, "beta_talker": "u" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FAM_home_cand",
+    "//": "u = an adult near the orphan.",
+    "condition": { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+    "effect": [
+      { "run_eocs": "PF_ID_ensure" },
+      { "copy_var": { "global_val": "pf_fm_kid" }, "target_var": { "global_val": "pf_m_other" } },
+      { "run_eocs": "PF_VIEW_read" },
+      { "math": [ "_score = pf_read_w" ] },
+      { "if": { "u_has_trait": "PF_Q_MOTHER_HEN" }, "then": [ { "math": [ "_score += 20" ] } ] },
+      { "if": { "u_has_trait": "PF_Q_LOYAL" }, "then": [ { "math": [ "_score += 10" ] } ] },
+      {
+        "if": {
+          "and": [
+            { "math": [ "_score >= 10" ] },
+            { "math": [ "_score > pf_fm_best" ] },
+            { "math": [ "time('now') >= value_or(u_pf_mourn_until, 0) - time('10 d')" ] },
+            { "not": { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_dead_uid" } ] } }
+          ]
+        },
+        "then": [ { "math": [ "pf_fm_best = _score" ] }, { "u_set_talker": { "global_val": "pf_fm_carer" } } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FAM_adopt",
+    "//": "Alpha = the adult, beta = the child.  The child follows their guardian from now on, leaves A-Life band control (u_pf_is_leader = 0), and both remember it (adopted: strength 80).",
+    "effect": [
+      { "run_eocs": "PF_ID_ensure" },
+      { "copy_var": { "u_val": "pf_uid" }, "target_var": { "npc_val": "pf_guardian" } },
+      {
+        "if": "u_is_avatar",
+        "then": [ { "math": [ "n_pf_guard_you = 1" ] }, { "set_string_var": "you", "target_var": { "npc_val": "pf_guard_name" } } ],
+        "else": [
+          { "math": [ "n_pf_guard_you = 0" ] },
+          { "set_string_var": "<u_name>", "target_var": { "npc_val": "pf_guard_name" }, "parse_tags": true }
+        ]
+      },
+      { "math": [ "n_pf_needs_home = 0" ] },
+      { "math": [ "n_pf_orphaned = 0" ] },
+      { "math": [ "n_pf_follow = 1" ] },
+      { "math": [ "n_pf_is_leader = 0" ] },
+      {
+        "if": { "npc_has_effect": "PF_infant" },
+        "then": [ { "math": [ "n_pf_follow = 2" ] }, { "copy_var": { "u_val": "pf_uid" }, "target_var": { "npc_val": "pf_carrier" } } ]
+      },
+      { "copy_var": { "npc_val": "pf_uid" }, "target_var": { "global_val": "pf_fm_kid" } },
+      {
+        "set_string_var": "pf_reg_<global_val:pf_fm_kid>_gd",
+        "target_var": { "context_val": "rc_gd" },
+        "parse_tags": true
+      },
+      { "copy_var": { "u_val": "pf_uid" }, "target_var": { "var_val": "rc_gd" } },
+      { "run_eocs": "PF_FAM_list_kid", "alpha_talker": "npc" },
+      { "math": [ "u_pf_kids_n = value_or(u_pf_kids_n, 0) + 1" ] },
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+      { "set_string_var": "<npc_name>", "target_var": { "global_val": "pf_say_b" }, "parse_tags": true },
+      {
+        "if": "u_is_avatar",
+        "then": [
+          { "u_location_variable": { "global_val": "pf_fm_av_at" } },
+          { "npc_location_variable": { "global_val": "pf_fm_kid_at" } },
+          {
+            "if": { "math": [ "distance(pf_fm_av_at, pf_fm_kid_at) > 3" ] },
+            "then": [
+              { "copy_var": { "global_val": "pf_fm_av_at" }, "target_var": { "npc_val": "pf_walk_to" } },
+              { "location_variable_adjust": { "npc_val": "pf_walk_to" }, "x_adjust": 1 },
+              {
+                "run_eocs": { "id": "PF_FAM_adopt_come", "effect": [ { "u_set_guard_pos": { "u_val": "pf_walk_to" } } ] },
+                "alpha_talker": "npc"
+              },
+              { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "adopt_you_far" } }
+            ],
+            "else": [ { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "adopt_you" } } ]
+          }
+        ],
+        "else": [ { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "adopt_npc" } } ]
+      },
+      { "math": [ "pf_m_str_in = 80" ] },
+      { "run_eocs": "PF_MK_adopted" },
+      { "math": [ "pf_adoptions_total = value_or(pf_adoptions_total, 0) + 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FAM_list_kid",
+    "//": "u = a child just taken in who wasn't born into our system (e.g. an A-Life band's child): gets a birth time that matches their age, and is listed for growing up.  Only A-Life persons (unique ids) can be reached by the growth tick.",
+    "effect": [
+      {
+        "if": { "not": { "math": [ "has_var(u_pf_born_t)" ] } },
+        "then": [
+          {
+            "math": [
+              "u_pf_born_t = time('now') - time('1 d') * 364 * u_val('age') / (value_or(pf_set_grow, 1) == 0 ? 1 : (value_or(pf_set_grow, 1) == 1 ? 12 : 120))"
+            ]
+          },
+          { "math": [ "u_pf_kid_stage = 1" ] },
+          {
+            "if": { "not": { "math": [ "has_var(u_pf_mom)" ] } },
+            "then": [
+              { "set_string_var": "none", "target_var": { "u_val": "pf_mom" } },
+              { "set_string_var": "none", "target_var": { "u_val": "pf_dad" } }
+            ]
+          },
+          { "math": [ "pf_fm_ki = value_or(pf_kids_n, 0) % 30" ] },
+          {
+            "set_string_var": "pf_kid_<global_val:pf_fm_ki>",
+            "target_var": { "context_val": "kr" },
+            "parse_tags": true
+          },
+          { "copy_var": { "u_val": "pf_uid" }, "target_var": { "var_val": "kr" } },
+          { "math": [ "pf_kids_n = value_or(pf_kids_n, 0) + 1" ] }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FAM_orphan_tick",
+    "//": "Every 2 hours: orphaned children in the bubble who still need a home (including children orphaned before v0.3) look for one.",
+    "recurrence": "2 hours",
+    "global": true,
+    "effect": [ { "u_run_npc_eocs": [ "PF_FAM_orphan_check" ], "local": true, "npc_range": 60 } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FAM_orphan_check",
+    "//": "u = a child in the bubble.  Needs a home if orphaned, flagged, or if whoever took them in has since died.",
+    "condition": { "u_has_trait": "PF_CHILD" },
+    "effect": [
+      { "math": [ "pf_fm_gdead = 0" ] },
+      {
+        "if": { "math": [ "has_var(u_pf_guardian)" ] },
+        "then": [
+          { "set_string_var": "pf_reg_<u_val:pf_guardian>_dead", "target_var": { "context_val": "gdd" }, "parse_tags": true },
+          {
+            "if": { "math": [ "value_or(v_gdd, 0) == 1" ] },
+            "then": [ { "math": [ "pf_fm_gdead = 1" ] }, { "set_string_var": "none", "target_var": { "u_val": "pf_guardian" } } ]
+          }
+        ]
+      },
+      {
+        "if": {
+          "and": [
+            {
+              "or": [
+                { "math": [ "value_or(u_pf_needs_home, 0) == 1" ] },
+                { "math": [ "value_or(u_pf_orphaned, 0) == 1" ] },
+                { "math": [ "pf_fm_gdead == 1" ] }
+              ]
+            },
+            {
+              "or": [ { "math": [ "has_var(u_pf_guardian) == 0" ] }, { "compare_string": [ { "u_val": "pf_guardian" }, "none" ] } ]
+            }
+          ]
+        },
+        "then": [ { "math": [ "u_pf_needs_home = 1" ] }, { "run_eocs": "PF_FAM_find_home" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FAM_you_pick_up",
+    "//": "u = you, npc = a baby (People menu: Pick them up).  They're carried by you until you set them down or hand them over.",
+    "effect": [
+      { "math": [ "n_pf_follow = 2" ] },
+      { "set_string_var": "AVATAR", "target_var": { "npc_val": "pf_carrier" } },
+      { "u_add_effect": "PF_carrying_baby", "duration": "6 minutes" },
+      { "set_string_var": "<npc_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+      { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "pick_up" } },
+      { "math": [ "pf_m_str_in = 30" ] },
+      { "run_eocs": "PF_MK_parenting" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FAM_you_set_down",
+    "//": "u = you, npc = the baby you carry (People menu: Set them down).  Their mother takes them back if she's around; otherwise they stay where you put them.  A mother who doesn't live with you counts it as care from you (70).",
+    "effect": [
+      { "math": [ "n_pf_follow = 0" ] },
+      { "set_string_var": "none", "target_var": { "npc_val": "pf_carrier" } },
+      { "u_lose_effect": "PF_carrying_baby" },
+      { "math": [ "pf_find_ok = 0" ] },
+      {
+        "if": { "not": { "compare_string": [ { "npc_val": "pf_mom" }, "AVATAR" ] } },
+        "then": [
+          { "copy_var": { "npc_val": "pf_mom" }, "target_var": { "global_val": "pf_find_uid" } },
+          { "run_eocs": "PF_FIND_by_uid" },
+          {
+            "if": { "math": [ "pf_find_ok == 1" ] },
+            "then": [
+              { "math": [ "n_pf_follow = 2" ] },
+              { "copy_var": { "npc_val": "pf_mom" }, "target_var": { "npc_val": "pf_carrier" } }
+            ]
+          }
+        ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_find_ok == 0" ] },
+            { "math": [ "has_var(n_pf_guardian)" ] },
+            { "not": { "compare_string": [ { "npc_val": "pf_guardian" }, "none" ] } },
+            { "not": { "compare_string": [ { "npc_val": "pf_guardian" }, "AVATAR" ] } }
+          ]
+        },
+        "then": [
+          { "copy_var": { "npc_val": "pf_guardian" }, "target_var": { "global_val": "pf_find_uid" } },
+          { "run_eocs": "PF_FIND_by_uid" },
+          {
+            "if": { "math": [ "pf_find_ok == 1" ] },
+            "then": [
+              { "math": [ "n_pf_follow = 2" ] },
+              { "copy_var": { "npc_val": "pf_guardian" }, "target_var": { "npc_val": "pf_carrier" } }
+            ]
+          }
+        ]
+      },
+      { "set_string_var": "<npc_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+      { "math": [ "pf_fm_hb_res = 1" ] },
+      {
+        "if": { "math": [ "(n_pf_follow == 2) * (pf_find_ok == 1)" ] },
+        "then": [
+          {
+            "run_eocs": {
+              "id": "PF_FAM_handback_mom",
+              "effect": [
+                { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_b" }, "parse_tags": true },
+                { "math": [ "pf_fm_hb_res = value_or(u_pf_resident, 0)" ] }
+              ]
+            },
+            "alpha_talker": { "global_val": "pf_find_who" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "n_pf_follow == 2" ] },
+        "then": [
+          {
+            "if": { "math": [ "pf_fm_hb_res == 0" ] },
+            "then": [
+              { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "hand_back_stranger" } },
+              { "math": [ "pf_m_str_in = 70" ] },
+              {
+                "run_eocs": "PF_MK_care_given",
+                "alpha_talker": "avatar",
+                "beta_talker": { "global_val": "pf_find_who" }
+              }
+            ],
+            "else": [ { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "hand_back" } } ]
+          }
+        ],
+        "else": [ { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "set_down" } } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FAM_you_take_hand",
+    "//": "u = you, npc = a toddler (People menu: Take their hand).  They stay at your side until you let go.",
+    "effect": [
+      { "math": [ "n_pf_follow = 2" ] },
+      { "set_string_var": "AVATAR", "target_var": { "npc_val": "pf_carrier" } },
+      { "set_string_var": "<npc_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+      { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "take_hand" } },
+      { "math": [ "pf_m_str_in = 30" ] },
+      { "run_eocs": "PF_MK_parenting" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FAM_you_let_go",
+    "//": "u = you, npc = the toddler whose hand you hold.  Back to following their family.",
+    "effect": [
+      { "math": [ "n_pf_follow = 1" ] },
+      { "set_string_var": "none", "target_var": { "npc_val": "pf_carrier" } },
+      { "set_string_var": "<npc_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+      { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "let_go" } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FAM_you_teach",
+    "//": "u = you, npc = a child (People menu: Teach them something).  You show them something you know better than they do (survival, fabrication, cooking, first aid, tailoring or mechanics), once a day per child, up to level 4.",
+    "effect": [
+      { "math": [ "pf_tk_done = 0" ] },
+      { "math": [ "pf_tk_s = rand(5)" ] },
+      { "math": [ "pf_tk_i = 0" ] },
+      {
+        "if": {
+          "not": { "or": [ { "math": [ "time_since(n_pf_taught_t) < 0" ] }, { "math": [ "time_since(n_pf_taught_t) > time('1 d')" ] } ] }
+        },
+        "then": [ { "math": [ "pf_tk_i = 6" ] } ]
+      },
+      {
+        "run_eocs": "PF_FAM_teach_try",
+        "condition": { "and": [ { "math": [ "pf_tk_i < 6" ] }, { "math": [ "pf_tk_done == 0" ] } ] },
+        "iterations": 7
+      },
+      {
+        "if": { "math": [ "pf_tk_done == 1" ] },
+        "then": [
+          { "math": [ "n_pf_taught_t = time('now')" ] },
+          { "set_string_var": "<npc_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+          { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "teach_you" } }
+        ],
+        "else": [
+          { "set_string_var": "<npc_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+          { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "teach_none" } }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ENGINE_name_baby",
+    "//": "u = a newborn, pf_fm_mom / pf_fm_dad = the parents.  Stock build: the baby keeps the name the game gave it.  The People First Engine mod overrides this: you name your own baby (family name from you), and an NPC couple's baby takes its mother's surname.",
+    "effect": [  ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ENGINE_name_adoptee",
+    "//": "u = you, npc = the child you just took in.  Stock build: they keep their name.  The People First Engine mod overrides this with a naming prompt.",
+    "effect": [  ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FAM_you_take_in",
+    "//": "u = you, npc = an orphan (People menu: Take them in).",
+    "effect": [
+      { "run_eocs": "PF_ID_ensure" },
+      { "run_eocs": "PF_FAM_adopt", "beta_talker": "npc" },
+      { "run_eocs": "PF_ENGINE_name_adoptee", "beta_talker": "npc" }
+    ]
+  }
+]

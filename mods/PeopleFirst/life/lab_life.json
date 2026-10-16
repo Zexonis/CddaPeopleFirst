@@ -1,0 +1,717 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LL_open",
+    "effect": [
+      {
+        "run_eoc_selector": [
+          "PF_LL_care",
+          "PF_LL_fire",
+          "PF_LL_gather",
+          "PF_LL_step",
+          "PF_LL_sleep",
+          "PF_LL_wake",
+          "PF_LL_gallows",
+          "PF_LL_throwup",
+          "PF_LL_neardeath",
+          "PF_LL_hurt",
+          "PF_LL_beat",
+          "PF_LL_keep",
+          "PF_LL_waste",
+          "PF_LL_hateswaste",
+          "PF_LL_kill_npc",
+          "PF_LL_save_npc",
+          "PF_LL_kill_me",
+          "PF_LL_bandeve",
+          "PF_LL_grief",
+          "PF_LL_fall",
+          "PF_LL_couple",
+          "PF_LL_stats",
+          "PF_LL_hearts",
+          "PF_LL_family",
+          "PF_LL_home",
+          "PF_LL_reset"
+        ],
+        "names": [
+          "Care: I'm cold (care check now)",
+          "Fire: light a campfire 3 tiles east",
+          "Fire: start tonight's evening now (ignores the clock)",
+          "Fire: advance the evening one tick (as if 20 minutes passed)",
+          "Watch: I fall asleep",
+          "Watch: I wake up",
+          "Friction: give everyone within 10 tiles gallows humor",
+          "Friction: I throw up",
+          "Witness: I nearly die (in front of everyone)",
+          "Wounds: I'm bitten and bleeding (tend check now)",
+          "Fire: run the evening beat now",
+          "Fire: the next activity is a carving with a keepsake",
+          "Waste: I quick-butcher a corpse (signal)",
+          "Waste: give everyone within 10 tiles 'hates waste'",
+          "Combat: the nearest person kills the thing on me",
+          "Combat: I kill the thing on the nearest person",
+          "Combat: I kill something",
+          "Social: every band spends 10 evenings together (off-screen camp)",
+          "Social: the nearest band member (not a leader, not a child) dies",
+          "Romance: the nearest person falls for you (attraction 65)",
+          "Romance: two nearby adults fall for each other",
+          "Stats: what has happened so far",
+          "Hearts lab (v0.2): couples, jealousy, burial",
+          "Family lab (v0.3): pregnancy, babies, growing up, orphans",
+          "Home lab (v0.4): evenings at home, breakfast, residents, the world",
+          "Reset all cooldowns"
+        ],
+        "descriptions": [
+          "Gives you the cold effect and runs the care check immediately.",
+          "Builds a fire ring 3 tiles east of you, clears the grass around it, and lights it.",
+          "Resets tonight's evening and advances it once: people sit down if it's calm.",
+          "One evening tick: scatter if there's trouble, sit back down if it's calm again, or run the evening if people have been seated long enough.",
+          "Runs the falling-asleep signal (someone takes the watch).",
+          "Runs the waking signal (the watcher's night counts).",
+          "So the tease test has a teaser.",
+          "Runs the throw-up signal for you (someone with gallows humor teases you).",
+          "Reports a near_death moment of strength 70; everyone who can see you remembers it.",
+          "Bites and bleeds you a little, then runs the wound check (needs no hostiles within 15 tiles).",
+          "Runs the evening itself immediately (no threat check).",
+          "The first person to do something at the next evening whittles, and the carving is for you.",
+          "Runs the butchery signal as if you quick-butchered something.  Needs someone who hates waste nearby.",
+          "So the waste test has a witness.",
+          "You're hurt; the nearest NPC (within 5 tiles) kills something next to you.  Tests shared danger and being saved (with the running score).",
+          "The nearest NPC (within 5 tiles) is hurt and you kill something next to them.  Tests you saving them, and the running score.",
+          "Runs the kill signal with you as the killer.  Everyone within 8 tiles shares the danger.",
+          "Runs the off-screen band evening 10 times for every band in the roster, wherever it is, ignoring the clock.  Then check a band member's views in the People menu.",
+          "Kills the nearest adult A-Life band member within 10 tiles, so you can see who grieves and hear them speak of it at the fire.",
+          "Sets the nearest NPC's attraction and warmth toward you high enough to confess at the next fire, if their nature allows it.  Shows their romantic nature.",
+          "The two nearest adult NPCs within 10 tiles get attraction 65 and warmth 40 toward each other, so one may confess at the next fire.",
+          "Counters from the whole run: moments, memories, off-screen band camps and hunts, couples, rejections, grief.",
+          "Opens the v0.2 test menu.",
+          "Opens the v0.3 test menu.",
+          "Opens the v0.4 test menu.",
+          "Care, tease, meal, near-death and tonight's fire."
+        ],
+        "keys": [
+          "a",
+          "b",
+          "c",
+          "d",
+          "e",
+          "f",
+          "g",
+          "h",
+          "i",
+          "j",
+          "k",
+          "l",
+          "m",
+          "n",
+          "o",
+          "p",
+          "q",
+          "r",
+          "s",
+          "t",
+          "u",
+          "v",
+          "w",
+          "x",
+          "y",
+          "z"
+        ],
+        "title": "Life lab (v0.1)",
+        "allow_cancel": true
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LL_care",
+    "effect": [
+      { "u_add_effect": "cold", "duration": "30 minutes" },
+      { "math": [ "pf_care_last = -1" ] },
+      { "run_eocs": "PF_CARE_check" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LL_fire",
+    "effect": [
+      { "u_location_variable": { "global_val": "pf_ll_fire" }, "x_adjust": 3 },
+      {
+        "u_transform_radius": 2,
+        "ter_furn_transform": "PF_LL_clear_grass",
+        "target_var": { "global_val": "pf_ll_fire" }
+      },
+      {
+        "u_transform_radius": 0,
+        "ter_furn_transform": "PF_LL_firering",
+        "target_var": { "global_val": "pf_ll_fire" }
+      },
+      { "map_spawn_item": "log", "loc": { "global_val": "pf_ll_fire" }, "count": 3 },
+      {
+        "u_set_field": "fd_fire",
+        "radius": 0,
+        "intensity": 2,
+        "age": "0 seconds",
+        "hit_player": false,
+        "target_var": { "global_val": "pf_ll_fire" }
+      },
+      { "u_message": "[lab] A campfire crackles to life.", "type": "info" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LL_gather",
+    "effect": [
+      { "math": [ "pf_eve_day = floor(time('now') / time('1 d'))" ] },
+      { "math": [ "pf_eve_state = 0" ] },
+      { "math": [ "pf_eve_done_day = -1" ] },
+      { "math": [ "pf_eve_fought = 0" ] },
+      {
+        "u_location_variable": { "global_val": "pf_fire_loc" },
+        "field": "fd_fire",
+        "target_max_radius": 15,
+        "true_eocs": [ "PF_FIRE_step" ],
+        "false_eocs": [ { "id": "PF_LL_nofire", "effect": [ { "u_message": "[lab] No fire within 15 tiles.", "type": "info" } ] } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LL_step",
+    "effect": [
+      { "math": [ "pf_eve_seat_t = time('now') - time('20 m')" ] },
+      {
+        "u_location_variable": { "global_val": "pf_fire_loc" },
+        "field": "fd_fire",
+        "target_max_radius": 15,
+        "true_eocs": [ "PF_FIRE_step" ],
+        "false_eocs": [ "PF_LL_nofire" ]
+      },
+      { "run_eocs": "PF_THREAT_scan" },
+      { "u_message": "[lab] Evening state <global_val:pf_eve_state>, threat <global_val:pf_threat>.", "type": "info" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LL_sleep",
+    "effect": [ { "run_eocs": "PF_WATCH_on_sleep" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LL_wake",
+    "effect": [ { "run_eocs": "PF_WATCH_on_wake" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LL_gallows",
+    "effect": [
+      {
+        "u_run_npc_eocs": [ { "id": "PF_LL_gallows_one", "effect": [ { "run_eocs": "PF_ID_ensure" }, { "u_add_trait": "PF_Q_GALLOWS" } ] } ],
+        "local": true,
+        "npc_range": 10
+      },
+      { "u_message": "[lab] Everyone nearby now has gallows humor.", "type": "info" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LL_throwup",
+    "effect": [ { "math": [ "pf_tease_last = -1" ] }, { "run_eocs": "PF_TEASE_on_throwup" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LL_neardeath",
+    "effect": [
+      { "math": [ "pf_m_str_in = 70" ] },
+      { "run_eocs": "PF_MK_near_death" },
+      { "u_message": "[lab] You stagger, nearly going down.  People saw.", "type": "info" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LL_hurt",
+    "effect": [
+      { "u_add_effect": "bite", "duration": "1 hours", "target_part": "torso" },
+      { "u_add_effect": "bleed", "duration": "10 minutes", "target_part": "torso" },
+      { "math": [ "u_hp('torso') = u_hp_max('torso') * 0.7" ] },
+      { "math": [ "pf_wound_last = -1" ] },
+      { "run_eocs": "PF_WOUND_tick" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LL_beat",
+    "effect": [ { "run_eocs": "PF_FIRE_beat" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LL_keep",
+    "effect": [
+      { "math": [ "pf_keep_force = 1" ] },
+      { "u_message": "[lab] Someone will carve you something tonight.", "type": "info" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LL_waste",
+    "effect": [
+      { "math": [ "pf_waste_last = -1" ] },
+      { "run_eocs": "PF_WASTE_on_butcher", "variables": { "butcher_type": "ACT_BUTCHER" } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LL_hateswaste",
+    "effect": [
+      {
+        "u_run_npc_eocs": [ { "id": "PF_LL_hw_one", "effect": [ { "run_eocs": "PF_ID_ensure" }, { "u_add_trait": "PF_Q_HATES_WASTE" } ] } ],
+        "local": true,
+        "npc_range": 10
+      },
+      { "u_message": "[lab] Everyone nearby now hates waste.", "type": "info" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LL_kill_npc",
+    "effect": [
+      { "math": [ "u_hp('torso') = min(u_hp('torso'), u_hp_max('torso') * 0.55)" ] },
+      { "math": [ "u_pf_saved_last = -1" ] },
+      { "u_location_variable": { "global_val": "pf_ll_vpos" } },
+      { "run_eocs": "PF_LL_nearest" },
+      {
+        "if": { "math": [ "pf_ll_kd < 99" ] },
+        "then": [ { "run_eocs": "PF_LL_kill_one", "alpha_talker": { "global_val": "pf_ll_kwho" } } ],
+        "else": [ { "u_message": "[lab] Nobody within 5 tiles.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LL_save_npc",
+    "effect": [
+      { "u_location_variable": { "global_val": "pf_ll_kav" } },
+      { "run_eocs": "PF_LL_nearest" },
+      {
+        "if": { "math": [ "pf_ll_kd < 99" ] },
+        "then": [
+          { "run_eocs": "PF_LL_hurt_one", "alpha_talker": { "global_val": "pf_ll_kwho" } },
+          { "math": [ "u_pf_kill_last = -1" ] },
+          { "run_eocs": "PF_COMBAT_kill", "variables": { "lab_victim": "set" } }
+        ],
+        "else": [ { "u_message": "[lab] Nobody within 5 tiles.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LL_nearest",
+    "effect": [
+      { "math": [ "pf_ll_kd = 99" ] },
+      { "u_location_variable": { "global_val": "pf_ll_kav" } },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_LL_kill_near",
+            "effect": [
+              { "u_location_variable": { "u_val": "pf_pos" } },
+              {
+                "if": { "math": [ "distance(u_pf_pos, pf_ll_kav) < pf_ll_kd" ] },
+                "then": [ { "math": [ "pf_ll_kd = distance(u_pf_pos, pf_ll_kav)" ] }, { "u_set_talker": { "global_val": "pf_ll_kwho" } } ]
+              }
+            ]
+          }
+        ],
+        "local": true,
+        "npc_range": 5
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LL_hurt_one",
+    "effect": [
+      { "math": [ "u_hp('torso') = min(u_hp('torso'), u_hp_max('torso') * 0.5)" ] },
+      { "math": [ "u_pf_saved_last = -1" ] },
+      { "u_location_variable": { "global_val": "pf_ll_vpos" } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LL_kill_one",
+    "effect": [ { "math": [ "u_pf_kill_last = -1" ] }, { "run_eocs": "PF_COMBAT_kill", "variables": { "lab_victim": "set" } } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LL_kill_me",
+    "effect": [
+      { "math": [ "u_pf_kill_last = -1" ] },
+      { "run_eocs": "PF_COMBAT_kill" },
+      { "u_message": "[lab] You put the thing down.", "type": "info" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LL_bandeve",
+    "effect": [
+      { "math": [ "pf_ll_rep = 0" ] },
+      { "run_eocs": "PF_LL_bandeve_all", "condition": { "math": [ "pf_ll_rep < 10" ] }, "iterations": 11 },
+      { "u_message": "[lab] <global_val:pf_social_evenings_total> band evenings so far.", "type": "info" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LL_bandeve_all",
+    "effect": [
+      { "math": [ "pf_band_i = 0" ] },
+      { "run_eocs": "PF_LL_bandeve_one", "condition": { "math": [ "pf_band_i < pf_band_n" ] }, "iterations": 1000 },
+      { "math": [ "pf_ll_rep += 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LL_bandeve_one",
+    "effect": [
+      { "set_string_var": "pf_slot_<global_val:pf_band_i>", "target_var": { "context_val": "ref" }, "parse_tags": true },
+      {
+        "if": { "not": { "compare_string": [ { "var_val": "ref" }, "none" ] } },
+        "then": [ { "u_run_npc_eocs": [ "PF_SOCIAL_band_evening" ], "unique_ids": [ { "var_val": "ref" } ], "local": false } ]
+      },
+      { "math": [ "pf_band_i += 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LL_grief",
+    "effect": [
+      { "math": [ "pf_ll_kd = 99" ] },
+      { "u_location_variable": { "global_val": "pf_ll_kav" } },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_LL_grief_near",
+            "condition": {
+              "and": [
+                { "u_has_trait": "PF_AGENT" },
+                { "not": { "u_has_trait": "PF_CHILD" } },
+                { "math": [ "value_or(u_pf_is_leader, 0) == 0" ] },
+                { "math": [ "value_or(u_pf_band, 0) > 0" ] },
+                { "math": [ "value_or(u_pf_resident, 0) == 0" ] }
+              ]
+            },
+            "effect": [
+              { "u_location_variable": { "u_val": "pf_pos" } },
+              {
+                "if": { "math": [ "distance(u_pf_pos, pf_ll_kav) < pf_ll_kd" ] },
+                "then": [ { "math": [ "pf_ll_kd = distance(u_pf_pos, pf_ll_kav)" ] }, { "u_set_talker": { "global_val": "pf_ll_kwho" } } ]
+              }
+            ]
+          }
+        ],
+        "local": true,
+        "npc_range": 10
+      },
+      {
+        "if": { "math": [ "pf_ll_kd < 99" ] },
+        "then": [
+          { "run_eocs": { "id": "PF_LL_grief_die", "effect": [ "u_die" ] }, "alpha_talker": { "global_val": "pf_ll_kwho" } },
+          { "u_message": "[lab] Someone is gone.  Grieving: <global_val:pf_grief_total> so far.", "type": "info" }
+        ],
+        "else": [ { "u_message": "[lab] No adult band member within 10 tiles.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LL_fall",
+    "effect": [
+      { "u_location_variable": { "global_val": "pf_ll_kav" } },
+      { "run_eocs": "PF_LL_nearest" },
+      {
+        "if": { "math": [ "pf_ll_kd < 99" ] },
+        "then": [
+          { "run_eocs": "PF_LL_fall_one", "alpha_talker": { "global_val": "pf_ll_kwho" } },
+          {
+            "u_message": "[lab] The nearest adult now feels strongly about you (children are never affected).",
+            "type": "info"
+          }
+        ],
+        "else": [ { "u_message": "[lab] Nobody within 5 tiles.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LL_fall_one",
+    "effect": [
+      { "run_eocs": "PF_ID_ensure" },
+      { "set_string_var": "AVATAR", "target_var": { "global_val": "pf_m_other" } },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_w",
+        "target_var": { "context_val": "rw" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_t",
+        "target_var": { "context_val": "rt" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_x",
+        "target_var": { "context_val": "rx" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_pw",
+        "target_var": { "context_val": "rpw" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_pt",
+        "target_var": { "context_val": "rpt" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_l",
+        "target_var": { "context_val": "rl" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_a",
+        "target_var": { "context_val": "ra" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_pa",
+        "target_var": { "context_val": "rpa" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_c",
+        "target_var": { "context_val": "rc" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_f",
+        "target_var": { "context_val": "rf" },
+        "parse_tags": true
+      },
+      { "math": [ "v_ra = 65" ] },
+      { "math": [ "v_rpa = 65" ] },
+      { "math": [ "v_rw = max(v_rw, 40)" ] },
+      { "math": [ "v_rpw = max(v_rpw, 40)" ] },
+      { "math": [ "u_pf_conf_last = -1" ] },
+      { "math": [ "u_pf_awk_until = 0" ] },
+      {
+        "if": { "math": [ "value_or(u_pf_rom, 0) == 0" ] },
+        "then": [ { "math": [ "u_pf_rom = 1" ] }, { "math": [ "u_pf_orient = 2" ] } ]
+      },
+      {
+        "if": { "u_has_trait": "PF_CHILD" },
+        "then": [ { "u_message": "[lab] That's a child.  Romance never applies to children.", "type": "info" } ],
+        "else": [
+          {
+            "u_message": "[lab] <u_name> now feels strongly about you (and was made romantic and drawn to everyone, for the test).",
+            "type": "info"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LL_couple",
+    "effect": [
+      { "math": [ "pf_ll_cn = 0" ] },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_LL_couple_pick",
+            "condition": {
+              "and": [
+                { "math": [ "pf_ll_cn < 2" ] },
+                { "not": { "u_has_trait": "PF_CHILD" } },
+                { "math": [ "u_val('age') >= 18" ] },
+                { "math": [ "value_or(u_pf_has_sweet, 0) == 0" ] }
+              ]
+            },
+            "effect": [
+              { "run_eocs": "PF_ID_ensure" },
+              {
+                "set_string_var": "pf_ll_c_<global_val:pf_ll_cn>",
+                "target_var": { "context_val": "cref" },
+                "parse_tags": true
+              },
+              { "copy_var": { "u_val": "pf_uid" }, "target_var": { "var_val": "cref" } },
+              { "math": [ "pf_ll_cn += 1" ] }
+            ]
+          }
+        ],
+        "local": true,
+        "npc_range": 10
+      },
+      {
+        "if": { "math": [ "pf_ll_cn == 2" ] },
+        "then": [
+          { "u_run_npc_eocs": [ "PF_LL_couple_set" ], "local": true, "npc_range": 10 },
+          { "u_message": "[lab] Two people are falling for each other.", "type": "info" }
+        ],
+        "else": [ { "u_message": "[lab] Need two adults within 10 tiles.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LL_couple_set",
+    "effect": [
+      {
+        "if": { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_ll_c_0" } ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_ll_c_1" }, "target_var": { "global_val": "pf_m_other" } },
+          { "run_eocs": "PF_LL_couple_view" }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_ll_c_1" } ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_ll_c_0" }, "target_var": { "global_val": "pf_m_other" } },
+          { "run_eocs": "PF_LL_couple_view" }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LL_couple_view",
+    "effect": [
+      { "set_string_var": "u_pf_v_<global_val:pf_m_other>_w", "target_var": { "context_val": "rw" }, "parse_tags": true },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_t",
+        "target_var": { "context_val": "rt" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_x",
+        "target_var": { "context_val": "rx" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_pw",
+        "target_var": { "context_val": "rpw" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_pt",
+        "target_var": { "context_val": "rpt" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_l",
+        "target_var": { "context_val": "rl" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_a",
+        "target_var": { "context_val": "ra" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_pa",
+        "target_var": { "context_val": "rpa" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_c",
+        "target_var": { "context_val": "rc" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_f",
+        "target_var": { "context_val": "rf" },
+        "parse_tags": true
+      },
+      {
+        "if": { "math": [ "value_or(v_rl, -1) < 0" ] },
+        "then": [
+          { "math": [ "v_rl = time('now')" ] },
+          { "math": [ "v_rt = 0" ] },
+          { "math": [ "v_rx = 0" ] },
+          { "math": [ "v_rpt = 0" ] },
+          { "math": [ "v_rc = 0.5" ] },
+          { "math": [ "v_rf = 1" ] }
+        ]
+      },
+      { "math": [ "v_ra = 65" ] },
+      { "math": [ "v_rpa = 65" ] },
+      { "math": [ "v_rw = max(value_or(v_rw, 0), 40)" ] },
+      { "math": [ "v_rpw = max(value_or(v_rpw, 0), 40)" ] },
+      { "math": [ "u_pf_rom = 1" ] },
+      { "math": [ "u_pf_orient = 2" ] },
+      { "math": [ "u_pf_conf_last = -1" ] },
+      { "math": [ "u_pf_awk_until = 0" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LL_stats",
+    "effect": [
+      { "math": [ "pf_st_a = value_or(pf_moments_total, 0)" ] },
+      { "math": [ "pf_st_b = value_or(pf_memories_total, 0)" ] },
+      { "math": [ "pf_st_c = value_or(pf_social_evenings_total, 0)" ] },
+      { "math": [ "pf_st_d = value_or(pf_social_hunts_total, 0)" ] },
+      { "math": [ "pf_st_e = value_or(pf_couples_total, 0)" ] },
+      { "math": [ "pf_st_f = value_or(pf_rejections_total, 0)" ] },
+      { "math": [ "pf_st_g = value_or(pf_grief_total, 0)" ] },
+      { "math": [ "pf_st_h = value_or(pf_eve_state, 0)" ] },
+      {
+        "u_message": "[stats] moments <global_val:pf_st_a>, memories kept <global_val:pf_st_b>, band camps <global_val:pf_st_c>, band hunts <global_val:pf_st_d>, couples <global_val:pf_st_e>, rejections <global_val:pf_st_f>, grieving <global_val:pf_st_g>, tonight's evening state <global_val:pf_st_h>.",
+        "type": "info"
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LL_hearts",
+    "effect": [ { "run_eocs": "PF_HL_open" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LL_family",
+    "effect": [ { "run_eocs": "PF_FL_open" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LL_home",
+    "effect": [ { "run_eocs": "PF_HML_open" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LL_reset",
+    "effect": [
+      { "math": [ "pf_care_last = -1" ] },
+      { "math": [ "pf_tease_last = -1" ] },
+      { "math": [ "pf_meal_last = -1" ] },
+      { "math": [ "pf_neardeath_last = -1" ] },
+      { "math": [ "pf_eve_done_day = -1" ] },
+      { "math": [ "pf_eve_state = 0" ] },
+      { "math": [ "pf_wound_last = -1" ] },
+      { "math": [ "u_pf_saved_last = -1" ] },
+      { "math": [ "pf_waste_last = -1" ] },
+      { "u_message": "[lab] Cooldowns reset.", "type": "info" }
+    ]
+  },
+  {
+    "type": "ter_furn_transform",
+    "id": "PF_LL_clear_grass",
+    "terrain": [
+      {
+        "result": "t_dirt",
+        "valid_terrain": [ "t_grass", "t_grass_dead", "t_grass_golf", "t_grass_grazed", "t_grass_long", "t_grass_tall", "t_grass_white" ]
+      }
+    ]
+  },
+  {
+    "type": "ter_furn_transform",
+    "id": "PF_LL_firering",
+    "furniture": [ { "result": "f_firering", "valid_furniture": [ "f_null" ] } ]
+  }
+]

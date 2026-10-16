@@ -1,0 +1,18 @@
+[
+  {
+    "type": "json_flag",
+    "id": "PF_SWAP",
+    "//": "People First: walking into someone with this flag swaps places (engine patch; does nothing on a stock build)."
+  },
+  {
+    "type": "mutation",
+    "id": "PF_PERSON",
+    "name": { "str": "Known to People First" },
+    "points": 0,
+    "purifiable": false,
+    "valid": false,
+    "player_display": false,
+    "description": "Someone People First keeps track of.  You can swap places with them by walking into them (with the People First engine build).",
+    "flags": [ "PF_SWAP" ]
+  }
+]

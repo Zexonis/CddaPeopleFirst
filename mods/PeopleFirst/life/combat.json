@@ -1,0 +1,167 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_COMBAT_kill",
+    "//": "Bottom-up signal: someone kills a monster (alpha = killer, beta = the dead monster).  (1) A fight breaks up the fire.  (2) Everyone fighting within 8 tiles shared the danger with the killer (once per fight: 10 minutes per killer).  (3) Anyone the thing was on (within 1 tile of it) who was hurt, grabbed, or hit by a monster in the last minute (PF_RK_hurt) was saved by the killer, whoever they are: NPC saves you, you save an NPC, NPC saves NPC.",
+    "eoc_type": "EVENT",
+    "required_event": "character_kills_monster",
+    "condition": { "and": [ "has_alpha", { "or": [ "u_is_avatar", "u_is_npc" ] } ] },
+    "effect": [
+      { "run_eocs": "PF_ID_ensure" },
+      { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_kill_uid" } },
+      { "u_set_talker": { "global_val": "pf_kill_who" } },
+      { "u_location_variable": { "global_val": "pf_kill_pos" } },
+      { "copy_var": { "global_val": "pf_kill_pos" }, "target_var": { "global_val": "pf_kill_mpos" } },
+      { "if": "has_beta", "then": [ { "npc_location_variable": { "global_val": "pf_kill_mpos" } } ] },
+      {
+        "if": { "compare_string": [ { "context_val": "lab_victim" }, "set" ] },
+        "then": [ { "copy_var": { "global_val": "pf_ll_vpos" }, "target_var": { "global_val": "pf_kill_mpos" } } ]
+      },
+      {
+        "if": { "math": [ "value_or(pf_eve_state, 0) == 1" ] },
+        "then": [ { "run_eocs": "PF_FIRE_scatter", "alpha_talker": "avatar" } ]
+      },
+      {
+        "if": {
+          "or": [ { "math": [ "time_since(u_pf_kill_last) < 0" ] }, { "math": [ "time_since(u_pf_kill_last) > time('10 m')" ] } ]
+        },
+        "then": [
+          { "math": [ "u_pf_kill_last = time('now')" ] },
+          { "u_run_npc_eocs": [ "PF_COMBAT_comrade" ], "local": true, "npc_range": 8 },
+          {
+            "if": { "not": "u_is_avatar" },
+            "then": [ { "run_eocs": "PF_COMBAT_comrade_avatar", "alpha_talker": "avatar" } ]
+          }
+        ]
+      },
+      { "run_eocs": "PF_COMBAT_rescue_check", "alpha_talker": "avatar" },
+      { "u_run_npc_eocs": [ "PF_COMBAT_rescue_check" ], "local": true, "npc_range": 30 }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_COMBAT_comrade_avatar",
+    "//": "u = avatar, when an NPC made the kill.",
+    "effect": [
+      { "u_location_variable": { "global_val": "pf_kill_av_pos" } },
+      {
+        "if": { "math": [ "distance(pf_kill_av_pos, pf_kill_pos) <= 8" ] },
+        "then": [ { "run_eocs": "PF_MK_shared_danger", "alpha_talker": { "global_val": "pf_kill_who" }, "beta_talker": "u" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_COMBAT_comrade",
+    "//": "u = someone within 8 tiles of the killer (not the killer).",
+    "effect": [
+      { "run_eocs": "PF_ID_ensure" },
+      {
+        "if": { "not": { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_kill_uid" } ] } },
+        "then": [ { "run_eocs": "PF_MK_shared_danger", "alpha_talker": { "global_val": "pf_kill_who" }, "beta_talker": "u" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_COMBAT_rescue_check",
+    "//": "u = you or a nearby NPC.  Were they the one the thing was on, and in trouble?",
+    "condition": {
+      "and": [
+        {
+          "or": [
+            {
+              "or": [
+                { "math": [ "u_hp('torso') <= u_hp_max('torso') * 0.8" ] },
+                { "math": [ "u_hp('head') <= u_hp_max('head') * 0.8" ] },
+                { "math": [ "u_hp('arm_l') <= u_hp_max('arm_l') * 0.8" ] },
+                { "math": [ "u_hp('arm_r') <= u_hp_max('arm_r') * 0.8" ] },
+                { "math": [ "u_hp('leg_l') <= u_hp_max('leg_l') * 0.8" ] },
+                { "math": [ "u_hp('leg_r') <= u_hp_max('leg_r') * 0.8" ] },
+                {
+                  "or": [
+                    { "u_has_effect": "bleed", "bodypart": "torso" },
+                    { "u_has_effect": "bleed", "bodypart": "head" },
+                    { "u_has_effect": "bleed", "bodypart": "eyes" },
+                    { "u_has_effect": "bleed", "bodypart": "mouth" },
+                    { "u_has_effect": "bleed", "bodypart": "arm_l" },
+                    { "u_has_effect": "bleed", "bodypart": "arm_r" },
+                    { "u_has_effect": "bleed", "bodypart": "hand_l" },
+                    { "u_has_effect": "bleed", "bodypart": "hand_r" },
+                    { "u_has_effect": "bleed", "bodypart": "leg_l" },
+                    { "u_has_effect": "bleed", "bodypart": "leg_r" },
+                    { "u_has_effect": "bleed", "bodypart": "foot_l" },
+                    { "u_has_effect": "bleed", "bodypart": "foot_r" },
+                    { "u_has_effect": "bite", "bodypart": "torso" },
+                    { "u_has_effect": "bite", "bodypart": "head" },
+                    { "u_has_effect": "bite", "bodypart": "eyes" },
+                    { "u_has_effect": "bite", "bodypart": "mouth" },
+                    { "u_has_effect": "bite", "bodypart": "arm_l" },
+                    { "u_has_effect": "bite", "bodypart": "arm_r" },
+                    { "u_has_effect": "bite", "bodypart": "hand_l" },
+                    { "u_has_effect": "bite", "bodypart": "hand_r" },
+                    { "u_has_effect": "bite", "bodypart": "leg_l" },
+                    { "u_has_effect": "bite", "bodypart": "leg_r" },
+                    { "u_has_effect": "bite", "bodypart": "foot_l" },
+                    { "u_has_effect": "bite", "bodypart": "foot_r" },
+                    { "u_has_effect": "bleed" },
+                    { "u_has_effect": "bite" }
+                  ]
+                }
+              ]
+            },
+            { "u_has_effect": "grabbed" },
+            { "math": [ "value_or(u_pf_hurt_t, -1) >= time('now') - time('1 m')" ] }
+          ]
+        },
+        {
+          "or": [ { "math": [ "time_since(u_pf_saved_last) < 0" ] }, { "math": [ "time_since(u_pf_saved_last) > time('1 h')" ] } ]
+        }
+      ]
+    },
+    "effect": [
+      { "run_eocs": "PF_ID_ensure" },
+      {
+        "if": { "not": { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_kill_uid" } ] } },
+        "then": [
+          { "u_location_variable": { "u_val": "pf_pos" } },
+          {
+            "if": { "math": [ "distance(u_pf_pos, pf_kill_mpos) <= 1" ] },
+            "then": [
+              { "math": [ "u_pf_saved_last = time('now')" ] },
+              { "run_eocs": "PF_SAVE_record", "alpha_talker": { "global_val": "pf_kill_who" }, "beta_talker": "u" }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_SAVE_record",
+    "//": "Alpha = the one who saved, beta = the one saved.  The ledger is two-way: the saved one's u_pf_debt_<saver> goes up, the saver's u_pf_debt_<saved> goes down, so each side knows the running score (who owes whom, and how many times).  The lines read it.",
+    "effect": [
+      { "run_eocs": "PF_ID_ensure" },
+      { "run_eocs": "PF_ID_ensure", "alpha_talker": "npc" },
+      { "set_string_var": "n_pf_debt_<u_val:pf_uid>", "target_var": { "context_val": "dv" }, "parse_tags": true },
+      { "set_string_var": "u_pf_debt_<npc_val:pf_uid>", "target_var": { "context_val": "ds" }, "parse_tags": true },
+      { "math": [ "v_dv += 1" ] },
+      { "math": [ "v_ds -= 1" ] },
+      { "math": [ "pf_save_d = v_dv" ] },
+      { "math": [ "pf_save_n = pf_save_d < 0 ? 0 - pf_save_d : pf_save_d" ] },
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+      { "set_string_var": "<npc_name>", "target_var": { "global_val": "pf_say_b" }, "parse_tags": true },
+      {
+        "if": "npc_is_avatar",
+        "then": [ { "math": [ "pf_save_case = 1" ] } ],
+        "else": [
+          { "if": "u_is_avatar", "then": [ { "math": [ "pf_save_case = 2" ] } ], "else": [ { "math": [ "pf_save_case = 3" ] } ] }
+        ]
+      },
+      { "run_eocs": "PF_SAY_save", "alpha_talker": "avatar" },
+      { "run_eocs": "PF_RK_note_rescue" },
+      { "math": [ "pf_m_str_in = 75" ] },
+      { "run_eocs": "PF_MK_saved_life" }
+    ]
+  }
+]

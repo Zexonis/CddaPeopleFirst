@@ -1,0 +1,22 @@
+[
+  {
+    "type": "morale_type",
+    "id": "PF_morale_together",
+    "text": "Together"
+  },
+  {
+    "type": "morale_type",
+    "id": "PF_morale_wed",
+    "text": "Just married"
+  },
+  {
+    "type": "morale_type",
+    "id": "PF_morale_grief",
+    "text": "Grieving"
+  },
+  {
+    "type": "morale_type",
+    "id": "PF_morale_heartbreak",
+    "text": "Heartbroken"
+  }
+]

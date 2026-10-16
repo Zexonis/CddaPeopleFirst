@@ -1,0 +1,1436 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_STORES_ensure",
+    "//": "The stores start at home itself until a better place is found (or you choose one).  Also when home moves far away.",
+    "condition": {
+      "and": [
+        { "math": [ "value_or(pf_home_set, 0) == 1" ] },
+        {
+          "or": [ { "math": [ "has_var(pf_stores_loc) == 0" ] }, { "math": [ "distance(pf_stores_loc, pf_home_loc) > 30" ] } ]
+        }
+      ]
+    },
+    "effect": [
+      { "copy_var": { "global_val": "pf_home_loc" }, "target_var": { "global_val": "pf_stores_loc" } },
+      { "math": [ "pf_stores_set = 0" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_STORES_migrate",
+    "//": "Saves from before v0.8: the stores appear within a minute.",
+    "condition": {
+      "and": [
+        { "math": [ "value_or(pf_home_set, 0) == 1" ] },
+        {
+          "or": [ { "math": [ "has_var(pf_stores_loc) == 0" ] }, { "math": [ "distance(pf_stores_loc, pf_home_loc) > 30" ] } ]
+        }
+      ]
+    },
+    "recurrence": "1 minutes",
+    "global": true,
+    "effect": [ { "run_eocs": "PF_STORES_ensure" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_STORES_pick",
+    "//": "Once, when you're home: the household settles on a rack, counter, cupboard or locker within 10 tiles of home for the stores (open shelves first, so the food can be seen).",
+    "condition": {
+      "and": [
+        { "math": [ "value_or(pf_home_set, 0) == 1" ] },
+        { "math": [ "has_var(pf_stores_loc)" ] },
+        { "math": [ "value_or(pf_stores_set, 0) == 0" ] }
+      ]
+    },
+    "recurrence": "30 minutes",
+    "global": true,
+    "effect": [
+      { "u_location_variable": { "global_val": "pf_hm_av" } },
+      { "if": { "math": [ "distance(pf_hm_av, pf_home_loc) <= 15" ] }, "then": [ { "run_eocs": "PF_STORES_try_0" } ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOUSE_stores_here",
+    "//": "u = avatar (Home menu).",
+    "condition": { "and": [ { "math": [ "value_or(pf_home_set, 0) == 1" ] }, { "math": [ "value_or(pf_hm_dist, 99) <= 20" ] } ] },
+    "effect": [
+      { "u_location_variable": { "global_val": "pf_stores_loc" } },
+      { "math": [ "pf_stores_set = 2" ] },
+      { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "stores_here" } },
+      { "math": [ "pf_td_force = 1" ] },
+      { "run_eocs": "PF_HOUSE_tidy_do" },
+      { "math": [ "pf_td_force = 0" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOUSE_corner_here",
+    "//": "u = avatar (Home menu).",
+    "condition": { "and": [ { "math": [ "value_or(pf_home_set, 0) == 1" ] }, { "math": [ "value_or(pf_hm_dist, 99) <= 20" ] } ] },
+    "effect": [
+      { "u_location_variable": { "global_val": "pf_av_corner" } },
+      { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "corner_you" } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOUSE_corners_collect",
+    "//": "u = avatar.  pf_cnl_0.. = the corners of everyone who lives here (in the bubble).",
+    "effect": [
+      { "math": [ "pf_cnl_n = 0" ] },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_HOUSE_corner_note",
+            "condition": { "and": [ { "math": [ "value_or(u_pf_resident, 0) == 1" ] }, { "math": [ "has_var(u_pf_corner)" ] } ] },
+            "effect": [
+              {
+                "if": { "math": [ "pf_cnl_n < 16" ] },
+                "then": [
+                  { "set_string_var": "pf_cnl_<global_val:pf_cnl_n>", "target_var": { "context_val": "cr" }, "parse_tags": true },
+                  { "copy_var": { "u_val": "pf_corner" }, "target_var": { "var_val": "cr" } },
+                  { "math": [ "pf_cnl_n += 1" ] }
+                ]
+              }
+            ]
+          }
+        ],
+        "local": true,
+        "npc_range": 60
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOUSE_corner_assign",
+    "//": "u = a grown-up who lives here.  Their corner, kept from night to night: their family's house if they have one, else a free bed within 20 tiles (nobody else's), else a patch of floor 3-6 tiles from home that isn't the stores.",
+    "condition": { "and": [ { "math": [ "value_or(u_pf_resident, 0) == 1" ] }, { "math": [ "value_or(pf_home_set, 0) == 1" ] } ] },
+    "effect": [
+      {
+        "if": { "or": [ { "math": [ "has_var(u_pf_corner) == 0" ] }, { "math": [ "distance(u_pf_corner, pf_home_loc) > 30" ] } ] },
+        "then": [
+          {
+            "if": { "math": [ "has_var(u_pf_house)" ] },
+            "then": [
+              { "copy_var": { "u_val": "pf_house" }, "target_var": { "u_val": "pf_corner" } },
+              {
+                "location_variable_adjust": { "u_val": "pf_corner" },
+                "x_adjust": { "math": [ "rand(2) - 1" ] },
+                "y_adjust": { "math": [ "rand(2) - 1" ] }
+              }
+            ],
+            "else": [
+              { "run_eocs": "PF_HOUSE_corners_collect", "alpha_talker": "avatar" },
+              { "math": [ "pf_cn_ok = 0" ] },
+              {
+                "u_location_variable": { "u_val": "pf_corner" },
+                "furniture": "f_bed",
+                "target_max_radius": 20,
+                "true_eocs": [
+                  {
+                    "id": "PF_HOUSE_corner_bed",
+                    "effect": [
+                      { "math": [ "pf_cn_ok = 1" ] },
+                      {
+                        "if": { "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 0" ] }, { "math": [ "distance(u_pf_corner, pf_cnl_0) < 2" ] } ] },
+                        "then": [ { "math": [ "pf_cn_ok = 0" ] } ]
+                      },
+                      {
+                        "if": { "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 1" ] }, { "math": [ "distance(u_pf_corner, pf_cnl_1) < 2" ] } ] },
+                        "then": [ { "math": [ "pf_cn_ok = 0" ] } ]
+                      },
+                      {
+                        "if": { "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 2" ] }, { "math": [ "distance(u_pf_corner, pf_cnl_2) < 2" ] } ] },
+                        "then": [ { "math": [ "pf_cn_ok = 0" ] } ]
+                      },
+                      {
+                        "if": { "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 3" ] }, { "math": [ "distance(u_pf_corner, pf_cnl_3) < 2" ] } ] },
+                        "then": [ { "math": [ "pf_cn_ok = 0" ] } ]
+                      },
+                      {
+                        "if": { "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 4" ] }, { "math": [ "distance(u_pf_corner, pf_cnl_4) < 2" ] } ] },
+                        "then": [ { "math": [ "pf_cn_ok = 0" ] } ]
+                      },
+                      {
+                        "if": { "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 5" ] }, { "math": [ "distance(u_pf_corner, pf_cnl_5) < 2" ] } ] },
+                        "then": [ { "math": [ "pf_cn_ok = 0" ] } ]
+                      },
+                      {
+                        "if": { "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 6" ] }, { "math": [ "distance(u_pf_corner, pf_cnl_6) < 2" ] } ] },
+                        "then": [ { "math": [ "pf_cn_ok = 0" ] } ]
+                      },
+                      {
+                        "if": { "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 7" ] }, { "math": [ "distance(u_pf_corner, pf_cnl_7) < 2" ] } ] },
+                        "then": [ { "math": [ "pf_cn_ok = 0" ] } ]
+                      },
+                      {
+                        "if": { "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 8" ] }, { "math": [ "distance(u_pf_corner, pf_cnl_8) < 2" ] } ] },
+                        "then": [ { "math": [ "pf_cn_ok = 0" ] } ]
+                      },
+                      {
+                        "if": { "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 9" ] }, { "math": [ "distance(u_pf_corner, pf_cnl_9) < 2" ] } ] },
+                        "then": [ { "math": [ "pf_cn_ok = 0" ] } ]
+                      },
+                      {
+                        "if": { "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 10" ] }, { "math": [ "distance(u_pf_corner, pf_cnl_10) < 2" ] } ] },
+                        "then": [ { "math": [ "pf_cn_ok = 0" ] } ]
+                      },
+                      {
+                        "if": { "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 11" ] }, { "math": [ "distance(u_pf_corner, pf_cnl_11) < 2" ] } ] },
+                        "then": [ { "math": [ "pf_cn_ok = 0" ] } ]
+                      },
+                      {
+                        "if": { "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 12" ] }, { "math": [ "distance(u_pf_corner, pf_cnl_12) < 2" ] } ] },
+                        "then": [ { "math": [ "pf_cn_ok = 0" ] } ]
+                      },
+                      {
+                        "if": { "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 13" ] }, { "math": [ "distance(u_pf_corner, pf_cnl_13) < 2" ] } ] },
+                        "then": [ { "math": [ "pf_cn_ok = 0" ] } ]
+                      },
+                      {
+                        "if": { "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 14" ] }, { "math": [ "distance(u_pf_corner, pf_cnl_14) < 2" ] } ] },
+                        "then": [ { "math": [ "pf_cn_ok = 0" ] } ]
+                      },
+                      {
+                        "if": { "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 15" ] }, { "math": [ "distance(u_pf_corner, pf_cnl_15) < 2" ] } ] },
+                        "then": [ { "math": [ "pf_cn_ok = 0" ] } ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "if": { "math": [ "pf_cn_ok == 0" ] },
+                "then": [
+                  { "copy_var": { "global_val": "pf_home_loc" }, "target_var": { "u_val": "pf_corner" } },
+                  { "math": [ "_cx = (rand(1) * 2 - 1) * (3 + rand(3))" ] },
+                  { "math": [ "_cy = rand(6) - 3" ] },
+                  {
+                    "location_variable_adjust": { "u_val": "pf_corner" },
+                    "x_adjust": { "math": [ "_cx" ] },
+                    "y_adjust": { "math": [ "_cy" ] }
+                  },
+                  {
+                    "if": { "and": [ { "math": [ "has_var(pf_stores_loc)" ] }, { "math": [ "distance(u_pf_corner, pf_stores_loc) <= 1" ] } ] },
+                    "then": [ { "location_variable_adjust": { "u_val": "pf_corner" }, "y_adjust": 3 } ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOUSE_tidy_tick",
+    "//": "Every 3 hours from 07:00 to 21:00, when you're home and it's calm: someone who lives here and is up tidies.  Nobody here, nobody tidies (your mess is yours).",
+    "condition": {
+      "and": [
+        { "math": [ "value_or(pf_home_set, 0) == 1" ] },
+        { "math": [ "has_var(pf_stores_loc)" ] },
+        { "math": [ "time('now') - value_or(pf_td_t, -999999) >= time('3 h')" ] },
+        { "math": [ "time_since('midnight', 'unit': 'hours') >= 7" ] },
+        { "math": [ "time_since('midnight', 'unit': 'hours') < 21" ] }
+      ]
+    },
+    "recurrence": "30 minutes",
+    "global": true,
+    "effect": [
+      { "u_location_variable": { "global_val": "pf_hm_av" } },
+      {
+        "if": { "math": [ "distance(pf_hm_av, pf_home_loc) <= 30" ] },
+        "then": [
+          { "math": [ "pf_td_t = time('now')" ] },
+          { "run_eocs": "PF_THREAT_scan" },
+          {
+            "if": { "math": [ "pf_threat == 0" ] },
+            "then": [
+              { "set_string_var": "", "target_var": { "global_val": "pf_td_who" } },
+              {
+                "u_run_npc_eocs": [
+                  {
+                    "id": "PF_HOUSE_tidier",
+                    "condition": {
+                      "and": [
+                        { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+                        { "math": [ "value_or(u_pf_resident, 0) == 1" ] },
+                        { "not": { "u_has_effect": "sleep" } },
+                        {
+                          "not": {
+                            "and": [
+                              { "math": [ "value_or(u_pf_on_watch, 0) == 1" ] },
+                              {
+                                "math": [ "value_or(u_pf_watch_night, -1) == floor((time('now') - time('12 h')) / time('1 d'))" ]
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "effect": [
+                      {
+                        "if": { "compare_string": [ { "global_val": "pf_td_who" }, "" ] },
+                        "then": [ { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_td_who" }, "parse_tags": true } ]
+                      }
+                    ]
+                  }
+                ],
+                "local": true,
+                "npc_range": 30
+              },
+              {
+                "if": { "not": { "compare_string": [ { "global_val": "pf_td_who" }, "" ] } },
+                "then": [ { "run_eocs": "PF_HOUSE_tidy_do" } ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOUSE_tidy_do",
+    "//": "u = avatar.  One tidying pass.  Anything within a tile of someone's corner (or yours) is left alone.",
+    "effect": [
+      { "run_eocs": "PF_HOUSE_corners_collect" },
+      { "math": [ "pf_td_n = 0" ] },
+      { "math": [ "pf_td_d = 0" ] },
+      { "math": [ "pf_td_rot = 0" ] },
+      { "math": [ "pf_td_bod = 0" ] },
+      { "math": [ "pf_td_bone = 0" ] },
+      { "run_eocs": "PF_ENGINE_caps" },
+      {
+        "if": { "math": [ "value_or(pf_eng_level, 0) >= 16" ] },
+        "then": [
+          {
+            "u_map_run_item_eocs": "all",
+            "loc": { "global_val": "pf_home_loc" },
+            "min_radius": 0,
+            "max_radius": 20,
+            "search_data": [
+              {
+                "category": [ "food" ],
+                "condition": {
+                  "and": [
+                    { "npc_has_flag": "PF_ROTTEN" },
+                    {
+                      "not": {
+                        "or": [
+                          { "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 0" ] }, { "math": [ "distance('npc', pf_cnl_0) <= 1" ] } ] },
+                          {
+                            "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 1" ] }, { "math": [ "distance('npc', pf_cnl_1) <= 1" ] } ]
+                          },
+                          {
+                            "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 2" ] }, { "math": [ "distance('npc', pf_cnl_2) <= 1" ] } ]
+                          },
+                          {
+                            "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 3" ] }, { "math": [ "distance('npc', pf_cnl_3) <= 1" ] } ]
+                          },
+                          {
+                            "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 4" ] }, { "math": [ "distance('npc', pf_cnl_4) <= 1" ] } ]
+                          },
+                          {
+                            "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 5" ] }, { "math": [ "distance('npc', pf_cnl_5) <= 1" ] } ]
+                          },
+                          {
+                            "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 6" ] }, { "math": [ "distance('npc', pf_cnl_6) <= 1" ] } ]
+                          },
+                          {
+                            "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 7" ] }, { "math": [ "distance('npc', pf_cnl_7) <= 1" ] } ]
+                          },
+                          {
+                            "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 8" ] }, { "math": [ "distance('npc', pf_cnl_8) <= 1" ] } ]
+                          },
+                          {
+                            "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 9" ] }, { "math": [ "distance('npc', pf_cnl_9) <= 1" ] } ]
+                          },
+                          {
+                            "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 10" ] }, { "math": [ "distance('npc', pf_cnl_10) <= 1" ] } ]
+                          },
+                          {
+                            "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 11" ] }, { "math": [ "distance('npc', pf_cnl_11) <= 1" ] } ]
+                          },
+                          {
+                            "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 12" ] }, { "math": [ "distance('npc', pf_cnl_12) <= 1" ] } ]
+                          },
+                          {
+                            "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 13" ] }, { "math": [ "distance('npc', pf_cnl_13) <= 1" ] } ]
+                          },
+                          {
+                            "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 14" ] }, { "math": [ "distance('npc', pf_cnl_14) <= 1" ] } ]
+                          },
+                          {
+                            "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 15" ] }, { "math": [ "distance('npc', pf_cnl_15) <= 1" ] } ]
+                          },
+                          {
+                            "and": [ { "math": [ "has_var(pf_av_corner)" ] }, { "math": [ "distance('npc', pf_av_corner) <= 1" ] } ]
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "id": [ "ceramic_bowl", "ceramic_mug", "jug_plastic" ],
+                "condition": {
+                  "and": [
+                    { "npc_has_flag": "PF_ROTTEN" },
+                    {
+                      "not": {
+                        "or": [
+                          { "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 0" ] }, { "math": [ "distance('npc', pf_cnl_0) <= 1" ] } ] },
+                          {
+                            "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 1" ] }, { "math": [ "distance('npc', pf_cnl_1) <= 1" ] } ]
+                          },
+                          {
+                            "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 2" ] }, { "math": [ "distance('npc', pf_cnl_2) <= 1" ] } ]
+                          },
+                          {
+                            "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 3" ] }, { "math": [ "distance('npc', pf_cnl_3) <= 1" ] } ]
+                          },
+                          {
+                            "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 4" ] }, { "math": [ "distance('npc', pf_cnl_4) <= 1" ] } ]
+                          },
+                          {
+                            "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 5" ] }, { "math": [ "distance('npc', pf_cnl_5) <= 1" ] } ]
+                          },
+                          {
+                            "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 6" ] }, { "math": [ "distance('npc', pf_cnl_6) <= 1" ] } ]
+                          },
+                          {
+                            "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 7" ] }, { "math": [ "distance('npc', pf_cnl_7) <= 1" ] } ]
+                          },
+                          {
+                            "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 8" ] }, { "math": [ "distance('npc', pf_cnl_8) <= 1" ] } ]
+                          },
+                          {
+                            "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 9" ] }, { "math": [ "distance('npc', pf_cnl_9) <= 1" ] } ]
+                          },
+                          {
+                            "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 10" ] }, { "math": [ "distance('npc', pf_cnl_10) <= 1" ] } ]
+                          },
+                          {
+                            "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 11" ] }, { "math": [ "distance('npc', pf_cnl_11) <= 1" ] } ]
+                          },
+                          {
+                            "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 12" ] }, { "math": [ "distance('npc', pf_cnl_12) <= 1" ] } ]
+                          },
+                          {
+                            "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 13" ] }, { "math": [ "distance('npc', pf_cnl_13) <= 1" ] } ]
+                          },
+                          {
+                            "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 14" ] }, { "math": [ "distance('npc', pf_cnl_14) <= 1" ] } ]
+                          },
+                          {
+                            "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 15" ] }, { "math": [ "distance('npc', pf_cnl_15) <= 1" ] } ]
+                          },
+                          {
+                            "and": [ { "math": [ "has_var(pf_av_corner)" ] }, { "math": [ "distance('npc', pf_av_corner) <= 1" ] } ]
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ],
+            "true_eocs": [ { "id": "PF_HOUSE_throw_out", "effect": [ { "math": [ "pf_td_rot += 1" ] }, "npc_die" ] } ]
+          },
+          {
+            "u_map_run_item_eocs": "all",
+            "loc": { "global_val": "pf_home_loc" },
+            "min_radius": 0,
+            "max_radius": 20,
+            "search_data": [ { "id": "corpse", "condition": { "npc_has_flag": "PF_ZOMBIE_CORPSE" } } ],
+            "true_eocs": [ { "id": "PF_HOUSE_burn_body", "effect": [ { "math": [ "pf_td_bod += 1" ] }, "npc_die" ] } ]
+          }
+        ]
+      },
+      {
+        "u_map_run_item_eocs": "all",
+        "loc": { "global_val": "pf_home_loc" },
+        "min_radius": 0,
+        "max_radius": 20,
+        "search_data": [
+          {
+            "id": [ "bone_tainted", "skull_human_tainted" ],
+            "condition": {
+              "not": {
+                "or": [
+                  { "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 0" ] }, { "math": [ "distance('npc', pf_cnl_0) <= 1" ] } ] },
+                  {
+                    "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 1" ] }, { "math": [ "distance('npc', pf_cnl_1) <= 1" ] } ]
+                  },
+                  {
+                    "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 2" ] }, { "math": [ "distance('npc', pf_cnl_2) <= 1" ] } ]
+                  },
+                  {
+                    "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 3" ] }, { "math": [ "distance('npc', pf_cnl_3) <= 1" ] } ]
+                  },
+                  {
+                    "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 4" ] }, { "math": [ "distance('npc', pf_cnl_4) <= 1" ] } ]
+                  },
+                  {
+                    "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 5" ] }, { "math": [ "distance('npc', pf_cnl_5) <= 1" ] } ]
+                  },
+                  {
+                    "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 6" ] }, { "math": [ "distance('npc', pf_cnl_6) <= 1" ] } ]
+                  },
+                  {
+                    "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 7" ] }, { "math": [ "distance('npc', pf_cnl_7) <= 1" ] } ]
+                  },
+                  {
+                    "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 8" ] }, { "math": [ "distance('npc', pf_cnl_8) <= 1" ] } ]
+                  },
+                  {
+                    "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 9" ] }, { "math": [ "distance('npc', pf_cnl_9) <= 1" ] } ]
+                  },
+                  {
+                    "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 10" ] }, { "math": [ "distance('npc', pf_cnl_10) <= 1" ] } ]
+                  },
+                  {
+                    "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 11" ] }, { "math": [ "distance('npc', pf_cnl_11) <= 1" ] } ]
+                  },
+                  {
+                    "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 12" ] }, { "math": [ "distance('npc', pf_cnl_12) <= 1" ] } ]
+                  },
+                  {
+                    "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 13" ] }, { "math": [ "distance('npc', pf_cnl_13) <= 1" ] } ]
+                  },
+                  {
+                    "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 14" ] }, { "math": [ "distance('npc', pf_cnl_14) <= 1" ] } ]
+                  },
+                  {
+                    "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 15" ] }, { "math": [ "distance('npc', pf_cnl_15) <= 1" ] } ]
+                  },
+                  {
+                    "and": [ { "math": [ "has_var(pf_av_corner)" ] }, { "math": [ "distance('npc', pf_av_corner) <= 1" ] } ]
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        "true_eocs": [ { "id": "PF_HOUSE_rake_bones", "effect": [ { "math": [ "pf_td_bone += 1" ] }, "npc_die" ] } ]
+      },
+      {
+        "if": {
+          "and": [ { "math": [ "pf_td_rot + pf_td_bod + pf_td_bone > 0" ] }, { "math": [ "value_or(pf_set_chatter, 1) == 1" ] } ]
+        },
+        "then": [
+          {
+            "if": { "math": [ "pf_td_bod > 0" ] },
+            "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "tidy_bodies" } } ],
+            "else": [
+              {
+                "if": { "math": [ "pf_td_bone > 0" ] },
+                "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "tidy_bones" } } ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_td_rot > 0" ] },
+            "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "tidy_rot" } } ]
+          }
+        ]
+      },
+      {
+        "u_map_run_item_eocs": "all",
+        "loc": { "global_val": "pf_home_loc" },
+        "min_radius": 0,
+        "max_radius": 20,
+        "search_data": [
+          {
+            "id": "ceramic_bowl",
+            "condition": {
+              "and": [
+                { "math": [ "n_weight() < 405000" ] },
+                {
+                  "not": {
+                    "or": [
+                      { "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 0" ] }, { "math": [ "distance('npc', pf_cnl_0) <= 1" ] } ] },
+                      {
+                        "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 1" ] }, { "math": [ "distance('npc', pf_cnl_1) <= 1" ] } ]
+                      },
+                      {
+                        "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 2" ] }, { "math": [ "distance('npc', pf_cnl_2) <= 1" ] } ]
+                      },
+                      {
+                        "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 3" ] }, { "math": [ "distance('npc', pf_cnl_3) <= 1" ] } ]
+                      },
+                      {
+                        "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 4" ] }, { "math": [ "distance('npc', pf_cnl_4) <= 1" ] } ]
+                      },
+                      {
+                        "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 5" ] }, { "math": [ "distance('npc', pf_cnl_5) <= 1" ] } ]
+                      },
+                      {
+                        "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 6" ] }, { "math": [ "distance('npc', pf_cnl_6) <= 1" ] } ]
+                      },
+                      {
+                        "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 7" ] }, { "math": [ "distance('npc', pf_cnl_7) <= 1" ] } ]
+                      },
+                      {
+                        "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 8" ] }, { "math": [ "distance('npc', pf_cnl_8) <= 1" ] } ]
+                      },
+                      {
+                        "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 9" ] }, { "math": [ "distance('npc', pf_cnl_9) <= 1" ] } ]
+                      },
+                      {
+                        "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 10" ] }, { "math": [ "distance('npc', pf_cnl_10) <= 1" ] } ]
+                      },
+                      {
+                        "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 11" ] }, { "math": [ "distance('npc', pf_cnl_11) <= 1" ] } ]
+                      },
+                      {
+                        "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 12" ] }, { "math": [ "distance('npc', pf_cnl_12) <= 1" ] } ]
+                      },
+                      {
+                        "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 13" ] }, { "math": [ "distance('npc', pf_cnl_13) <= 1" ] } ]
+                      },
+                      {
+                        "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 14" ] }, { "math": [ "distance('npc', pf_cnl_14) <= 1" ] } ]
+                      },
+                      {
+                        "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 15" ] }, { "math": [ "distance('npc', pf_cnl_15) <= 1" ] } ]
+                      },
+                      {
+                        "and": [ { "math": [ "has_var(pf_av_corner)" ] }, { "math": [ "distance('npc', pf_av_corner) <= 1" ] } ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "id": "ceramic_mug",
+            "condition": {
+              "and": [
+                { "math": [ "n_weight() < 348000" ] },
+                {
+                  "not": {
+                    "or": [
+                      { "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 0" ] }, { "math": [ "distance('npc', pf_cnl_0) <= 1" ] } ] },
+                      {
+                        "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 1" ] }, { "math": [ "distance('npc', pf_cnl_1) <= 1" ] } ]
+                      },
+                      {
+                        "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 2" ] }, { "math": [ "distance('npc', pf_cnl_2) <= 1" ] } ]
+                      },
+                      {
+                        "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 3" ] }, { "math": [ "distance('npc', pf_cnl_3) <= 1" ] } ]
+                      },
+                      {
+                        "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 4" ] }, { "math": [ "distance('npc', pf_cnl_4) <= 1" ] } ]
+                      },
+                      {
+                        "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 5" ] }, { "math": [ "distance('npc', pf_cnl_5) <= 1" ] } ]
+                      },
+                      {
+                        "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 6" ] }, { "math": [ "distance('npc', pf_cnl_6) <= 1" ] } ]
+                      },
+                      {
+                        "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 7" ] }, { "math": [ "distance('npc', pf_cnl_7) <= 1" ] } ]
+                      },
+                      {
+                        "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 8" ] }, { "math": [ "distance('npc', pf_cnl_8) <= 1" ] } ]
+                      },
+                      {
+                        "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 9" ] }, { "math": [ "distance('npc', pf_cnl_9) <= 1" ] } ]
+                      },
+                      {
+                        "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 10" ] }, { "math": [ "distance('npc', pf_cnl_10) <= 1" ] } ]
+                      },
+                      {
+                        "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 11" ] }, { "math": [ "distance('npc', pf_cnl_11) <= 1" ] } ]
+                      },
+                      {
+                        "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 12" ] }, { "math": [ "distance('npc', pf_cnl_12) <= 1" ] } ]
+                      },
+                      {
+                        "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 13" ] }, { "math": [ "distance('npc', pf_cnl_13) <= 1" ] } ]
+                      },
+                      {
+                        "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 14" ] }, { "math": [ "distance('npc', pf_cnl_14) <= 1" ] } ]
+                      },
+                      {
+                        "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 15" ] }, { "math": [ "distance('npc', pf_cnl_15) <= 1" ] } ]
+                      },
+                      {
+                        "and": [ { "math": [ "has_var(pf_av_corner)" ] }, { "math": [ "distance('npc', pf_av_corner) <= 1" ] } ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "id": "jug_plastic",
+            "condition": {
+              "and": [
+                { "math": [ "n_weight() < 190000" ] },
+                {
+                  "not": {
+                    "or": [
+                      { "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 0" ] }, { "math": [ "distance('npc', pf_cnl_0) <= 1" ] } ] },
+                      {
+                        "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 1" ] }, { "math": [ "distance('npc', pf_cnl_1) <= 1" ] } ]
+                      },
+                      {
+                        "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 2" ] }, { "math": [ "distance('npc', pf_cnl_2) <= 1" ] } ]
+                      },
+                      {
+                        "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 3" ] }, { "math": [ "distance('npc', pf_cnl_3) <= 1" ] } ]
+                      },
+                      {
+                        "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 4" ] }, { "math": [ "distance('npc', pf_cnl_4) <= 1" ] } ]
+                      },
+                      {
+                        "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 5" ] }, { "math": [ "distance('npc', pf_cnl_5) <= 1" ] } ]
+                      },
+                      {
+                        "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 6" ] }, { "math": [ "distance('npc', pf_cnl_6) <= 1" ] } ]
+                      },
+                      {
+                        "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 7" ] }, { "math": [ "distance('npc', pf_cnl_7) <= 1" ] } ]
+                      },
+                      {
+                        "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 8" ] }, { "math": [ "distance('npc', pf_cnl_8) <= 1" ] } ]
+                      },
+                      {
+                        "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 9" ] }, { "math": [ "distance('npc', pf_cnl_9) <= 1" ] } ]
+                      },
+                      {
+                        "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 10" ] }, { "math": [ "distance('npc', pf_cnl_10) <= 1" ] } ]
+                      },
+                      {
+                        "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 11" ] }, { "math": [ "distance('npc', pf_cnl_11) <= 1" ] } ]
+                      },
+                      {
+                        "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 12" ] }, { "math": [ "distance('npc', pf_cnl_12) <= 1" ] } ]
+                      },
+                      {
+                        "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 13" ] }, { "math": [ "distance('npc', pf_cnl_13) <= 1" ] } ]
+                      },
+                      {
+                        "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 14" ] }, { "math": [ "distance('npc', pf_cnl_14) <= 1" ] } ]
+                      },
+                      {
+                        "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 15" ] }, { "math": [ "distance('npc', pf_cnl_15) <= 1" ] } ]
+                      },
+                      {
+                        "and": [ { "math": [ "has_var(pf_av_corner)" ] }, { "math": [ "distance('npc', pf_av_corner) <= 1" ] } ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "true_eocs": [ { "id": "PF_HOUSE_wash", "effect": [ { "math": [ "pf_td_d += 1" ] }, "npc_die" ] } ]
+      },
+      { "math": [ "pf_td_cf = 0" ] },
+      {
+        "u_map_run_item_eocs": "all",
+        "loc": { "global_val": "pf_stores_loc" },
+        "min_radius": 0,
+        "max_radius": 2,
+        "search_data": [ { "id": "ceramic_mug", "condition": { "math": [ "n_weight() >= 348000" ] } } ],
+        "true_eocs": [
+          {
+            "id": "PF_HOUSE_pour_out",
+            "effect": [
+              { "math": [ "pf_td_cf += 1" ] },
+              { "if": { "math": [ "pf_td_cf > 4" ] }, "then": [ { "math": [ "pf_td_d += 1" ] }, "npc_die" ] }
+            ]
+          }
+        ]
+      },
+      {
+        "u_map_run_item_eocs": "all",
+        "loc": { "global_val": "pf_stores_loc" },
+        "min_radius": 2,
+        "max_radius": 20,
+        "search_data": [
+          {
+            "category": [ "food", "drugs", "seeds" ],
+            "condition": {
+              "not": {
+                "or": [
+                  { "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 0" ] }, { "math": [ "distance('npc', pf_cnl_0) <= 1" ] } ] },
+                  {
+                    "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 1" ] }, { "math": [ "distance('npc', pf_cnl_1) <= 1" ] } ]
+                  },
+                  {
+                    "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 2" ] }, { "math": [ "distance('npc', pf_cnl_2) <= 1" ] } ]
+                  },
+                  {
+                    "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 3" ] }, { "math": [ "distance('npc', pf_cnl_3) <= 1" ] } ]
+                  },
+                  {
+                    "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 4" ] }, { "math": [ "distance('npc', pf_cnl_4) <= 1" ] } ]
+                  },
+                  {
+                    "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 5" ] }, { "math": [ "distance('npc', pf_cnl_5) <= 1" ] } ]
+                  },
+                  {
+                    "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 6" ] }, { "math": [ "distance('npc', pf_cnl_6) <= 1" ] } ]
+                  },
+                  {
+                    "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 7" ] }, { "math": [ "distance('npc', pf_cnl_7) <= 1" ] } ]
+                  },
+                  {
+                    "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 8" ] }, { "math": [ "distance('npc', pf_cnl_8) <= 1" ] } ]
+                  },
+                  {
+                    "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 9" ] }, { "math": [ "distance('npc', pf_cnl_9) <= 1" ] } ]
+                  },
+                  {
+                    "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 10" ] }, { "math": [ "distance('npc', pf_cnl_10) <= 1" ] } ]
+                  },
+                  {
+                    "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 11" ] }, { "math": [ "distance('npc', pf_cnl_11) <= 1" ] } ]
+                  },
+                  {
+                    "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 12" ] }, { "math": [ "distance('npc', pf_cnl_12) <= 1" ] } ]
+                  },
+                  {
+                    "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 13" ] }, { "math": [ "distance('npc', pf_cnl_13) <= 1" ] } ]
+                  },
+                  {
+                    "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 14" ] }, { "math": [ "distance('npc', pf_cnl_14) <= 1" ] } ]
+                  },
+                  {
+                    "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 15" ] }, { "math": [ "distance('npc', pf_cnl_15) <= 1" ] } ]
+                  },
+                  {
+                    "and": [ { "math": [ "has_var(pf_av_corner)" ] }, { "math": [ "distance('npc', pf_av_corner) <= 1" ] } ]
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "id": [
+              "ceramic_bowl",
+              "ceramic_mug",
+              "jug_plastic",
+              "bottle_plastic",
+              "bottle_plastic_small",
+              "bottle_glass",
+              "bottle_twoliter",
+              "jar_glass_sealed",
+              "jar_3l_glass_sealed",
+              "can_drink",
+              "canteen",
+              "flask_glass"
+            ],
+            "condition": {
+              "not": {
+                "or": [
+                  { "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 0" ] }, { "math": [ "distance('npc', pf_cnl_0) <= 1" ] } ] },
+                  {
+                    "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 1" ] }, { "math": [ "distance('npc', pf_cnl_1) <= 1" ] } ]
+                  },
+                  {
+                    "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 2" ] }, { "math": [ "distance('npc', pf_cnl_2) <= 1" ] } ]
+                  },
+                  {
+                    "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 3" ] }, { "math": [ "distance('npc', pf_cnl_3) <= 1" ] } ]
+                  },
+                  {
+                    "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 4" ] }, { "math": [ "distance('npc', pf_cnl_4) <= 1" ] } ]
+                  },
+                  {
+                    "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 5" ] }, { "math": [ "distance('npc', pf_cnl_5) <= 1" ] } ]
+                  },
+                  {
+                    "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 6" ] }, { "math": [ "distance('npc', pf_cnl_6) <= 1" ] } ]
+                  },
+                  {
+                    "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 7" ] }, { "math": [ "distance('npc', pf_cnl_7) <= 1" ] } ]
+                  },
+                  {
+                    "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 8" ] }, { "math": [ "distance('npc', pf_cnl_8) <= 1" ] } ]
+                  },
+                  {
+                    "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 9" ] }, { "math": [ "distance('npc', pf_cnl_9) <= 1" ] } ]
+                  },
+                  {
+                    "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 10" ] }, { "math": [ "distance('npc', pf_cnl_10) <= 1" ] } ]
+                  },
+                  {
+                    "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 11" ] }, { "math": [ "distance('npc', pf_cnl_11) <= 1" ] } ]
+                  },
+                  {
+                    "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 12" ] }, { "math": [ "distance('npc', pf_cnl_12) <= 1" ] } ]
+                  },
+                  {
+                    "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 13" ] }, { "math": [ "distance('npc', pf_cnl_13) <= 1" ] } ]
+                  },
+                  {
+                    "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 14" ] }, { "math": [ "distance('npc', pf_cnl_14) <= 1" ] } ]
+                  },
+                  {
+                    "and": [ { "math": [ "value_or(pf_cnl_n, 0) > 15" ] }, { "math": [ "distance('npc', pf_cnl_15) <= 1" ] } ]
+                  },
+                  {
+                    "and": [ { "math": [ "has_var(pf_av_corner)" ] }, { "math": [ "distance('npc', pf_av_corner) <= 1" ] } ]
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        "true_eocs": [
+          {
+            "id": "PF_HOUSE_put_away",
+            "effect": [ { "math": [ "pf_td_n += 1" ] }, { "npc_teleport": { "global_val": "pf_stores_loc" } } ]
+          }
+        ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_td_n + pf_td_d > 0" ] },
+            { "math": [ "value_or(pf_td_force, 0) == 0" ] },
+            { "math": [ "value_or(pf_set_chatter, 1) == 1" ] },
+            { "math": [ "value_or(pf_td_line_day, -1) != floor(time('now') / time('1 d'))" ] }
+          ]
+        },
+        "then": [
+          { "math": [ "pf_td_line_day = floor(time('now') / time('1 d'))" ] },
+          { "math": [ "_p = rand(2)" ] },
+          { "if": { "math": [ "_p == value_or(pf_td_last, -1)" ] }, "then": [ { "math": [ "_p = (_p + 1) % 3" ] } ] },
+          { "math": [ "pf_td_last = _p" ] },
+          {
+            "if": { "math": [ "_p == 0" ] },
+            "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "tidy_0" } } ]
+          },
+          {
+            "if": { "math": [ "_p == 1" ] },
+            "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "tidy_1" } } ]
+          },
+          {
+            "if": { "math": [ "_p == 2" ] },
+            "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "tidy_2" } } ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "value_or(pf_td_force, 0) == 1" ] },
+        "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "stores_moved" } } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOUSE_estate_tick",
+    "//": "A couple of hours after one of ours dies (and it's calm, and you're near): their things (where they fell, and their corner) go to the stores.  The household's now.",
+    "condition": {
+      "and": [
+        { "math": [ "value_or(pf_est_pending, 0) == 1" ] },
+        { "math": [ "has_var(pf_stores_loc)" ] },
+        { "math": [ "time('now') - value_or(pf_est_t, 0) >= time('2 h')" ] }
+      ]
+    },
+    "recurrence": "30 minutes",
+    "global": true,
+    "effect": [
+      { "u_location_variable": { "global_val": "pf_hm_av" } },
+      {
+        "if": { "math": [ "distance(pf_hm_av, pf_est_at) <= 30" ] },
+        "then": [
+          { "run_eocs": "PF_THREAT_scan" },
+          {
+            "if": { "math": [ "pf_threat == 0" ] },
+            "then": [
+              { "math": [ "pf_est_pending = 0" ] },
+              { "math": [ "pf_est_n = 0" ] },
+              { "set_string_var": "", "target_var": { "global_val": "pf_td_who" } },
+              {
+                "u_run_npc_eocs": [
+                  {
+                    "id": "PF_HOUSE_heir",
+                    "condition": {
+                      "and": [
+                        { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+                        { "math": [ "value_or(u_pf_resident, 0) == 1" ] },
+                        { "not": { "u_has_effect": "sleep" } }
+                      ]
+                    },
+                    "effect": [
+                      {
+                        "if": { "compare_string": [ { "global_val": "pf_td_who" }, "" ] },
+                        "then": [ { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_td_who" }, "parse_tags": true } ]
+                      }
+                    ]
+                  }
+                ],
+                "local": true,
+                "npc_range": 30
+              },
+              {
+                "u_map_run_item_eocs": "all",
+                "loc": { "global_val": "pf_est_at" },
+                "min_radius": 0,
+                "max_radius": 1,
+                "search_data": [ { "id_blacklist": [ "corpse" ] } ],
+                "true_eocs": [
+                  {
+                    "id": "PF_HOUSE_estate_item",
+                    "effect": [ { "math": [ "pf_est_n += 1" ] }, { "npc_teleport": { "global_val": "pf_stores_loc" } } ]
+                  }
+                ]
+              },
+              {
+                "if": { "math": [ "value_or(pf_est_hascn, 0) == 1" ] },
+                "then": [
+                  {
+                    "u_map_run_item_eocs": "all",
+                    "loc": { "global_val": "pf_est_cn" },
+                    "min_radius": 0,
+                    "max_radius": 1,
+                    "search_data": [ { "id_blacklist": [ "corpse" ] } ],
+                    "true_eocs": [
+                      {
+                        "id": "PF_HOUSE_estate_item_cn",
+                        "effect": [ { "math": [ "pf_est_n += 1" ] }, { "npc_teleport": { "global_val": "pf_stores_loc" } } ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "if": { "math": [ "pf_est_n > 0" ] },
+                "then": [
+                  {
+                    "if": { "compare_string": [ { "global_val": "pf_td_who" }, "" ] },
+                    "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "estate_you" } } ],
+                    "else": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "estate" } } ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_GIVE_marble",
+    "//": "u = avatar.  marble handed to you (solid things into your inventory; a drink or soup in an open dish beside you).",
+    "effect": [ { "u_spawn_item": "marble", "suppress_message": true } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_GIVE_chocolate",
+    "//": "u = avatar.  chocolate handed to you (solid things into your inventory; a drink or soup in an open dish beside you).",
+    "effect": [ { "u_spawn_item": "chocolate", "suppress_message": true } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_GIVE_candy",
+    "//": "u = avatar.  candy handed to you (solid things into your inventory; a drink or soup in an open dish beside you).",
+    "effect": [ { "u_spawn_item": "candy", "suppress_message": true } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_GIVE_cookies",
+    "//": "u = avatar.  cookies handed to you (solid things into your inventory; a drink or soup in an open dish beside you).",
+    "effect": [ { "u_spawn_item": "cookies", "suppress_message": true } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_GIVE_tea",
+    "//": "u = avatar.  tea handed to you (solid things into your inventory; a drink or soup in an open dish beside you).",
+    "effect": [
+      { "u_location_variable": { "context_val": "gv" } },
+      { "map_spawn_item": "tea", "loc": { "context_val": "gv" }, "container": "ceramic_mug" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_GIVE_coffee",
+    "//": "u = avatar.  coffee handed to you (solid things into your inventory; a drink or soup in an open dish beside you).",
+    "effect": [
+      { "u_location_variable": { "context_val": "gv" } },
+      { "map_spawn_item": "coffee", "loc": { "context_val": "gv" }, "container": "ceramic_mug" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_GIVE_soup_meat",
+    "//": "u = avatar.  soup_meat handed to you (solid things into your inventory; a drink or soup in an open dish beside you).",
+    "effect": [
+      { "u_location_variable": { "context_val": "gv" } },
+      { "map_spawn_item": "soup_meat", "loc": { "context_val": "gv" }, "container": "ceramic_bowl" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_GIVE_keepsake",
+    "//": "u = avatar.  PF_carved_keepsake handed to you (solid things into your inventory; a drink or soup in an open dish beside you).",
+    "effect": [ { "u_spawn_item": "PF_carved_keepsake", "suppress_message": true } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_STORES_try_0",
+    "//": "u = avatar.  Step 0 of choosing the stores: a f_rack within 10 tiles of home?",
+    "effect": [
+      {
+        "u_location_variable": { "global_val": "pf_sp_at" },
+        "furniture": "f_rack",
+        "target_max_radius": 15,
+        "true_eocs": [
+          {
+            "id": "PF_STORES_hit_0",
+            "effect": [
+              {
+                "if": { "math": [ "distance(pf_sp_at, pf_home_loc) <= 10" ] },
+                "then": [
+                  { "copy_var": { "global_val": "pf_sp_at" }, "target_var": { "global_val": "pf_stores_loc" } },
+                  { "math": [ "pf_stores_set = 1" ] },
+                  {
+                    "if": { "math": [ "value_or(pf_set_chatter, 1) == 1" ] },
+                    "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "stores_auto" } } ]
+                  }
+                ],
+                "else": [ { "run_eocs": "PF_STORES_try_1" } ]
+              }
+            ]
+          }
+        ],
+        "false_eocs": [ { "id": "PF_STORES_miss_0", "effect": [ { "run_eocs": "PF_STORES_try_1" } ] } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_STORES_try_1",
+    "//": "u = avatar.  Step 1 of choosing the stores: a f_counter within 10 tiles of home?",
+    "effect": [
+      {
+        "u_location_variable": { "global_val": "pf_sp_at" },
+        "furniture": "f_counter",
+        "target_max_radius": 15,
+        "true_eocs": [
+          {
+            "id": "PF_STORES_hit_1",
+            "effect": [
+              {
+                "if": { "math": [ "distance(pf_sp_at, pf_home_loc) <= 10" ] },
+                "then": [
+                  { "copy_var": { "global_val": "pf_sp_at" }, "target_var": { "global_val": "pf_stores_loc" } },
+                  { "math": [ "pf_stores_set = 1" ] },
+                  {
+                    "if": { "math": [ "value_or(pf_set_chatter, 1) == 1" ] },
+                    "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "stores_auto" } } ]
+                  }
+                ],
+                "else": [ { "run_eocs": "PF_STORES_try_2" } ]
+              }
+            ]
+          }
+        ],
+        "false_eocs": [ { "id": "PF_STORES_miss_1", "effect": [ { "run_eocs": "PF_STORES_try_2" } ] } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_STORES_try_2",
+    "//": "u = avatar.  Step 2 of choosing the stores: a f_cupboard within 10 tiles of home?",
+    "effect": [
+      {
+        "u_location_variable": { "global_val": "pf_sp_at" },
+        "furniture": "f_cupboard",
+        "target_max_radius": 15,
+        "true_eocs": [
+          {
+            "id": "PF_STORES_hit_2",
+            "effect": [
+              {
+                "if": { "math": [ "distance(pf_sp_at, pf_home_loc) <= 10" ] },
+                "then": [
+                  { "copy_var": { "global_val": "pf_sp_at" }, "target_var": { "global_val": "pf_stores_loc" } },
+                  { "math": [ "pf_stores_set = 1" ] },
+                  {
+                    "if": { "math": [ "value_or(pf_set_chatter, 1) == 1" ] },
+                    "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "stores_auto" } } ]
+                  }
+                ],
+                "else": [ { "run_eocs": "PF_STORES_try_3" } ]
+              }
+            ]
+          }
+        ],
+        "false_eocs": [ { "id": "PF_STORES_miss_2", "effect": [ { "run_eocs": "PF_STORES_try_3" } ] } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_STORES_try_3",
+    "//": "u = avatar.  Step 3 of choosing the stores: a f_locker within 10 tiles of home?",
+    "effect": [
+      {
+        "u_location_variable": { "global_val": "pf_sp_at" },
+        "furniture": "f_locker",
+        "target_max_radius": 15,
+        "true_eocs": [
+          {
+            "id": "PF_STORES_hit_3",
+            "effect": [
+              {
+                "if": { "math": [ "distance(pf_sp_at, pf_home_loc) <= 10" ] },
+                "then": [
+                  { "copy_var": { "global_val": "pf_sp_at" }, "target_var": { "global_val": "pf_stores_loc" } },
+                  { "math": [ "pf_stores_set = 1" ] },
+                  {
+                    "if": { "math": [ "value_or(pf_set_chatter, 1) == 1" ] },
+                    "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "stores_auto" } } ]
+                  }
+                ],
+                "else": [ { "run_eocs": "PF_STORES_try_4" } ]
+              }
+            ]
+          }
+        ],
+        "false_eocs": [ { "id": "PF_STORES_miss_3", "effect": [ { "run_eocs": "PF_STORES_try_4" } ] } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_STORES_try_4",
+    "//": "u = avatar.  Step 4 of choosing the stores: a f_dresser within 10 tiles of home?",
+    "effect": [
+      {
+        "u_location_variable": { "global_val": "pf_sp_at" },
+        "furniture": "f_dresser",
+        "target_max_radius": 15,
+        "true_eocs": [
+          {
+            "id": "PF_STORES_hit_4",
+            "effect": [
+              {
+                "if": { "math": [ "distance(pf_sp_at, pf_home_loc) <= 10" ] },
+                "then": [
+                  { "copy_var": { "global_val": "pf_sp_at" }, "target_var": { "global_val": "pf_stores_loc" } },
+                  { "math": [ "pf_stores_set = 1" ] },
+                  {
+                    "if": { "math": [ "value_or(pf_set_chatter, 1) == 1" ] },
+                    "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "stores_auto" } } ]
+                  }
+                ],
+                "else": [ { "run_eocs": "PF_STORES_try_5" } ]
+              }
+            ]
+          }
+        ],
+        "false_eocs": [ { "id": "PF_STORES_miss_4", "effect": [ { "run_eocs": "PF_STORES_try_5" } ] } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_STORES_try_5",
+    "//": "u = avatar.  Step 5 of choosing the stores: a f_crate_o within 10 tiles of home?",
+    "effect": [
+      {
+        "u_location_variable": { "global_val": "pf_sp_at" },
+        "furniture": "f_crate_o",
+        "target_max_radius": 15,
+        "true_eocs": [
+          {
+            "id": "PF_STORES_hit_5",
+            "effect": [
+              {
+                "if": { "math": [ "distance(pf_sp_at, pf_home_loc) <= 10" ] },
+                "then": [
+                  { "copy_var": { "global_val": "pf_sp_at" }, "target_var": { "global_val": "pf_stores_loc" } },
+                  { "math": [ "pf_stores_set = 1" ] },
+                  {
+                    "if": { "math": [ "value_or(pf_set_chatter, 1) == 1" ] },
+                    "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "stores_auto" } } ]
+                  }
+                ],
+                "else": [ { "run_eocs": "PF_STORES_try_6" } ]
+              }
+            ]
+          }
+        ],
+        "false_eocs": [ { "id": "PF_STORES_miss_5", "effect": [ { "run_eocs": "PF_STORES_try_6" } ] } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_STORES_try_6",
+    "//": "u = avatar.  Step 6 of choosing the stores: a f_bookcase within 10 tiles of home?",
+    "effect": [
+      {
+        "u_location_variable": { "global_val": "pf_sp_at" },
+        "furniture": "f_bookcase",
+        "target_max_radius": 15,
+        "true_eocs": [
+          {
+            "id": "PF_STORES_hit_6",
+            "effect": [
+              {
+                "if": { "math": [ "distance(pf_sp_at, pf_home_loc) <= 10" ] },
+                "then": [
+                  { "copy_var": { "global_val": "pf_sp_at" }, "target_var": { "global_val": "pf_stores_loc" } },
+                  { "math": [ "pf_stores_set = 1" ] },
+                  {
+                    "if": { "math": [ "value_or(pf_set_chatter, 1) == 1" ] },
+                    "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "stores_auto" } } ]
+                  }
+                ],
+                "else": [  ]
+              }
+            ]
+          }
+        ],
+        "false_eocs": [ { "id": "PF_STORES_miss_6", "effect": [  ] } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_STORES_count",
+    "//": "u = avatar.  pf_dr_real = how many food and medicine items are at the stores (0 when home isn't loaded).",
+    "effect": [
+      { "math": [ "pf_dr_real = 0" ] },
+      {
+        "if": { "and": [ { "math": [ "has_var(pf_stores_loc)" ] } ] },
+        "then": [
+          { "u_location_variable": { "global_val": "pf_dr_av" } },
+          {
+            "if": { "math": [ "distance(pf_dr_av, pf_stores_loc) <= 40" ] },
+            "then": [
+              {
+                "u_map_run_item_eocs": "all",
+                "loc": { "global_val": "pf_stores_loc" },
+                "min_radius": 0,
+                "max_radius": 2,
+                "search_data": [ { "category": [ "food", "drugs" ] } ],
+                "true_eocs": [ { "id": "PF_STORES_count_one", "effect": [ { "math": [ "pf_dr_real += 1" ] } ] } ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_STORES_draw",
+    "//": "u = avatar.  Tops pf_stores up toward pf_dr_want from the real stores (see above).",
+    "effect": [
+      { "math": [ "pf_dr_got = 0" ] },
+      {
+        "if": { "math": [ "value_or(pf_stores, 0) < pf_dr_want" ] },
+        "then": [
+          { "run_eocs": "PF_STORES_count" },
+          {
+            "math": [ "pf_dr_need = min(pf_dr_want - value_or(pf_stores, 0), floor(pf_dr_real / max(value_or(pf_dr_div, 1), 1)))" ]
+          },
+          {
+            "if": { "math": [ "(value_or(pf_dr_all, 0) == 1) * (pf_dr_need < pf_dr_want - value_or(pf_stores, 0))" ] },
+            "then": [ { "math": [ "pf_dr_need = 0" ] } ]
+          },
+          {
+            "if": { "math": [ "pf_dr_need > 0" ] },
+            "then": [
+              {
+                "u_map_run_item_eocs": "all",
+                "loc": { "global_val": "pf_stores_loc" },
+                "min_radius": 0,
+                "max_radius": 2,
+                "search_data": [ { "category": [ "food", "drugs" ] } ],
+                "true_eocs": [
+                  {
+                    "id": "PF_STORES_draw_one",
+                    "effect": [ { "if": { "math": [ "pf_dr_got < pf_dr_need" ] }, "then": [ { "math": [ "pf_dr_got += 1" ] }, "npc_die" ] } ]
+                  }
+                ]
+              },
+              { "math": [ "pf_stores = value_or(pf_stores, 0) + pf_dr_got" ] }
+            ]
+          }
+        ]
+      },
+      { "math": [ "pf_dr_div = 1" ] },
+      { "math": [ "pf_dr_all = 0" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOUSE_pack_sack",
+    "//": "u = avatar.  Home menu: a sack of supplies to carry to a band on the road.",
+    "condition": { "math": [ "value_or(pf_home_set, 0) == 1" ] },
+    "effect": [
+      { "run_eocs": "PF_STORES_count" },
+      {
+        "if": { "math": [ "pf_dr_real < 12" ] },
+        "then": [
+          {
+            "u_message": "There isn't enough in the stores to spare a sack.  (A dozen things to eat, and you near home.)",
+            "type": "info"
+          }
+        ],
+        "else": [
+          { "math": [ "pf_sk_took = 0" ] },
+          {
+            "u_map_run_item_eocs": "all",
+            "loc": { "global_val": "pf_stores_loc" },
+            "min_radius": 0,
+            "max_radius": 2,
+            "search_data": [ { "category": [ "food" ] } ],
+            "true_eocs": [
+              {
+                "id": "PF_HOUSE_sack_take",
+                "effect": [ { "if": { "math": [ "pf_sk_took < 6" ] }, "then": [ { "math": [ "pf_sk_took += 1" ] }, "npc_die" ] } ]
+              }
+            ]
+          },
+          { "u_spawn_item": "PF_supply_sack", "count": 1, "force_equip": true },
+          {
+            "u_message": "You tie six things to eat from the stores up in a sack and sling it over your shoulder.  It's yours to give.",
+            "type": "info"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "ITEM",
+    "subtypes": [ "ARMOR" ],
+    "id": "PF_supply_sack",
+    "name": { "str": "sack of supplies", "str_pl": "sacks of supplies" },
+    "description": "Six things to eat from the stores at home, tied up in a sack and slung over the shoulder.  Give it to a band out on the road: generosity is remembered.",
+    "weight": "3 kg",
+    "volume": "5 L",
+    "price": "0 cent",
+    "price_postapoc": "0 cent",
+    "material": [ "cotton" ],
+    "symbol": "[",
+    "color": "brown",
+    "category": "other",
+    "material_thickness": 1,
+    "armor": [ { "covers": [ "torso" ], "coverage": 5, "encumbrance": 4 } ],
+    "flags": [ "OVERSIZE", "BELTED", "WATER_FRIENDLY" ]
+  }
+]

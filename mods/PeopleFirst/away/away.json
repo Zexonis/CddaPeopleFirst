@@ -1,0 +1,1195 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_AW_tick",
+    "//": "Every 10 minutes while you have a home: at home (within 30 tiles), the household roll every 30 minutes; more than 60 tiles out, you're away; away, one away day per full day gone; back within 30 tiles, the homecoming.  Only math and your own position: nothing here touches the map at home while you're gone.",
+    "recurrence": "10 minutes",
+    "global": true,
+    "condition": { "math": [ "value_or(pf_home_set, 0) == 1" ] },
+    "effect": [
+      { "u_location_variable": { "global_val": "pf_aw_av" } },
+      { "math": [ "pf_aw_d = distance(pf_aw_av, pf_home_loc)" ] },
+      {
+        "if": { "math": [ "value_or(pf_aw_state, 0) == 1" ] },
+        "then": [
+          { "math": [ "pf_aw_due = floor((time('now') - pf_aw_since) / time('1 d'))" ] },
+          { "run_eocs": "PF_AW_day", "condition": { "math": [ "pf_aw_days_done < pf_aw_due" ] }, "iterations": 60 },
+          { "if": { "math": [ "pf_aw_d <= 30" ] }, "then": [ { "run_eocs": "PF_AW_return" } ] }
+        ],
+        "else": [
+          {
+            "if": { "math": [ "pf_aw_d > 60" ] },
+            "then": [ { "run_eocs": "PF_AW_leave" } ],
+            "else": [
+              {
+                "if": { "math": [ "(pf_aw_d <= 30) * (time('now') - value_or(pf_hh_t, 0) >= time('30 m'))" ] },
+                "then": [ { "run_eocs": "PF_AW_roll" } ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_AW_roll",
+    "//": "u = avatar, home.  Who lives here (uid, name, grown-up or child, job counts) and the animals, for while you're away (pf_hh_*).",
+    "effect": [
+      { "math": [ "pf_hh_t = time('now')" ] },
+      { "math": [ "pf_hh_n = 0" ] },
+      { "math": [ "pf_hh_adults = 0" ] },
+      { "math": [ "pf_hh_kids = 0" ] },
+      { "math": [ "pf_hh_cooks = 0" ] },
+      { "math": [ "pf_hh_foragers = 0" ] },
+      { "u_run_npc_eocs": [ "PF_AW_roll_one" ], "local": true, "npc_range": 60 },
+      { "if": { "math": [ "value_or(pf_aw_dead_pending, 0) == 1" ] }, "then": [ { "run_eocs": "PF_AW_bury_scan" } ] },
+      {
+        "math": [ "pf_hh_cows = monsters_nearby('mon_cow', 'radius': 25, 'location': pf_home_loc, 'attitude': 'friendly')" ]
+      },
+      {
+        "math": [ "pf_hh_goats = monsters_nearby('mon_goat', 'radius': 25, 'location': pf_home_loc, 'attitude': 'friendly')" ]
+      },
+      {
+        "math": [ "pf_hh_hens = monsters_nearby('mon_chicken', 'radius': 25, 'location': pf_home_loc, 'attitude': 'friendly')" ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_AW_roll_one",
+    "//": "u = someone who lives here.",
+    "condition": {
+      "and": [
+        { "math": [ "value_or(u_pf_resident, 0) == 1" ] },
+        { "math": [ "has_var(u_pf_uid)" ] },
+        { "math": [ "pf_hh_n < 24" ] }
+      ]
+    },
+    "effect": [
+      { "set_string_var": "pf_hh_uid_<global_val:pf_hh_n>", "target_var": { "context_val": "ru" }, "parse_tags": true },
+      { "copy_var": { "u_val": "pf_uid" }, "target_var": { "var_val": "ru" } },
+      { "set_string_var": "pf_hh_nm_<global_val:pf_hh_n>", "target_var": { "context_val": "rn" }, "parse_tags": true },
+      { "set_string_var": "<u_name>", "target_var": { "var_val": "rn" }, "parse_tags": true },
+      { "set_string_var": "pf_hh_ad_<global_val:pf_hh_n>", "target_var": { "context_val": "ra" }, "parse_tags": true },
+      {
+        "if": { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+        "then": [
+          { "math": [ "v_ra = 1" ] },
+          { "math": [ "pf_hh_adults += 1" ] },
+          { "if": { "math": [ "value_or(u_pf_role, 0) == 1" ] }, "then": [ { "math": [ "pf_hh_cooks += 1" ] } ] },
+          { "if": { "math": [ "value_or(u_pf_role, 0) == 3" ] }, "then": [ { "math": [ "pf_hh_foragers += 1" ] } ] }
+        ],
+        "else": [ { "math": [ "v_ra = 0" ] }, { "math": [ "pf_hh_kids += 1" ] } ]
+      },
+      { "math": [ "pf_hh_n += 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_AW_leave",
+    "//": "u = avatar, now more than 60 tiles from home.  From here the place is data until you're back.",
+    "effect": [
+      {
+        "if": { "math": [ "time('now') - value_or(pf_hh_t, 0) >= time('1 d')" ] },
+        "then": [
+          { "run_eocs": "PF_AW_roll" },
+          {
+            "if": { "math": [ "(pf_hh_n == 0) * (value_or(pf_residents_n, 0) > 0)" ] },
+            "then": [
+              { "math": [ "pf_hh_n = pf_residents_n" ] },
+              { "math": [ "pf_hh_adults = pf_residents_n" ] },
+              { "math": [ "pf_hh_cooks = 1" ] }
+            ]
+          }
+        ]
+      },
+      { "math": [ "pf_aw_state = 1" ] },
+      { "math": [ "pf_aw_since = time('now')" ] },
+      { "math": [ "pf_aw_days_done = 0" ] },
+      { "math": [ "pf_aw_news_n = 0" ] },
+      { "math": [ "pf_pn_soup = 0" ] },
+      { "math": [ "pf_pn_water = 0" ] },
+      { "math": [ "pf_pn_forage = 0" ] },
+      { "math": [ "pf_pn_eggs = 0" ] },
+      { "math": [ "pf_pn_harvest = 0" ] },
+      { "math": [ "pf_pn_del_0 = 0" ] },
+      { "math": [ "pf_pn_del_1 = 0" ] },
+      { "math": [ "pf_pn_del_2 = 0" ] },
+      { "math": [ "pf_aw_field_redo = 0" ] },
+      { "math": [ "pf_aw_meet_missed = 0" ] },
+      { "math": [ "pf_aw_wall_n = 0" ] },
+      { "math": [ "pf_aw_meet_dshow = 0" ] },
+      { "set_string_var": "none", "target_var": { "global_val": "pf_aw_hurt_uid" } },
+      { "math": [ "pf_aw_leaves_total = value_or(pf_aw_leaves_total, 0) + 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_AW_day",
+    "//": "u = avatar, away.  One day at home, as data: the pantry fills by the household's jobs (a cook's pot, water, the forager's finds, eggs by the last count; capped, since only you eat), the stores grow, the field is harvested when grown and planted again in season (its terrain catches up when you're back), and a missed meeting day is noted.",
+    "effect": [
+      { "math": [ "pf_aw_days_done += 1" ] },
+      { "math": [ "pf_aw_dno = floor(pf_aw_since / time('1 d')) + pf_aw_days_done" ] },
+      { "math": [ "pf_aw_dshow = pf_aw_dno + 1" ] },
+      { "math": [ "_wd = pf_aw_dshow - 1" ] },
+      { "math": [ "_ws = floor((_wd % 364) / 91)" ] },
+      { "math": [ "pf_aw_wday = (_wd % 91) + 1" ] },
+      {
+        "if": { "math": [ "_ws == 0" ] },
+        "then": [
+          {
+            "set_string_var": "Spring, day <global_val:pf_aw_wday>",
+            "target_var": { "global_val": "pf_aw_dwhen" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "_ws == 1" ] },
+        "then": [
+          {
+            "set_string_var": "Summer, day <global_val:pf_aw_wday>",
+            "target_var": { "global_val": "pf_aw_dwhen" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "_ws == 2" ] },
+        "then": [
+          {
+            "set_string_var": "Autumn, day <global_val:pf_aw_wday>",
+            "target_var": { "global_val": "pf_aw_dwhen" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "_ws == 3" ] },
+        "then": [
+          {
+            "set_string_var": "Winter, day <global_val:pf_aw_wday>",
+            "target_var": { "global_val": "pf_aw_dwhen" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "value_or(pf_hh_n, 0) > 0" ] },
+        "then": [
+          {
+            "if": { "math": [ "value_or(pf_hh_cooks, 0) > 0" ] },
+            "then": [ { "math": [ "pf_pn_soup = min(pf_pn_soup + 2, 6)" ] } ]
+          },
+          { "math": [ "pf_pn_water = min(pf_pn_water + 8, 16)" ] },
+          {
+            "if": { "math": [ "value_or(pf_hh_foragers, 0) > 0" ] },
+            "then": [ { "math": [ "pf_pn_forage = min(pf_pn_forage + 1, 4)" ] } ]
+          },
+          { "math": [ "pf_pn_eggs = min(pf_pn_eggs + floor((value_or(pf_hh_hens, 0) + 1) / 2), 12)" ] },
+          {
+            "math": [
+              "pf_stores = value_or(pf_stores, 0) + value_or(pf_hh_cows, 0) + value_or(pf_hh_goats, 0) + floor(value_or(pf_hh_hens, 0) / 4) + (value_or(pf_hh_adults, 0) >= 2)"
+            ]
+          },
+          {
+            "if": {
+              "math": [
+                "(value_or(pf_field_state, 0) == 2) * (time('now') - value_or(pf_field_t, 0) >= time('1 d') * (value_or(pf_set_grow, 1) == 0 ? 90 : (value_or(pf_set_grow, 1) == 1 ? 30 : 2)))"
+              ]
+            },
+            "then": [
+              { "math": [ "pf_field_state = 1" ] },
+              { "math": [ "pf_harvest_day = pf_aw_dno" ] },
+              { "math": [ "pf_stores = value_or(pf_stores, 0) + 20" ] },
+              { "math": [ "pf_harvests_total = value_or(pf_harvests_total, 0) + 1" ] },
+              { "math": [ "pf_pn_harvest = 1" ] },
+              { "math": [ "pf_aw_field_redo = 1" ] },
+              {
+                "if": { "math": [ "value_or(pf_aw_news_n, 0) < 8" ] },
+                "then": [
+                  { "set_string_var": "pf_aw_news_<global_val:pf_aw_news_n>", "target_var": { "context_val": "nk" }, "parse_tags": true },
+                  {
+                    "set_string_var": "<global_val:pf_aw_dwhen>: the field came in.  Potatoes, carrots, cabbages: the stores are full.",
+                    "target_var": { "var_val": "nk" },
+                    "parse_tags": true
+                  },
+                  { "math": [ "pf_aw_news_n = value_or(pf_aw_news_n, 0) + 1" ] }
+                ]
+              }
+            ],
+            "else": [
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_field_state, 0) == 1" ] },
+                    { "math": [ "value_or(pf_hh_adults, 0) > 0" ] },
+                    { "or": [ { "is_season": "spring" }, { "is_season": "summer" } ] }
+                  ]
+                },
+                "then": [
+                  { "math": [ "pf_field_state = 2" ] },
+                  { "math": [ "pf_field_t = time('now')" ] },
+                  { "math": [ "pf_plantings_total = value_or(pf_plantings_total, 0) + 1" ] },
+                  { "math": [ "pf_aw_field_redo = 1" ] },
+                  {
+                    "if": { "math": [ "value_or(pf_aw_news_n, 0) < 8" ] },
+                    "then": [
+                      { "set_string_var": "pf_aw_news_<global_val:pf_aw_news_n>", "target_var": { "context_val": "nk" }, "parse_tags": true },
+                      {
+                        "set_string_var": "<global_val:pf_aw_dwhen>: they planted the field again.",
+                        "target_var": { "var_val": "nk" },
+                        "parse_tags": true
+                      },
+                      { "math": [ "pf_aw_news_n = value_or(pf_aw_news_n, 0) + 1" ] }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "(pf_aw_dno % 7 == 2) * (value_or(pf_meetings_total, 0) > 0)" ] },
+            "then": [
+              {
+                "if": { "math": [ "pf_aw_meet_missed == 0" ] },
+                "then": [
+                  { "math": [ "pf_aw_meet_dshow = pf_aw_dshow" ] },
+                  { "copy_var": { "global_val": "pf_aw_dwhen" }, "target_var": { "global_val": "pf_aw_meet_dwhen" } }
+                ]
+              },
+              { "math": [ "pf_aw_meet_missed = 1" ] }
+            ]
+          },
+          {
+            "if": {
+              "math": [
+                "(value_or(pf_wall_state, 0) == 1) * (value_or(pf_hh_adults, 0) >= 2) * (value_or(pf_wall_side, 0) + pf_aw_wall_n < 4) * ((value_or(pf_law_rest, 0) == 1) * (pf_aw_dno % 7 == 2) == 0)"
+              ]
+            },
+            "then": [
+              { "math": [ "pf_aw_wall_n += 1" ] },
+              { "math": [ "pf_aw_wk = value_or(pf_wall_side, 0) + pf_aw_wall_n" ] },
+              {
+                "if": { "math": [ "pf_aw_wk == 1" ] },
+                "then": [ { "set_string_var": "north", "target_var": { "global_val": "pf_aw_wname" } } ]
+              },
+              {
+                "if": { "math": [ "pf_aw_wk == 2" ] },
+                "then": [ { "set_string_var": "east", "target_var": { "global_val": "pf_aw_wname" } } ]
+              },
+              {
+                "if": { "math": [ "pf_aw_wk == 3" ] },
+                "then": [ { "set_string_var": "south", "target_var": { "global_val": "pf_aw_wname" } } ]
+              },
+              {
+                "if": { "math": [ "pf_aw_wk == 4" ] },
+                "then": [ { "set_string_var": "west", "target_var": { "global_val": "pf_aw_wname" } } ]
+              },
+              {
+                "if": { "math": [ "value_or(pf_aw_news_n, 0) < 8" ] },
+                "then": [
+                  { "set_string_var": "pf_aw_news_<global_val:pf_aw_news_n>", "target_var": { "context_val": "nk" }, "parse_tags": true },
+                  {
+                    "set_string_var": "<global_val:pf_aw_dwhen>: the <global_val:pf_aw_wname> side of the wall went up.",
+                    "target_var": { "var_val": "nk" },
+                    "parse_tags": true
+                  },
+                  { "math": [ "pf_aw_news_n = value_or(pf_aw_news_n, 0) + 1" ] }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      { "math": [ "pf_aw_days_total = value_or(pf_aw_days_total, 0) + 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_AW_delivery",
+    "//": "u = avatar, current settlement (gen_keep.py PF_NB_upkeep), while you're away: the week's goods wait in the pantry instead of being dropped on an unloaded map.",
+    "effect": [
+      { "math": [ "pf_aw_dshow = floor(time('now') / time('1 d')) + 1" ] },
+      { "math": [ "_wd = pf_aw_dshow - 1" ] },
+      { "math": [ "_ws = floor((_wd % 364) / 91)" ] },
+      { "math": [ "pf_aw_wday = (_wd % 91) + 1" ] },
+      {
+        "if": { "math": [ "_ws == 0" ] },
+        "then": [
+          {
+            "set_string_var": "Spring, day <global_val:pf_aw_wday>",
+            "target_var": { "global_val": "pf_aw_dwhen" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "_ws == 1" ] },
+        "then": [
+          {
+            "set_string_var": "Summer, day <global_val:pf_aw_wday>",
+            "target_var": { "global_val": "pf_aw_dwhen" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "_ws == 2" ] },
+        "then": [
+          {
+            "set_string_var": "Autumn, day <global_val:pf_aw_wday>",
+            "target_var": { "global_val": "pf_aw_dwhen" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "_ws == 3" ] },
+        "then": [
+          {
+            "set_string_var": "Winter, day <global_val:pf_aw_wday>",
+            "target_var": { "global_val": "pf_aw_dwhen" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_cur_kind == 0" ] },
+        "then": [ { "math": [ "pf_pn_del_0 = min(pf_pn_del_0 + 1, 2)" ] } ]
+      },
+      {
+        "if": { "math": [ "pf_cur_kind == 1" ] },
+        "then": [ { "math": [ "pf_pn_del_1 = min(pf_pn_del_1 + 1, 2)" ] } ]
+      },
+      {
+        "if": { "math": [ "pf_cur_kind == 2" ] },
+        "then": [ { "math": [ "pf_pn_del_2 = min(pf_pn_del_2 + 1, 2)" ] } ]
+      },
+      {
+        "if": { "math": [ "value_or(pf_aw_news_n, 0) < 8" ] },
+        "then": [
+          { "set_string_var": "pf_aw_news_<global_val:pf_aw_news_n>", "target_var": { "context_val": "nk" }, "parse_tags": true },
+          {
+            "set_string_var": "<global_val:pf_aw_dwhen>: carts came from <global_val:pf_cur_name>, as agreed.",
+            "target_var": { "var_val": "nk" },
+            "parse_tags": true
+          },
+          { "math": [ "pf_aw_news_n = value_or(pf_aw_news_n, 0) + 1" ] }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_AW_raid_news",
+    "//": "u = avatar, current settlement (gen_keep.py PF_NB_raid), while you're away.  pf_aw_raid_held: 1 driven off, 0 got through.",
+    "effect": [
+      { "math": [ "pf_aw_dshow = floor(time('now') / time('1 d')) + 1" ] },
+      { "math": [ "_wd = pf_aw_dshow - 1" ] },
+      { "math": [ "_ws = floor((_wd % 364) / 91)" ] },
+      { "math": [ "pf_aw_wday = (_wd % 91) + 1" ] },
+      {
+        "if": { "math": [ "_ws == 0" ] },
+        "then": [
+          {
+            "set_string_var": "Spring, day <global_val:pf_aw_wday>",
+            "target_var": { "global_val": "pf_aw_dwhen" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "_ws == 1" ] },
+        "then": [
+          {
+            "set_string_var": "Summer, day <global_val:pf_aw_wday>",
+            "target_var": { "global_val": "pf_aw_dwhen" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "_ws == 2" ] },
+        "then": [
+          {
+            "set_string_var": "Autumn, day <global_val:pf_aw_wday>",
+            "target_var": { "global_val": "pf_aw_dwhen" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "_ws == 3" ] },
+        "then": [
+          {
+            "set_string_var": "Winter, day <global_val:pf_aw_wday>",
+            "target_var": { "global_val": "pf_aw_dwhen" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_aw_raid_held == 1" ] },
+        "then": [
+          {
+            "if": { "math": [ "value_or(pf_aw_news_n, 0) < 8" ] },
+            "then": [
+              { "set_string_var": "pf_aw_news_<global_val:pf_aw_news_n>", "target_var": { "context_val": "nk" }, "parse_tags": true },
+              {
+                "set_string_var": "<global_val:pf_aw_dwhen>: raiders from <global_val:pf_cur_name> tried the place in the night.  They were driven off.",
+                "target_var": { "var_val": "nk" },
+                "parse_tags": true
+              },
+              { "math": [ "pf_aw_news_n = value_or(pf_aw_news_n, 0) + 1" ] }
+            ]
+          }
+        ],
+        "else": [
+          {
+            "if": {
+              "math": [
+                "(value_or(pf_nb_att, 0) - value_or(pf_nb_def, 0) >= 3) * ((rand(1) == 0) + value_or(pf_aw_force_death, 0) > 0) * (value_or(pf_aw_dead_pending, 0) == 0)"
+              ]
+            },
+            "then": [ { "run_eocs": "PF_AW_raid_wound" } ],
+            "else": [
+              { "math": [ "pf_aw_wf = 0" ] },
+              { "if": { "math": [ "rand(1) == 0" ] }, "then": [ { "run_eocs": "PF_AW_raid_wound" } ] },
+              { "math": [ "pf_aw_wf = pf_aw_wf * 2" ] }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_aw_wf == 1" ] },
+            "then": [
+              { "copy_var": { "global_val": "pf_aw_hurt_uid" }, "target_var": { "global_val": "pf_aw_dead_uid" } },
+              { "copy_var": { "global_val": "pf_aw_hurt_name" }, "target_var": { "global_val": "pf_aw_dead_name" } },
+              { "set_string_var": "none", "target_var": { "global_val": "pf_aw_hurt_uid" } },
+              { "math": [ "pf_aw_dead_pending = 1" ] },
+              {
+                "if": { "math": [ "value_or(pf_aw_news_n, 0) < 8" ] },
+                "then": [
+                  { "set_string_var": "pf_aw_news_<global_val:pf_aw_news_n>", "target_var": { "context_val": "nk" }, "parse_tags": true },
+                  {
+                    "set_string_var": "<global_val:pf_aw_dwhen>: raiders from <global_val:pf_cur_name> got in and took <global_val:pf_nb_took> of the stores.  <global_val:pf_aw_dead_name> was killed holding the door.  They buried <global_val:pf_aw_dead_name> behind the place the next morning.",
+                    "target_var": { "var_val": "nk" },
+                    "parse_tags": true
+                  },
+                  { "math": [ "pf_aw_news_n = value_or(pf_aw_news_n, 0) + 1" ] }
+                ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_aw_wf == 2" ] },
+            "then": [
+              {
+                "if": { "math": [ "value_or(pf_aw_news_n, 0) < 8" ] },
+                "then": [
+                  { "set_string_var": "pf_aw_news_<global_val:pf_aw_news_n>", "target_var": { "context_val": "nk" }, "parse_tags": true },
+                  {
+                    "set_string_var": "<global_val:pf_aw_dwhen>: raiders from <global_val:pf_cur_name> got in and took <global_val:pf_nb_took> of the stores.  <global_val:pf_aw_hurt_name> was hurt trying to stop them.",
+                    "target_var": { "var_val": "nk" },
+                    "parse_tags": true
+                  },
+                  { "math": [ "pf_aw_news_n = value_or(pf_aw_news_n, 0) + 1" ] }
+                ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_aw_wf == 0" ] },
+            "then": [
+              {
+                "if": { "math": [ "value_or(pf_aw_news_n, 0) < 8" ] },
+                "then": [
+                  { "set_string_var": "pf_aw_news_<global_val:pf_aw_news_n>", "target_var": { "context_val": "nk" }, "parse_tags": true },
+                  {
+                    "set_string_var": "<global_val:pf_aw_dwhen>: raiders from <global_val:pf_cur_name> got in and took <global_val:pf_nb_took> of the stores.",
+                    "target_var": { "var_val": "nk" },
+                    "parse_tags": true
+                  },
+                  { "math": [ "pf_aw_news_n = value_or(pf_aw_news_n, 0) + 1" ] }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_AW_raid_wound",
+    "//": "u = avatar.  Picks someone grown-up on the roll (pf_aw_hurt_uid/name; pf_aw_wf = 1 if anyone).  The caller decides whether they're hurt or killed; either waits for your return.",
+    "effect": [
+      { "math": [ "pf_aw_wf = 0" ] },
+      { "math": [ "pf_aw_wt = 0" ] },
+      {
+        "run_eocs": "PF_AW_raid_wound_try",
+        "condition": { "math": [ "(pf_aw_wf == 0) * (pf_aw_wt < 12) * (value_or(pf_hh_n, 0) > 0)" ] },
+        "iterations": 13
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_AW_raid_wound_try",
+    "effect": [
+      { "math": [ "pf_aw_wt += 1" ] },
+      { "math": [ "pf_aw_wi = rand(pf_hh_n - 1)" ] },
+      {
+        "set_string_var": "pf_hh_ad_<global_val:pf_aw_wi>",
+        "target_var": { "context_val": "ra" },
+        "parse_tags": true
+      },
+      {
+        "if": { "math": [ "value_or(v_ra, 0) == 1" ] },
+        "then": [
+          { "math": [ "pf_aw_wf = 1" ] },
+          {
+            "set_string_var": "pf_hh_uid_<global_val:pf_aw_wi>",
+            "target_var": { "context_val": "ru" },
+            "parse_tags": true
+          },
+          { "copy_var": { "var_val": "ru" }, "target_var": { "global_val": "pf_aw_hurt_uid" } },
+          {
+            "set_string_var": "pf_hh_nm_<global_val:pf_aw_wi>",
+            "target_var": { "context_val": "rn" },
+            "parse_tags": true
+          },
+          { "copy_var": { "var_val": "rn" }, "target_var": { "global_val": "pf_aw_hurt_name" } }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_AW_return",
+    "//": "u = avatar, back within 30 tiles of home.  Half a day or more, or news from a shorter trip (a raid in the night): the homecoming.",
+    "effect": [
+      { "math": [ "pf_aw_state = 0" ] },
+      { "math": [ "pf_aw_back_t = time('now')" ] },
+      { "math": [ "pf_aw_gone_h = floor((time('now') - pf_aw_since) / time('1 h'))" ] },
+      { "math": [ "pf_aw_gone_d = floor(pf_aw_gone_h / 24)" ] },
+      {
+        "if": { "math": [ "(pf_aw_gone_h >= 12) + (value_or(pf_aw_news_n, 0) > 0) > 0" ] },
+        "then": [ { "run_eocs": "PF_AW_home" } ]
+      },
+      { "math": [ "pf_hh_t = 0" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_AW_home",
+    "//": "u = avatar.  The homecoming (concept 15.1): the welcome, the news, the pantry, the field, the days replayed, the wounded, the meeting.",
+    "effect": [
+      {
+        "set_string_var": "<global_val:pf_aw_gone_d> days",
+        "target_var": { "global_val": "pf_aw_gone_t" },
+        "parse_tags": true
+      },
+      {
+        "if": { "math": [ "pf_aw_gone_d == 1" ] },
+        "then": [ { "set_string_var": "a day", "target_var": { "global_val": "pf_aw_gone_t" } } ]
+      },
+      {
+        "if": { "math": [ "pf_aw_gone_d < 1" ] },
+        "then": [ { "set_string_var": "half a day", "target_var": { "global_val": "pf_aw_gone_t" } } ]
+      },
+      { "math": [ "pf_aw_gbest = -1" ] },
+      {
+        "if": { "math": [ "pf_aw_gone_h >= 12" ] },
+        "then": [
+          { "u_run_npc_eocs": [ "PF_AW_greet_cand" ], "local": true, "npc_range": 40 },
+          {
+            "if": { "math": [ "pf_aw_gbest >= 0" ] },
+            "then": [ { "run_eocs": "PF_AW_greet", "alpha_talker": { "global_val": "pf_aw_greeter" }, "beta_talker": "avatar" } ],
+            "else": [
+              {
+                "if": { "math": [ "value_or(pf_hh_n, 0) > 0" ] },
+                "then": [ { "run_eocs": "PF_SAY_away", "alpha_talker": "avatar", "variables": { "line": "welcome_none" } } ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "value_or(pf_aw_news_n, 0) > 0" ] },
+        "then": [
+          { "run_eocs": "PF_SAY_away", "alpha_talker": "avatar", "variables": { "line": "news_head" } },
+          {
+            "if": { "math": [ "pf_aw_news_n > 0" ] },
+            "then": [ { "u_message": "<global_val:pf_aw_news_0>", "type": "info" } ]
+          },
+          {
+            "if": { "math": [ "pf_aw_news_n > 1" ] },
+            "then": [ { "u_message": "<global_val:pf_aw_news_1>", "type": "info" } ]
+          },
+          {
+            "if": { "math": [ "pf_aw_news_n > 2" ] },
+            "then": [ { "u_message": "<global_val:pf_aw_news_2>", "type": "info" } ]
+          },
+          {
+            "if": { "math": [ "pf_aw_news_n > 3" ] },
+            "then": [ { "u_message": "<global_val:pf_aw_news_3>", "type": "info" } ]
+          },
+          {
+            "if": { "math": [ "pf_aw_news_n > 4" ] },
+            "then": [ { "u_message": "<global_val:pf_aw_news_4>", "type": "info" } ]
+          },
+          {
+            "if": { "math": [ "pf_aw_news_n > 5" ] },
+            "then": [ { "u_message": "<global_val:pf_aw_news_5>", "type": "info" } ]
+          },
+          {
+            "if": { "math": [ "pf_aw_news_n > 6" ] },
+            "then": [ { "u_message": "<global_val:pf_aw_news_6>", "type": "info" } ]
+          },
+          {
+            "if": { "math": [ "pf_aw_news_n > 7" ] },
+            "then": [ { "u_message": "<global_val:pf_aw_news_7>", "type": "info" } ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_aw_gone_h >= 12" ] },
+        "then": [ { "math": [ "pf_aw_birthing = 1" ] }, { "run_eocs": "PF_FAM_preg_tick" }, { "math": [ "pf_aw_birthing = 0" ] } ]
+      },
+      { "run_eocs": "PF_AW_bury_scan" },
+      { "run_eocs": "PF_AW_pantry" },
+      {
+        "if": { "math": [ "pf_aw_wall_n > 0" ] },
+        "then": [
+          { "math": [ "pf_aw_quiet = 1" ] },
+          { "math": [ "pf_aw_wi2 = 0" ] },
+          {
+            "run_eocs": { "id": "PF_AW_wall_one", "effect": [ { "math": [ "pf_aw_wi2 += 1" ] }, { "run_eocs": "PF_KEEP_wall_side" } ] },
+            "condition": { "math": [ "(pf_aw_wi2 < pf_aw_wall_n) * (value_or(pf_wall_state, 0) == 1)" ] },
+            "iterations": 5
+          },
+          { "math": [ "pf_aw_quiet = 0" ] }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_aw_field_redo == 1" ] },
+        "then": [
+          {
+            "if": { "math": [ "value_or(pf_field_state, 0) == 2" ] },
+            "then": [ { "u_transform_radius": 2, "ter_furn_transform": "PF_TOWN_t_plant", "target_var": { "global_val": "pf_field_loc" } } ]
+          },
+          {
+            "if": { "math": [ "value_or(pf_field_state, 0) == 1" ] },
+            "then": [
+              { "u_transform_radius": 2, "ter_furn_transform": "PF_TOWN_t_harvest", "target_var": { "global_val": "pf_field_loc" } }
+            ]
+          }
+        ]
+      },
+      { "if": { "math": [ "pf_aw_gone_h >= 12" ] }, "then": [ { "run_eocs": "PF_AW_replay" } ] },
+      {
+        "if": { "not": { "compare_string": [ { "global_val": "pf_aw_hurt_uid" }, "none" ] } },
+        "then": [
+          { "math": [ "pf_aw_hf = 0" ] },
+          {
+            "u_run_npc_eocs": [
+              {
+                "id": "PF_AW_hurt_find",
+                "condition": {
+                  "and": [
+                    { "math": [ "has_var(u_pf_uid)" ] },
+                    { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_aw_hurt_uid" } ] }
+                  ]
+                },
+                "effect": [
+                  { "math": [ "pf_aw_hf = 1" ] },
+                  { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+                  { "math": [ "pf_m_str_in = 50" ] },
+                  { "run_eocs": "PF_MK_near_death" }
+                ]
+              }
+            ],
+            "local": true,
+            "npc_range": 60
+          },
+          {
+            "if": { "math": [ "pf_aw_hf == 1" ] },
+            "then": [ { "run_eocs": "PF_SAY_away", "alpha_talker": "avatar", "variables": { "line": "hurt_back" } } ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "(pf_aw_meet_missed == 1) * (value_or(pf_meetings_total, 0) > 0)" ] },
+        "then": [
+          {
+            "if": { "math": [ "value_or(pf_chief_set, 0) == 1" ] },
+            "then": [
+              { "run_eocs": "PF_SAY_away", "alpha_talker": "avatar", "variables": { "line": "meeting_held" } },
+              { "run_eocs": "PF_KEEP_agenda" }
+            ],
+            "else": [
+              { "math": [ "pf_mt_due = 1" ] },
+              { "run_eocs": "PF_SAY_away", "alpha_talker": "avatar", "variables": { "line": "meeting_waited" } }
+            ]
+          }
+        ]
+      },
+      { "math": [ "pf_aw_returns_total = value_or(pf_aw_returns_total, 0) + 1" ] },
+      { "math": [ "pf_pn_soup = 0" ] },
+      { "math": [ "pf_pn_water = 0" ] },
+      { "math": [ "pf_pn_forage = 0" ] },
+      { "math": [ "pf_pn_eggs = 0" ] },
+      { "math": [ "pf_pn_harvest = 0" ] },
+      { "math": [ "pf_pn_del_0 = 0" ] },
+      { "math": [ "pf_pn_del_1 = 0" ] },
+      { "math": [ "pf_pn_del_2 = 0" ] },
+      { "math": [ "pf_aw_field_redo = 0" ] },
+      { "math": [ "pf_aw_meet_missed = 0" ] },
+      { "math": [ "pf_aw_wall_n = 0" ] },
+      { "math": [ "pf_aw_meet_dshow = 0" ] },
+      { "math": [ "pf_aw_news_n = 0" ] },
+      { "set_string_var": "none", "target_var": { "global_val": "pf_aw_hurt_uid" } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_AW_greet_cand",
+    "//": "u = someone near home.  Whoever cares most about you (warmth 20+, living here counts) meets you first.",
+    "condition": {
+      "and": [
+        { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+        { "math": [ "has_var(u_pf_uid)" ] },
+        { "not": { "u_has_effect": "sleep" } },
+        {
+          "not": {
+            "and": [
+              { "math": [ "value_or(pf_aw_dead_pending, 0) == 1" ] },
+              { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_aw_dead_uid" } ] }
+            ]
+          }
+        }
+      ]
+    },
+    "effect": [
+      { "run_eocs": "PF_ID_ensure" },
+      { "set_string_var": "AVATAR", "target_var": { "global_val": "pf_m_other" } },
+      { "run_eocs": "PF_VIEW_read" },
+      { "math": [ "_s = pf_read_w + 10 * (value_or(u_pf_resident, 0) == 1)" ] },
+      {
+        "if": { "math": [ "(_s >= 20) * (_s > pf_aw_gbest)" ] },
+        "then": [ { "math": [ "pf_aw_gbest = _s" ] }, { "u_set_talker": { "global_val": "pf_aw_greeter" } } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_AW_greet",
+    "//": "Alpha = the one who meets you, beta = you.  Words by how long you were gone; a welcomed_back moment (stronger the longer you were away).",
+    "effect": [
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+      {
+        "if": { "math": [ "pf_aw_gone_d >= 7" ] },
+        "then": [
+          { "run_eocs": "PF_SAY_away", "alpha_talker": "avatar", "variables": { "line": "welcome_long" } },
+          { "math": [ "pf_m_str_in = 60" ] }
+        ],
+        "else": [
+          {
+            "if": { "math": [ "pf_aw_gone_d >= 3" ] },
+            "then": [
+              { "run_eocs": "PF_SAY_away", "alpha_talker": "avatar", "variables": { "line": "welcome_mid" } },
+              { "math": [ "pf_m_str_in = 50" ] }
+            ],
+            "else": [
+              { "run_eocs": "PF_SAY_away", "alpha_talker": "avatar", "variables": { "line": "welcome_short" } },
+              { "math": [ "pf_m_str_in = 40" ] }
+            ]
+          }
+        ]
+      },
+      { "run_eocs": "PF_MK_welcomed_back" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_AW_pantry",
+    "//": "u = avatar, home.  What the place put by while you were away, as real items at home.",
+    "effect": [
+      { "math": [ "pf_aw_got = 0" ] },
+      {
+        "if": { "math": [ "pf_pn_soup > 0" ] },
+        "then": [
+          { "math": [ "pf_aw_got = 1" ] },
+          { "math": [ "pf_aw_bi = 0" ] },
+          {
+            "run_eocs": {
+              "id": "PF_AW_bowl",
+              "effect": [
+                { "math": [ "pf_aw_bi += 1" ] },
+                {
+                  "map_spawn_item": "soup_veggy",
+                  "loc": { "global_val": "pf_stores_loc" },
+                  "container": "ceramic_bowl",
+                  "count": 2
+                }
+              ]
+            },
+            "condition": { "math": [ "pf_aw_bi < pf_pn_soup / 2" ] },
+            "iterations": 4
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_pn_water > 0" ] },
+        "then": [
+          { "math": [ "pf_aw_bi = 0" ] },
+          {
+            "run_eocs": {
+              "id": "PF_AW_jug",
+              "effect": [
+                { "math": [ "pf_aw_bi += 1" ] },
+                {
+                  "map_spawn_item": "water_clean",
+                  "loc": { "global_val": "pf_stores_loc" },
+                  "container": "jug_plastic",
+                  "count": 8
+                }
+              ]
+            },
+            "condition": { "math": [ "pf_aw_bi < pf_pn_water / 8" ] },
+            "iterations": 3
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_pn_eggs > 0" ] },
+        "then": [
+          { "math": [ "pf_aw_got = 1" ] },
+          {
+            "map_spawn_item": "egg_chicken",
+            "loc": { "global_val": "pf_stores_loc" },
+            "count": { "global_val": "pf_pn_eggs" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_pn_forage > 0" ] },
+        "then": [
+          { "math": [ "pf_aw_got = 1" ] },
+          { "math": [ "pf_aw_n = 3 * pf_pn_forage" ] },
+          {
+            "map_spawn_item": "blueberries",
+            "loc": { "global_val": "pf_stores_loc" },
+            "count": { "global_val": "pf_aw_n" }
+          },
+          {
+            "map_spawn_item": "mushroom",
+            "loc": { "global_val": "pf_stores_loc" },
+            "count": { "global_val": "pf_pn_forage" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_pn_harvest > 0" ] },
+        "then": [
+          { "math": [ "pf_aw_got = 1" ] },
+          { "map_spawn_item": "potato", "loc": { "global_val": "pf_stores_loc" }, "count": 12 },
+          { "map_spawn_item": "carrot", "loc": { "global_val": "pf_stores_loc" }, "count": 10 },
+          { "map_spawn_item": "cabbage_head", "loc": { "global_val": "pf_stores_loc" }, "count": 4 }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_pn_del_2 > 0" ] },
+        "then": [
+          { "math": [ "pf_aw_got = 1" ] },
+          { "math": [ "pf_aw_n = 3 * pf_pn_del_2" ] },
+          { "math": [ "pf_aw_n2 = 5 * pf_pn_del_2" ] },
+          {
+            "map_spawn_item": "pemmican",
+            "loc": { "global_val": "pf_stores_loc" },
+            "count": { "global_val": "pf_aw_n" }
+          },
+          {
+            "map_spawn_item": "seed_potato_raw",
+            "loc": { "global_val": "pf_stores_loc" },
+            "count": { "global_val": "pf_aw_n2" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_pn_del_1 > 0" ] },
+        "then": [
+          { "math": [ "pf_aw_got = 1" ] },
+          { "math": [ "pf_aw_n = 10 * pf_pn_del_1" ] },
+          { "math": [ "pf_aw_n2 = 5 * pf_pn_del_1" ] },
+          {
+            "map_spawn_item": "aspirin",
+            "loc": { "global_val": "pf_stores_loc" },
+            "count": { "global_val": "pf_aw_n" }
+          },
+          {
+            "map_spawn_item": "bandages",
+            "loc": { "global_val": "pf_stores_loc" },
+            "count": { "global_val": "pf_aw_n2" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_pn_del_0 > 0" ] },
+        "then": [
+          { "math": [ "pf_aw_got = 1" ] },
+          { "math": [ "pf_aw_n = 10 * pf_pn_del_0" ] },
+          {
+            "map_spawn_item": "bolt_metal",
+            "loc": { "global_val": "pf_stores_loc" },
+            "count": { "global_val": "pf_aw_n" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_aw_got == 1" ] },
+        "then": [ { "run_eocs": "PF_SAY_away", "alpha_talker": "avatar", "variables": { "line": "pantry" } } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_AW_replay",
+    "//": "u = avatar.  For each day you were gone (up to 5), two of the grown-ups at home live a small day together, from their own views: warm pairs share evenings, tense ones bicker, strangers get to know each other.  The first warm and the first tense pair are told.",
+    "effect": [
+      { "math": [ "pf_aw_pn = 0" ] },
+      { "math": [ "pf_aw_ri = 0" ] },
+      { "math": [ "pf_aw_warm = 0" ] },
+      { "math": [ "pf_aw_tense = 0" ] },
+      { "math": [ "pf_aw_met = 0" ] },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_AW_present",
+            "condition": {
+              "and": [
+                { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+                { "math": [ "value_or(u_pf_resident, 0) == 1" ] },
+                { "math": [ "has_var(u_pf_uid)" ] },
+                { "math": [ "pf_aw_pn < 12" ] },
+                {
+                  "not": {
+                    "and": [
+                      { "math": [ "value_or(pf_aw_dead_pending, 0) == 1" ] },
+                      { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_aw_dead_uid" } ] }
+                    ]
+                  }
+                }
+              ]
+            },
+            "effect": [
+              { "set_string_var": "pf_aw_p_<global_val:pf_aw_pn>", "target_var": { "context_val": "pu" }, "parse_tags": true },
+              { "copy_var": { "u_val": "pf_uid" }, "target_var": { "var_val": "pu" } },
+              { "math": [ "pf_aw_pn += 1" ] }
+            ]
+          }
+        ],
+        "local": true,
+        "npc_range": 60
+      },
+      { "math": [ "pf_aw_rd = min(max(pf_aw_gone_d, 1), 5)" ] },
+      {
+        "if": { "math": [ "pf_aw_pn >= 2" ] },
+        "then": [
+          { "run_eocs": "PF_AW_replay_one", "condition": { "math": [ "pf_aw_ri < pf_aw_rd" ] }, "iterations": 6 },
+          {
+            "if": { "math": [ "pf_aw_warm == 1" ] },
+            "then": [ { "run_eocs": "PF_SAY_away", "alpha_talker": "avatar", "variables": { "line": "days_warm" } } ]
+          },
+          {
+            "if": { "math": [ "pf_aw_tense == 1" ] },
+            "then": [ { "run_eocs": "PF_SAY_away", "alpha_talker": "avatar", "variables": { "line": "days_tense" } } ]
+          },
+          {
+            "if": { "math": [ "(pf_aw_warm == 0) * (pf_aw_tense == 0) * (pf_aw_met == 1)" ] },
+            "then": [ { "run_eocs": "PF_SAY_away", "alpha_talker": "avatar", "variables": { "line": "days_met" } } ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_AW_replay_one",
+    "//": "u = avatar.  One replayed day: two different grown-ups at home (found this turn, so the stored talkers are fresh).",
+    "effect": [
+      { "math": [ "pf_aw_ri += 1" ] },
+      { "math": [ "pf_aw_ia = rand(pf_aw_pn - 1)" ] },
+      { "math": [ "pf_aw_ib = rand(pf_aw_pn - 2)" ] },
+      { "if": { "math": [ "pf_aw_ib >= pf_aw_ia" ] }, "then": [ { "math": [ "pf_aw_ib += 1" ] } ] },
+      { "set_string_var": "pf_aw_p_<global_val:pf_aw_ia>", "target_var": { "context_val": "ra" }, "parse_tags": true },
+      { "copy_var": { "var_val": "ra" }, "target_var": { "global_val": "pf_aw_ua" } },
+      { "set_string_var": "pf_aw_p_<global_val:pf_aw_ib>", "target_var": { "context_val": "rb" }, "parse_tags": true },
+      { "copy_var": { "var_val": "rb" }, "target_var": { "global_val": "pf_aw_ub" } },
+      { "math": [ "pf_aw_fa = 0" ] },
+      { "math": [ "pf_aw_fb = 0" ] },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_AW_rp_a",
+            "condition": {
+              "and": [ { "math": [ "has_var(u_pf_uid)" ] }, { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_aw_ua" } ] } ]
+            },
+            "effect": [ { "math": [ "pf_aw_fa = 1" ] }, { "u_set_talker": { "global_val": "pf_aw_ta" } } ]
+          },
+          {
+            "id": "PF_AW_rp_b",
+            "condition": {
+              "and": [ { "math": [ "has_var(u_pf_uid)" ] }, { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_aw_ub" } ] } ]
+            },
+            "effect": [ { "math": [ "pf_aw_fb = 1" ] }, { "u_set_talker": { "global_val": "pf_aw_tb" } } ]
+          }
+        ],
+        "local": true,
+        "npc_range": 60
+      },
+      {
+        "if": { "math": [ "pf_aw_fa * pf_aw_fb == 1" ] },
+        "then": [
+          { "run_eocs": "PF_AW_pair", "alpha_talker": { "global_val": "pf_aw_ta" }, "beta_talker": { "global_val": "pf_aw_tb" } }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_AW_pair",
+    "//": "Alpha = one of them, beta = the other.  From alpha's view of beta: tension 25+ bicker, warmth 15+ an evening together, else a shared meal.",
+    "effect": [
+      { "copy_var": { "npc_val": "pf_uid" }, "target_var": { "global_val": "pf_m_other" } },
+      { "run_eocs": "PF_VIEW_read" },
+      { "math": [ "pf_m_str_in = 30" ] },
+      {
+        "if": { "math": [ "pf_read_x >= 25" ] },
+        "then": [
+          { "run_eocs": "PF_MK_bicker" },
+          {
+            "if": { "math": [ "pf_aw_tense == 0" ] },
+            "then": [
+              { "math": [ "pf_aw_tense = 1" ] },
+              { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_aw_tn_a" }, "parse_tags": true },
+              { "set_string_var": "<npc_name>", "target_var": { "global_val": "pf_aw_tn_b" }, "parse_tags": true }
+            ]
+          }
+        ],
+        "else": [
+          {
+            "if": { "math": [ "pf_read_w >= 15" ] },
+            "then": [
+              { "run_eocs": "PF_MK_fire_evening" },
+              {
+                "if": { "math": [ "pf_aw_warm == 0" ] },
+                "then": [
+                  { "math": [ "pf_aw_warm = 1" ] },
+                  { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_aw_wm_a" }, "parse_tags": true },
+                  { "set_string_var": "<npc_name>", "target_var": { "global_val": "pf_aw_wm_b" }, "parse_tags": true }
+                ]
+              }
+            ],
+            "else": [
+              { "run_eocs": "PF_MK_meal_shared" },
+              {
+                "if": { "math": [ "pf_aw_met == 0" ] },
+                "then": [
+                  { "math": [ "pf_aw_met = 1" ] },
+                  { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_aw_mt_a" }, "parse_tags": true },
+                  { "set_string_var": "<npc_name>", "target_var": { "global_val": "pf_aw_mt_b" }, "parse_tags": true }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_AW_bury_scan",
+    "//": "u = avatar (pass 2).  Whoever a raid killed while you were away: found at home, they're in the ground (a fresh grave near where they stood) and the death is real now.  The death hooks bring the grief; the burial already happened (pf_unburied = 0), so the mourning goes on at the fire.",
+    "effect": [
+      { "math": [ "pf_aw_df = 0" ] },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_AW_bury_find",
+            "condition": {
+              "and": [
+                { "math": [ "has_var(u_pf_uid)" ] },
+                { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_aw_dead_uid" } ] }
+              ]
+            },
+            "effect": [ { "math": [ "pf_aw_df = 1" ] }, { "run_eocs": "PF_AW_bury" } ]
+          }
+        ],
+        "local": true,
+        "npc_range": 60
+      },
+      {
+        "if": { "math": [ "pf_aw_df == 1" ] },
+        "then": [
+          { "math": [ "pf_aw_dead_pending = 0" ] },
+          { "math": [ "pf_unburied = 0" ] },
+          {
+            "if": { "math": [ "pf_aw_grave_ok == 1" ] },
+            "then": [ { "run_eocs": "PF_SAY_away", "alpha_talker": "avatar", "variables": { "line": "grave" } } ],
+            "else": [ { "run_eocs": "PF_SAY_away", "alpha_talker": "avatar", "variables": { "line": "grave_none" } } ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_AW_bury",
+    "//": "u = the one the raid killed (pass 2).  A fresh grave on bare dirt or grass near them, then they're gone (no corpse, no message: the news told it).",
+    "effect": [
+      { "math": [ "pf_aw_grave_ok = 0" ] },
+      {
+        "u_location_variable": { "global_val": "pf_aw_grave" },
+        "terrain": "t_dirt",
+        "target_max_radius": 12,
+        "min_radius": 2,
+        "true_eocs": [
+          {
+            "id": "PF_AW_dig",
+            "effect": [
+              { "math": [ "pf_aw_grave_ok = 1" ] },
+              {
+                "u_transform_radius": 0,
+                "ter_furn_transform": "PF_AW_t_grave",
+                "target_var": { "global_val": "pf_aw_grave" }
+              }
+            ]
+          }
+        ],
+        "false_eocs": [
+          {
+            "id": "PF_AW_dig_grass",
+            "effect": [
+              {
+                "u_location_variable": { "global_val": "pf_aw_grave" },
+                "terrain": "t_grass",
+                "target_max_radius": 12,
+                "min_radius": 2,
+                "true_eocs": [ "PF_AW_dig" ]
+              }
+            ]
+          }
+        ]
+      },
+      { "math": [ "u_pf_aw_buried = 1" ] },
+      { "u_die": { "remove_corpse": true, "supress_message": true } }
+    ]
+  },
+  {
+    "type": "ter_furn_transform",
+    "id": "PF_AW_t_grave",
+    "terrain": [ { "result": "t_grave_new", "valid_flags": [ "DIGGABLE" ] } ]
+  }
+]

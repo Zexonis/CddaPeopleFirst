@@ -1,0 +1,137 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FAM_teach_try",
+    "//": "Alpha = the teacher, beta = the child.  Tries skill (pf_tk_s + pf_tk_i) mod 6: if the teacher knows it better and the child is below 4, the child goes up a level and pf_tk_how says what they learned.",
+    "effect": [
+      { "math": [ "pf_tk_k = (pf_tk_s + pf_tk_i) % 6" ] },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_tk_k == 0" ] },
+            { "math": [ "u_skill('survival') > n_skill('survival')" ] },
+            { "math": [ "n_skill('survival') < 4" ] }
+          ]
+        },
+        "then": [
+          { "math": [ "n_skill('survival') += 1" ] },
+          { "set_string_var": "how to set a snare", "target_var": { "global_val": "pf_tk_how" } },
+          { "math": [ "pf_tk_done = 1" ] }
+        ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_tk_k == 1" ] },
+            { "math": [ "u_skill('fabrication') > n_skill('fabrication')" ] },
+            { "math": [ "n_skill('fabrication') < 4" ] }
+          ]
+        },
+        "then": [
+          { "math": [ "n_skill('fabrication') += 1" ] },
+          {
+            "set_string_var": "how to sharpen a knife without losing a finger",
+            "target_var": { "global_val": "pf_tk_how" }
+          },
+          { "math": [ "pf_tk_done = 1" ] }
+        ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_tk_k == 2" ] },
+            { "math": [ "u_skill('cooking') > n_skill('cooking')" ] },
+            { "math": [ "n_skill('cooking') < 4" ] }
+          ]
+        },
+        "then": [
+          { "math": [ "n_skill('cooking') += 1" ] },
+          {
+            "set_string_var": "how to tell when the water's really boiling",
+            "target_var": { "global_val": "pf_tk_how" }
+          },
+          { "math": [ "pf_tk_done = 1" ] }
+        ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_tk_k == 3" ] },
+            { "math": [ "u_skill('firstaid') > n_skill('firstaid')" ] },
+            { "math": [ "n_skill('firstaid') < 4" ] }
+          ]
+        },
+        "then": [
+          { "math": [ "n_skill('firstaid') += 1" ] },
+          { "set_string_var": "how to wrap a bandage tight enough", "target_var": { "global_val": "pf_tk_how" } },
+          { "math": [ "pf_tk_done = 1" ] }
+        ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_tk_k == 4" ] },
+            { "math": [ "u_skill('tailor') > n_skill('tailor')" ] },
+            { "math": [ "n_skill('tailor') < 4" ] }
+          ]
+        },
+        "then": [
+          { "math": [ "n_skill('tailor') += 1" ] },
+          { "set_string_var": "how to patch a hole in a jacket", "target_var": { "global_val": "pf_tk_how" } },
+          { "math": [ "pf_tk_done = 1" ] }
+        ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_tk_k == 5" ] },
+            { "math": [ "u_skill('mechanics') > n_skill('mechanics')" ] },
+            { "math": [ "n_skill('mechanics') < 4" ] }
+          ]
+        },
+        "then": [
+          { "math": [ "n_skill('mechanics') += 1" ] },
+          { "set_string_var": "which end of a wrench does what", "target_var": { "global_val": "pf_tk_how" } },
+          { "math": [ "pf_tk_done = 1" ] }
+        ]
+      },
+      { "math": [ "pf_tk_i += 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FAM_teach_do",
+    "//": "Alpha = the teacher (an adult, or you), beta = the child.  Learning by watching and doing; a taught moment (warmth and trust both ways).",
+    "effect": [
+      { "math": [ "pf_tk_done = 0" ] },
+      { "math": [ "pf_tk_s = rand(5)" ] },
+      { "math": [ "pf_tk_i = 0" ] },
+      {
+        "run_eocs": "PF_FAM_teach_try",
+        "condition": { "and": [ { "math": [ "pf_tk_i < 6" ] }, { "math": [ "pf_tk_done == 0" ] } ] },
+        "iterations": 7
+      },
+      {
+        "if": { "math": [ "pf_tk_done == 1" ] },
+        "then": [
+          { "math": [ "n_pf_taught_t = time('now')" ] },
+          { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_b" }, "parse_tags": true },
+          { "set_string_var": "<npc_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+          {
+            "if": { "math": [ "value_or(pf_tk_quiet, 0) == 0" ] },
+            "then": [
+              {
+                "if": "u_is_avatar",
+                "then": [ { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "kid_learn_you" } } ],
+                "else": [ { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "kid_learn" } } ]
+              }
+            ]
+          },
+          { "math": [ "pf_m_str_in = 40" ] },
+          { "run_eocs": "PF_MK_taught" },
+          { "math": [ "pf_taught_total = value_or(pf_taught_total, 0) + 1" ] }
+        ]
+      }
+    ]
+  }
+]

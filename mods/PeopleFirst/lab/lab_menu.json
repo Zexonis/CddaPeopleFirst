@@ -1,0 +1,633 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_open_lab_menu",
+    "effect": [
+      {
+        "run_eoc_selector": [
+          "PF_LAB_run_all",
+          "PF_LAB_spawn_band",
+          "PF_LAB_send_away",
+          "PF_LAB_locate",
+          "PF_LAB_toggle_sim",
+          "PF_LAB_tick_now",
+          "PF_LAB_watch",
+          "PF_LAB_recall",
+          "PF_LAB_toggle_debug",
+          "PF_LAB_remove_band",
+          "PF_LAB_walk_test",
+          "PF_LAB_kill_leader",
+          "PF_LAB_kill_member",
+          "PF_LAB_perf_add",
+          "PF_LAB_spawn_family",
+          "PF_LAB_bench",
+          "PF_LAB_bench1",
+          "PF_LAB_bench2",
+          "PF_LAB_remove_all"
+        ],
+        "names": [
+          "0. RUN ALL CORE TESTS",
+          "1. Spawn test band",
+          "2. Send band far away (test T1)",
+          "3. Locate band",
+          "4. Toggle simulation",
+          "5. Run one A-Life tick now",
+          "6. Watch the band from 30 tiles away",
+          "7. Recall band to me (test T3)",
+          "8. Toggle debug log",
+          "9. Remove test band",
+          "W. Walk test (turn the simulation off first)",
+          "K. Kill the band leader (succession test)",
+          "J. Kill one band member",
+          "P. Add 10 bands far away (performance)",
+          "C. Spawn a family (parent, child, adult)",
+          "B. Benchmark: 30 ticks now",
+          "Y. Benchmark: roster loop only (30x)",
+          "Z. Benchmark: loop + reach leaders (30x)",
+          "X. Remove ALL bands"
+        ],
+        "descriptions": [
+          "Spawns the band if needed, sends it far away (T1), locates it off-screen, runs 3 A-Life ticks, locates it again (T2), then teleports you 30 tiles from it and runs one more tick to check the handoff (HANDOFF).  Prints a PASS/FAIL summary.",
+          "Spawns a band of three hunters next to you: a leader and two members.",
+          "Teleports the band 8 overmap tiles north, far outside the reality bubble, in formation.  Patrol: waypoint A (8 north), then waypoint B (8 east, 16 north).",
+          "Asks the world where the band is right now, even far outside the reality bubble, and how far each member is from the leader.",
+          "Starts or pauses the A-Life tick (every game minute).  Off-screen, bands travel by abstract steps.  On-screen, they walk using the game's own pathfinding.",
+          "Runs a single A-Life tick immediately, without waiting a game minute.",
+          "Teleports you 30 tiles south of the band leader's last located position.  The next tick hands the band off.  Run 'Locate band' first.",
+          "Teleports the band from wherever it is to you, and checks that everyone arrived.",
+          "Shows or hides the per-tick A-Life log message.",
+          "Kills the test band (members first, then the leader; no corpses).  The death hook dissolves it.",
+          "Orders the band (if it is near you) to walk to a spot 10 tiles east of you, in formation.",
+          "Kills the test band's leader wherever it is.  A member should take over the band, its patrol and the other members.",
+          "Kills one member of the test band.  The leader should drop it from the band.",
+          "Spawns 10 bands of three and scatters them 5-15 overmap tiles away with random patrols.  Press repeatedly for 20, 50 or 100 bands.",
+          "Spawns a parent, a child and another adult as one band, patrolling near you on-screen.  Tests the kid NPC (small body, never fights, follows the band) and child-aware succession.",
+          "Runs 30 A-Life ticks back to back without passing game time.  Time it from outside the game.",
+          "Profiling: visits every roster slot 30 times without touching any NPC.",
+          "Profiling: reaches every band leader by unique id 30 times with an empty EOC.",
+          "Kills every band in the roster, including the test band."
+        ],
+        "keys": [ "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "w", "k", "j", "p", "c", "b", "y", "z", "x" ],
+        "title": "A-Life Lab  |  sim on: <global_val:pf_alife_on>  debug log: <global_val:pf_debug>  roster slots: <global_val:pf_band_n>",
+        "allow_cancel": true,
+        "hilight_disabled": true
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LAB_run_all",
+    "effect": [
+      { "if": { "not": { "math": [ "value_or(pf_lab_spawned, 0) == 1" ] } }, "then": [ { "run_eocs": "PF_LAB_spawn_band" } ] },
+      { "run_eocs": "PF_LAB_send_away" },
+      { "run_eocs": "PF_LAB_locate" },
+      { "math": [ "pf_lab_found_before = pf_lab_lead_found + pf_lab_members_found" ] },
+      { "copy_var": { "global_val": "pf_lab_lead_pos" }, "target_var": { "global_val": "pf_lab_lead_pos_before" } },
+      { "run_eocs": "PF_ALIFE_run_tick", "iterations": 3 },
+      { "run_eocs": "PF_LAB_locate" },
+      { "math": [ "pf_lab_t2_moved = distance(pf_lab_lead_pos_before, pf_lab_lead_pos)" ] },
+      { "u_message": "[A-Life Lab] ===== SUMMARY =====", "type": "info" },
+      {
+        "if": { "math": [ "pf_lab_t1_ok == 3" ] },
+        "then": [ { "u_message": "PASS  T1: the whole band teleported far outside the reality bubble.", "type": "good" } ],
+        "else": [ { "u_message": "FAIL  T1: only <global_val:pf_lab_t1_ok> of 3 hunters arrived far away.", "type": "bad" } ]
+      },
+      {
+        "if": { "math": [ "pf_lab_found_before == 3" ] },
+        "then": [ { "u_message": "PASS  REACH: scripts can find all three hunters while they are off-screen.", "type": "good" } ],
+        "else": [
+          { "u_message": "FAIL  REACH: only <global_val:pf_lab_found_before> of 3 hunters reachable off-screen.", "type": "bad" }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_lab_t2_moved >= 100" ] },
+        "then": [
+          { "u_message": "PASS  T2: the leader moved <global_val:pf_lab_t2_moved> tiles off-screen in 3 ticks.", "type": "good" }
+        ],
+        "else": [
+          {
+            "u_message": "FAIL  T2: the leader moved only <global_val:pf_lab_t2_moved> tiles off-screen in 3 ticks (expected about 180).",
+            "type": "bad"
+          }
+        ]
+      },
+      { "run_eocs": "PF_LAB_watch" },
+      { "run_eocs": "PF_ALIFE_run_tick" },
+      { "math": [ "pf_lab_handoff_quarry = pf_dbg_quarry" ] },
+      { "run_eocs": "PF_LAB_locate" },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_lab_lead_online == 1" ] },
+            { "math": [ "pf_lab_lead_dist <= 40" ] },
+            { "math": [ "pf_lab_members_found == 2" ] },
+            { "math": [ "pf_lab_spread <= 5" ] },
+            { "math": [ "pf_lab_handoff_quarry == 1" ] }
+          ]
+        },
+        "then": [
+          {
+            "u_message": "PASS  HANDOFF: the parked band was placed at its virtual position near you, in formation (farthest member <global_val:pf_lab_spread> tiles), with one deer.",
+            "type": "good"
+          }
+        ],
+        "else": [
+          {
+            "u_message": "FAIL  HANDOFF: online <global_val:pf_lab_lead_online>, leader <global_val:pf_lab_lead_dist> tiles away, members <global_val:pf_lab_members_found> of 2, spread <global_val:pf_lab_spread>, quarry <global_val:pf_lab_handoff_quarry>.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "u_message": "[A-Life Lab] Next: 'K' tests succession, 'P' adds 10 bands for performance, '6' then '5' shows the handoff.",
+        "type": "info"
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LAB_spawn_band",
+    "condition": { "not": { "math": [ "value_or(pf_lab_spawned, 0) == 1" ] } },
+    "effect": [
+      { "run_eocs": "PF_LAB_spawn_band_here" },
+      { "math": [ "pf_lab_band = pf_band_new_idx" ] },
+      { "math": [ "pf_lab_spawned = 1" ] },
+      {
+        "u_message": "[A-Life Lab] A band of three hunters (band <global_val:pf_lab_band>) spawned nearby.  Talk to them to see their debug state.",
+        "type": "good"
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LAB_send_away",
+    "condition": { "math": [ "value_or(pf_lab_spawned, 0) == 1" ] },
+    "effect": [
+      { "run_eocs": "PF_LAB_refresh" },
+      { "u_location_variable": { "global_val": "pf_lab_wp_a" } },
+      { "location_variable_adjust": { "global_val": "pf_lab_wp_a" }, "y_adjust": -8, "overmap_tile": true },
+      { "u_location_variable": { "global_val": "pf_lab_wp_b" } },
+      {
+        "location_variable_adjust": { "global_val": "pf_lab_wp_b" },
+        "x_adjust": 8,
+        "y_adjust": -16,
+        "overmap_tile": true
+      },
+      {
+        "u_run_npc_eocs": [ "PF_LAB_send_away_leader" ],
+        "unique_ids": [ { "global_val": "pf_lab_lead_uid" } ],
+        "local": false
+      },
+      { "copy_var": { "global_val": "pf_lab_wp_a" }, "target_var": { "global_val": "pf_lab_check_at" } },
+      { "math": [ "pf_lab_check_r = 8" ] },
+      { "math": [ "pf_lab_ok = 0" ] },
+      { "math": [ "pf_lab_fail = 0" ] },
+      {
+        "u_run_npc_eocs": [ "PF_LAB_verify_near" ],
+        "unique_ids": [
+          { "global_val": "pf_lab_lead_uid" },
+          { "global_val": "pf_lab_m0" },
+          { "global_val": "pf_lab_m1" },
+          { "global_val": "pf_lab_m2" },
+          { "global_val": "pf_lab_m3" },
+          { "global_val": "pf_lab_m4" }
+        ],
+        "local": false
+      },
+      { "math": [ "pf_lab_t1_ok = pf_lab_ok" ] },
+      {
+        "u_message": "[A-Life Lab] T1 (bubble to far away): <global_val:pf_lab_ok> arrived, <global_val:pf_lab_fail> did not.  Now try 'Locate band'.",
+        "type": "info"
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LAB_locate",
+    "condition": { "math": [ "value_or(pf_lab_spawned, 0) == 1" ] },
+    "effect": [
+      { "run_eocs": "PF_LAB_refresh" },
+      { "u_location_variable": { "global_val": "pf_player_pos" } },
+      { "math": [ "pf_lab_lead_found = 0" ] },
+      { "math": [ "pf_lab_members_found = 0" ] },
+      { "math": [ "pf_lab_spread = 0" ] },
+      {
+        "u_run_npc_eocs": [ "PF_LAB_locate_leader" ],
+        "unique_ids": [ { "global_val": "pf_lab_lead_uid" } ],
+        "local": false
+      },
+      {
+        "if": { "math": [ "pf_lab_lead_found == 1" ] },
+        "then": [
+          {
+            "u_run_npc_eocs": [ "PF_LAB_locate_member" ],
+            "unique_ids": [
+              { "global_val": "pf_lab_m0" },
+              { "global_val": "pf_lab_m1" },
+              { "global_val": "pf_lab_m2" },
+              { "global_val": "pf_lab_m3" },
+              { "global_val": "pf_lab_m4" }
+            ],
+            "local": false
+          },
+          {
+            "u_message": "[A-Life Lab] Band <global_val:pf_lab_band>, leader <global_val:pf_lab_lead_uid>: <global_val:pf_lab_lead_dist> tiles away (<global_val:pf_lab_lead_east> overmap tiles east, <global_val:pf_lab_lead_south> south).  Online: <global_val:pf_lab_lead_online>.  Members found: <global_val:pf_lab_members_found>, farthest <global_val:pf_lab_spread> tiles from the leader (off-screen, bodies stay parked while the band's position is virtual).",
+            "type": "info"
+          }
+        ],
+        "else": [ { "u_message": "[A-Life Lab] Band leader: NOT FOUND.", "type": "bad" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LAB_toggle_sim",
+    "effect": [
+      { "math": [ "pf_alife_on = ( pf_alife_on == 1 ) ? 0 : 1" ] },
+      { "u_message": "[A-Life Lab] Simulation is now <global_val:pf_alife_on> (1 = on).", "type": "info" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LAB_tick_now",
+    "effect": [
+      { "math": [ "_old_debug = pf_debug" ] },
+      { "math": [ "pf_debug = 1" ] },
+      { "run_eocs": "PF_ALIFE_run_tick" },
+      { "math": [ "pf_debug = _old_debug" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LAB_watch",
+    "condition": { "math": [ "value_or(pf_lab_lead_found, 0) == 1" ] },
+    "effect": [
+      { "copy_var": { "global_val": "pf_lab_lead_pos" }, "target_var": { "global_val": "pf_lab_watch_at" } },
+      { "location_variable_adjust": { "global_val": "pf_lab_watch_at" }, "y_adjust": 30 },
+      { "u_teleport": { "global_val": "pf_lab_watch_at" }, "force_safe": true },
+      { "copy_var": { "global_val": "pf_lab_watch_at" }, "target_var": { "global_val": "pf_place_at" } },
+      { "run_eocs": "PF_ALIFE_avoid_water" },
+      {
+        "u_message": "[A-Life Lab] You arrive 30 tiles south of where the band leader was.  Run one tick to hand the band off.",
+        "type": "info"
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LAB_recall",
+    "condition": { "math": [ "value_or(pf_lab_spawned, 0) == 1" ] },
+    "effect": [
+      { "run_eocs": "PF_LAB_refresh" },
+      { "u_location_variable": { "global_val": "pf_player_pos" } },
+      {
+        "u_run_npc_eocs": [ "PF_LAB_recall_leader" ],
+        "unique_ids": [ { "global_val": "pf_lab_lead_uid" } ],
+        "local": false
+      },
+      { "copy_var": { "global_val": "pf_player_pos" }, "target_var": { "global_val": "pf_lab_check_at" } },
+      { "math": [ "pf_lab_check_r = 10" ] },
+      { "math": [ "pf_lab_ok = 0" ] },
+      { "math": [ "pf_lab_fail = 0" ] },
+      {
+        "u_run_npc_eocs": [ "PF_LAB_verify_near" ],
+        "unique_ids": [
+          { "global_val": "pf_lab_lead_uid" },
+          { "global_val": "pf_lab_m0" },
+          { "global_val": "pf_lab_m1" },
+          { "global_val": "pf_lab_m2" },
+          { "global_val": "pf_lab_m3" },
+          { "global_val": "pf_lab_m4" }
+        ],
+        "local": false
+      },
+      {
+        "u_message": "[A-Life Lab] T3 (far away to bubble): <global_val:pf_lab_ok> arrived, <global_val:pf_lab_fail> did not.",
+        "type": "info"
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LAB_toggle_debug",
+    "effect": [
+      { "math": [ "pf_debug = ( pf_debug == 1 ) ? 0 : 1" ] },
+      { "u_message": "[A-Life Lab] Debug log is now <global_val:pf_debug> (1 = on).", "type": "info" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LAB_remove_band",
+    "condition": { "math": [ "value_or(pf_lab_spawned, 0) == 1" ] },
+    "effect": [
+      { "run_eocs": "PF_LAB_refresh" },
+      {
+        "u_run_npc_eocs": [ "PF_LAB_kill_band" ],
+        "unique_ids": [ { "global_val": "pf_lab_lead_uid" } ],
+        "local": false
+      },
+      { "math": [ "pf_lab_spawned = 0" ] },
+      { "math": [ "pf_lab_lead_found = 0" ] },
+      { "u_message": "[A-Life Lab] Test band removed.", "type": "info" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LAB_walk_test",
+    "condition": { "math": [ "value_or(pf_lab_spawned, 0) == 1" ] },
+    "effect": [
+      { "run_eocs": "PF_LAB_refresh" },
+      { "u_location_variable": { "global_val": "pf_lab_walk_target" }, "x_adjust": 10 },
+      {
+        "u_run_npc_eocs": [ "PF_LAB_walk_test_leader" ],
+        "unique_ids": [ { "global_val": "pf_lab_lead_uid" } ],
+        "local": false
+      },
+      {
+        "u_message": "[A-Life Lab] Walk order given: the band should walk to a spot 10 tiles east of where you stand.",
+        "type": "info"
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LAB_kill_leader",
+    "//": "Kills the lab band's leader and checks that a member took over (or that the band dissolved if nobody was left).",
+    "condition": { "math": [ "value_or(pf_lab_spawned, 0) == 1" ] },
+    "effect": [
+      { "run_eocs": "PF_LAB_locate" },
+      { "math": [ "pf_lab_members_before = pf_lab_members_found" ] },
+      { "copy_var": { "global_val": "pf_lab_lead_uid" }, "target_var": { "global_val": "pf_lab_old_lead" } },
+      {
+        "u_run_npc_eocs": [ "PF_LAB_remove_agent" ],
+        "unique_ids": [ { "global_val": "pf_lab_lead_uid" } ],
+        "local": false
+      },
+      { "run_eocs": "PF_LAB_refresh" },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_lab_lead_uid" }, "none" ] },
+        "then": [
+          {
+            "if": { "math": [ "pf_lab_members_before == 0" ] },
+            "then": [
+              {
+                "u_message": "PASS  SUCCESSION: the last hunter died and the band dissolved (its roster slot now reads 'none').",
+                "type": "good"
+              }
+            ],
+            "else": [
+              {
+                "u_message": "FAIL  SUCCESSION: the band dissolved although <global_val:pf_lab_members_before> members were alive.",
+                "type": "bad"
+              }
+            ]
+          }
+        ],
+        "else": [
+          { "run_eocs": "PF_LAB_locate" },
+          {
+            "if": {
+              "and": [
+                { "not": { "compare_string": [ { "global_val": "pf_lab_lead_uid" }, { "global_val": "pf_lab_old_lead" } ] } },
+                { "math": [ "pf_lab_lead_found == 1" ] },
+                { "math": [ "pf_lab_members_found == pf_lab_members_before - 1" ] }
+              ]
+            },
+            "then": [
+              {
+                "u_message": "PASS  SUCCESSION: <global_val:pf_lab_old_lead> died; <global_val:pf_lab_lead_uid> now leads band <global_val:pf_lab_band> with <global_val:pf_lab_members_found> member(s).",
+                "type": "good"
+              }
+            ],
+            "else": [
+              {
+                "u_message": "FAIL  SUCCESSION: leader <global_val:pf_lab_lead_uid> (was <global_val:pf_lab_old_lead>), found <global_val:pf_lab_lead_found>, members <global_val:pf_lab_members_found> (expected <global_val:pf_lab_members_before> minus 1).",
+                "type": "bad"
+              }
+            ]
+          },
+          { "u_message": "[A-Life Lab] Run a tick ('5') to check that the band still moves as one.", "type": "info" }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LAB_kill_member",
+    "condition": { "math": [ "value_or(pf_lab_spawned, 0) == 1" ] },
+    "effect": [
+      { "run_eocs": "PF_LAB_locate" },
+      { "math": [ "pf_lab_members_before = pf_lab_members_found" ] },
+      {
+        "if": { "not": { "compare_string": [ { "global_val": "pf_lab_m0" }, "none" ] } },
+        "then": [ { "u_run_npc_eocs": [ "PF_LAB_remove_agent" ], "unique_ids": [ { "global_val": "pf_lab_m0" } ], "local": false } ],
+        "else": [
+          {
+            "if": { "not": { "compare_string": [ { "global_val": "pf_lab_m1" }, "none" ] } },
+            "then": [ { "u_run_npc_eocs": [ "PF_LAB_remove_agent" ], "unique_ids": [ { "global_val": "pf_lab_m1" } ], "local": false } ],
+            "else": [
+              {
+                "u_run_npc_eocs": [ "PF_LAB_remove_agent" ],
+                "unique_ids": [ { "global_val": "pf_lab_m2" }, { "global_val": "pf_lab_m3" }, { "global_val": "pf_lab_m4" } ],
+                "local": false
+              }
+            ]
+          }
+        ]
+      },
+      { "run_eocs": "PF_LAB_locate" },
+      {
+        "if": { "math": [ "pf_lab_members_found == pf_lab_members_before - 1" ] },
+        "then": [
+          {
+            "u_message": "PASS  MEMBER DEATH: the band dropped the dead member; <global_val:pf_lab_members_found> left.",
+            "type": "good"
+          }
+        ],
+        "else": [
+          {
+            "u_message": "FAIL  MEMBER DEATH: members before <global_val:pf_lab_members_before>, after <global_val:pf_lab_members_found>.",
+            "type": "bad"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LAB_perf_add",
+    "effect": [
+      { "u_location_variable": { "global_val": "pf_lab_perf_park" } },
+      {
+        "location_variable_adjust": { "global_val": "pf_lab_perf_park" },
+        "overmap_tile": true,
+        "x_adjust": 20,
+        "y_adjust": { "math": [ "pf_lab_perf_n / 10 * 2" ] }
+      },
+      { "run_eocs": "PF_LAB_perf_one", "iterations": 10 },
+      {
+        "u_message": "[A-Life Lab] Added 10 bands of three, 5-15 overmap tiles away.  Perf bands: <global_val:pf_lab_perf_n>.  Roster slots: <global_val:pf_band_n>.  Turn the simulation on and time a 30-minute wait.",
+        "type": "info"
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LAB_spawn_family",
+    "effect": [
+      { "run_eocs": "PF_LAB_spawn_person" },
+      { "copy_var": { "global_val": "pf_person_uid" }, "target_var": { "global_val": "pf_band_new_leader" } },
+      { "run_eocs": "PF_ALIFE_register_band" },
+      { "copy_var": { "global_val": "pf_band_new_leader" }, "target_var": { "global_val": "pf_link_leader" } },
+      { "run_eocs": "PF_LAB_spawn_child" },
+      { "copy_var": { "global_val": "pf_person_uid" }, "target_var": { "global_val": "pf_link_member" } },
+      { "run_eocs": "PF_BAND_link" },
+      { "run_eocs": "PF_LAB_spawn_person" },
+      { "copy_var": { "global_val": "pf_person_uid" }, "target_var": { "global_val": "pf_link_member" } },
+      { "run_eocs": "PF_BAND_link" },
+      {
+        "u_run_npc_eocs": [ "PF_LAB_family_patrol" ],
+        "unique_ids": [ { "global_val": "pf_band_new_leader" } ],
+        "local": false
+      },
+      { "math": [ "pf_lab_band = pf_band_new_idx" ] },
+      { "math": [ "pf_lab_spawned = 1" ] },
+      {
+        "u_message": "[A-Life Lab] A family spawned nearby (band <global_val:pf_band_new_idx>): a parent, a child (slot 1) and another adult (slot 2).  It is now the lab's test band, so 'K' tests child-aware succession: the adult must inherit, not the child.",
+        "type": "info"
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LAB_bench",
+    "//": "Runs 30 ticks inside one EOC: no game time passes, so no autosave, no 'Stop waiting?' prompts.  Time it from outside (CPU of the game process).",
+    "effect": [
+      { "math": [ "_old_debug = pf_debug" ] },
+      { "math": [ "pf_debug = 0" ] },
+      { "run_eocs": "PF_ALIFE_run_tick", "iterations": 30 },
+      { "math": [ "pf_debug = _old_debug" ] },
+      {
+        "u_message": "[A-Life Lab] Benchmark: ran 30 A-Life ticks over <global_val:pf_dbg_agents> bands (no game time passed).",
+        "type": "info"
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LAB_bench1",
+    "effect": [
+      { "math": [ "pf_lab_bench_hits = 0" ] },
+      { "run_eocs": "PF_LAB_bench_tick_loop", "iterations": 30 },
+      {
+        "u_message": "[A-Life Lab] B1 (roster loop only): <global_val:pf_lab_bench_hits> live slots visited.",
+        "type": "info"
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LAB_bench2",
+    "effect": [
+      { "math": [ "pf_lab_bench_hits = 0" ] },
+      { "run_eocs": "PF_LAB_bench_tick_reach", "iterations": 30 },
+      {
+        "u_message": "[A-Life Lab] B2 (loop + reach each leader, empty EOC): <global_val:pf_lab_bench_hits> leaders reached.",
+        "type": "info"
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LAB_remove_all",
+    "effect": [
+      { "math": [ "pf_lab_x_i = 0" ] },
+      { "run_eocs": "PF_LAB_kill_slot", "condition": { "math": [ "pf_lab_x_i < pf_band_n" ] }, "iterations": 100000 },
+      { "math": [ "pf_lab_spawned = 0" ] },
+      { "math": [ "pf_lab_lead_found = 0" ] },
+      { "math": [ "pf_lab_perf_n = 0" ] },
+      {
+        "u_message": "[A-Life Lab] Removed every band.  Deaths so far: <global_val:pf_deaths_total>, bands dissolved: <global_val:pf_dissolved_total>.",
+        "type": "info"
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LAB_kill_slot",
+    "effect": [
+      { "set_string_var": "pf_slot_<global_val:pf_lab_x_i>", "target_var": { "context_val": "ref" }, "parse_tags": true },
+      {
+        "if": { "not": { "compare_string": [ { "var_val": "ref" }, "none" ] } },
+        "then": [ { "u_run_npc_eocs": [ "PF_LAB_kill_band" ], "unique_ids": [ { "var_val": "ref" } ], "local": false } ]
+      },
+      { "math": [ "pf_lab_x_i += 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LAB_perf_one",
+    "effect": [
+      { "run_eocs": "PF_LAB_spawn_band_here" },
+      {
+        "u_run_npc_eocs": [ "PF_LAB_perf_place" ],
+        "unique_ids": [ { "global_val": "pf_band_new_leader" } ],
+        "local": false
+      },
+      { "math": [ "pf_lab_perf_n = value_or(pf_lab_perf_n, 0) + 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LAB_bench_loop_slot",
+    "effect": [
+      { "set_string_var": "pf_slot_<global_val:pf_band_i>", "target_var": { "context_val": "ref" }, "parse_tags": true },
+      {
+        "if": { "not": { "compare_string": [ { "var_val": "ref" }, "none" ] } },
+        "then": [ { "math": [ "pf_lab_bench_hits += 1" ] } ]
+      },
+      { "math": [ "pf_band_i += 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LAB_bench_reach_slot",
+    "effect": [
+      { "set_string_var": "pf_slot_<global_val:pf_band_i>", "target_var": { "context_val": "ref" }, "parse_tags": true },
+      {
+        "if": { "not": { "compare_string": [ { "var_val": "ref" }, "none" ] } },
+        "then": [ { "u_run_npc_eocs": [ "PF_LAB_bench_noop" ], "unique_ids": [ { "var_val": "ref" } ], "local": false } ]
+      },
+      { "math": [ "pf_band_i += 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LAB_bench_noop",
+    "effect": [ { "math": [ "pf_lab_bench_hits += 1" ] } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LAB_bench_tick_loop",
+    "effect": [
+      { "math": [ "pf_band_i = 0" ] },
+      {
+        "run_eocs": "PF_LAB_bench_loop_slot",
+        "condition": { "math": [ "pf_band_i < pf_band_n" ] },
+        "iterations": 100000
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LAB_bench_tick_reach",
+    "effect": [
+      { "math": [ "pf_band_i = 0" ] },
+      {
+        "run_eocs": "PF_LAB_bench_reach_slot",
+        "condition": { "math": [ "pf_band_i < pf_band_n" ] },
+        "iterations": 100000
+      }
+    ]
+  }
+]

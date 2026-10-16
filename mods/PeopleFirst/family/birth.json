@@ -1,0 +1,180 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FAM_birth",
+    "//": "u = the mother, at term.  A community event: the baby (a real, nearly immobile NPC with a unique id) is born near her, everyone around shares it, and it becomes a birthday to remember.",
+    "effect": [
+      { "u_location_variable": { "global_val": "pf_fm_mompos" } },
+      {
+        "run_eocs": {
+          "id": "PF_FAM_near_av",
+          "effect": [
+            { "u_location_variable": { "global_val": "pf_fm_avpos" } },
+            { "math": [ "pf_fm_near_av = distance(pf_fm_avpos, pf_fm_mompos) <= 20" ] }
+          ]
+        },
+        "alpha_talker": "avatar"
+      },
+      { "math": [ "u_pf_preg = 0" ] },
+      { "u_lose_effect": [ "PF_preg_1", "PF_preg_2", "PF_preg_3" ] },
+      { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_fm_mom" } },
+      { "copy_var": { "u_val": "pf_preg_father" }, "target_var": { "global_val": "pf_fm_dad" } },
+      { "math": [ "u_pf_birth_t = time('now')" ] },
+      { "copy_var": { "global_val": "pf_fm_dad" }, "target_var": { "global_val": "pf_last_birth_dad" } },
+      { "math": [ "pf_last_birth_t = time('now')" ] },
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+      { "run_eocs": "PF_ALIFE_register_person" },
+      { "set_string_var": "the baby", "target_var": { "global_val": "pf_fm_babyname" } },
+      {
+        "u_spawn_npc": "PF_FAM_BABY",
+        "unique_id": { "global_val": "pf_person_uid" },
+        "real_count": 1,
+        "traits": [ "PF_CHILD", "SMALL2" ],
+        "min_radius": 1,
+        "max_radius": 2
+      },
+      { "u_run_npc_eocs": [ "PF_FAM_newborn" ], "unique_ids": [ { "global_val": "pf_person_uid" } ], "local": false },
+      { "copy_var": { "global_val": "pf_person_uid" }, "target_var": { "global_val": "pf_fm_lnk_baby" } },
+      { "math": [ "pf_fm_lnk_ok = 0" ] },
+      { "run_eocs": "PF_FAM_band_baby_leader" },
+      { "if": { "math": [ "pf_fm_lnk_ok == 1" ] }, "then": [ { "run_eocs": "PF_BAND_link" } ] },
+      { "math": [ "u_pf_kids_n = value_or(u_pf_kids_n, 0) + 1" ] },
+      {
+        "if": "u_is_avatar",
+        "then": [
+          {
+            "if": { "math": [ "(time_since('midnight', 'unit': 'hours') >= 5) * (time_since('midnight', 'unit': 'hours') < 12)" ] },
+            "then": [ { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "birth_you" } } ],
+            "else": [ { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "birth_you_day" } } ]
+          },
+          {
+            "u_add_morale": "PF_morale_newparent",
+            "bonus": 30,
+            "max_bonus": 40,
+            "duration": "5 d",
+            "decay_start": "2 d"
+          }
+        ],
+        "else": [
+          {
+            "if": { "math": [ "value_or(pf_aw_birthing, 0) == 1" ] },
+            "then": [ { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "birth_npc_away" } } ],
+            "else": [
+              {
+                "if": { "math": [ "(time_since('midnight', 'unit': 'hours') >= 5) * (time_since('midnight', 'unit': 'hours') < 12)" ] },
+                "then": [ { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "birth_npc" } } ],
+                "else": [ { "run_eocs": "PF_SAY_family", "alpha_talker": "avatar", "variables": { "line": "birth_npc_day" } } ]
+              }
+            ]
+          }
+        ]
+      },
+      { "math": [ "pf_births_total = value_or(pf_births_total, 0) + 1" ] },
+      { "set_string_var": "birth", "target_var": { "global_val": "pf_ev_new_kind" } },
+      { "copy_var": { "global_val": "pf_fm_babyname" }, "target_var": { "global_val": "pf_ev_new_name" } },
+      { "math": [ "pf_ev_new_you = 0" ] },
+      { "if": "u_is_avatar", "then": [ { "math": [ "pf_ev_new_you = 1" ] } ] },
+      { "copy_var": { "global_val": "pf_fm_babyname" }, "target_var": { "global_val": "pf_ev_new_youname" } },
+      { "run_eocs": "PF_HEART_event_add" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FAM_band_baby_leader",
+    "//": "u = a baby's mother (or carrier).  If she travels with an A-Life band, names the band's leader and the baby for PF_BAND_link (run by the caller: one off-screen talker at a time) and sets pf_fm_lnk_ok.",
+    "condition": {
+      "and": [
+        { "math": [ "value_or(u_pf_band, 0) > 0" ] },
+        { "math": [ "value_or(u_pf_resident, 0) == 0" ] },
+        { "or": [ { "math": [ "value_or(u_pf_is_leader, 0) == 1" ] }, { "math": [ "has_var(u_pf_leader)" ] } ] }
+      ]
+    },
+    "effect": [
+      {
+        "if": { "math": [ "value_or(u_pf_is_leader, 0) == 1" ] },
+        "then": [ { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_link_leader" } } ],
+        "else": [ { "copy_var": { "u_val": "pf_leader" }, "target_var": { "global_val": "pf_link_leader" } } ]
+      },
+      { "copy_var": { "global_val": "pf_fm_lnk_baby" }, "target_var": { "global_val": "pf_link_member" } },
+      { "math": [ "pf_fm_lnk_ok = 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FAM_newborn",
+    "//": "u = the newborn (reached by unique id right after spawning).  Records parents, birth time and stage, and lists the child for the growth tick.",
+    "effect": [
+      { "run_eocs": "PF_ALIFE_store_uid" },
+      { "run_eocs": "PF_ID_ensure" },
+      { "math": [ "u_val('age') = 0" ] },
+      { "math": [ "u_pf_adult = 0" ] },
+      { "math": [ "u_pf_rom = 0" ] },
+      { "math": [ "u_pf_rom_rolled = 1" ] },
+      { "u_add_effect": "PF_infant", "duration": "PERMANENT" },
+      { "copy_var": { "global_val": "pf_fm_mom" }, "target_var": { "u_val": "pf_mom" } },
+      { "copy_var": { "global_val": "pf_fm_dad" }, "target_var": { "u_val": "pf_dad" } },
+      { "set_string_var": "none", "target_var": { "u_val": "pf_guardian" } },
+      { "math": [ "u_pf_born_t = time('now')" ] },
+      { "math": [ "u_pf_kid_stage = 0" ] },
+      { "math": [ "u_pf_follow = 2" ] },
+      { "copy_var": { "global_val": "pf_fm_mom" }, "target_var": { "u_val": "pf_carrier" } },
+      { "run_eocs": "PF_REG_write" },
+      { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_fm_baby" } },
+      {
+        "set_string_var": "pf_reg_<global_val:pf_fm_baby>_p1",
+        "target_var": { "context_val": "rc_p1" },
+        "parse_tags": true
+      },
+      { "copy_var": { "global_val": "pf_fm_mom" }, "target_var": { "var_val": "rc_p1" } },
+      {
+        "set_string_var": "pf_reg_<global_val:pf_fm_baby>_p2",
+        "target_var": { "context_val": "rc_p2" },
+        "parse_tags": true
+      },
+      { "copy_var": { "global_val": "pf_fm_dad" }, "target_var": { "var_val": "rc_p2" } },
+      { "run_eocs": "PF_ENGINE_name_baby" },
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_fm_babyname" }, "parse_tags": true },
+      { "math": [ "pf_fm_ki = value_or(pf_kids_n, 0) % 30" ] },
+      { "set_string_var": "pf_kid_<global_val:pf_fm_ki>", "target_var": { "context_val": "kr" }, "parse_tags": true },
+      { "copy_var": { "u_val": "pf_uid" }, "target_var": { "var_val": "kr" } },
+      { "math": [ "pf_kids_n = value_or(pf_kids_n, 0) + 1" ] },
+      { "u_run_npc_eocs": [ "PF_FAM_witness_birth" ], "local": true, "npc_range": 20 },
+      { "run_eocs": "PF_FAM_witness_birth_av", "alpha_talker": "avatar" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FAM_witness_birth",
+    "//": "u = someone near a birth.  They were there: a strong memory, and warmth toward the mother.",
+    "effect": [
+      { "run_eocs": "PF_ID_ensure" },
+      {
+        "if": { "not": { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_fm_baby" } ] } },
+        "then": [
+          { "copy_var": { "global_val": "pf_fm_mom" }, "target_var": { "global_val": "pf_m_other" } },
+          { "math": [ "pf_mv_role = 3" ] },
+          { "math": [ "pf_m_str_in = 80" ] },
+          { "run_eocs": "PF_MV_birth" }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FAM_witness_birth_av",
+    "//": "u = you.  A birth in your camp goes in your journal.",
+    "condition": {
+      "or": [
+        { "compare_string": [ { "global_val": "pf_fm_mom" }, "AVATAR" ] },
+        { "compare_string": [ { "global_val": "pf_fm_dad" }, "AVATAR" ] },
+        { "math": [ "pf_fm_near_av == 1" ] }
+      ]
+    },
+    "effect": [
+      { "copy_var": { "global_val": "pf_fm_baby" }, "target_var": { "global_val": "pf_m_other" } },
+      { "math": [ "pf_mv_role = 1" ] },
+      { "math": [ "pf_m_str_in = 90" ] },
+      { "run_eocs": "PF_MV_birth" }
+    ]
+  }
+]

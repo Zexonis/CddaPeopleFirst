@@ -1,0 +1,21 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ENGINE_caps",
+    "//": "Overrides People First's stub.  pf_eng_level = the engine patch level this mod goes with (16: items answer PF_ROTTEN, PF_GOING_BAD and PF_ZOMBIE_CORPSE; 23: u_pf_eat_share).  On the stock build the stub leaves it at 0, and nothing asks an item those flags (an unknown flag is an error screen there).",
+    "effect": [ { "math": [ "pf_eng_level = 23" ] } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ENGINE_eat_share",
+    "//": "Overrides People First's stub (people/people_menu.json).  u = the eater, npc = the food.  Engine patch 23: half the food goes into your stomach, as eating does, so it fills you, counts in the eat menu's Consumed today, and digests.  Patch 23b: reading u_pf_eat_share() gives how much of it still fits (full run day 180: 'Your stomach is full to bursting'), so you eat only what fits; full, you mostly keep them company.",
+    "effect": [
+      { "math": [ "_room = u_pf_eat_share()" ] },
+      {
+        "if": { "math": [ "_room >= 10" ] },
+        "then": [ { "math": [ "u_pf_eat_share() = min(50, _room)" ] } ],
+        "else": [ { "u_message": "You're too full for more than a bite, so most of it goes to them.", "type": "info" } ]
+      }
+    ]
+  }
+]

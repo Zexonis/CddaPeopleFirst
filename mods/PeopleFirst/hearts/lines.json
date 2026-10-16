@@ -1,0 +1,309 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_SAY_heart",
+    "//": "u = avatar.  v0.2 lines, picked by the context var 'line'.",
+    "effect": [
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "partner_npc" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> and <global_val:pf_say_b> have stopped pretending they're just friends.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "partner_you" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> moves their bedroll next to yours tonight, and doesn't say anything about it.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "engaged_npc" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> asks <global_val:pf_say_b> to marry them, right there in front of everyone.  <global_val:pf_say_b> says yes, and the whole camp cheers.  The wedding will be its own night.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "engaged_you" ] },
+        "then": [
+          {
+            "u_message": "You say yes.  <global_val:pf_say_a> can't stop grinning.  The wedding will be the first quiet evening after tomorrow.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "wedding_npc" ] },
+        "then": [
+          {
+            "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+            "then": [
+              {
+                "u_message": "Tonight is a wedding.  <global_val:pf_say_a> and <global_val:pf_say_b> stand in the middle of the room while everyone crowds in close, and with all of them as witnesses, they're married.",
+                "type": "good"
+              }
+            ],
+            "else": [
+              {
+                "u_message": "Tonight is a wedding.  <global_val:pf_say_a> and <global_val:pf_say_b> stand by the fire while everyone gathers close, and with all of them as witnesses, they're married.",
+                "type": "good"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "wedding_you" ] },
+        "then": [
+          {
+            "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+            "then": [
+              {
+                "u_message": "Tonight is your wedding.  Everyone crowds into the room as <global_val:pf_say_a> takes your hands, and with all of them as witnesses, you're married.",
+                "type": "good"
+              }
+            ],
+            "else": [
+              {
+                "u_message": "Tonight is your wedding.  Everyone gathers close as <global_val:pf_say_a> takes your hands by the fire, and with all of them as witnesses, you're married.",
+                "type": "good"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "wedding_feast" ] },
+        "then": [
+          {
+            "u_message": "Someone produces a bottle they'd been saving, and for one night nobody talks about the dead.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "burial_two" ] },
+        "then": [
+          {
+            "u_message": "You bury <global_val:pf_say_b>.  <global_val:pf_say_a> and <global_val:pf_bur_n2> stand with you at the graveside.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "burial_many" ] },
+        "then": [
+          {
+            "u_message": "You bury <global_val:pf_say_b>.  <global_val:pf_say_a>, <global_val:pf_bur_n2> and the others stand with you at the graveside, and nobody hurries.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "anniv_death" ] },
+        "then": [
+          {
+            "u_message": "It's been <global_val:pf_an_words> since <global_val:pf_an_name> died.  Someone pours a little out for them, and nobody says anything for a while.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "anniv_wed" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_an_name> have been married <global_val:pf_an_words> today.  Somebody finds a bottle.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "anniv_wed_you" ] },
+        "then": [
+          {
+            "u_message": "It's been <global_val:pf_an_words> since you married <global_val:pf_an_youname>.  They remembered.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "anniv_wed_lost" ] },
+        "then": [
+          {
+            "u_message": "It's been <global_val:pf_an_words> since you married <global_val:pf_an_youname>.  You notice the date, and nobody else does, and that's all right.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "anniv_birth_gone" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_an_name> would have been <global_val:pf_an_words> old today.  Nobody says it, but everybody knows.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "anniv_birth" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_an_name> is <global_val:pf_an_words> old today.  Somebody makes a fuss of it.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "scare" ] },
+        "then": [ { "u_message": "<global_val:pf_say_a> is at your side before the thing hits the ground.", "type": "good" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "wed_npc" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> asks <global_val:pf_say_b> to marry them, right there in front of everyone.  <global_val:pf_say_b> says yes, and the whole camp cheers.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "wed_you" ] },
+        "then": [
+          {
+            "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+            "then": [
+              {
+                "u_message": "Everyone crowds into the room.  <global_val:pf_say_a> takes your hands, and with all of them as witnesses, you're married.",
+                "type": "good"
+              }
+            ],
+            "else": [
+              {
+                "u_message": "Everyone gathers around the fire.  <global_val:pf_say_a> takes your hands, and with all of them as witnesses, you're married.",
+                "type": "good"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "prop_no_npc" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> asks <global_val:pf_say_b> something, low and serious.  <global_val:pf_say_b> shakes their head: not yet.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "prop_notyet" ] },
+        "then": [ { "u_message": "<global_val:pf_say_a> squeezes your hand.  \"Not yet.  Ask me again.\"", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "prop_wander" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> laughs, not unkindly.  \"I'm not the marrying kind.  You know that.\"",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "breakup_npc" ] },
+        "then": [
+          {
+            "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+            "then": [
+              {
+                "u_message": "<global_val:pf_say_a> and <global_val:pf_say_b> had it out tonight, out on the porch.  They aren't together anymore.",
+                "type": "bad"
+              }
+            ],
+            "else": [
+              {
+                "u_message": "<global_val:pf_say_a> and <global_val:pf_say_b> had it out tonight, away from the fire.  They aren't together anymore.",
+                "type": "bad"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "breakup_you" ] },
+        "then": [ { "u_message": "<global_val:pf_say_a> takes you aside.  \"I can't do this anymore.  I'm sorry.\"", "type": "bad" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "left_you" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> doesn't sit with you tonight.  It's over, and everyone can see it.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "left_you_for" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> sits with <global_val:pf_say_b> tonight, not with you.  It's over, and everyone knows it.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "jealous_npc" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_jl_cn> sees <global_val:pf_jl_an> making eyes at <global_val:pf_jl_bn>, and goes very quiet.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "jealous_you" ] },
+        "then": [ { "u_message": "You catch <global_val:pf_jl_an> making eyes at <global_val:pf_jl_bn>.", "type": "bad" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "service" ] },
+        "then": [
+          {
+            "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+            "then": [
+              {
+                "u_message": "Tonight the evening is for <global_val:pf_say_b>.  People take turns saying something about them.",
+                "type": "info"
+              }
+            ],
+            "else": [
+              {
+                "u_message": "Tonight the fire is for <global_val:pf_say_b>.  People take turns saying something about them.",
+                "type": "info"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "burial_with" ] },
+        "then": [
+          {
+            "u_message": "You bury <global_val:pf_say_b>.  <global_val:pf_say_a> stands with you at the graveside, and for once nobody keeps watch on the dark.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "burial_alone" ] },
+        "then": [ { "u_message": "You bury <global_val:pf_say_b> alone, and say what you can.", "type": "info" } ]
+      }
+    ]
+  }
+]

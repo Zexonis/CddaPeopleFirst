@@ -1,0 +1,774 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_SAY_home",
+    "//": "u = avatar.  Home lines, picked by the context var 'line'.",
+    "effect": [
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "home_set" ] },
+        "then": [ { "u_message": "You decide this is home.  It isn't much, but it's yours.", "type": "good" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "home_move" ] },
+        "then": [ { "u_message": "Home is here now.", "type": "good" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "home_forget" ] },
+        "then": [ { "u_message": "This isn't home anymore.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "home_here" ] },
+        "then": [ { "u_message": "You're home.  <global_val:pf_hm_restxt> moved in with you so far.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "home_far" ] },
+        "then": [
+          {
+            "u_message": "Home is <global_val:pf_hm_dist> steps from here.  <global_val:pf_hm_restxt> moved in with you so far.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "breakfast" ] },
+        "then": [
+          {
+            "u_message": "You wake to the smell of cooking.  <global_val:pf_say_a> has made <global_val:pf_say_b>, and there's coffee.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "breakfast_1" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> is already up.  There's <global_val:pf_say_b> waiting for you, and a mug of coffee going cold next to it.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "breakfast_back" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> calls you over: <global_val:pf_say_b>, and a mug of coffee.  \"You look like you walked all night.  Sit, eat.\"",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "breakfast_awake" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> calls you over: <global_val:pf_say_b>, and a mug of coffee.  \"You were up before any of us.  Sit, eat.\"",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "breakfast_late" ] },
+        "then": [
+          {
+            "u_message": "You slept half the day.  <global_val:pf_say_a> kept <global_val:pf_say_b> warm for you anyway, and makes a fresh pot of coffee without a word.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "breakfast_2" ] },
+        "then": [
+          {
+            "u_message": "Somebody nudges you awake with a mug of coffee.  <global_val:pf_say_a> has made <global_val:pf_say_b>.  \"Eat.  Before it's gone.\"",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "invite_yes" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> looks at you for a long moment.  \"A roof.  People.  Yeah.  Yeah, I'd like that.\"",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "invite_band_yes" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> talks it over with the others, and they come back smiling.  \"We're tired of walking.  We'll come.\"",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "pass_by_first" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> and the people they travel with stop when they see you, hands where you can see them.  Somebody passes round a strip of jerky; somebody asks about the road ahead.  Names are traded.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "pass_by_again" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a>'s band again.  This time they sit down for a while, share what they've got, and tell you where the dead are thick.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "invite_stranger_one" ] },
+        "then": [ { "u_message": "<global_val:pf_say_a> shakes their head.  \"I don't know you.  No offense.\"", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "invite_stranger" ] },
+        "then": [ { "u_message": "<global_val:pf_say_a> shakes their head.  \"We don't know you.  No offense.\"", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "invite_known_one" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> considers it, then shakes their head.  \"I hardly know you yet.  Ask me again in a while.\"",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "invite_known" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> glances back at the others and shakes their head.  \"We hardly know you yet.  Ask us again in a while.\"",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "invite_warming_one" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> almost smiles.  \"You're growing on me.  Give it a few more days.\"",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "invite_warming" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> looks back at the others.  \"You're growing on us.  Give it a few more days.\"",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "invite_trust" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> hesitates.  \"Ask me again some other time.  I'm not ready to trust anyone that much.\"",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "distant" ] },
+        "then": [ { "u_message": "Somewhere far off, you hear voices.  Someone laughs.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "horn_alarm_1" ] },
+        "then": [ { "u_message": "<global_val:pf_hn_spot> bangs on a pot.  \"Dead coming!  Everybody up!\"", "type": "bad" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "horn_alarm_2" ] },
+        "then": [ { "u_message": "<global_val:pf_hn_spot> shouts: \"Company!  Weapons, now!\"", "type": "bad" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "horn_alarm_3" ] },
+        "then": [ { "u_message": "<global_val:pf_hn_spot> whistles, two short and one long: the dead are here.", "type": "bad" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "horn_alarm" ] },
+        "then": [ { "u_message": "<global_val:pf_hn_spot> shouts: \"Up!  Up!  They're here!\"", "type": "bad" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "hurt_wake_you" ] },
+        "then": [
+          {
+            "u_message": "A scream close by jerks you awake: <global_val:pf_say_a> is fighting something, and losing.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "horn_wake_you" ] },
+        "then": [ { "u_message": "Someone is shaking you.  \"Get up.  Get up, they're here.\"", "type": "bad" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "horn_shield" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> grabs <global_val:pf_say_b> and runs, keeping themselves between the kid and the noise.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "horn_shield_1" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> scoops up <global_val:pf_say_b> without a word and heads for cover.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "horn_shield_2" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> has <global_val:pf_say_b> by the wrist and is already moving, low and fast, away from it.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "horn_shield_3" ] },
+        "then": [
+          {
+            "u_message": "\"With me.  Now.\"  <global_val:pf_say_a> hustles <global_val:pf_say_b> off, one hand on the back of the kid's head.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "horn_clear" ] },
+        "then": [ { "u_message": "It's quiet again.  People count heads.  Everyone's still here.", "type": "good" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "horn_lull" ] },
+        "then": [
+          { "u_message": "A lull.  Nobody lowers their weapon; there'll be more of them before this is over.", "type": "info" }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "horn_clear_hurt" ] },
+        "then": [
+          {
+            "u_message": "It's quiet again.  People count heads: everyone's here, but not everyone's whole.  Someone is shouting for bandages for <global_val:pf_hn_hurt_a>.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "horn_clear_grief" ] },
+        "then": [ { "u_message": "It's quiet again.  People count heads, and stop where the count used to go on.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "horn_clear_loss" ] },
+        "then": [
+          {
+            "u_message": "It's quiet again.  People count heads, and nobody says the names out loud until they're sure.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "rk_clings" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_b> won't let go of <global_val:pf_say_a>'s hand for the rest of the <global_val:pf_rk_part>.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "rk_clings_you" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_b> won't let go of your hand for the rest of the <global_val:pf_rk_part>.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "newcomer_home" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> walks in at the gate with everything they own on their back.  Somebody shows them where to put it.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "newcomer_baby" ] },
+        "then": [
+          { "u_message": "<global_val:pf_say_a> is carried in at the gate, asleep, and passed from arm to arm.", "type": "good" }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "newcomer_kid" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> comes in at the gate holding somebody's hand, and stares at everything.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "stray_home" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> turns up at the gate, soaked through and quiet, a day late.  Nobody asks where they've been.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "rk_tended" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> cleans <global_val:pf_say_b>'s wounds and wraps them, muttering the whole time.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "rk_ran" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> ran when it started.  <global_val:pf_say_b> hasn't said a word about it, which is worse.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "rk_ran_you" ] },
+        "then": [ { "u_message": "<global_val:pf_say_a> ran when that thing had you.  Now they won't look at you.", "type": "bad" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "nm_kid_you" ] },
+        "then": [
+          {
+            "u_message": "In the night, <global_val:pf_say_b> wakes up screaming.  You're there before you're properly awake, and you stay until they're asleep again.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "nm_kid" ] },
+        "then": [
+          {
+            "u_message": "In the night, <global_val:pf_say_b> wakes up screaming.  <global_val:pf_say_a> is there before anyone else, holding them until it passes.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "nm_adult" ] },
+        "then": [
+          {
+            "u_message": "In the night, <global_val:pf_say_b> wakes up shouting.  <global_val:pf_say_a> sits with them in the dark until their breathing slows.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "band_cry_kid" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_bh_who> screams.  <global_val:pf_bh_resc> is already running toward them.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "band_cry" ] },
+        "then": [ { "u_message": "<global_val:pf_bh_who> shouts for help.  <global_val:pf_bh_resc> goes to them.", "type": "bad" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "nm_alone" ] },
+        "then": [
+          {
+            "u_message": "In the night, <global_val:pf_say_b> cries out in their sleep, and nobody goes to them.  Nobody mentions it in the morning.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "storm_start" ] },
+        "then": [
+          {
+            "u_message": "The sky goes wrong.  <global_val:pf_say_a> starts herding everyone together without a word.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "storm_end" ] },
+        "then": [
+          {
+            "u_message": "The sky closes up again.  For a long time nobody says anything.  Then <global_val:pf_say_a> laughs, shakily, and everyone starts talking at once.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "storm_retell" ] },
+        "then": [
+          {
+            "u_message": "Everyone has a different story about what they saw in the storm.  None of them match, and nobody laughs at anyone's.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "rk_retell" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> doesn't want to talk about the fight, so everyone else does.  By the third telling there were five of them.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "rk_retell_two" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> doesn't want to talk about the fight, so you tell it, and they correct every detail.  By the end there were five of them.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "rk_retell_you" ] },
+        "then": [
+          {
+            "u_message": "Somebody tells the story of the fight again, the part where you came for <global_val:pf_say_b>.  It's a better story every time.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "rk_retell_saved" ] },
+        "then": [ { "u_message": "Someone tells how <global_val:pf_say_a> came for you.  You let them tell it.", "type": "good" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "roster" ] },
+        "then": [ { "u_message": "<global_val:pf_say_a>: <global_val:pf_say_b>.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "roster_none" ] },
+        "then": [ { "u_message": "Nobody who lives with you is around.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "cook_fill" ] },
+        "then": [
+          {
+            "u_message": "Nobody's been cooking.  <global_val:pf_say_a> looks at the cold pot for a while, then rolls up their sleeves.  \"Fine.  Me, then.\"",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "role_change" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> shrugs.  \"Fine.  I'll be the <global_val:pf_say_b> from now on.\"",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "chore_lamp" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> sets a candle by the stores, so nobody has to feel around for the water in the dark.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "chore_cook" ] },
+        "then": [ { "u_message": "<global_val:pf_say_a> has a pot of soup going.  There's enough for everyone.", "type": "good" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "chore_cook_1" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> is cooking.  Whatever it is, it smells better than it has any right to.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "chore_cook_2" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> sends someone out for more water and keeps stirring.  \"It'll be ready when it's ready.\"",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "chore_cook_3" ] },
+        "then": [ { "u_message": "<global_val:pf_say_a> sets out bowls at home.  Nobody has to ask twice.", "type": "good" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "chore_guard_1" ] },
+        "then": [ { "u_message": "<global_val:pf_say_a> climbs up somewhere high and watches the road for an hour.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "chore_guard_2" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> drags a broken car door across a gap in the fence and wires it in place.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "chore_forage_1" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> is back with <global_val:pf_say_b>, and a scratch on one arm they don't want to talk about.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "chore_forage_2" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> empties <global_val:pf_say_b> onto the table, pleased with themselves.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "chore_tinker_1" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> gets a dead flashlight working again with parts from two others.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "chore_tinker_2" ] },
+        "then": [
+          { "u_message": "<global_val:pf_say_a> sharpens every blade in the place, one after another, humming.", "type": "info" }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "chore_guard" ] },
+        "then": [
+          { "u_message": "<global_val:pf_say_a> walks the edge of the place, checking every gap in the fence.", "type": "info" }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "chore_forage" ] },
+        "then": [ { "u_message": "<global_val:pf_say_a> comes back from the woods with <global_val:pf_say_b>.", "type": "good" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "chore_tinker" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> spends the afternoon fixing a door that's been sticking for a week.  It doesn't stick anymore.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "chore_carer" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> keeps an eye on <global_val:pf_say_b> for hours, and gets them to eat something green.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "bedtime" ] },
+        "then": [ { "u_message": "The house goes quiet for the night.  Somebody is snoring already.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "unpack" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> unpacks at home: what's left of their food, and the things they carried all this way.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "rumor" ] },
+        "then": [ { "u_message": "<global_val:pf_rm_text>", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "practice" ] },
+        "then": [ { "u_message": "<global_val:pf_say_a> is getting good at this.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "burnt_alone" ] },
+        "then": [
+          { "u_message": "<global_val:pf_say_a> burned the soup.  Nobody says anything, but everybody eats less.", "type": "bad" }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "burnt_row" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_b> burned the soup again.  <global_val:pf_say_a> has opinions about that, loudly, and <global_val:pf_say_b> has opinions about <global_val:pf_say_a>.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "leaves" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> packs their things.  \"This isn't working.  I'm going.\"  Nobody stops them.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "hosted" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> waves you over from their doorway.  \"Come in, sit down.  You look half-starved.\"  There's soup, and nobody asks you for anything.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "visit" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a>'s family comes over from their place, carrying something wrapped in a cloth.  \"We brought food.  Thought you might like company.\"",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "rumor_list" ] },
+        "then": [ { "u_message": "<global_val:pf_rl_text>  (<global_val:pf_rl_ago> days ago)", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "rumor_list_today" ] },
+        "then": [ { "u_message": "<global_val:pf_rl_text>  (today)", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "rumor_none" ] },
+        "then": [ { "u_message": "Nobody has mentioned anyone else out there yet.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "stores_auto" ] },
+        "then": [
+          {
+            "u_message": "From now on the food and water go in one place, on the shelves nearest home, where anyone can find them.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "stores_at_hand" ] },
+        "then": [ { "u_message": "The stores are right here, within reach.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "stores_dist" ] },
+        "then": [
+          {
+            "u_message": "The stores are <global_val:pf_hm_sdist> steps <global_val:pf_hm_sdir> of you.  (Home: Keep the stores here, to move them.)",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "stores_here" ] },
+        "then": [ { "u_message": "The stores go here from now on: food, water, medicine, anything the place shares.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "stores_moved" ] },
+        "then": [ { "u_message": "People start carrying the food and water over.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "corner_you" ] },
+        "then": [ { "u_message": "This is your corner.  Nobody will tidy what you leave here.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "tidy_rot" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_td_who> sniffs at the stores, makes a face and throws out what's turned.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "tidy_bodies" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_td_who> drags the dead out past the fence, one at a time, and burns them.  The smoke hangs over the place for an hour.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "tidy_bones" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_td_who> rakes the old bones out of the yard and tips them in the ditch.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "tidy_0" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_td_who> goes round with a basket: the food back with the stores, the dishes washed and stacked.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "tidy_1" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_td_who> clears up after everyone, muttering, and puts the food back where it lives.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "tidy_2" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_td_who> washes the bowls in a bucket and sets them out to dry.  The place looks lived in, not lived on.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "estate" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_td_who> gathers up <global_val:pf_est_name>'s things and puts them with the stores.  Nobody wants to be the one who decides what to keep.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "estate_you" ] },
+        "then": [
+          {
+            "u_message": "You gather up <global_val:pf_est_name>'s things and put them with the stores.  It takes longer than it should.",
+            "type": "info"
+          }
+        ]
+      }
+    ]
+  }
+]

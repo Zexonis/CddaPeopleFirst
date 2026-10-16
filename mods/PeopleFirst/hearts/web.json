@@ -1,0 +1,512 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_WEB_open",
+    "//": "Web screen: for each adult around you, who they're with, who they're closest to, and who they're at odds with (among the people here).",
+    "effect": [
+      { "math": [ "pf_wb_n = 0" ] },
+      { "u_run_npc_eocs": [ "PF_WEB_collect" ], "local": true, "npc_range": 40 },
+      { "u_run_npc_eocs": [ "PF_WEB_describe" ], "local": true, "npc_range": 40 },
+      {
+        "if": { "math": [ "pf_wb_n == 0" ] },
+        "then": [ { "u_message": "Nobody around to tell you about.", "type": "info" } ],
+        "else": [
+          {
+            "run_eoc_selector": [
+              "PF_WEB_pick_0",
+              "PF_WEB_pick_1",
+              "PF_WEB_pick_2",
+              "PF_WEB_pick_3",
+              "PF_WEB_pick_4",
+              "PF_WEB_pick_5",
+              "PF_WEB_pick_6",
+              "PF_WEB_pick_7"
+            ],
+            "names": [
+              { "global_val": "pf_wb_l_0" },
+              { "global_val": "pf_wb_l_1" },
+              { "global_val": "pf_wb_l_2" },
+              { "global_val": "pf_wb_l_3" },
+              { "global_val": "pf_wb_l_4" },
+              { "global_val": "pf_wb_l_5" },
+              { "global_val": "pf_wb_l_6" },
+              { "global_val": "pf_wb_l_7" }
+            ],
+            "keys": [ "a", "b", "c", "d", "e", "f", "g", "h" ],
+            "title": "Who is with whom (what you've seen around you)",
+            "hide_failing": true,
+            "allow_cancel": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_WEB_collect",
+    "condition": { "math": [ "pf_wb_n < 8" ] },
+    "effect": [
+      { "run_eocs": "PF_ID_ensure" },
+      {
+        "set_string_var": "pf_wb_u_<global_val:pf_wb_n>",
+        "target_var": { "context_val": "uref" },
+        "parse_tags": true
+      },
+      { "copy_var": { "u_val": "pf_uid" }, "target_var": { "var_val": "uref" } },
+      {
+        "set_string_var": "pf_wb_nm_<global_val:pf_wb_n>",
+        "target_var": { "context_val": "nref" },
+        "parse_tags": true
+      },
+      { "set_string_var": "<u_name>", "target_var": { "var_val": "nref" }, "parse_tags": true },
+      { "math": [ "pf_wb_n += 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_WEB_describe",
+    "//": "u = one of the people collected.  Builds their line from their own views.",
+    "effect": [
+      { "run_eocs": "PF_ID_ensure" },
+      { "math": [ "pf_wb_me = -1" ] },
+      {
+        "if": {
+          "and": [ { "math": [ "pf_wb_n > 0" ] }, { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_wb_u_0" } ] } ]
+        },
+        "then": [ { "math": [ "pf_wb_me = 0" ] } ]
+      },
+      {
+        "if": {
+          "and": [ { "math": [ "pf_wb_n > 1" ] }, { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_wb_u_1" } ] } ]
+        },
+        "then": [ { "math": [ "pf_wb_me = 1" ] } ]
+      },
+      {
+        "if": {
+          "and": [ { "math": [ "pf_wb_n > 2" ] }, { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_wb_u_2" } ] } ]
+        },
+        "then": [ { "math": [ "pf_wb_me = 2" ] } ]
+      },
+      {
+        "if": {
+          "and": [ { "math": [ "pf_wb_n > 3" ] }, { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_wb_u_3" } ] } ]
+        },
+        "then": [ { "math": [ "pf_wb_me = 3" ] } ]
+      },
+      {
+        "if": {
+          "and": [ { "math": [ "pf_wb_n > 4" ] }, { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_wb_u_4" } ] } ]
+        },
+        "then": [ { "math": [ "pf_wb_me = 4" ] } ]
+      },
+      {
+        "if": {
+          "and": [ { "math": [ "pf_wb_n > 5" ] }, { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_wb_u_5" } ] } ]
+        },
+        "then": [ { "math": [ "pf_wb_me = 5" ] } ]
+      },
+      {
+        "if": {
+          "and": [ { "math": [ "pf_wb_n > 6" ] }, { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_wb_u_6" } ] } ]
+        },
+        "then": [ { "math": [ "pf_wb_me = 6" ] } ]
+      },
+      {
+        "if": {
+          "and": [ { "math": [ "pf_wb_n > 7" ] }, { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_wb_u_7" } ] } ]
+        },
+        "then": [ { "math": [ "pf_wb_me = 7" ] } ]
+      },
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_wb_cur" }, "parse_tags": true },
+      {
+        "if": { "math": [ "value_or(u_pf_has_sweet, 0) == 1" ] },
+        "then": [
+          { "copy_var": { "u_val": "pf_sweet" }, "target_var": { "global_val": "pf_wb_s" } },
+          {
+            "set_string_var": "pf_name_<global_val:pf_wb_s>",
+            "target_var": { "context_val": "nref" },
+            "parse_tags": true
+          },
+          { "copy_var": { "var_val": "nref" }, "target_var": { "global_val": "pf_wb_sn" } },
+          {
+            "if": { "compare_string": [ { "global_val": "pf_wb_s" }, "AVATAR" ] },
+            "then": [ { "set_string_var": "you", "target_var": { "global_val": "pf_wb_sn" } } ]
+          },
+          {
+            "switch": { "math": [ "value_or(u_pf_rel_stage, 1)" ] },
+            "cases": [
+              {
+                "case": 1,
+                "effect": {
+                  "set_string_var": "<global_val:pf_wb_cur>: sweet on <global_val:pf_wb_sn>",
+                  "target_var": { "global_val": "pf_wb_cur" },
+                  "parse_tags": true
+                }
+              },
+              {
+                "case": 2,
+                "effect": {
+                  "set_string_var": "<global_val:pf_wb_cur>: with <global_val:pf_wb_sn>",
+                  "target_var": { "global_val": "pf_wb_cur" },
+                  "parse_tags": true
+                }
+              },
+              {
+                "case": 3,
+                "effect": {
+                  "set_string_var": "<global_val:pf_wb_cur>: married to <global_val:pf_wb_sn>",
+                  "target_var": { "global_val": "pf_wb_cur" },
+                  "parse_tags": true
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "value_or(u_pf_widowed, 0) == 1" ] },
+        "then": [
+          {
+            "set_string_var": "<global_val:pf_wb_cur> (widowed)",
+            "target_var": { "global_val": "pf_wb_cur" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "has_var(u_pf_mom)" ] },
+            {
+              "or": [ { "compare_string": [ { "u_val": "pf_mom" }, "AVATAR" ] }, { "compare_string": [ { "u_val": "pf_dad" }, "AVATAR" ] } ]
+            }
+          ]
+        },
+        "then": [
+          {
+            "set_string_var": "<global_val:pf_wb_cur>, your child",
+            "target_var": { "global_val": "pf_wb_cur" },
+            "parse_tags": true
+          }
+        ],
+        "else": [
+          {
+            "if": { "and": [ { "math": [ "has_var(u_pf_mom)" ] }, { "not": { "compare_string": [ { "u_val": "pf_mom" }, "none" ] } } ] },
+            "then": [
+              { "copy_var": { "u_val": "pf_mom" }, "target_var": { "global_val": "pf_wb_s" } },
+              {
+                "set_string_var": "pf_name_<global_val:pf_wb_s>",
+                "target_var": { "context_val": "nref" },
+                "parse_tags": true
+              },
+              { "copy_var": { "var_val": "nref" }, "target_var": { "global_val": "pf_wb_sn" } },
+              {
+                "set_string_var": "<global_val:pf_wb_cur>, <global_val:pf_wb_sn>'s child",
+                "target_var": { "global_val": "pf_wb_cur" },
+                "parse_tags": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": {
+          "and": [
+            { "u_has_trait": "PF_CHILD" },
+            { "math": [ "has_var(u_pf_guardian)" ] },
+            { "not": { "compare_string": [ { "u_val": "pf_guardian" }, "none" ] } }
+          ]
+        },
+        "then": [
+          { "copy_var": { "u_val": "pf_guardian" }, "target_var": { "global_val": "pf_wb_s" } },
+          {
+            "set_string_var": "pf_name_<global_val:pf_wb_s>",
+            "target_var": { "context_val": "nref" },
+            "parse_tags": true
+          },
+          { "copy_var": { "var_val": "nref" }, "target_var": { "global_val": "pf_wb_sn" } },
+          {
+            "if": { "compare_string": [ { "global_val": "pf_wb_s" }, "AVATAR" ] },
+            "then": [ { "set_string_var": "you", "target_var": { "global_val": "pf_wb_sn" } } ]
+          },
+          {
+            "set_string_var": "<global_val:pf_wb_cur>, looked after by <global_val:pf_wb_sn>",
+            "target_var": { "global_val": "pf_wb_cur" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "math": [ "value_or(u_pf_needs_home, 0) == 1" ] } ] },
+        "then": [
+          {
+            "set_string_var": "<global_val:pf_wb_cur>, with nobody to look after them",
+            "target_var": { "global_val": "pf_wb_cur" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "time('now') < value_or(u_pf_mourn_until, 0)" ] },
+        "then": [
+          {
+            "set_string_var": "<global_val:pf_wb_cur>, grieving",
+            "target_var": { "global_val": "pf_wb_cur" },
+            "parse_tags": true
+          }
+        ]
+      },
+      { "math": [ "pf_wb_bw = 39" ] },
+      { "math": [ "pf_wb_bx = 29" ] },
+      { "math": [ "pf_wb_bf = -1" ] },
+      { "math": [ "pf_wb_br = -1" ] },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_wb_n > 0" ] },
+            { "math": [ "pf_wb_me != 0" ] },
+            { "not": { "compare_string": [ { "global_val": "pf_wb_u_0" }, { "u_val": "pf_sweet" } ] } }
+          ]
+        },
+        "then": [
+          { "copy_var": { "global_val": "pf_wb_u_0" }, "target_var": { "global_val": "pf_m_other" } },
+          { "run_eocs": "PF_VIEW_read" },
+          {
+            "if": { "math": [ "pf_read_w > pf_wb_bw" ] },
+            "then": [ { "math": [ "pf_wb_bw = pf_read_w" ] }, { "math": [ "pf_wb_bf = 0" ] } ]
+          },
+          {
+            "if": { "math": [ "pf_read_x > pf_wb_bx" ] },
+            "then": [ { "math": [ "pf_wb_bx = pf_read_x" ] }, { "math": [ "pf_wb_br = 0" ] } ]
+          }
+        ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_wb_n > 1" ] },
+            { "math": [ "pf_wb_me != 1" ] },
+            { "not": { "compare_string": [ { "global_val": "pf_wb_u_1" }, { "u_val": "pf_sweet" } ] } }
+          ]
+        },
+        "then": [
+          { "copy_var": { "global_val": "pf_wb_u_1" }, "target_var": { "global_val": "pf_m_other" } },
+          { "run_eocs": "PF_VIEW_read" },
+          {
+            "if": { "math": [ "pf_read_w > pf_wb_bw" ] },
+            "then": [ { "math": [ "pf_wb_bw = pf_read_w" ] }, { "math": [ "pf_wb_bf = 1" ] } ]
+          },
+          {
+            "if": { "math": [ "pf_read_x > pf_wb_bx" ] },
+            "then": [ { "math": [ "pf_wb_bx = pf_read_x" ] }, { "math": [ "pf_wb_br = 1" ] } ]
+          }
+        ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_wb_n > 2" ] },
+            { "math": [ "pf_wb_me != 2" ] },
+            { "not": { "compare_string": [ { "global_val": "pf_wb_u_2" }, { "u_val": "pf_sweet" } ] } }
+          ]
+        },
+        "then": [
+          { "copy_var": { "global_val": "pf_wb_u_2" }, "target_var": { "global_val": "pf_m_other" } },
+          { "run_eocs": "PF_VIEW_read" },
+          {
+            "if": { "math": [ "pf_read_w > pf_wb_bw" ] },
+            "then": [ { "math": [ "pf_wb_bw = pf_read_w" ] }, { "math": [ "pf_wb_bf = 2" ] } ]
+          },
+          {
+            "if": { "math": [ "pf_read_x > pf_wb_bx" ] },
+            "then": [ { "math": [ "pf_wb_bx = pf_read_x" ] }, { "math": [ "pf_wb_br = 2" ] } ]
+          }
+        ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_wb_n > 3" ] },
+            { "math": [ "pf_wb_me != 3" ] },
+            { "not": { "compare_string": [ { "global_val": "pf_wb_u_3" }, { "u_val": "pf_sweet" } ] } }
+          ]
+        },
+        "then": [
+          { "copy_var": { "global_val": "pf_wb_u_3" }, "target_var": { "global_val": "pf_m_other" } },
+          { "run_eocs": "PF_VIEW_read" },
+          {
+            "if": { "math": [ "pf_read_w > pf_wb_bw" ] },
+            "then": [ { "math": [ "pf_wb_bw = pf_read_w" ] }, { "math": [ "pf_wb_bf = 3" ] } ]
+          },
+          {
+            "if": { "math": [ "pf_read_x > pf_wb_bx" ] },
+            "then": [ { "math": [ "pf_wb_bx = pf_read_x" ] }, { "math": [ "pf_wb_br = 3" ] } ]
+          }
+        ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_wb_n > 4" ] },
+            { "math": [ "pf_wb_me != 4" ] },
+            { "not": { "compare_string": [ { "global_val": "pf_wb_u_4" }, { "u_val": "pf_sweet" } ] } }
+          ]
+        },
+        "then": [
+          { "copy_var": { "global_val": "pf_wb_u_4" }, "target_var": { "global_val": "pf_m_other" } },
+          { "run_eocs": "PF_VIEW_read" },
+          {
+            "if": { "math": [ "pf_read_w > pf_wb_bw" ] },
+            "then": [ { "math": [ "pf_wb_bw = pf_read_w" ] }, { "math": [ "pf_wb_bf = 4" ] } ]
+          },
+          {
+            "if": { "math": [ "pf_read_x > pf_wb_bx" ] },
+            "then": [ { "math": [ "pf_wb_bx = pf_read_x" ] }, { "math": [ "pf_wb_br = 4" ] } ]
+          }
+        ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_wb_n > 5" ] },
+            { "math": [ "pf_wb_me != 5" ] },
+            { "not": { "compare_string": [ { "global_val": "pf_wb_u_5" }, { "u_val": "pf_sweet" } ] } }
+          ]
+        },
+        "then": [
+          { "copy_var": { "global_val": "pf_wb_u_5" }, "target_var": { "global_val": "pf_m_other" } },
+          { "run_eocs": "PF_VIEW_read" },
+          {
+            "if": { "math": [ "pf_read_w > pf_wb_bw" ] },
+            "then": [ { "math": [ "pf_wb_bw = pf_read_w" ] }, { "math": [ "pf_wb_bf = 5" ] } ]
+          },
+          {
+            "if": { "math": [ "pf_read_x > pf_wb_bx" ] },
+            "then": [ { "math": [ "pf_wb_bx = pf_read_x" ] }, { "math": [ "pf_wb_br = 5" ] } ]
+          }
+        ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_wb_n > 6" ] },
+            { "math": [ "pf_wb_me != 6" ] },
+            { "not": { "compare_string": [ { "global_val": "pf_wb_u_6" }, { "u_val": "pf_sweet" } ] } }
+          ]
+        },
+        "then": [
+          { "copy_var": { "global_val": "pf_wb_u_6" }, "target_var": { "global_val": "pf_m_other" } },
+          { "run_eocs": "PF_VIEW_read" },
+          {
+            "if": { "math": [ "pf_read_w > pf_wb_bw" ] },
+            "then": [ { "math": [ "pf_wb_bw = pf_read_w" ] }, { "math": [ "pf_wb_bf = 6" ] } ]
+          },
+          {
+            "if": { "math": [ "pf_read_x > pf_wb_bx" ] },
+            "then": [ { "math": [ "pf_wb_bx = pf_read_x" ] }, { "math": [ "pf_wb_br = 6" ] } ]
+          }
+        ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_wb_n > 7" ] },
+            { "math": [ "pf_wb_me != 7" ] },
+            { "not": { "compare_string": [ { "global_val": "pf_wb_u_7" }, { "u_val": "pf_sweet" } ] } }
+          ]
+        },
+        "then": [
+          { "copy_var": { "global_val": "pf_wb_u_7" }, "target_var": { "global_val": "pf_m_other" } },
+          { "run_eocs": "PF_VIEW_read" },
+          {
+            "if": { "math": [ "pf_read_w > pf_wb_bw" ] },
+            "then": [ { "math": [ "pf_wb_bw = pf_read_w" ] }, { "math": [ "pf_wb_bf = 7" ] } ]
+          },
+          {
+            "if": { "math": [ "pf_read_x > pf_wb_bx" ] },
+            "then": [ { "math": [ "pf_wb_bx = pf_read_x" ] }, { "math": [ "pf_wb_br = 7" ] } ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_wb_bf >= 0" ] },
+        "then": [
+          { "set_string_var": "pf_wb_nm_<global_val:pf_wb_bf>", "target_var": { "context_val": "fn" }, "parse_tags": true },
+          { "copy_var": { "var_val": "fn" }, "target_var": { "global_val": "pf_wb_tmp" } },
+          {
+            "set_string_var": "<global_val:pf_wb_cur>; close to <global_val:pf_wb_tmp>",
+            "target_var": { "global_val": "pf_wb_cur" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_wb_br >= 0" ] },
+        "then": [
+          { "set_string_var": "pf_wb_nm_<global_val:pf_wb_br>", "target_var": { "context_val": "rn" }, "parse_tags": true },
+          { "copy_var": { "var_val": "rn" }, "target_var": { "global_val": "pf_wb_tmp" } },
+          {
+            "set_string_var": "<global_val:pf_wb_cur>; at odds with <global_val:pf_wb_tmp>",
+            "target_var": { "global_val": "pf_wb_cur" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_wb_me >= 0" ] },
+        "then": [
+          { "set_string_var": "pf_wb_l_<global_val:pf_wb_me>", "target_var": { "context_val": "lref" }, "parse_tags": true },
+          { "copy_var": { "global_val": "pf_wb_cur" }, "target_var": { "var_val": "lref" } }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_WEB_pick_0",
+    "condition": { "math": [ "pf_wb_n > 0" ] },
+    "effect": [ { "run_eocs": "PF_WEB_open" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_WEB_pick_1",
+    "condition": { "math": [ "pf_wb_n > 1" ] },
+    "effect": [ { "run_eocs": "PF_WEB_open" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_WEB_pick_2",
+    "condition": { "math": [ "pf_wb_n > 2" ] },
+    "effect": [ { "run_eocs": "PF_WEB_open" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_WEB_pick_3",
+    "condition": { "math": [ "pf_wb_n > 3" ] },
+    "effect": [ { "run_eocs": "PF_WEB_open" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_WEB_pick_4",
+    "condition": { "math": [ "pf_wb_n > 4" ] },
+    "effect": [ { "run_eocs": "PF_WEB_open" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_WEB_pick_5",
+    "condition": { "math": [ "pf_wb_n > 5" ] },
+    "effect": [ { "run_eocs": "PF_WEB_open" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_WEB_pick_6",
+    "condition": { "math": [ "pf_wb_n > 6" ] },
+    "effect": [ { "run_eocs": "PF_WEB_open" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_WEB_pick_7",
+    "condition": { "math": [ "pf_wb_n > 7" ] },
+    "effect": [ { "run_eocs": "PF_WEB_open" } ]
+  }
+]

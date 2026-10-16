@@ -1,0 +1,348 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KEEP_heir_step",
+    "//": "u = avatar, at a meeting with an NPC lord present: the lord names an heir: their own grown child who lives here if they have one, else whoever they think most of (their own view).  Said out loud when it changes.",
+    "effect": [
+      { "math": [ "pf_kh_best = -999" ] },
+      { "math": [ "pf_kh_found = 0" ] },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_KEEP_heir_cand",
+            "condition": {
+              "and": [
+                {
+                  "and": [
+                    { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+                    { "math": [ "value_or(u_pf_resident, 0) == 1" ] },
+                    { "math": [ "has_var(u_pf_uid)" ] }
+                  ]
+                },
+                {
+                  "not": {
+                    "and": [
+                      { "math": [ "value_or(pf_chief_set, 0) == 1" ] },
+                      { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_chief_uid" } ] }
+                    ]
+                  }
+                }
+              ]
+            },
+            "effect": [
+              { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_m_other" } },
+              { "run_eocs": "PF_VIEW_read", "alpha_talker": { "global_val": "pf_kp_chief_t" } },
+              { "math": [ "_s = pf_read_t + pf_read_w / 2 - pf_read_x" ] },
+              {
+                "if": {
+                  "or": [
+                    { "compare_string": [ { "u_val": "pf_mom" }, { "global_val": "pf_chief_uid" } ] },
+                    { "compare_string": [ { "u_val": "pf_dad" }, { "global_val": "pf_chief_uid" } ] }
+                  ]
+                },
+                "then": [ { "math": [ "_s += 1000" ] } ]
+              },
+              {
+                "if": { "math": [ "_s > pf_kh_best" ] },
+                "then": [
+                  { "math": [ "pf_kh_best = _s" ] },
+                  { "math": [ "pf_kh_found = 1" ] },
+                  { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_kh_uid" } },
+                  { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_kh_name" }, "parse_tags": true }
+                ]
+              }
+            ]
+          }
+        ],
+        "local": true,
+        "npc_range": 60
+      },
+      {
+        "if": { "math": [ "pf_kh_found == 1" ] },
+        "then": [
+          {
+            "if": {
+              "or": [
+                { "math": [ "value_or(pf_heir_set, 0) == 0" ] },
+                { "not": { "compare_string": [ { "global_val": "pf_kh_uid" }, { "global_val": "pf_heir_uid" } ] } }
+              ]
+            },
+            "then": [
+              { "copy_var": { "global_val": "pf_kh_uid" }, "target_var": { "global_val": "pf_heir_uid" } },
+              { "copy_var": { "global_val": "pf_kh_name" }, "target_var": { "global_val": "pf_heir_name" } },
+              { "math": [ "pf_heir_set = 1" ] },
+              { "math": [ "pf_kp_events += 1" ] },
+              { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "heir_named" } }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KEEP_succession",
+    "//": "u = avatar.  The lord is gone (dead, or away from two meetings): the heir takes the chair if they're here and still live here; with no heir, the lordship ends and the place chooses again.",
+    "effect": [
+      { "math": [ "pf_ks_ok = 0" ] },
+      {
+        "if": { "math": [ "value_or(pf_heir_set, 0) == 1" ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_heir_uid" }, "target_var": { "global_val": "pf_find_uid" } },
+          { "run_eocs": "PF_FIND_by_uid" },
+          {
+            "if": { "math": [ "pf_find_ok == 1" ] },
+            "then": [ { "run_eocs": "PF_KEEP_crown", "alpha_talker": { "global_val": "pf_find_who" } } ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_ks_ok == 0" ] },
+        "then": [
+          { "math": [ "pf_law_lord = 0" ] },
+          { "math": [ "pf_chief_set = 0" ] },
+          { "math": [ "pf_mt_due = 1" ] },
+          { "math": [ "pf_kp_elect = 1" ] },
+          { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "no_heir" } }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KEEP_crown",
+    "//": "u = the heir: lord now.",
+    "condition": {
+      "and": [
+        { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+        { "math": [ "value_or(u_pf_resident, 0) == 1" ] }
+      ]
+    },
+    "effect": [
+      { "math": [ "pf_ks_ok = 1" ] },
+      { "math": [ "pf_chief_set = 1" ] },
+      { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_chief_uid" } },
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_chief_name" }, "parse_tags": true },
+      { "math": [ "pf_chief_since = time('now')" ] },
+      { "math": [ "pf_chief_away = 0" ] },
+      { "math": [ "pf_heir_set = 0" ] },
+      { "math": [ "pf_kp_elect = 0" ] },
+      { "math": [ "pf_successions_total = value_or(pf_successions_total, 0) + 1" ] },
+      { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "long_live" } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KEEP_exile_step",
+    "//": "u = avatar.  Someone more than half the others can't stand any more (tension 50+ or warmth below -15 in their own view; keeping back the tithe twice counts against them too): the meeting votes on putting them out.  At most every 2 weeks.",
+    "effect": [
+      {
+        "if": { "math": [ "time('now') - value_or(pf_ex_last, -999999) >= time('14 d')" ] },
+        "then": [
+          { "math": [ "pf_ex_best = 0" ] },
+          {
+            "u_run_npc_eocs": [
+              {
+                "id": "PF_KEEP_ex_t",
+                "condition": {
+                  "and": [
+                    {
+                      "and": [
+                        { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+                        { "math": [ "value_or(u_pf_resident, 0) == 1" ] },
+                        { "math": [ "has_var(u_pf_uid)" ] }
+                      ]
+                    },
+                    {
+                      "not": {
+                        "and": [
+                          { "math": [ "value_or(pf_chief_set, 0) == 1" ] },
+                          { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_chief_uid" } ] }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                "effect": [
+                  { "math": [ "pf_ex_c = 0" ] },
+                  { "math": [ "pf_ex_m = 0" ] },
+                  { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_ex_tuid" } },
+                  {
+                    "u_run_npc_eocs": [
+                      {
+                        "id": "PF_KEEP_ex_v",
+                        "condition": {
+                          "and": [
+                            {
+                              "and": [
+                                { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+                                { "math": [ "value_or(u_pf_resident, 0) == 1" ] },
+                                { "math": [ "has_var(u_pf_uid)" ] }
+                              ]
+                            },
+                            { "not": { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_ex_tuid" } ] } }
+                          ]
+                        },
+                        "effect": [
+                          { "copy_var": { "global_val": "pf_ex_tuid" }, "target_var": { "global_val": "pf_m_other" } },
+                          { "run_eocs": "PF_VIEW_read" },
+                          { "math": [ "pf_ex_m += 1" ] },
+                          {
+                            "if": { "math": [ "(pf_read_x >= 50) + (pf_read_w < -15) > 0" ] },
+                            "then": [ { "math": [ "pf_ex_c += 1" ] } ]
+                          }
+                        ]
+                      }
+                    ],
+                    "local": true,
+                    "npc_range": 60
+                  },
+                  {
+                    "if": { "math": [ "value_or(u_pf_shirks, 0) >= 2" ] },
+                    "then": [ { "math": [ "pf_ex_c += 1" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "(pf_ex_c > pf_ex_best) * (pf_ex_c * 2 > pf_ex_m) * (pf_ex_m >= 2)" ] },
+                    "then": [
+                      { "math": [ "pf_ex_best = pf_ex_c" ] },
+                      { "math": [ "pf_ex_n = pf_ex_m" ] },
+                      { "u_set_talker": { "global_val": "pf_ex_who" } },
+                      { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_ex_uid" } },
+                      {
+                        "set_string_var": "<u_name>",
+                        "target_var": { "global_val": "pf_ex_name" },
+                        "parse_tags": true
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "local": true,
+            "npc_range": 60
+          },
+          { "if": { "math": [ "pf_ex_best > 0" ] }, "then": [ { "run_eocs": "PF_KEEP_exile_vote" } ] }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KEEP_exile_vote",
+    "//": "u = avatar.  The vote: everyone who can't stand them is for, the rest against, and you (a popup).  Under a lord, the lord decides (from their own view: tension 40+ or warmth below -10); if you're the lord, your vote decides.",
+    "effect": [
+      { "math": [ "pf_kp_events += 1" ] },
+      { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "exile_motion" } },
+      { "math": [ "pf_ex_yes = pf_ex_best" ] },
+      { "math": [ "pf_ex_no = pf_ex_n - pf_ex_best" ] },
+      { "math": [ "pf_ex_youv = -1" ] },
+      {
+        "if": { "math": [ "distance(pf_kp_av, pf_home_loc) <= 30" ] },
+        "then": [
+          {
+            "set_string_var": "The meeting is voting on putting <global_val:pf_ex_name> out of the place.  Do you vote to put them out?",
+            "target_var": { "global_val": "pf_ex_q" },
+            "parse_tags": true
+          },
+          {
+            "if": { "u_query": { "global_val": "pf_ex_q" }, "default": false },
+            "then": [ { "math": [ "pf_ex_yes += 1" ] }, { "math": [ "pf_ex_youv = 1" ] } ],
+            "else": [ { "math": [ "pf_ex_no += 1" ] }, { "math": [ "pf_ex_youv = 0" ] } ]
+          }
+        ]
+      },
+      { "math": [ "pf_ex_pass = pf_ex_yes > pf_ex_no" ] },
+      {
+        "if": { "math": [ "value_or(pf_law_lord, 0) == 1" ] },
+        "then": [
+          {
+            "if": { "math": [ "(value_or(pf_chief_set, 0) == 2) * (pf_ex_youv >= 0)" ] },
+            "then": [ { "math": [ "pf_ex_pass = pf_ex_youv" ] }, { "math": [ "pf_ex_bylord = 1" ] } ]
+          },
+          {
+            "if": { "math": [ "value_or(pf_chief_set, 0) == 1" ] },
+            "then": [
+              { "copy_var": { "global_val": "pf_ex_uid" }, "target_var": { "global_val": "pf_m_other" } },
+              { "run_eocs": "PF_VIEW_read", "alpha_talker": { "global_val": "pf_kp_chief_t" } },
+              { "math": [ "pf_ex_pass = (pf_read_x >= 40) + (pf_read_w < -10) > 0" ] },
+              { "math": [ "pf_ex_bylord = 2" ] }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_ex_pass == 1" ] },
+        "then": [
+          {
+            "if": { "math": [ "value_or(pf_ex_bylord, 0) == 2" ] },
+            "then": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "exile_lord_yes" } } ],
+            "else": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "exile_yes" } } ]
+          },
+          { "run_eocs": "PF_KEEP_exile_do", "alpha_talker": { "global_val": "pf_ex_who" } }
+        ],
+        "else": [
+          {
+            "if": { "math": [ "value_or(pf_ex_bylord, 0) == 2" ] },
+            "then": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "exile_lord_no" } } ],
+            "else": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "exile_no" } } ]
+          }
+        ]
+      },
+      { "math": [ "pf_ex_bylord = 0" ] },
+      { "math": [ "pf_ex_last = time('now')" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KEEP_exile_do",
+    "//": "u = the exile: no longer lives here (no job, no home), resents the chief (ruled_against, strong), and walks away: an A-Life person becomes a band of one out there, anyone else just goes.  If they were the heir, there's no heir now.",
+    "effect": [
+      { "math": [ "u_pf_resident = 0" ] },
+      { "math": [ "u_pf_role = 0" ] },
+      { "math": [ "u_pf_exiled = 1" ] },
+      { "math": [ "pf_residents_n = max(value_or(pf_residents_n, 1) - 1, 0)" ] },
+      {
+        "if": {
+          "and": [
+            { "math": [ "value_or(pf_heir_set, 0) == 1" ] },
+            { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_heir_uid" } ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_heir_set = 0" ] } ]
+      },
+      {
+        "if": { "math": [ "(value_or(pf_cn_n, 0) > 0) * (value_or(u_pf_cn_term, -1) == value_or(pf_cn_term, -2))" ] },
+        "then": [ { "math": [ "pf_cn_n = 0" ] }, { "math": [ "pf_mt_due = 1" ] } ]
+      },
+      {
+        "if": { "math": [ "value_or(pf_chief_set, 0) == 2" ] },
+        "then": [ { "set_string_var": "AVATAR", "target_var": { "global_val": "pf_m_other" } } ],
+        "else": [ { "copy_var": { "global_val": "pf_chief_uid" }, "target_var": { "global_val": "pf_m_other" } } ]
+      },
+      {
+        "if": { "math": [ "value_or(pf_chief_set, 0) > 0" ] },
+        "then": [ { "math": [ "pf_mv_role = 1" ] }, { "math": [ "pf_m_str_in = 90" ] }, { "run_eocs": "PF_MV_ruled_against" } ]
+      },
+      {
+        "if": { "u_has_trait": "PF_AGENT" },
+        "then": [
+          { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_band_new_leader" } },
+          { "run_eocs": "PF_ALIFE_register_band" },
+          { "math": [ "pf_ws_task = 1" ] },
+          { "math": [ "pf_ws_kind = 0" ] },
+          { "run_eocs": "PF_WORLD_init_leader" }
+        ],
+        "else": [
+          { "u_location_variable": { "u_val": "pf_walk_to" } },
+          {
+            "location_variable_adjust": { "u_val": "pf_walk_to" },
+            "x_adjust": { "math": [ "(rand(1) * 2 - 1) * 50" ] },
+            "y_adjust": { "math": [ "rand(40) - 20" ] }
+          },
+          { "u_set_guard_pos": { "u_val": "pf_walk_to" } }
+        ]
+      },
+      { "math": [ "pf_exiles_total = value_or(pf_exiles_total, 0) + 1" ] }
+    ]
+  }
+]

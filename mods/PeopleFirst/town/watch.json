@@ -1,0 +1,889 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TWATCH_tick",
+    "//": "Every 10 minutes, when you're within 60 tiles of home: at 22:00 the watch goes up (once at least 3 grown-ups live here), at 02:00 it changes, at 06:00 it comes in.  Between times the watchers keep to their posts (not while the Horn is sounding: then they fight).",
+    "recurrence": "10 minutes",
+    "global": true,
+    "condition": { "math": [ "value_or(pf_home_set, 0) == 1" ] },
+    "effect": [
+      { "math": [ "pf_wt_tn = floor((time('now') - time('12 h')) / time('1 d'))" ] },
+      {
+        "if": { "math": [ "value_or(pf_wt_night, -1) != pf_wt_tn" ] },
+        "then": [ { "math": [ "pf_wt_night = pf_wt_tn" ] }, { "math": [ "pf_wt_phase = 0" ] }, { "math": [ "pf_wt_on = 0" ] } ]
+      },
+      { "u_location_variable": { "global_val": "pf_wt_av" } },
+      {
+        "if": { "math": [ "distance(pf_wt_av, pf_home_loc) <= 60" ] },
+        "then": [
+          {
+            "if": {
+              "and": [
+                { "math": [ "pf_wt_phase == 0" ] },
+                {
+                  "or": [
+                    { "math": [ "time_since('midnight', 'unit': 'hours') >= 22" ] },
+                    { "math": [ "time_since('midnight', 'unit': 'hours') < 1" ] }
+                  ]
+                }
+              ]
+            },
+            "then": [ { "run_eocs": "PF_TWATCH_post" } ]
+          },
+          {
+            "if": {
+              "and": [
+                { "math": [ "pf_wt_phase == 1" ] },
+                { "math": [ "time_since('midnight', 'unit': 'hours') >= 2" ] },
+                { "math": [ "time_since('midnight', 'unit': 'hours') < 12" ] }
+              ]
+            },
+            "then": [ { "run_eocs": "PF_TWATCH_change" } ]
+          },
+          {
+            "if": {
+              "and": [
+                { "math": [ "pf_wt_phase == 2" ] },
+                { "math": [ "time_since('midnight', 'unit': 'hours') >= 6" ] },
+                { "math": [ "time_since('midnight', 'unit': 'hours') < 12" ] }
+              ]
+            },
+            "then": [ { "run_eocs": "PF_TWATCH_dawn" } ]
+          },
+          {
+            "if": { "and": [ { "math": [ "pf_wt_on == 1" ] }, { "math": [ "value_or(pf_horn_active, 0) == 0" ] } ] },
+            "then": [
+              {
+                "u_run_npc_eocs": [
+                  {
+                    "id": "PF_TWATCH_keep",
+                    "condition": {
+                      "and": [
+                        { "math": [ "value_or(u_pf_on_watch, 0) == 1" ] },
+                        {
+                          "math": [ "value_or(u_pf_watch_night, -1) == floor((time('now') - time('12 h')) / time('1 d'))" ]
+                        }
+                      ]
+                    },
+                    "effect": [
+                      { "u_location_variable": { "u_val": "pf_pos" } },
+                      {
+                        "if": { "u_has_effect": "sleep" },
+                        "then": [ { "u_lose_effect": "sleep" }, { "u_lose_effect": "lying_down" } ]
+                      },
+                      {
+                        "if": { "math": [ "distance(u_pf_pos, u_pf_post) > 2" ] },
+                        "then": [
+                          { "copy_var": { "u_val": "pf_post" }, "target_var": { "u_val": "pf_walk_to" } },
+                          { "u_set_guard_pos": { "u_val": "pf_walk_to" } }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "local": true,
+                "npc_range": 60
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TWATCH_post",
+    "//": "u = avatar.  Tonight's rota: one watcher per post (1 post for 3-5 grown-ups, 2 for 6+, 3 for 12+, 4 for 18+), two shifts.  Guards first, nobody two nights running if it can be helped, and the second on a shift is someone who gets on with the first (their own warmth, half of it).  The first shift goes to their posts now; the second sleeps until two.",
+    "effect": [
+      { "math": [ "pf_wt_adults = 0" ] },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_TWATCH_count",
+            "condition": {
+              "and": [
+                { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+                { "math": [ "value_or(u_pf_resident, 0) == 1" ] }
+              ]
+            },
+            "effect": [ { "math": [ "pf_wt_adults += 1" ] } ]
+          }
+        ],
+        "local": true,
+        "npc_range": 60
+      },
+      {
+        "if": { "math": [ "pf_wt_adults < 3" ] },
+        "then": [ { "math": [ "pf_wt_phase = 9" ] } ],
+        "else": [
+          { "math": [ "pf_wt_dead0 = value_or(pf_ours_dead_total, 0)" ] },
+          { "math": [ "pf_wt_k = pf_wt_adults >= 18 ? 4 : (pf_wt_adults >= 12 ? 3 : (pf_wt_adults >= 6 ? 2 : 1))" ] },
+          { "math": [ "pf_wt_n_1 = 0" ] },
+          { "math": [ "pf_wt_n_2 = 0" ] },
+          { "math": [ "pf_wt_s = 1" ] },
+          {
+            "if": { "math": [ "pf_wt_k >= 1" ] },
+            "then": [
+              { "math": [ "pf_wt_best = -1" ] },
+              { "math": [ "pf_wt_s = 1" ] },
+              { "math": [ "pf_wt_j = 1" ] },
+              { "u_run_npc_eocs": [ "PF_TWATCH_cand" ], "local": true, "npc_range": 60 },
+              {
+                "if": { "math": [ "pf_wt_best >= 0" ] },
+                "then": [ { "run_eocs": "PF_TWATCH_assign", "alpha_talker": { "global_val": "pf_wt_who" } } ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_wt_k >= 2" ] },
+            "then": [
+              { "math": [ "pf_wt_best = -1" ] },
+              { "math": [ "pf_wt_s = 1" ] },
+              { "math": [ "pf_wt_j = 2" ] },
+              { "u_run_npc_eocs": [ "PF_TWATCH_cand" ], "local": true, "npc_range": 60 },
+              {
+                "if": { "math": [ "pf_wt_best >= 0" ] },
+                "then": [ { "run_eocs": "PF_TWATCH_assign", "alpha_talker": { "global_val": "pf_wt_who" } } ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_wt_k >= 3" ] },
+            "then": [
+              { "math": [ "pf_wt_best = -1" ] },
+              { "math": [ "pf_wt_s = 1" ] },
+              { "math": [ "pf_wt_j = 3" ] },
+              { "u_run_npc_eocs": [ "PF_TWATCH_cand" ], "local": true, "npc_range": 60 },
+              {
+                "if": { "math": [ "pf_wt_best >= 0" ] },
+                "then": [ { "run_eocs": "PF_TWATCH_assign", "alpha_talker": { "global_val": "pf_wt_who" } } ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_wt_k >= 4" ] },
+            "then": [
+              { "math": [ "pf_wt_best = -1" ] },
+              { "math": [ "pf_wt_s = 1" ] },
+              { "math": [ "pf_wt_j = 4" ] },
+              { "u_run_npc_eocs": [ "PF_TWATCH_cand" ], "local": true, "npc_range": 60 },
+              {
+                "if": { "math": [ "pf_wt_best >= 0" ] },
+                "then": [ { "run_eocs": "PF_TWATCH_assign", "alpha_talker": { "global_val": "pf_wt_who" } } ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_wt_k >= 1" ] },
+            "then": [
+              { "math": [ "pf_wt_best = -1" ] },
+              { "math": [ "pf_wt_s = 2" ] },
+              { "math": [ "pf_wt_j = 1" ] },
+              { "u_run_npc_eocs": [ "PF_TWATCH_cand" ], "local": true, "npc_range": 60 },
+              {
+                "if": { "math": [ "pf_wt_best >= 0" ] },
+                "then": [ { "run_eocs": "PF_TWATCH_assign", "alpha_talker": { "global_val": "pf_wt_who" } } ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_wt_k >= 2" ] },
+            "then": [
+              { "math": [ "pf_wt_best = -1" ] },
+              { "math": [ "pf_wt_s = 2" ] },
+              { "math": [ "pf_wt_j = 2" ] },
+              { "u_run_npc_eocs": [ "PF_TWATCH_cand" ], "local": true, "npc_range": 60 },
+              {
+                "if": { "math": [ "pf_wt_best >= 0" ] },
+                "then": [ { "run_eocs": "PF_TWATCH_assign", "alpha_talker": { "global_val": "pf_wt_who" } } ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_wt_k >= 3" ] },
+            "then": [
+              { "math": [ "pf_wt_best = -1" ] },
+              { "math": [ "pf_wt_s = 2" ] },
+              { "math": [ "pf_wt_j = 3" ] },
+              { "u_run_npc_eocs": [ "PF_TWATCH_cand" ], "local": true, "npc_range": 60 },
+              {
+                "if": { "math": [ "pf_wt_best >= 0" ] },
+                "then": [ { "run_eocs": "PF_TWATCH_assign", "alpha_talker": { "global_val": "pf_wt_who" } } ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_wt_k >= 4" ] },
+            "then": [
+              { "math": [ "pf_wt_best = -1" ] },
+              { "math": [ "pf_wt_s = 2" ] },
+              { "math": [ "pf_wt_j = 4" ] },
+              { "u_run_npc_eocs": [ "PF_TWATCH_cand" ], "local": true, "npc_range": 60 },
+              {
+                "if": { "math": [ "pf_wt_best >= 0" ] },
+                "then": [ { "run_eocs": "PF_TWATCH_assign", "alpha_talker": { "global_val": "pf_wt_who" } } ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_wt_n_1 == 1" ] },
+            "then": [
+              { "set_string_var": "<global_val:pf_wt_nm_1_1>", "target_var": { "global_val": "pf_wt_list_1" }, "parse_tags": true }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_wt_n_1 == 2" ] },
+            "then": [
+              {
+                "set_string_var": "<global_val:pf_wt_nm_1_1> and <global_val:pf_wt_nm_1_2>",
+                "target_var": { "global_val": "pf_wt_list_1" },
+                "parse_tags": true
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_wt_n_1 == 3" ] },
+            "then": [
+              {
+                "set_string_var": "<global_val:pf_wt_nm_1_1>, <global_val:pf_wt_nm_1_2> and <global_val:pf_wt_nm_1_3>",
+                "target_var": { "global_val": "pf_wt_list_1" },
+                "parse_tags": true
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_wt_n_1 == 4" ] },
+            "then": [
+              {
+                "set_string_var": "<global_val:pf_wt_nm_1_1>, <global_val:pf_wt_nm_1_2>, <global_val:pf_wt_nm_1_3> and <global_val:pf_wt_nm_1_4>",
+                "target_var": { "global_val": "pf_wt_list_1" },
+                "parse_tags": true
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_wt_n_2 == 1" ] },
+            "then": [
+              { "set_string_var": "<global_val:pf_wt_nm_2_1>", "target_var": { "global_val": "pf_wt_list_2" }, "parse_tags": true }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_wt_n_2 == 2" ] },
+            "then": [
+              {
+                "set_string_var": "<global_val:pf_wt_nm_2_1> and <global_val:pf_wt_nm_2_2>",
+                "target_var": { "global_val": "pf_wt_list_2" },
+                "parse_tags": true
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_wt_n_2 == 3" ] },
+            "then": [
+              {
+                "set_string_var": "<global_val:pf_wt_nm_2_1>, <global_val:pf_wt_nm_2_2> and <global_val:pf_wt_nm_2_3>",
+                "target_var": { "global_val": "pf_wt_list_2" },
+                "parse_tags": true
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_wt_n_2 == 4" ] },
+            "then": [
+              {
+                "set_string_var": "<global_val:pf_wt_nm_2_1>, <global_val:pf_wt_nm_2_2>, <global_val:pf_wt_nm_2_3> and <global_val:pf_wt_nm_2_4>",
+                "target_var": { "global_val": "pf_wt_list_2" },
+                "parse_tags": true
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_wt_n_1 == 0" ] },
+            "then": [ { "math": [ "pf_wt_phase = 9" ] } ],
+            "else": [
+              { "math": [ "pf_wt_phase = 1" ] },
+              { "math": [ "pf_wt_on = 1" ] },
+              { "copy_var": { "global_val": "pf_wt_list_1" }, "target_var": { "global_val": "pf_wt_cur" } },
+              { "math": [ "pf_wt_handed = 0" ] },
+              {
+                "if": { "math": [ "value_or(pf_watch_active, 0) == 1" ] },
+                "then": [
+                  { "math": [ "pf_watch_active = 0" ] },
+                  { "copy_var": { "global_val": "pf_watch_uid" }, "target_var": { "global_val": "pf_watch_last" } },
+                  {
+                    "set_string_var": "pf_name_<global_val:pf_watch_uid>",
+                    "target_var": { "context_val": "whn" },
+                    "parse_tags": true
+                  },
+                  { "copy_var": { "var_val": "whn" }, "target_var": { "global_val": "pf_wt_hand" } },
+                  { "math": [ "pf_wt_handed = 1" ] }
+                ]
+              },
+              {
+                "if": { "math": [ "value_or(pf_set_chatter, 1) == 1" ] },
+                "then": [
+                  {
+                    "if": { "math": [ "pf_wt_n_2 > 0" ] },
+                    "then": [
+                      {
+                        "if": { "math": [ "rand(1) == 0" ] },
+                        "then": [ { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "watch_rota" } } ],
+                        "else": [ { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "watch_rota_b" } } ]
+                      }
+                    ],
+                    "else": [ { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "watch_rota_one" } } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_wt_handed == 1" ] },
+                    "then": [ { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "watch_handover" } } ]
+                  },
+                  {
+                    "if": { "math": [ "value_or(pf_law_watch, 0) == 1" ] },
+                    "then": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "law_watch_note" } } ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TWATCH_cand",
+    "//": "u = a grown-up who lives here, awake enough to stand a watch (not heavily pregnant, not badly hurt, not already on tonight).",
+    "condition": {
+      "and": [
+        { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+        { "math": [ "value_or(u_pf_resident, 0) == 1" ] },
+        { "math": [ "has_var(u_pf_uid)" ] },
+        { "math": [ "value_or(u_pf_watch_night, -1) != floor((time('now') - time('12 h')) / time('1 d'))" ] },
+        { "not": { "u_has_effect": "PF_preg_3" } },
+        { "math": [ "u_hp('torso') >= u_hp_max('torso') * 0.6" ] },
+        {
+          "math": [ "(value_or(u_pf_rel_stage, 1) == 3) * (time('now') - value_or(u_pf_stage_since, -999999) < time('1 d')) == 0" ]
+        },
+        { "math": [ "time('now') - value_or(u_pf_birth_t, -999999) >= time('7 d')" ] },
+        {
+          "not": {
+            "and": [
+              { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_last_birth_dad" } ] },
+              { "math": [ "time('now') - value_or(pf_last_birth_t, -999999) < time('1 d')" ] }
+            ]
+          }
+        }
+      ]
+    },
+    "effect": [
+      { "math": [ "_s = 50 + rand(20) + (value_or(u_pf_role, 0) == 2) * 30 * (value_or(pf_law_watch, 0) == 0)" ] },
+      {
+        "math": [
+          "_s -= (value_or(u_pf_watch_night, -9) == floor((time('now') - time('12 h')) / time('1 d')) - 1) * (value_or(pf_law_watch, 0) == 1 ? 80 : 40) + (value_or(u_pf_watch_night, -9) == floor((time('now') - time('12 h')) / time('1 d')) - 2) * 15"
+        ]
+      },
+      {
+        "if": { "math": [ "pf_wt_j > 1" ] },
+        "then": [
+          {
+            "if": { "math": [ "pf_wt_s == 1" ] },
+            "then": [ { "copy_var": { "global_val": "pf_wt_uid_1_1" }, "target_var": { "global_val": "pf_m_other" } } ],
+            "else": [ { "copy_var": { "global_val": "pf_wt_uid_2_1" }, "target_var": { "global_val": "pf_m_other" } } ]
+          },
+          { "run_eocs": "PF_VIEW_read" },
+          { "math": [ "_s += pf_read_w / 2" ] }
+        ]
+      },
+      {
+        "if": { "math": [ "_s > pf_wt_best" ] },
+        "then": [ { "math": [ "pf_wt_best = _s" ] }, { "u_set_talker": { "global_val": "pf_wt_who" } } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TWATCH_assign",
+    "//": "u = tonight's watcher (same turn as the pick).",
+    "effect": [
+      { "math": [ "u_pf_watch_night = floor((time('now') - time('12 h')) / time('1 d'))" ] },
+      { "math": [ "u_pf_watch_shift = pf_wt_s" ] },
+      { "math": [ "u_pf_on_watch = 0" ] },
+      {
+        "if": { "math": [ "pf_wt_s == 1" ] },
+        "then": [ { "math": [ "pf_wt_n_1 += 1" ] } ],
+        "else": [ { "math": [ "pf_wt_n_2 += 1" ] } ]
+      },
+      {
+        "if": { "and": [ { "math": [ "pf_wt_s == 1" ] }, { "math": [ "pf_wt_n_1 == 1" ] } ] },
+        "then": [
+          { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_wt_nm_1_1" }, "parse_tags": true },
+          { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_wt_uid_1_1" } }
+        ]
+      },
+      {
+        "if": { "and": [ { "math": [ "pf_wt_s == 1" ] }, { "math": [ "pf_wt_n_1 == 2" ] } ] },
+        "then": [
+          { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_wt_nm_1_2" }, "parse_tags": true },
+          { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_wt_uid_1_2" } }
+        ]
+      },
+      {
+        "if": { "and": [ { "math": [ "pf_wt_s == 1" ] }, { "math": [ "pf_wt_n_1 == 3" ] } ] },
+        "then": [
+          { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_wt_nm_1_3" }, "parse_tags": true },
+          { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_wt_uid_1_3" } }
+        ]
+      },
+      {
+        "if": { "and": [ { "math": [ "pf_wt_s == 1" ] }, { "math": [ "pf_wt_n_1 == 4" ] } ] },
+        "then": [
+          { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_wt_nm_1_4" }, "parse_tags": true },
+          { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_wt_uid_1_4" } }
+        ]
+      },
+      {
+        "if": { "and": [ { "math": [ "pf_wt_s == 2" ] }, { "math": [ "pf_wt_n_2 == 1" ] } ] },
+        "then": [
+          { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_wt_nm_2_1" }, "parse_tags": true },
+          { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_wt_uid_2_1" } }
+        ]
+      },
+      {
+        "if": { "and": [ { "math": [ "pf_wt_s == 2" ] }, { "math": [ "pf_wt_n_2 == 2" ] } ] },
+        "then": [
+          { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_wt_nm_2_2" }, "parse_tags": true },
+          { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_wt_uid_2_2" } }
+        ]
+      },
+      {
+        "if": { "and": [ { "math": [ "pf_wt_s == 2" ] }, { "math": [ "pf_wt_n_2 == 3" ] } ] },
+        "then": [
+          { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_wt_nm_2_3" }, "parse_tags": true },
+          { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_wt_uid_2_3" } }
+        ]
+      },
+      {
+        "if": { "and": [ { "math": [ "pf_wt_s == 2" ] }, { "math": [ "pf_wt_n_2 == 4" ] } ] },
+        "then": [
+          { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_wt_nm_2_4" }, "parse_tags": true },
+          { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_wt_uid_2_4" } }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_wt_s == 1" ] },
+        "then": [
+          { "u_lose_effect": "sleep" },
+          { "u_lose_effect": "lying_down" },
+          { "math": [ "u_pf_on_watch = 1" ] },
+          {
+            "u_location_variable": { "u_val": "pf_post" },
+            "min_radius": 8,
+            "max_radius": 14,
+            "outdoor_only": true,
+            "passable_only": true
+          },
+          { "copy_var": { "u_val": "pf_post" }, "target_var": { "u_val": "pf_walk_to" } },
+          { "u_set_guard_pos": { "u_val": "pf_walk_to" } }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TWATCH_change",
+    "//": "u = avatar.  Two o'clock: the first shift wakes the second and goes to bed (a fresh bed claim).  With nobody on the second shift, the first stays out till dawn.",
+    "effect": [
+      { "math": [ "pf_wt_phase = 2" ] },
+      { "math": [ "pf_wt_s = 2" ] },
+      { "math": [ "pf_wt_n_2 = 0" ] },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_TWATCH_wake2",
+            "condition": {
+              "and": [
+                { "math": [ "value_or(u_pf_watch_night, -1) == floor((time('now') - time('12 h')) / time('1 d'))" ] },
+                { "math": [ "value_or(u_pf_watch_shift, 0) == 2" ] },
+                { "math": [ "u_hp('torso') > 0" ] },
+                { "math": [ "u_hp('head') > 0" ] }
+              ]
+            },
+            "effect": [
+              { "math": [ "pf_wt_n_2 += 1" ] },
+              {
+                "if": { "and": [ { "math": [ "pf_wt_s == 1" ] }, { "math": [ "pf_wt_n_1 == 1" ] } ] },
+                "then": [
+                  { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_wt_nm_1_1" }, "parse_tags": true },
+                  { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_wt_uid_1_1" } }
+                ]
+              },
+              {
+                "if": { "and": [ { "math": [ "pf_wt_s == 1" ] }, { "math": [ "pf_wt_n_1 == 2" ] } ] },
+                "then": [
+                  { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_wt_nm_1_2" }, "parse_tags": true },
+                  { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_wt_uid_1_2" } }
+                ]
+              },
+              {
+                "if": { "and": [ { "math": [ "pf_wt_s == 1" ] }, { "math": [ "pf_wt_n_1 == 3" ] } ] },
+                "then": [
+                  { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_wt_nm_1_3" }, "parse_tags": true },
+                  { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_wt_uid_1_3" } }
+                ]
+              },
+              {
+                "if": { "and": [ { "math": [ "pf_wt_s == 1" ] }, { "math": [ "pf_wt_n_1 == 4" ] } ] },
+                "then": [
+                  { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_wt_nm_1_4" }, "parse_tags": true },
+                  { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_wt_uid_1_4" } }
+                ]
+              },
+              {
+                "if": { "and": [ { "math": [ "pf_wt_s == 2" ] }, { "math": [ "pf_wt_n_2 == 1" ] } ] },
+                "then": [
+                  { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_wt_nm_2_1" }, "parse_tags": true },
+                  { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_wt_uid_2_1" } }
+                ]
+              },
+              {
+                "if": { "and": [ { "math": [ "pf_wt_s == 2" ] }, { "math": [ "pf_wt_n_2 == 2" ] } ] },
+                "then": [
+                  { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_wt_nm_2_2" }, "parse_tags": true },
+                  { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_wt_uid_2_2" } }
+                ]
+              },
+              {
+                "if": { "and": [ { "math": [ "pf_wt_s == 2" ] }, { "math": [ "pf_wt_n_2 == 3" ] } ] },
+                "then": [
+                  { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_wt_nm_2_3" }, "parse_tags": true },
+                  { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_wt_uid_2_3" } }
+                ]
+              },
+              {
+                "if": { "and": [ { "math": [ "pf_wt_s == 2" ] }, { "math": [ "pf_wt_n_2 == 4" ] } ] },
+                "then": [
+                  { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_wt_nm_2_4" }, "parse_tags": true },
+                  { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_wt_uid_2_4" } }
+                ]
+              },
+              { "u_lose_effect": "sleep" },
+              { "u_lose_effect": "lying_down" },
+              { "math": [ "u_pf_on_watch = 1" ] },
+              {
+                "u_location_variable": { "u_val": "pf_post" },
+                "min_radius": 8,
+                "max_radius": 14,
+                "outdoor_only": true,
+                "passable_only": true
+              },
+              { "copy_var": { "u_val": "pf_post" }, "target_var": { "u_val": "pf_walk_to" } },
+              { "u_set_guard_pos": { "u_val": "pf_walk_to" } }
+            ]
+          }
+        ],
+        "local": true,
+        "npc_range": 60
+      },
+      {
+        "if": { "math": [ "pf_wt_n_2 > 0" ] },
+        "then": [
+          {
+            "if": { "math": [ "pf_wt_n_2 == 1" ] },
+            "then": [
+              { "set_string_var": "<global_val:pf_wt_nm_2_1>", "target_var": { "global_val": "pf_wt_list_2" }, "parse_tags": true }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_wt_n_2 == 2" ] },
+            "then": [
+              {
+                "set_string_var": "<global_val:pf_wt_nm_2_1> and <global_val:pf_wt_nm_2_2>",
+                "target_var": { "global_val": "pf_wt_list_2" },
+                "parse_tags": true
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_wt_n_2 == 3" ] },
+            "then": [
+              {
+                "set_string_var": "<global_val:pf_wt_nm_2_1>, <global_val:pf_wt_nm_2_2> and <global_val:pf_wt_nm_2_3>",
+                "target_var": { "global_val": "pf_wt_list_2" },
+                "parse_tags": true
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_wt_n_2 == 4" ] },
+            "then": [
+              {
+                "set_string_var": "<global_val:pf_wt_nm_2_1>, <global_val:pf_wt_nm_2_2>, <global_val:pf_wt_nm_2_3> and <global_val:pf_wt_nm_2_4>",
+                "target_var": { "global_val": "pf_wt_list_2" },
+                "parse_tags": true
+              }
+            ]
+          },
+          {
+            "u_run_npc_eocs": [
+              {
+                "id": "PF_TWATCH_relieve",
+                "condition": {
+                  "and": [
+                    {
+                      "and": [
+                        { "math": [ "value_or(u_pf_on_watch, 0) == 1" ] },
+                        {
+                          "math": [ "value_or(u_pf_watch_night, -1) == floor((time('now') - time('12 h')) / time('1 d'))" ]
+                        }
+                      ]
+                    },
+                    { "math": [ "value_or(u_pf_watch_shift, 0) == 1" ] }
+                  ]
+                },
+                "effect": [ { "math": [ "u_pf_on_watch = 0" ] }, { "math": [ "u_pf_bed_night = -1" ] } ]
+              }
+            ],
+            "local": true,
+            "npc_range": 60
+          },
+          { "copy_var": { "global_val": "pf_wt_list_2" }, "target_var": { "global_val": "pf_wt_cur" } },
+          {
+            "if": { "math": [ "value_or(pf_set_chatter, 1) == 1" ] },
+            "then": [
+              {
+                "if": { "math": [ "value_or(pf_wt_seen_night, -1) == floor((time('now') - time('12 h')) / time('1 d'))" ] },
+                "then": [ { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "watch_change_seen" } } ],
+                "else": [
+                  {
+                    "if": { "math": [ "rand(1) == 0" ] },
+                    "then": [ { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "watch_change" } } ],
+                    "else": [ { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "watch_change_b" } } ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TWATCH_dawn",
+    "//": "u = avatar.  Six o'clock: the watch comes in.  Everyone who stood a watch tonight: a shared moment with the one who stood it with them (watch_covered, both ways across a pair), and with you if you slept at home.",
+    "effect": [
+      { "math": [ "pf_wt_phase = 3" ] },
+      { "math": [ "pf_wt_on = 0" ] },
+      { "u_location_variable": { "global_val": "pf_wt_av" } },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_TWATCH_in",
+            "condition": {
+              "and": [
+                { "math": [ "value_or(u_pf_watch_night, -1) == floor((time('now') - time('12 h')) / time('1 d'))" ] },
+                { "math": [ "has_var(u_pf_uid)" ] }
+              ]
+            },
+            "effect": [
+              { "math": [ "u_pf_on_watch = 0" ] },
+              { "math": [ "u_pf_watches = value_or(u_pf_watches, 0) + 1" ] },
+              { "u_set_talker": { "global_val": "pf_wt_cur_w" } },
+              { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_wt_cur_uid" } },
+              { "math": [ "pf_wt_cur_shift = u_pf_watch_shift" ] },
+              { "math": [ "pf_wt_pairs = 0" ] },
+              {
+                "u_run_npc_eocs": [
+                  {
+                    "id": "PF_TWATCH_partner",
+                    "condition": {
+                      "and": [
+                        { "math": [ "pf_wt_pairs == 0" ] },
+                        {
+                          "math": [ "value_or(u_pf_watch_night, -1) == floor((time('now') - time('12 h')) / time('1 d'))" ]
+                        },
+                        { "math": [ "value_or(u_pf_watch_shift, 0) == pf_wt_cur_shift" ] },
+                        { "not": { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_wt_cur_uid" } ] } }
+                      ]
+                    },
+                    "effect": [
+                      { "math": [ "pf_wt_pairs = 1" ] },
+                      { "math": [ "pf_m_str_in = 30" ] },
+                      {
+                        "run_eocs": "PF_MK_watch_covered",
+                        "alpha_talker": { "global_val": "pf_wt_cur_w" },
+                        "beta_talker": "u"
+                      }
+                    ]
+                  }
+                ],
+                "local": true,
+                "npc_range": 60
+              },
+              {
+                "if": { "math": [ "distance(pf_wt_av, pf_home_loc) <= 30" ] },
+                "then": [ { "math": [ "pf_m_str_in = 20" ] }, { "run_eocs": "PF_MK_watch_covered", "beta_talker": "avatar" } ]
+              }
+            ]
+          }
+        ],
+        "local": true,
+        "npc_range": 60
+      },
+      { "math": [ "pf_wt_nights_total = value_or(pf_wt_nights_total, 0) + 1" ] },
+      {
+        "if": { "math": [ "pf_wt_n_2 > 0" ] },
+        "then": [ { "copy_var": { "global_val": "pf_wt_list_2" }, "target_var": { "global_val": "pf_wt_cur" } } ],
+        "else": [ { "copy_var": { "global_val": "pf_wt_list_1" }, "target_var": { "global_val": "pf_wt_cur" } } ]
+      },
+      {
+        "if": { "math": [ "value_or(pf_ours_dead_total, 0) > value_or(pf_wt_dead0, 0)" ] },
+        "then": [ { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "watch_loss" } } ],
+        "else": [
+          {
+            "if": { "math": [ "value_or(pf_set_chatter, 1) == 1" ] },
+            "then": [
+              {
+                "if": { "math": [ "value_or(pf_wt_seen_night, -1) == floor((time('now') - time('12 h')) / time('1 d'))" ] },
+                "then": [ { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "watch_held" } } ],
+                "else": [
+                  { "math": [ "_q = rand(2)" ] },
+                  {
+                    "if": { "math": [ "_q == value_or(pf_wt_q_last, -1)" ] },
+                    "then": [ { "math": [ "_q = (_q + 1) % 3" ] } ]
+                  },
+                  { "math": [ "pf_wt_q_last = _q" ] },
+                  {
+                    "if": { "math": [ "_q == 0" ] },
+                    "then": [ { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "watch_quiet_0" } } ]
+                  },
+                  {
+                    "if": { "math": [ "_q == 1" ] },
+                    "then": [ { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "watch_quiet_1" } } ]
+                  },
+                  {
+                    "if": { "math": [ "_q == 2" ] },
+                    "then": [ { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "watch_quiet_2" } } ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TWATCH_spot_tick",
+    "//": "Every 2 minutes while the watch is up: each watcher on a post looks out: a hostile monster within 15 tiles in clear line of sight (line_of_sight works at night; monster_must_see failed in the dark, where a zombie's own sight is a few tiles).  The first one to see something raises the Horn, by name; while it's out there the alarm stays up.",
+    "recurrence": "2 minutes",
+    "global": true,
+    "condition": {
+      "and": [
+        { "math": [ "value_or(pf_wt_on, 0) == 1" ] },
+        { "math": [ "value_or(pf_wt_night, -1) == floor((time('now') - time('12 h')) / time('1 d'))" ] }
+      ]
+    },
+    "effect": [
+      { "math": [ "pf_wt_found = 0" ] },
+      { "set_string_var": "", "target_var": { "global_val": "pf_wt_spot" } },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_TWATCH_look",
+            "condition": {
+              "and": [
+                {
+                  "and": [
+                    { "math": [ "value_or(u_pf_on_watch, 0) == 1" ] },
+                    {
+                      "math": [ "value_or(u_pf_watch_night, -1) == floor((time('now') - time('12 h')) / time('1 d'))" ]
+                    }
+                  ]
+                },
+                { "not": { "u_has_effect": "sleep" } }
+              ]
+            },
+            "effect": [
+              { "math": [ "pf_wt_saw = 0" ] },
+              { "u_location_variable": { "global_val": "pf_wt_wpos" } },
+              {
+                "u_run_monster_eocs": [
+                  {
+                    "id": "PF_TWATCH_mon",
+                    "condition": { "and": [ { "math": [ "pf_wt_saw == 0" ] }, { "math": [ "u_monsters_nearby('radius': 0) > 0" ] } ] },
+                    "effect": [
+                      { "u_location_variable": { "global_val": "pf_wt_mtry" } },
+                      {
+                        "if": { "line_of_sight": 15, "loc_1": { "global_val": "pf_wt_wpos" }, "loc_2": { "global_val": "pf_wt_mtry" } },
+                        "then": [
+                          { "math": [ "pf_wt_saw = 1" ] },
+                          {
+                            "copy_var": { "global_val": "pf_wt_mtry" },
+                            "target_var": { "global_val": "pf_wt_seen_mpos" }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "monster_range": 15
+              },
+              {
+                "if": { "and": [ { "math": [ "pf_wt_saw == 1" ] }, { "math": [ "pf_wt_found == 0" ] } ] },
+                "then": [
+                  { "math": [ "pf_wt_found = 1" ] },
+                  { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_wt_spot" }, "parse_tags": true }
+                ]
+              }
+            ]
+          }
+        ],
+        "local": true,
+        "npc_range": 60
+      },
+      {
+        "if": { "math": [ "pf_wt_found == 1" ] },
+        "then": [
+          { "math": [ "pf_wt_seen_t = time('now')" ] },
+          { "math": [ "pf_horn_last = time('now')" ] },
+          { "math": [ "pf_wt_seen_night = floor((time('now') - time('12 h')) / time('1 d'))" ] },
+          { "copy_var": { "global_val": "pf_wt_spot" }, "target_var": { "global_val": "pf_wt_hero" } },
+          {
+            "if": { "and": [ { "math": [ "value_or(pf_horn_active, 0) == 0" ] }, { "math": [ "value_or(pf_horn_on, 1) == 1" ] } ] },
+            "then": [
+              { "math": [ "pf_wt_sightings_total = value_or(pf_wt_sightings_total, 0) + 1" ] },
+              { "run_eocs": "PF_HORN_alarm", "alpha_talker": "avatar" }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TWATCH_menu",
+    "//": "u = avatar.  Home menu: Tonight's watch.",
+    "condition": { "math": [ "value_or(pf_home_set, 0) == 1" ] },
+    "effect": [
+      {
+        "if": {
+          "and": [
+            { "math": [ "value_or(pf_wt_night, -1) == floor((time('now') - time('12 h')) / time('1 d'))" ] },
+            { "math": [ "value_or(pf_wt_phase, 0) >= 1" ] },
+            { "math": [ "value_or(pf_wt_phase, 0) <= 3" ] }
+          ]
+        },
+        "then": [
+          {
+            "if": { "math": [ "pf_wt_n_2 > 0" ] },
+            "then": [ { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "watch_menu" } } ],
+            "else": [ { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "watch_menu_one" } } ]
+          }
+        ],
+        "else": [ { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "watch_menu_none" } } ]
+      }
+    ]
+  }
+]

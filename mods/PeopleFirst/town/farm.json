@@ -1,0 +1,334 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TOWN_morning",
+    "//": "Once a day, 07:00-18:00, when you're home and awake: neighbors' animals arrive, the animals give milk and eggs, and the field moves along.",
+    "recurrence": "30 minutes",
+    "global": true,
+    "condition": {
+      "and": [
+        { "math": [ "value_or(pf_home_set, 0) == 1" ] },
+        { "not": { "u_has_effect": "sleep" } },
+        { "math": [ "time_since('midnight', 'unit': 'hours') >= 7" ] },
+        { "math": [ "time_since('midnight', 'unit': 'hours') < 18" ] },
+        { "math": [ "value_or(pf_tw_day, -1) != floor(time('now') / time('1 d'))" ] }
+      ]
+    },
+    "effect": [
+      { "math": [ "pf_tw_day = floor(time('now') / time('1 d'))" ] },
+      { "u_location_variable": { "global_val": "pf_tw_av" } },
+      {
+        "if": { "math": [ "distance(pf_tw_av, pf_home_loc) <= 30" ] },
+        "then": [
+          { "if": { "math": [ "value_or(pf_animals_due, 0) == 1" ] }, "then": [ { "run_eocs": "PF_TOWN_animals_arrive" } ] },
+          { "run_eocs": "PF_TOWN_produce" },
+          { "run_eocs": "PF_TOWN_field_tick" }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TOWN_worker",
+    "//": "u = avatar.  pf_tw_role = the job wanted (6 herder, 7 farmer).  Picks the resident with that job, else the most able resident; pf_tw_wbest < 0 means nobody.",
+    "effect": [
+      { "math": [ "pf_tw_wbest = -1" ] },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_TOWN_worker_cand",
+            "condition": {
+              "and": [
+                { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+                { "math": [ "value_or(u_pf_resident, 0) == 1" ] },
+                { "not": { "u_has_effect": "sleep" } }
+              ]
+            },
+            "effect": [
+              { "math": [ "_s = (value_or(u_pf_role, 0) == pf_tw_role) * 100 + u_skill('survival') * 5 + rand(10)" ] },
+              {
+                "if": { "math": [ "_s > pf_tw_wbest" ] },
+                "then": [
+                  { "math": [ "pf_tw_wbest = _s" ] },
+                  { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+                  { "u_set_talker": { "global_val": "pf_tw_worker" } }
+                ]
+              }
+            ]
+          }
+        ],
+        "local": true,
+        "npc_range": 40
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TOWN_produce",
+    "//": "u = avatar.  The herder (or the most able resident, or you) brings in the morning's milk (a jug per cow, about 2 liters; per goat, about 3/4 liter) and eggs (each hen half the time), as real items at home.",
+    "effect": [
+      { "math": [ "pf_tw_cows = monsters_nearby('mon_cow', 'radius': 25, 'location': pf_home_loc, 'attitude': 'friendly')" ] },
+      {
+        "math": [ "pf_tw_goats = monsters_nearby('mon_goat', 'radius': 25, 'location': pf_home_loc, 'attitude': 'friendly')" ]
+      },
+      {
+        "math": [ "pf_tw_hens = monsters_nearby('mon_chicken', 'radius': 25, 'location': pf_home_loc, 'attitude': 'friendly')" ]
+      },
+      {
+        "if": { "math": [ "pf_tw_cows + pf_tw_goats + pf_tw_hens > 0" ] },
+        "then": [
+          { "math": [ "pf_tw_role = 6" ] },
+          { "run_eocs": "PF_TOWN_worker" },
+          { "math": [ "pf_tw_jugs = pf_tw_cows + pf_tw_goats" ] },
+          { "math": [ "pf_tw_eggs = 0" ] },
+          { "math": [ "pf_tw_eggs_i = 0" ] },
+          { "run_eocs": "PF_TOWN_lay", "condition": { "math": [ "pf_tw_eggs_i < pf_tw_hens" ] }, "iterations": 20 },
+          { "math": [ "pf_tw_mi = 0" ] },
+          { "run_eocs": "PF_TOWN_milk_cow", "condition": { "math": [ "pf_tw_mi < pf_tw_cows" ] }, "iterations": 20 },
+          { "math": [ "pf_tw_mi = 0" ] },
+          { "run_eocs": "PF_TOWN_milk_goat", "condition": { "math": [ "pf_tw_mi < pf_tw_goats" ] }, "iterations": 20 },
+          {
+            "if": { "math": [ "pf_tw_eggs > 0" ] },
+            "then": [
+              { "map_spawn_item": "egg_chicken", "loc": { "global_val": "pf_stores_loc" }, "count": { "global_val": "pf_tw_eggs" } }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_tw_jugs + pf_tw_eggs > 0" ] },
+            "then": [
+              { "math": [ "pf_milk_total = value_or(pf_milk_total, 0) + pf_tw_jugs" ] },
+              { "math": [ "pf_eggs_total = value_or(pf_eggs_total, 0) + pf_tw_eggs" ] },
+              { "math": [ "pf_stores = value_or(pf_stores, 0) + pf_tw_jugs + pf_tw_eggs / 2" ] },
+              {
+                "if": { "math": [ "value_or(pf_set_chatter, 1) == 1" ] },
+                "then": [
+                  {
+                    "if": { "math": [ "pf_tw_wbest >= 0" ] },
+                    "then": [
+                      {
+                        "if": { "math": [ "(pf_tw_jugs > 0) * (pf_tw_eggs > 0)" ] },
+                        "then": [ { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "produce_both" } } ],
+                        "else": [
+                          {
+                            "if": { "math": [ "pf_tw_jugs > 0" ] },
+                            "then": [ { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "produce_milk" } } ],
+                            "else": [ { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "produce_eggs" } } ]
+                          }
+                        ]
+                      }
+                    ],
+                    "else": [ { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "produce_you" } } ]
+                  },
+                  { "if": { "math": [ "rand(3) == 0" ] }, "then": [ { "run_eocs": "PF_TOWN_kid_animals" } ] }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TOWN_milk_cow",
+    "//": "A cow's morning milk: about 2 liters in a gallon jug (count = servings).",
+    "effect": [
+      { "map_spawn_item": "milk_raw", "loc": { "global_val": "pf_stores_loc" }, "count": 8, "container": "jug_plastic" },
+      { "math": [ "pf_tw_mi += 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TOWN_milk_goat",
+    "//": "A goat's morning milk: about three quarters of a liter.",
+    "effect": [
+      { "map_spawn_item": "milk_raw", "loc": { "global_val": "pf_stores_loc" }, "count": 3, "container": "jug_plastic" },
+      { "math": [ "pf_tw_mi += 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TOWN_lay",
+    "effect": [
+      { "if": { "math": [ "rand(1) == 0" ] }, "then": [ { "math": [ "pf_tw_eggs += 1" ] } ] },
+      { "math": [ "pf_tw_eggs_i += 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TOWN_kid_animals",
+    "//": "u = avatar.  A child and the animals: chasing the hens, carrying the eggs, naming the goat.",
+    "effect": [
+      { "math": [ "pf_tw_kid = 0" ] },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_TOWN_kid_cand",
+            "condition": {
+              "and": [ { "u_has_trait": "PF_CHILD" }, { "not": { "u_has_effect": "PF_infant" } }, { "math": [ "pf_tw_kid == 0" ] } ]
+            },
+            "effect": [
+              { "math": [ "pf_tw_kid = 1" ] },
+              { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_b" }, "parse_tags": true }
+            ]
+          }
+        ],
+        "local": true,
+        "npc_range": 40
+      },
+      {
+        "if": { "math": [ "pf_tw_kid == 1" ] },
+        "then": [
+          {
+            "if": { "math": [ "pf_tw_hens > 0" ] },
+            "then": [
+              {
+                "if": { "math": [ "rand(1) == 0" ] },
+                "then": [ { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "kid_hens" } } ],
+                "else": [ { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "kid_eggs" } } ]
+              }
+            ],
+            "else": [ { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "kid_named" } } ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TOWN_field_tick",
+    "//": "u = avatar.  Fallow and in season: plant.  Grown: harvest.",
+    "effect": [
+      {
+        "if": {
+          "and": [
+            { "math": [ "value_or(pf_field_state, 0) == 1" ] },
+            { "or": [ { "is_season": "spring" }, { "is_season": "summer" } ] }
+          ]
+        },
+        "then": [ { "run_eocs": "PF_TOWN_plant" } ],
+        "else": [
+          {
+            "if": {
+              "and": [
+                { "math": [ "value_or(pf_field_state, 0) == 2" ] },
+                {
+                  "math": [
+                    "time('now') - pf_field_t >= time('1 d') * (value_or(pf_set_grow, 1) == 0 ? 90 : (value_or(pf_set_grow, 1) == 1 ? 30 : 2))"
+                  ]
+                }
+              ]
+            },
+            "then": [ { "run_eocs": "PF_TOWN_harvest" } ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TOWN_plant",
+    "//": "u = avatar.  Planting day: the farmer (or anyone who lives with you) plants the plot (dirt mounds); everyone who lives here pitches in (a small shared moment with you).",
+    "effect": [
+      { "math": [ "pf_tw_role = 7" ] },
+      { "run_eocs": "PF_TOWN_worker" },
+      {
+        "u_transform_radius": 2,
+        "ter_furn_transform": "PF_TOWN_t_plant",
+        "target_var": { "global_val": "pf_field_loc" }
+      },
+      { "math": [ "pf_field_state = 2" ] },
+      { "math": [ "pf_field_t = time('now')" ] },
+      { "math": [ "pf_plantings_total = value_or(pf_plantings_total, 0) + 1" ] },
+      {
+        "if": { "math": [ "value_or(pf_set_chatter, 1) == 1" ] },
+        "then": [
+          {
+            "if": { "math": [ "pf_tw_wbest >= 0" ] },
+            "then": [ { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "planting_day" } } ],
+            "else": [ { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "planting_you" } } ]
+          }
+        ]
+      },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_TOWN_plant_helper",
+            "condition": { "and": [ { "math": [ "value_or(u_pf_resident, 0) == 1" ] }, { "not": { "u_has_effect": "sleep" } } ] },
+            "effect": [ { "math": [ "pf_m_str_in = 25" ] }, { "run_eocs": "PF_MK_fire_evening", "beta_talker": "avatar" } ]
+          }
+        ],
+        "local": true,
+        "npc_range": 30
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TOWN_harvest",
+    "//": "u = avatar.  The harvest: real potatoes, carrots and cabbages at home; the plot goes back to dirt and waits for the next season.  Tonight is the feast.",
+    "effect": [
+      { "math": [ "pf_tw_role = 7" ] },
+      { "run_eocs": "PF_TOWN_worker" },
+      {
+        "u_transform_radius": 2,
+        "ter_furn_transform": "PF_TOWN_t_harvest",
+        "target_var": { "global_val": "pf_field_loc" }
+      },
+      { "map_spawn_item": "potato", "loc": { "global_val": "pf_stores_loc" }, "count": 12 },
+      { "map_spawn_item": "carrot", "loc": { "global_val": "pf_stores_loc" }, "count": 10 },
+      { "map_spawn_item": "cabbage_head", "loc": { "global_val": "pf_stores_loc" }, "count": 4 },
+      { "math": [ "pf_field_state = 1" ] },
+      { "math": [ "pf_harvest_day = floor(time('now') / time('1 d'))" ] },
+      { "math": [ "pf_stores = value_or(pf_stores, 0) + 20" ] },
+      { "math": [ "pf_harvests_total = value_or(pf_harvests_total, 0) + 1" ] },
+      {
+        "if": { "math": [ "value_or(pf_set_chatter, 1) == 1" ] },
+        "then": [
+          {
+            "if": { "math": [ "pf_tw_wbest >= 0" ] },
+            "then": [ { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "harvest" } } ],
+            "else": [ { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "harvest_you" } } ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TOWN_feast",
+    "//": "u = avatar, at the evening beat on the day of a harvest: the evening becomes a feast (morale, and a shared meal with everyone there).",
+    "condition": {
+      "and": [
+        { "math": [ "value_or(pf_harvest_day, -1) == floor(time('now') / time('1 d'))" ] },
+        { "math": [ "value_or(pf_feast_day, -1) != floor(time('now') / time('1 d'))" ] }
+      ]
+    },
+    "effect": [
+      { "math": [ "pf_feast_day = floor(time('now') / time('1 d'))" ] },
+      {
+        "if": { "math": [ "value_or(pf_town_named, 0) == 1" ] },
+        "then": [ { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "feast_named" } } ],
+        "else": [ { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "feast" } } ]
+      },
+      {
+        "u_add_morale": "PF_morale_feast",
+        "bonus": 15,
+        "max_bonus": 15,
+        "duration": "12 hours",
+        "decay_start": "6 hours"
+      },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_TOWN_feast_one",
+            "condition": { "math": [ "has_var(u_pf_uid)" ] },
+            "effect": [ { "math": [ "pf_m_str_in = 40" ] }, { "run_eocs": "PF_MK_meal_shared", "beta_talker": "avatar" } ]
+          }
+        ],
+        "local": true,
+        "npc_range": 20
+      }
+    ]
+  }
+]

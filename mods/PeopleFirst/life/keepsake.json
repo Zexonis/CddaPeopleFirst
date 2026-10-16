@@ -1,0 +1,39 @@
+[
+  {
+    "type": "ITEM",
+    "id": "PF_carved_keepsake",
+    "name": { "str": "carved keepsake" },
+    "description": "A little figure whittled from scrap wood by firelight.  Someone made this for you.",
+    "category": "other",
+    "material": [ "wood" ],
+    "weight": "30 g",
+    "volume": "50 ml",
+    "price": "1 cent",
+    "price_postapoc": "1 cent",
+    "symbol": "f",
+    "color": "brown",
+    "variant_type": "generic",
+    "variants": [
+      {
+        "id": "PF_keepsake_fox",
+        "name": { "str": "carved fox", "str_pl": "carved foxes" },
+        "description": "A little fox whittled from scrap wood by firelight, its tail curled around its feet.  Someone made this for you."
+      },
+      {
+        "id": "PF_keepsake_bird",
+        "name": { "str": "carved bird" },
+        "description": "A little bird whittled from scrap wood by firelight, wings folded, head cocked as if listening.  Someone made this for you."
+      },
+      {
+        "id": "PF_keepsake_bear",
+        "name": { "str": "carved bear" },
+        "description": "A stubby little bear whittled from scrap wood by firelight.  The knife slipped on one ear.  Someone made this for you."
+      },
+      {
+        "id": "PF_keepsake_dog",
+        "name": { "str": "carved dog" },
+        "description": "A little sitting dog whittled from scrap wood by firelight, the way dogs used to wait by the door.  Someone made this for you."
+      }
+    ]
+  }
+]

@@ -1,0 +1,107 @@
+[
+  {
+    "type": "npc",
+    "id": "PF_NV_KEEP",
+    "//": "An envoy from a settlement out there (Keep pass 6).  Mission 2: walk orders only.  Comes and goes; removed once out of sight (lifespan 1 day as a safety net: no corpse).",
+    "name_suffix": "envoy",
+    "class": "NC_SOLDIER",
+    "attitude": 0,
+    "mission": 2,
+    "chat": "TALK_PF_NV",
+    "faction": "no_faction"
+  },
+  {
+    "type": "npc",
+    "id": "PF_NV_EYES",
+    "//": "An envoy from a settlement out there (Keep pass 6).  Mission 2: walk orders only.  Comes and goes; removed once out of sight (lifespan 1 day as a safety net: no corpse).",
+    "name_suffix": "envoy",
+    "class": "NC_DOCTOR",
+    "attitude": 0,
+    "mission": 2,
+    "chat": "TALK_PF_NV",
+    "faction": "no_faction"
+  },
+  {
+    "type": "npc",
+    "id": "PF_NV_WOOD",
+    "//": "An envoy from a settlement out there (Keep pass 6).  Mission 2: walk orders only.  Comes and goes; removed once out of sight (lifespan 1 day as a safety net: no corpse).",
+    "name_suffix": "envoy",
+    "class": "NC_HUNTER",
+    "attitude": 0,
+    "mission": 2,
+    "chat": "TALK_PF_NV",
+    "faction": "no_faction"
+  },
+  {
+    "type": "npc",
+    "id": "PF_MATCH_0_male",
+    "//": "Someone from a settlement out there, coming to marry one of yours (Keep pass 6).",
+    "class": "NC_SOLDIER",
+    "attitude": 0,
+    "mission": 2,
+    "chat": "TALK_PF_PERSON",
+    "faction": "no_faction",
+    "gender": "male"
+  },
+  {
+    "type": "npc",
+    "id": "PF_MATCH_0_female",
+    "//": "Someone from a settlement out there, coming to marry one of yours (Keep pass 6).",
+    "class": "NC_SOLDIER",
+    "attitude": 0,
+    "mission": 2,
+    "chat": "TALK_PF_PERSON",
+    "faction": "no_faction",
+    "gender": "female"
+  },
+  {
+    "type": "npc",
+    "id": "PF_MATCH_1_male",
+    "//": "Someone from a settlement out there, coming to marry one of yours (Keep pass 6).",
+    "class": "NC_DOCTOR",
+    "attitude": 0,
+    "mission": 2,
+    "chat": "TALK_PF_PERSON",
+    "faction": "no_faction",
+    "gender": "male"
+  },
+  {
+    "type": "npc",
+    "id": "PF_MATCH_1_female",
+    "//": "Someone from a settlement out there, coming to marry one of yours (Keep pass 6).",
+    "class": "NC_DOCTOR",
+    "attitude": 0,
+    "mission": 2,
+    "chat": "TALK_PF_PERSON",
+    "faction": "no_faction",
+    "gender": "female"
+  },
+  {
+    "type": "npc",
+    "id": "PF_MATCH_2_male",
+    "//": "Someone from a settlement out there, coming to marry one of yours (Keep pass 6).",
+    "class": "NC_HUNTER",
+    "attitude": 0,
+    "mission": 2,
+    "chat": "TALK_PF_PERSON",
+    "faction": "no_faction",
+    "gender": "male"
+  },
+  {
+    "type": "npc",
+    "id": "PF_MATCH_2_female",
+    "//": "Someone from a settlement out there, coming to marry one of yours (Keep pass 6).",
+    "class": "NC_HUNTER",
+    "attitude": 0,
+    "mission": 2,
+    "chat": "TALK_PF_PERSON",
+    "faction": "no_faction",
+    "gender": "female"
+  },
+  {
+    "type": "talk_topic",
+    "id": "TALK_PF_NV",
+    "dynamic_line": "<global_val:pf_nv_says>",
+    "responses": [ { "text": "Safe road.", "topic": "TALK_DONE" } ]
+  }
+]

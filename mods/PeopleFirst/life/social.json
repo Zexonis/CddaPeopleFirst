@@ -1,0 +1,771 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_SOCIAL_band_evening",
+    "//": "u = an off-screen band leader, once a day after 20:00 (called from the A-Life offline step).  The band makes camp: every member's view of every other member gets a fire_evening half moment, or bicker if tension is 25+.  Up to 6 people = 30 view updates, reached one at a time by unique id.  Pure var math: nothing in the world loads.  So a band you meet already has a history.",
+    "effect": [
+      { "math": [ "u_pf_social_day = floor(time('now') / time('1 d'))" ] },
+      { "math": [ "pf_sb_n = 1" ] },
+      { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_sb_0" } },
+      {
+        "if": { "not": { "compare_string": [ { "u_val": "pf_member_0" }, "none" ] } },
+        "then": [
+          { "set_string_var": "pf_sb_<global_val:pf_sb_n>", "target_var": { "context_val": "ref" }, "parse_tags": true },
+          { "copy_var": { "u_val": "pf_member_0" }, "target_var": { "var_val": "ref" } },
+          { "math": [ "pf_sb_n += 1" ] }
+        ]
+      },
+      {
+        "if": { "not": { "compare_string": [ { "u_val": "pf_member_1" }, "none" ] } },
+        "then": [
+          { "set_string_var": "pf_sb_<global_val:pf_sb_n>", "target_var": { "context_val": "ref" }, "parse_tags": true },
+          { "copy_var": { "u_val": "pf_member_1" }, "target_var": { "var_val": "ref" } },
+          { "math": [ "pf_sb_n += 1" ] }
+        ]
+      },
+      {
+        "if": { "not": { "compare_string": [ { "u_val": "pf_member_2" }, "none" ] } },
+        "then": [
+          { "set_string_var": "pf_sb_<global_val:pf_sb_n>", "target_var": { "context_val": "ref" }, "parse_tags": true },
+          { "copy_var": { "u_val": "pf_member_2" }, "target_var": { "var_val": "ref" } },
+          { "math": [ "pf_sb_n += 1" ] }
+        ]
+      },
+      {
+        "if": { "not": { "compare_string": [ { "u_val": "pf_member_3" }, "none" ] } },
+        "then": [
+          { "set_string_var": "pf_sb_<global_val:pf_sb_n>", "target_var": { "context_val": "ref" }, "parse_tags": true },
+          { "copy_var": { "u_val": "pf_member_3" }, "target_var": { "var_val": "ref" } },
+          { "math": [ "pf_sb_n += 1" ] }
+        ]
+      },
+      {
+        "if": { "not": { "compare_string": [ { "u_val": "pf_member_4" }, "none" ] } },
+        "then": [
+          { "set_string_var": "pf_sb_<global_val:pf_sb_n>", "target_var": { "context_val": "ref" }, "parse_tags": true },
+          { "copy_var": { "u_val": "pf_member_4" }, "target_var": { "var_val": "ref" } },
+          { "math": [ "pf_sb_n += 1" ] }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_sb_n > 1" ] },
+        "then": [
+          { "math": [ "pf_sb_self = 0" ] },
+          {
+            "u_run_npc_eocs": [ "PF_SOCIAL_eve_viewer" ],
+            "unique_ids": [ { "global_val": "pf_sb_0" } ],
+            "local": false
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_sb_n > 1" ] },
+        "then": [
+          { "math": [ "pf_sb_self = 1" ] },
+          {
+            "u_run_npc_eocs": [ "PF_SOCIAL_eve_viewer" ],
+            "unique_ids": [ { "global_val": "pf_sb_1" } ],
+            "local": false
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_sb_n > 2" ] },
+        "then": [
+          { "math": [ "pf_sb_self = 2" ] },
+          {
+            "u_run_npc_eocs": [ "PF_SOCIAL_eve_viewer" ],
+            "unique_ids": [ { "global_val": "pf_sb_2" } ],
+            "local": false
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_sb_n > 3" ] },
+        "then": [
+          { "math": [ "pf_sb_self = 3" ] },
+          {
+            "u_run_npc_eocs": [ "PF_SOCIAL_eve_viewer" ],
+            "unique_ids": [ { "global_val": "pf_sb_3" } ],
+            "local": false
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_sb_n > 4" ] },
+        "then": [
+          { "math": [ "pf_sb_self = 4" ] },
+          {
+            "u_run_npc_eocs": [ "PF_SOCIAL_eve_viewer" ],
+            "unique_ids": [ { "global_val": "pf_sb_4" } ],
+            "local": false
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_sb_n > 5" ] },
+        "then": [
+          { "math": [ "pf_sb_self = 5" ] },
+          {
+            "u_run_npc_eocs": [ "PF_SOCIAL_eve_viewer" ],
+            "unique_ids": [ { "global_val": "pf_sb_5" } ],
+            "local": false
+          }
+        ]
+      },
+      { "math": [ "pf_social_evenings_total = value_or(pf_social_evenings_total, 0) + 1" ] },
+      { "run_eocs": "PF_ROAD_day" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_SOCIAL_band_hunt",
+    "//": "u = an off-screen band leader whose band just finished a leg of its hunt (called from PF_ALIFE_next_waypoint while offline).  At most once per 6 hours: short patrols reach waypoints every few minutes, and the natural playtest logged 492 hunts in 95 minutes without this.  Everyone shared the danger: a mild bond (strength 30), and about one hunt in eight was a close call they'll remember (60).",
+    "condition": {
+      "or": [ { "math": [ "time_since(u_pf_hunt_last) < 0" ] }, { "math": [ "time_since(u_pf_hunt_last) > time('6 h')" ] } ]
+    },
+    "effect": [
+      { "math": [ "u_pf_hunt_last = time('now')" ] },
+      { "math": [ "pf_sb_n = 1" ] },
+      { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_sb_0" } },
+      {
+        "if": { "not": { "compare_string": [ { "u_val": "pf_member_0" }, "none" ] } },
+        "then": [
+          { "set_string_var": "pf_sb_<global_val:pf_sb_n>", "target_var": { "context_val": "ref" }, "parse_tags": true },
+          { "copy_var": { "u_val": "pf_member_0" }, "target_var": { "var_val": "ref" } },
+          { "math": [ "pf_sb_n += 1" ] }
+        ]
+      },
+      {
+        "if": { "not": { "compare_string": [ { "u_val": "pf_member_1" }, "none" ] } },
+        "then": [
+          { "set_string_var": "pf_sb_<global_val:pf_sb_n>", "target_var": { "context_val": "ref" }, "parse_tags": true },
+          { "copy_var": { "u_val": "pf_member_1" }, "target_var": { "var_val": "ref" } },
+          { "math": [ "pf_sb_n += 1" ] }
+        ]
+      },
+      {
+        "if": { "not": { "compare_string": [ { "u_val": "pf_member_2" }, "none" ] } },
+        "then": [
+          { "set_string_var": "pf_sb_<global_val:pf_sb_n>", "target_var": { "context_val": "ref" }, "parse_tags": true },
+          { "copy_var": { "u_val": "pf_member_2" }, "target_var": { "var_val": "ref" } },
+          { "math": [ "pf_sb_n += 1" ] }
+        ]
+      },
+      {
+        "if": { "not": { "compare_string": [ { "u_val": "pf_member_3" }, "none" ] } },
+        "then": [
+          { "set_string_var": "pf_sb_<global_val:pf_sb_n>", "target_var": { "context_val": "ref" }, "parse_tags": true },
+          { "copy_var": { "u_val": "pf_member_3" }, "target_var": { "var_val": "ref" } },
+          { "math": [ "pf_sb_n += 1" ] }
+        ]
+      },
+      {
+        "if": { "not": { "compare_string": [ { "u_val": "pf_member_4" }, "none" ] } },
+        "then": [
+          { "set_string_var": "pf_sb_<global_val:pf_sb_n>", "target_var": { "context_val": "ref" }, "parse_tags": true },
+          { "copy_var": { "u_val": "pf_member_4" }, "target_var": { "var_val": "ref" } },
+          { "math": [ "pf_sb_n += 1" ] }
+        ]
+      },
+      { "math": [ "pf_sb_hunt_str = rand(7) == 0 ? 60 : 30" ] },
+      {
+        "if": { "math": [ "pf_sb_n > 1" ] },
+        "then": [
+          { "math": [ "pf_sb_self = 0" ] },
+          {
+            "u_run_npc_eocs": [ "PF_SOCIAL_hunt_viewer" ],
+            "unique_ids": [ { "global_val": "pf_sb_0" } ],
+            "local": false
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_sb_n > 1" ] },
+        "then": [
+          { "math": [ "pf_sb_self = 1" ] },
+          {
+            "u_run_npc_eocs": [ "PF_SOCIAL_hunt_viewer" ],
+            "unique_ids": [ { "global_val": "pf_sb_1" } ],
+            "local": false
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_sb_n > 2" ] },
+        "then": [
+          { "math": [ "pf_sb_self = 2" ] },
+          {
+            "u_run_npc_eocs": [ "PF_SOCIAL_hunt_viewer" ],
+            "unique_ids": [ { "global_val": "pf_sb_2" } ],
+            "local": false
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_sb_n > 3" ] },
+        "then": [
+          { "math": [ "pf_sb_self = 3" ] },
+          {
+            "u_run_npc_eocs": [ "PF_SOCIAL_hunt_viewer" ],
+            "unique_ids": [ { "global_val": "pf_sb_3" } ],
+            "local": false
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_sb_n > 4" ] },
+        "then": [
+          { "math": [ "pf_sb_self = 4" ] },
+          {
+            "u_run_npc_eocs": [ "PF_SOCIAL_hunt_viewer" ],
+            "unique_ids": [ { "global_val": "pf_sb_4" } ],
+            "local": false
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_sb_n > 5" ] },
+        "then": [
+          { "math": [ "pf_sb_self = 5" ] },
+          {
+            "u_run_npc_eocs": [ "PF_SOCIAL_hunt_viewer" ],
+            "unique_ids": [ { "global_val": "pf_sb_5" } ],
+            "local": false
+          }
+        ]
+      },
+      { "math": [ "pf_social_hunts_total = value_or(pf_social_hunts_total, 0) + 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_SOCIAL_hunt_viewer",
+    "//": "u = one band member (by unique id).  Their view of each of the others gets shared_danger.",
+    "effect": [
+      { "run_eocs": "PF_ID_ensure" },
+      {
+        "if": { "and": [ { "math": [ "pf_sb_n > 0" ] }, { "math": [ "pf_sb_self != 0" ] } ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_sb_0" }, "target_var": { "global_val": "pf_m_other" } },
+          { "math": [ "pf_mv_role = 1" ] },
+          { "math": [ "pf_m_str_in = pf_sb_hunt_str" ] },
+          { "run_eocs": "PF_MV_shared_danger" }
+        ]
+      },
+      {
+        "if": { "and": [ { "math": [ "pf_sb_n > 1" ] }, { "math": [ "pf_sb_self != 1" ] } ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_sb_1" }, "target_var": { "global_val": "pf_m_other" } },
+          { "math": [ "pf_mv_role = 1" ] },
+          { "math": [ "pf_m_str_in = pf_sb_hunt_str" ] },
+          { "run_eocs": "PF_MV_shared_danger" }
+        ]
+      },
+      {
+        "if": { "and": [ { "math": [ "pf_sb_n > 2" ] }, { "math": [ "pf_sb_self != 2" ] } ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_sb_2" }, "target_var": { "global_val": "pf_m_other" } },
+          { "math": [ "pf_mv_role = 1" ] },
+          { "math": [ "pf_m_str_in = pf_sb_hunt_str" ] },
+          { "run_eocs": "PF_MV_shared_danger" }
+        ]
+      },
+      {
+        "if": { "and": [ { "math": [ "pf_sb_n > 3" ] }, { "math": [ "pf_sb_self != 3" ] } ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_sb_3" }, "target_var": { "global_val": "pf_m_other" } },
+          { "math": [ "pf_mv_role = 1" ] },
+          { "math": [ "pf_m_str_in = pf_sb_hunt_str" ] },
+          { "run_eocs": "PF_MV_shared_danger" }
+        ]
+      },
+      {
+        "if": { "and": [ { "math": [ "pf_sb_n > 4" ] }, { "math": [ "pf_sb_self != 4" ] } ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_sb_4" }, "target_var": { "global_val": "pf_m_other" } },
+          { "math": [ "pf_mv_role = 1" ] },
+          { "math": [ "pf_m_str_in = pf_sb_hunt_str" ] },
+          { "run_eocs": "PF_MV_shared_danger" }
+        ]
+      },
+      {
+        "if": { "and": [ { "math": [ "pf_sb_n > 5" ] }, { "math": [ "pf_sb_self != 5" ] } ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_sb_5" }, "target_var": { "global_val": "pf_m_other" } },
+          { "math": [ "pf_mv_role = 1" ] },
+          { "math": [ "pf_m_str_in = pf_sb_hunt_str" ] },
+          { "run_eocs": "PF_MV_shared_danger" }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_SOCIAL_eve_viewer",
+    "//": "u = one band member (reached by unique id), index pf_sb_self in the band list.  Updates their view of each of the others.",
+    "effect": [
+      { "run_eocs": "PF_ID_ensure" },
+      { "math": [ "pf_sbr_best = 0" ] },
+      { "math": [ "pf_sbr_bj = -1" ] },
+      {
+        "if": { "and": [ { "math": [ "pf_sb_n > 0" ] }, { "math": [ "pf_sb_self != 0" ] } ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_sb_0" }, "target_var": { "global_val": "pf_m_other" } },
+          { "run_eocs": "PF_VIEW_read" },
+          { "math": [ "pf_mv_role = 1" ] },
+          {
+            "if": { "math": [ "pf_read_x >= 25" ] },
+            "then": [ { "run_eocs": "PF_MV_bicker" } ],
+            "else": [ { "run_eocs": "PF_MV_fire_evening" } ]
+          },
+          {
+            "if": { "compare_string": [ { "u_val": "pf_sweet" }, { "global_val": "pf_sb_0" } ] },
+            "then": [
+              { "run_eocs": "PF_MV_courting" },
+              { "math": [ "pf_bc_calls = value_or(pf_bc_calls, 0) + 1" ] },
+              { "run_eocs": "PF_FAM_band_conceive" }
+            ]
+          },
+          { "run_eocs": "PF_VIEW_read" },
+          {
+            "if": { "math": [ "pf_read_a > pf_sbr_best" ] },
+            "then": [ { "math": [ "pf_sbr_best = pf_read_a" ] }, { "math": [ "pf_sbr_bj = 0" ] } ]
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "math": [ "pf_sb_n > 1" ] }, { "math": [ "pf_sb_self != 1" ] } ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_sb_1" }, "target_var": { "global_val": "pf_m_other" } },
+          { "run_eocs": "PF_VIEW_read" },
+          { "math": [ "pf_mv_role = 1" ] },
+          {
+            "if": { "math": [ "pf_read_x >= 25" ] },
+            "then": [ { "run_eocs": "PF_MV_bicker" } ],
+            "else": [ { "run_eocs": "PF_MV_fire_evening" } ]
+          },
+          {
+            "if": { "compare_string": [ { "u_val": "pf_sweet" }, { "global_val": "pf_sb_1" } ] },
+            "then": [
+              { "run_eocs": "PF_MV_courting" },
+              { "math": [ "pf_bc_calls = value_or(pf_bc_calls, 0) + 1" ] },
+              { "run_eocs": "PF_FAM_band_conceive" }
+            ]
+          },
+          { "run_eocs": "PF_VIEW_read" },
+          {
+            "if": { "math": [ "pf_read_a > pf_sbr_best" ] },
+            "then": [ { "math": [ "pf_sbr_best = pf_read_a" ] }, { "math": [ "pf_sbr_bj = 1" ] } ]
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "math": [ "pf_sb_n > 2" ] }, { "math": [ "pf_sb_self != 2" ] } ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_sb_2" }, "target_var": { "global_val": "pf_m_other" } },
+          { "run_eocs": "PF_VIEW_read" },
+          { "math": [ "pf_mv_role = 1" ] },
+          {
+            "if": { "math": [ "pf_read_x >= 25" ] },
+            "then": [ { "run_eocs": "PF_MV_bicker" } ],
+            "else": [ { "run_eocs": "PF_MV_fire_evening" } ]
+          },
+          {
+            "if": { "compare_string": [ { "u_val": "pf_sweet" }, { "global_val": "pf_sb_2" } ] },
+            "then": [
+              { "run_eocs": "PF_MV_courting" },
+              { "math": [ "pf_bc_calls = value_or(pf_bc_calls, 0) + 1" ] },
+              { "run_eocs": "PF_FAM_band_conceive" }
+            ]
+          },
+          { "run_eocs": "PF_VIEW_read" },
+          {
+            "if": { "math": [ "pf_read_a > pf_sbr_best" ] },
+            "then": [ { "math": [ "pf_sbr_best = pf_read_a" ] }, { "math": [ "pf_sbr_bj = 2" ] } ]
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "math": [ "pf_sb_n > 3" ] }, { "math": [ "pf_sb_self != 3" ] } ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_sb_3" }, "target_var": { "global_val": "pf_m_other" } },
+          { "run_eocs": "PF_VIEW_read" },
+          { "math": [ "pf_mv_role = 1" ] },
+          {
+            "if": { "math": [ "pf_read_x >= 25" ] },
+            "then": [ { "run_eocs": "PF_MV_bicker" } ],
+            "else": [ { "run_eocs": "PF_MV_fire_evening" } ]
+          },
+          {
+            "if": { "compare_string": [ { "u_val": "pf_sweet" }, { "global_val": "pf_sb_3" } ] },
+            "then": [
+              { "run_eocs": "PF_MV_courting" },
+              { "math": [ "pf_bc_calls = value_or(pf_bc_calls, 0) + 1" ] },
+              { "run_eocs": "PF_FAM_band_conceive" }
+            ]
+          },
+          { "run_eocs": "PF_VIEW_read" },
+          {
+            "if": { "math": [ "pf_read_a > pf_sbr_best" ] },
+            "then": [ { "math": [ "pf_sbr_best = pf_read_a" ] }, { "math": [ "pf_sbr_bj = 3" ] } ]
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "math": [ "pf_sb_n > 4" ] }, { "math": [ "pf_sb_self != 4" ] } ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_sb_4" }, "target_var": { "global_val": "pf_m_other" } },
+          { "run_eocs": "PF_VIEW_read" },
+          { "math": [ "pf_mv_role = 1" ] },
+          {
+            "if": { "math": [ "pf_read_x >= 25" ] },
+            "then": [ { "run_eocs": "PF_MV_bicker" } ],
+            "else": [ { "run_eocs": "PF_MV_fire_evening" } ]
+          },
+          {
+            "if": { "compare_string": [ { "u_val": "pf_sweet" }, { "global_val": "pf_sb_4" } ] },
+            "then": [
+              { "run_eocs": "PF_MV_courting" },
+              { "math": [ "pf_bc_calls = value_or(pf_bc_calls, 0) + 1" ] },
+              { "run_eocs": "PF_FAM_band_conceive" }
+            ]
+          },
+          { "run_eocs": "PF_VIEW_read" },
+          {
+            "if": { "math": [ "pf_read_a > pf_sbr_best" ] },
+            "then": [ { "math": [ "pf_sbr_best = pf_read_a" ] }, { "math": [ "pf_sbr_bj = 4" ] } ]
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "math": [ "pf_sb_n > 5" ] }, { "math": [ "pf_sb_self != 5" ] } ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_sb_5" }, "target_var": { "global_val": "pf_m_other" } },
+          { "run_eocs": "PF_VIEW_read" },
+          { "math": [ "pf_mv_role = 1" ] },
+          {
+            "if": { "math": [ "pf_read_x >= 25" ] },
+            "then": [ { "run_eocs": "PF_MV_bicker" } ],
+            "else": [ { "run_eocs": "PF_MV_fire_evening" } ]
+          },
+          {
+            "if": { "compare_string": [ { "u_val": "pf_sweet" }, { "global_val": "pf_sb_5" } ] },
+            "then": [
+              { "run_eocs": "PF_MV_courting" },
+              { "math": [ "pf_bc_calls = value_or(pf_bc_calls, 0) + 1" ] },
+              { "run_eocs": "PF_FAM_band_conceive" }
+            ]
+          },
+          { "run_eocs": "PF_VIEW_read" },
+          {
+            "if": { "math": [ "pf_read_a > pf_sbr_best" ] },
+            "then": [ { "math": [ "pf_sbr_best = pf_read_a" ] }, { "math": [ "pf_sbr_bj = 5" ] } ]
+          }
+        ]
+      },
+      { "run_eocs": "PF_HEART_band_viewer" },
+      {
+        "if": {
+          "and": [
+            { "math": [ "value_or(pf_set_romance, 2) >= 1" ] },
+            { "math": [ "pf_sbr_best >= 60" ] },
+            { "math": [ "value_or(u_pf_has_sweet, 0) == 0" ] },
+            { "math": [ "value_or(u_pf_rom, 0) == 1" ] },
+            { "math": [ "value_or(u_pf_adult, 0) == 1" ] },
+            { "not": { "u_has_trait": "PF_CHILD" } },
+            {
+              "or": [ { "math": [ "time_since(u_pf_conf_last) < 0" ] }, { "math": [ "time_since(u_pf_conf_last) > time('7 d')" ] } ]
+            }
+          ]
+        },
+        "then": [
+          { "math": [ "u_pf_conf_last = time('now')" ] },
+          { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_sbr_from" } },
+          {
+            "set_string_var": "pf_sb_<global_val:pf_sbr_bj>",
+            "target_var": { "context_val": "tref" },
+            "parse_tags": true
+          },
+          { "copy_var": { "var_val": "tref" }, "target_var": { "global_val": "pf_sbr_to" } },
+          { "math": [ "pf_sbr_yes = 0" ] },
+          { "u_run_npc_eocs": [ "PF_SOCIAL_rom_answer" ], "unique_ids": [ { "var_val": "tref" } ], "local": false },
+          { "copy_var": { "global_val": "pf_sbr_to" }, "target_var": { "global_val": "pf_m_other" } },
+          { "math": [ "pf_mv_role = 2" ] },
+          { "run_eocs": "PF_MV_confession" },
+          {
+            "if": { "math": [ "pf_sbr_yes == 1" ] },
+            "then": [
+              { "copy_var": { "global_val": "pf_sbr_to" }, "target_var": { "u_val": "pf_sweet" } },
+              { "math": [ "u_pf_has_sweet = 1" ] },
+              { "math": [ "u_pf_sweet_since = time('now')" ] },
+              { "math": [ "u_pf_rel_stage = 1" ] },
+              { "math": [ "u_pf_stage_since = time('now')" ] },
+              { "math": [ "pf_mv_role = 1" ] },
+              { "run_eocs": "PF_MV_courting" },
+              { "math": [ "pf_couples_total = value_or(pf_couples_total, 0) + 1" ] }
+            ],
+            "else": [
+              { "math": [ "pf_mv_role = 1" ] },
+              { "run_eocs": "PF_MV_rejected" },
+              { "math": [ "u_pf_awk_until = time('now') + time('3 d')" ] },
+              { "math": [ "pf_rejections_total = value_or(pf_rejections_total, 0) + 1" ] }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_SOCIAL_rom_answer",
+    "//": "u = a band member someone just confessed to, off-screen (reached by unique id).  Answers from their own heart, like at the fire.",
+    "effect": [
+      { "run_eocs": "PF_ID_ensure" },
+      { "copy_var": { "global_val": "pf_sbr_from" }, "target_var": { "global_val": "pf_m_other" } },
+      { "run_eocs": "PF_VIEW_read" },
+      { "math": [ "pf_sbr_yes = (pf_read_a >= 40) * (value_or(u_pf_has_sweet, 0) == 0)" ] },
+      { "math": [ "pf_mv_role = 1" ] },
+      { "run_eocs": "PF_MV_confession" },
+      {
+        "if": { "math": [ "pf_sbr_yes == 1" ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_sbr_from" }, "target_var": { "u_val": "pf_sweet" } },
+          { "math": [ "u_pf_has_sweet = 1" ] },
+          { "math": [ "u_pf_sweet_since = time('now')" ] },
+          { "math": [ "u_pf_rel_stage = 1" ] },
+          { "math": [ "u_pf_stage_since = time('now')" ] },
+          { "math": [ "pf_mv_role = 1" ] },
+          { "run_eocs": "PF_MV_courting" }
+        ],
+        "else": [ { "math": [ "pf_mv_role = 2" ] }, { "run_eocs": "PF_MV_rejected" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_SOCIAL_on_death",
+    "//": "Someone known by name died (u = the dead).  Remembers their name (pf_name_<uid>) for later lines.  Everyone who cared about them, nearby or in their band far away, keeps a memory of losing them.",
+    "eoc_type": "EVENT",
+    "required_event": "character_dies",
+    "condition": { "and": [ "has_alpha", "u_is_npc", { "math": [ "has_var(u_pf_uid)" ] } ] },
+    "effect": [
+      { "math": [ "pf_grief_before = value_or(pf_grief_total, 0)" ] },
+      { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_dead_uid" } },
+      { "math": [ "pf_dead_band = value_or(u_pf_band, 0)" ] },
+      { "set_string_var": "pf_name_<u_val:pf_uid>", "target_var": { "context_val": "ref" }, "parse_tags": true },
+      { "set_string_var": "<u_name>", "target_var": { "var_val": "ref" }, "parse_tags": true },
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_dead_name" }, "parse_tags": true },
+      { "math": [ "pf_grief_local = 1" ] },
+      { "math": [ "pf_grief_shown = 0" ] },
+      { "u_run_npc_eocs": [ "PF_GRIEF_one" ], "local": true, "npc_range": 60 },
+      { "math": [ "pf_grief_local = 0" ] },
+      {
+        "if": { "math": [ "value_or(u_pf_is_leader, 0) == 1" ] },
+        "then": [
+          {
+            "if": { "not": { "compare_string": [ { "u_val": "pf_member_0" }, "none" ] } },
+            "then": [ { "u_run_npc_eocs": [ "PF_GRIEF_one" ], "unique_ids": [ { "u_val": "pf_member_0" } ], "local": false } ]
+          },
+          {
+            "if": { "not": { "compare_string": [ { "u_val": "pf_member_1" }, "none" ] } },
+            "then": [ { "u_run_npc_eocs": [ "PF_GRIEF_one" ], "unique_ids": [ { "u_val": "pf_member_1" } ], "local": false } ]
+          },
+          {
+            "if": { "not": { "compare_string": [ { "u_val": "pf_member_2" }, "none" ] } },
+            "then": [ { "u_run_npc_eocs": [ "PF_GRIEF_one" ], "unique_ids": [ { "u_val": "pf_member_2" } ], "local": false } ]
+          },
+          {
+            "if": { "not": { "compare_string": [ { "u_val": "pf_member_3" }, "none" ] } },
+            "then": [ { "u_run_npc_eocs": [ "PF_GRIEF_one" ], "unique_ids": [ { "u_val": "pf_member_3" } ], "local": false } ]
+          },
+          {
+            "if": { "not": { "compare_string": [ { "u_val": "pf_member_4" }, "none" ] } },
+            "then": [ { "u_run_npc_eocs": [ "PF_GRIEF_one" ], "unique_ids": [ { "u_val": "pf_member_4" } ], "local": false } ]
+          }
+        ],
+        "else": [
+          {
+            "if": { "math": [ "has_var(u_pf_leader)" ] },
+            "then": [
+              {
+                "u_run_npc_eocs": [ "PF_GRIEF_one", "PF_GRIEF_leaders_band" ],
+                "unique_ids": [ { "u_val": "pf_leader" } ],
+                "local": false
+              }
+            ]
+          }
+        ]
+      },
+      { "run_eocs": "PF_HEART_avatar_grief", "alpha_talker": "avatar" },
+      {
+        "if": { "or": [ { "math": [ "value_or(pf_grief_total, 0) > pf_grief_before" ] }, { "math": [ "pf_av_grieved == 1" ] } ] },
+        "then": [
+          { "math": [ "pf_unmourned = 1" ] },
+          { "math": [ "pf_unburied = 1" ] },
+          { "math": [ "pf_unmourned_t = time('now')" ] },
+          { "copy_var": { "global_val": "pf_dead_uid" }, "target_var": { "global_val": "pf_unmourned_uid" } },
+          { "copy_var": { "global_val": "pf_dead_name" }, "target_var": { "global_val": "pf_unmourned_name" } },
+          { "run_eocs": "PF_HEART_event_death" }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_GRIEF_leaders_band",
+    "//": "u = the dead member's leader.  Their other band members grieve too (wherever they are).",
+    "effect": [
+      {
+        "if": { "not": { "compare_string": [ { "u_val": "pf_member_0" }, "none" ] } },
+        "then": [ { "u_run_npc_eocs": [ "PF_GRIEF_one" ], "unique_ids": [ { "u_val": "pf_member_0" } ], "local": false } ]
+      },
+      {
+        "if": { "not": { "compare_string": [ { "u_val": "pf_member_1" }, "none" ] } },
+        "then": [ { "u_run_npc_eocs": [ "PF_GRIEF_one" ], "unique_ids": [ { "u_val": "pf_member_1" } ], "local": false } ]
+      },
+      {
+        "if": { "not": { "compare_string": [ { "u_val": "pf_member_2" }, "none" ] } },
+        "then": [ { "u_run_npc_eocs": [ "PF_GRIEF_one" ], "unique_ids": [ { "u_val": "pf_member_2" } ], "local": false } ]
+      },
+      {
+        "if": { "not": { "compare_string": [ { "u_val": "pf_member_3" }, "none" ] } },
+        "then": [ { "u_run_npc_eocs": [ "PF_GRIEF_one" ], "unique_ids": [ { "u_val": "pf_member_3" } ], "local": false } ]
+      },
+      {
+        "if": { "not": { "compare_string": [ { "u_val": "pf_member_4" }, "none" ] } },
+        "then": [ { "u_run_npc_eocs": [ "PF_GRIEF_one" ], "unique_ids": [ { "u_val": "pf_member_4" } ], "local": false } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_GRIEF_one",
+    "//": "u = someone who may have known the dead (pf_dead_uid).  Once per death: if they cared (warmth 10+), they keep a lost_companion memory, stronger the closer they were.  The first close one nearby is seen grieving.",
+    "condition": { "not": { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_dead_uid" } ] } },
+    "effect": [
+      { "set_string_var": "u_pf_griev_<global_val:pf_dead_uid>", "target_var": { "context_val": "gref" }, "parse_tags": true },
+      {
+        "if": { "math": [ "value_or(v_gref, 0) == 0" ] },
+        "then": [
+          { "math": [ "v_gref = 1" ] },
+          { "run_eocs": "PF_FAM_parent_check" },
+          { "copy_var": { "global_val": "pf_dead_uid" }, "target_var": { "global_val": "pf_m_other" } },
+          { "run_eocs": "PF_VIEW_read" },
+          { "math": [ "pf_gr_kin = 0" ] },
+          {
+            "if": {
+              "and": [
+                { "u_has_trait": "PF_CHILD" },
+                {
+                  "or": [
+                    { "compare_string": [ { "u_val": "pf_mom" }, { "global_val": "pf_dead_uid" } ] },
+                    { "compare_string": [ { "u_val": "pf_dad" }, { "global_val": "pf_dead_uid" } ] },
+                    { "compare_string": [ { "u_val": "pf_guardian" }, { "global_val": "pf_dead_uid" } ] }
+                  ]
+                }
+              ]
+            },
+            "then": [ { "math": [ "pf_gr_kin = 1" ] } ]
+          },
+          { "math": [ "pf_gr_band = (pf_dead_band > 0) * (value_or(u_pf_band, 0) == pf_dead_band)" ] },
+          {
+            "if": { "math": [ "(pf_read_w >= 10) + pf_gr_kin + pf_gr_band > 0" ] },
+            "then": [
+              { "math": [ "pf_mv_role = 1" ] },
+              { "math": [ "pf_m_str_in = pf_gr_kin == 1 ? 95 : min(95, max(pf_gr_band * 70, 50 + pf_read_w / 2))" ] },
+              { "run_eocs": "PF_MV_lost_companion" },
+              { "run_eocs": "PF_HEART_grief" },
+              { "math": [ "pf_grief_total = value_or(pf_grief_total, 0) + 1" ] },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "pf_grief_local == 1" ] },
+                    { "math": [ "pf_grief_shown == 0" ] },
+                    { "math": [ "(pf_read_w >= 25) + pf_gr_kin + pf_gr_band > 0" ] },
+                    { "not": { "u_has_effect": "PF_infant" } }
+                  ]
+                },
+                "then": [
+                  { "math": [ "pf_grief_shown = 1" ] },
+                  { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+                  { "run_eocs": "PF_SAY", "alpha_talker": "avatar", "variables": { "line": "grief" } }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_GRIEF_recall_i",
+    "effect": [
+      { "set_string_var": "pf_fire_c_<global_val:pf_fi>", "target_var": { "context_val": "ri" }, "parse_tags": true },
+      { "run_eocs": "PF_GRIEF_recall_try", "alpha_talker": { "var_val": "ri" } },
+      { "math": [ "pf_fi += 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_GRIEF_recall_try",
+    "//": "u = someone at the fire.  If they lost someone and haven't spoken of it yet, they do now (once per loss).",
+    "effect": [
+      { "math": [ "pf_ri = 0" ] },
+      { "math": [ "pf_rbest = -1" ] },
+      { "math": [ "pf_rbest_str = 0" ] },
+      { "run_eocs": "PF_GRIEF_scan_i", "condition": { "math": [ "pf_ri < 8" ] }, "iterations": 9 },
+      {
+        "if": { "math": [ "pf_rbest >= 0" ] },
+        "then": [
+          { "set_string_var": "u_pf_mem_<global_val:pf_rbest>_rc", "target_var": { "context_val": "mr" }, "parse_tags": true },
+          {
+            "set_string_var": "u_pf_mem_<global_val:pf_rbest>_with",
+            "target_var": { "context_val": "mw" },
+            "parse_tags": true
+          },
+          { "math": [ "v_mr = 1" ] },
+          { "math": [ "pf_fire_mourned = 1" ] },
+          { "copy_var": { "var_val": "mw" }, "target_var": { "global_val": "pf_tmp_with" } },
+          {
+            "set_string_var": "pf_name_<global_val:pf_tmp_with>",
+            "target_var": { "context_val": "nref" },
+            "parse_tags": true
+          },
+          { "copy_var": { "var_val": "nref" }, "target_var": { "global_val": "pf_say_b" } },
+          { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+          { "run_eocs": "PF_SAY", "alpha_talker": "avatar", "variables": { "line": "mourn" } }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_GRIEF_scan_i",
+    "effect": [
+      { "set_string_var": "u_pf_mem_<global_val:pf_ri>_kind", "target_var": { "context_val": "mk" }, "parse_tags": true },
+      {
+        "set_string_var": "u_pf_mem_<global_val:pf_ri>_str",
+        "target_var": { "context_val": "ms" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_mem_<global_val:pf_ri>_rc",
+        "target_var": { "context_val": "mr" },
+        "parse_tags": true
+      },
+      {
+        "if": {
+          "and": [
+            { "compare_string": [ { "var_val": "mk" }, "lost_companion" ] },
+            { "math": [ "value_or(v_ms, 0) > pf_rbest_str" ] },
+            { "math": [ "value_or(v_mr, 0) == 0" ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_rbest = pf_ri" ] }, { "math": [ "pf_rbest_str = v_ms" ] } ]
+      },
+      { "math": [ "pf_ri += 1" ] }
+    ]
+  }
+]

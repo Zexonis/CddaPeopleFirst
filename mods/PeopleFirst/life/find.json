@@ -1,0 +1,16 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FIND_by_uid",
+    "//": "Looks among loaded NPCs for the one whose pf_uid equals pf_find_uid.  Sets pf_find_ok and the talker pf_find_who.  Use this whenever time has passed since you stored someone: run_eocs on a stale character id crashes the game.",
+    "effect": [ { "math": [ "pf_find_ok = 0" ] }, { "u_run_npc_eocs": [ "PF_FIND_check" ], "local": true, "npc_range": 60 } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FIND_check",
+    "condition": {
+      "and": [ { "math": [ "pf_find_ok == 0" ] }, { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_find_uid" } ] } ]
+    },
+    "effect": [ { "math": [ "pf_find_ok = 1" ] }, { "u_set_talker": { "global_val": "pf_find_who" } } ]
+  }
+]

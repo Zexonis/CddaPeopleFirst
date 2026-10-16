@@ -1,0 +1,576 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_SAY_family",
+    "//": "u = avatar.  v0.3 lines, picked by the context var 'line'.",
+    "effect": [
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "preg_npc" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> has been sick every morning for a week.  Then the news goes around the camp: <global_val:pf_say_a> is pregnant, and <global_val:pf_say_b> can't stop smiling.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "preg_you" ] },
+        "then": [ { "u_message": "You've been sick every morning for a week.  You're pregnant.", "type": "good" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "birth_npc" ] },
+        "then": [
+          {
+            "u_message": "It's a long night, and nobody sleeps.  By morning <global_val:pf_say_a> is holding a newborn, <global_val:pf_fm_babyname>, and the whole camp crowds in to see.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "birth_npc_away" ] },
+        "then": [
+          {
+            "u_message": "There's a new face at home.  <global_val:pf_say_a> had the baby while you were gone: <global_val:pf_fm_babyname>.  Somebody puts the baby in your arms before you've even set your pack down.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "birth_npc_day" ] },
+        "then": [
+          {
+            "u_message": "Hours of it, everyone pacing, nobody able to sit still.  Then a thin, furious cry: <global_val:pf_say_a> is holding a newborn, <global_val:pf_fm_babyname>, and the whole camp crowds in to see.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "birth_you_day" ] },
+        "then": [
+          {
+            "u_message": "Hours of it, and everyone stays.  Then it's over, and you're holding <global_val:pf_fm_babyname>.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "birth_you" ] },
+        "then": [
+          {
+            "u_message": "It's a long night, and everyone stays.  By morning you're holding <global_val:pf_fm_babyname>.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "baby_rock" ] },
+        "then": [ { "u_message": "<global_val:pf_say_a> rocks <global_val:pf_say_b> until they settle.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "baby_feed" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> warms something for <global_val:pf_say_b> and feeds them, slowly, a spoonful at a time.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "baby_sing" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> hums something old and tuneless until <global_val:pf_say_b> falls asleep.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "baby_for_you" ] },
+        "then": [ { "u_message": "<global_val:pf_say_a> takes <global_val:pf_say_b> for a while so you can rest.", "type": "good" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "first_steps" ] },
+        "then": [ { "u_message": "<global_val:pf_say_a> is walking now, and following the grown-ups everywhere.", "type": "good" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "grown_up" ] },
+        "then": [ { "u_message": "<global_val:pf_say_a> isn't a child anymore.", "type": "good" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "grown_up_1" ] },
+        "then": [
+          {
+            "u_message": "Somebody notices <global_val:pf_say_a> is taller than them now.  When did that happen?  <global_val:pf_say_a> isn't a child anymore.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "grown_up_2" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> takes a turn at the grown-ups' work today and nobody sends them off.  They're not a child anymore.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "grown_up_yours_0" ] },
+        "then": [
+          {
+            "u_message": "You look up and <global_val:pf_say_a> is looking back at you, eye to eye.  Your child isn't a child anymore.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "grown_up_yours_1" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> asks you something, grown-up to grown-up, and waits for a real answer.  Your kid's grown.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "grown_up_yours_2" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> checks the gate before bed, the way you always do.  Somewhere along the way your child grew up.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "crave_alone" ] },
+        "then": [ { "u_message": "You'd do terrible things for something sweet right now.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "crave_brought" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> turns up with <global_val:pf_say_b>.  \"Don't ask where I found it.\"",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "carry_load" ] },
+        "then": [ { "u_message": "<global_val:pf_say_a> takes the heavy pack off your back without asking.", "type": "good" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "kid_tag" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> and <global_val:pf_say_b> play tag around the place, shrieking, until someone tells them to keep it down.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "kid_alone_play" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> plays some game only they understand, with three rocks and a stick.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "kid_chore" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> follows <global_val:pf_say_b> around for hours, carrying things that don't need carrying.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "kid_chore_1" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> spends a good while at <global_val:pf_say_b>'s elbow, asking what everything is for.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "kid_chore_2" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> insists on helping <global_val:pf_say_b>, and is allowed to hold the important end of things.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "kid_chore_you" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> helps you sort through a pile of junk, and proudly hands you a marble they found.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "kid_ask" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> asks <global_val:pf_say_b>, \"<global_val:pf_kq_text>\"  <global_val:pf_say_b> makes something up.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "kid_loss_one" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> keeps glancing at <global_val:pf_loss_name>'s place by the fire, as if they might still come back.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "kid_loss_many" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> counts the bedrolls twice, gets a different number than yesterday, and stops counting.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "kid_ask_you" ] },
+        "then": [ { "u_message": "<global_val:pf_say_a> tugs at your sleeve.  \"<global_val:pf_kq_text>\"", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "kid_tag_0" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> and <global_val:pf_say_b> play tag around the place, shrieking, until someone tells them to keep it down.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "kid_tag_1" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> and <global_val:pf_say_b> play hide and seek.  <global_val:pf_say_b> hides in the same spot every time, and <global_val:pf_say_a> pretends not to know.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "kid_tag_2" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> and <global_val:pf_say_b> play zombies and survivors.  Everyone wants to be the zombie.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "kid_tag_3" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> and <global_val:pf_say_b> trade treasures: a bottle cap, a feather, a key to nothing.  The negotiations take an hour.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "kid_tag_4" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> and <global_val:pf_say_b> build a fort out of boards and a tarp, and won't let any grown-ups in.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "kid_tag_5" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> and <global_val:pf_say_b> fall out over the rules of a game they made up, and make up again within the hour.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "kid_alone_0" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> plays some game only they understand, with three rocks and a stick.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "kid_alone_1" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> draws in the dirt with a stick: a house, a dog, a lot of people holding hands.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "kid_alone_2" ] },
+        "then": [ { "u_message": "<global_val:pf_say_a> has a long, serious conversation with a beetle.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "kid_alone_3" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> practices cartwheels until they get one right, then looks round to see if anyone saw.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "kid_alone_4" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> lines up every empty can they can find and knocks them down with pebbles.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "kid_alone_5" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> makes a zombie trap out of string and a pot.  It catches a grown-up's ankle twice.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "kid_alone_6" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> sings a song they're making up as they go.  It's mostly about lunch.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "kid_alone_7" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> 'reads' a picture book aloud to nobody, turning the pages very carefully.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "kid_wet_0" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> jumps in every puddle, one after another, with great seriousness.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "kid_wet_1" ] },
+        "then": [ { "u_message": "<global_val:pf_say_a> sits in the doorway catching raindrops on their tongue.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "kid_grief_0" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> asks <global_val:pf_say_c> whether <global_val:pf_say_b> can see them from where they are now.  The answer takes a long time.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "kid_grief_1" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> carries something of <global_val:pf_say_b>'s everywhere today, and won't let anyone else hold it.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "kid_grief_2" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> sets out a bowl for <global_val:pf_say_b> at supper, remembers, and takes it away again before anyone can say anything.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "kid_grief_3" ] },
+        "then": [ { "u_message": "<global_val:pf_say_a> won't let <global_val:pf_say_c> out of their sight today.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "kid_heal" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> laughs at something <global_val:pf_say_b> says, a real laugh, and then looks surprised at themselves.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "kid_heal_you" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> laughs at something you say, a real laugh, and then looks surprised at themselves.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "kid_heal_alone" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> laughs at something, a real laugh, and then looks surprised at themselves.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "kid_alone_grief" ] },
+        "then": [ { "u_message": "<global_val:pf_say_a> sits by themselves, hugging their knees.", "type": "bad" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "kid_comforted" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> sits down next to <global_val:pf_say_b> and doesn't say anything.  After a while, <global_val:pf_say_b> leans against them.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "kid_comforted_1" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> finds <global_val:pf_say_b> a job to do, something small, and does it alongside them for hours.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "kid_comforted_2" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> tells <global_val:pf_say_b> a long, silly story about nothing.  <global_val:pf_say_b> doesn't laugh, but stays to hear the end.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "pick_up" ] },
+        "then": [ { "u_message": "You pick up <global_val:pf_say_a>.  Heavier than they look.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "set_down" ] },
+        "then": [ { "u_message": "You set <global_val:pf_say_a> down somewhere safe.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "hand_back" ] },
+        "then": [ { "u_message": "You hand <global_val:pf_say_a> back to <global_val:pf_say_b>.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "hand_back_stranger" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_b> takes <global_val:pf_say_a> from you and holds on for a long moment before saying anything at all.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "big_kid" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> doesn't want to hold anyone's hand anymore.  They're big now, they say.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "toddler_tired" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> has had enough walking for one day, and gets carried the rest of the way.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "take_hand" ] },
+        "then": [ { "u_message": "You take <global_val:pf_say_a>'s hand.  They hold on tight.", "type": "good" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "let_go" ] },
+        "then": [ { "u_message": "You let go of <global_val:pf_say_a>'s hand, and they trot off after their family.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "teach_you" ] },
+        "then": [
+          {
+            "u_message": "You show <global_val:pf_say_a> <global_val:pf_tk_how>.  They get it on the third try, and look very pleased with themselves.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "teach_none" ] },
+        "then": [
+          {
+            "u_message": "You try to show <global_val:pf_say_a> something, but there's nothing you know that they don't already, or they're tired of lessons today.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "kid_learn" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_b> shows <global_val:pf_say_a> <global_val:pf_tk_how>.  <global_val:pf_say_a> doesn't stop talking about it all day.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "kid_learn_you" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> won't stop asking, so you show them <global_val:pf_tk_how>.  They get it faster than you did.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "adopt_npc" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> crouches next to <global_val:pf_say_b>.  \"Hey.  You're with me now.  Okay?\"",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "adopt_you" ] },
+        "then": [ { "u_message": "<global_val:pf_say_b> takes your hand and doesn't let go.", "type": "good" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "adopt_you_far" ] },
+        "then": [
+          {
+            "u_message": "You call <global_val:pf_say_b> over.  They come running, and take your hand, and don't let go.",
+            "type": "good"
+          }
+        ]
+      }
+    ]
+  }
+]

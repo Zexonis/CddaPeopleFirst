@@ -1,0 +1,53 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ID_ensure",
+    "//": "u = anyone.  Gives them a stable id for naming views (A-Life agents already have PF_P_n; others get PF_V_n; the avatar is AVATAR) and a personality on first contact.",
+    "effect": [
+      {
+        "if": "u_is_avatar",
+        "then": [
+          { "set_string_var": "AVATAR", "target_var": { "u_val": "pf_uid" } },
+          {
+            "if": { "math": [ "value_or(u_pf_reg_done, 0) == 0" ] },
+            "then": [ { "math": [ "u_pf_adult = 1" ] }, { "run_eocs": "PF_REG_write" } ]
+          }
+        ],
+        "else": [
+          {
+            "if": { "math": [ "has_var(u_pf_uid) == 0" ] },
+            "then": [
+              { "math": [ "pf_vid_n = value_or(pf_vid_n, 0) + 1" ] },
+              {
+                "set_string_var": "PF_V_<global_val:pf_vid_n>",
+                "target_var": { "u_val": "pf_uid" },
+                "parse_tags": true
+              }
+            ]
+          },
+          { "if": { "not": { "u_has_trait": "PF_PERSON" } }, "then": [ { "u_add_trait": "PF_PERSON" } ] },
+          { "if": { "math": [ "value_or(u_pf_persona, 0) == 0" ] }, "then": [ { "run_eocs": "PF_PERSONA_roll" } ] },
+          { "if": { "math": [ "value_or(u_pf_rom_rolled, 0) == 0" ] }, "then": [ { "run_eocs": "PF_ROM_roll" } ] },
+          { "if": { "math": [ "value_or(u_pf_reg_done, 0) == 0" ] }, "then": [ { "run_eocs": "PF_REG_write" } ] }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KNOWN_add",
+    "//": "u = viewer.  Appends pf_m_other to the viewer's known-people list (array u_pf_known_<n>).  At the cap new people are not listed (their view still exists); eviction comes with the Dunbar layers.",
+    "effect": [
+      { "math": [ "u_pf_known_n = value_or(u_pf_known_n, 0)" ] },
+      {
+        "if": { "math": [ "u_pf_known_n < pf_known_cap" ] },
+        "then": [
+          { "set_string_var": "u_pf_known_<u_val:pf_known_n>", "target_var": { "context_val": "ref" }, "parse_tags": true },
+          { "copy_var": { "global_val": "pf_m_other" }, "target_var": { "var_val": "ref" } },
+          { "math": [ "u_pf_known_n = value_or(u_pf_known_n, 0) + 1" ] }
+        ],
+        "else": [ { "math": [ "pf_known_full_total = value_or(pf_known_full_total, 0) + 1" ] } ]
+      }
+    ]
+  }
+]

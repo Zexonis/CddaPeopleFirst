@@ -1,0 +1,405 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ROAD_day",
+    "//": "u = an off-screen band leader, once a day (called from the band's evening, gen_life.py).  About 1 day in 12 for hunters, 1 in 20 for families on the move; never for a family at home, a family visiting you, or a band on screen.",
+    "condition": {
+      "and": [
+        { "math": [ "value_or(u_pf_settled, 0) == 0" ] },
+        { "math": [ "value_or(u_pf_online, 0) == 0" ] },
+        { "math": [ "value_or(u_pf_visiting, 0) == 0" ] },
+        { "math": [ "value_or(pf_alife_on, 1) == 1" ] }
+      ]
+    },
+    "effect": [
+      {
+        "if": { "math": [ "(value_or(pf_road_force, 0) == 1) + (rand(value_or(u_pf_task, 1) == 1 ? 11 : 19) == 0) > 0" ] },
+        "then": [ { "run_eocs": "PF_ROAD_trouble" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ROAD_trouble",
+    "//": "u = an off-screen band leader.  Trouble on the road (concept 15.2): everyone faced it together (shared danger 60); one time in three someone is hurt and pulled out by another (saved_life); one hurt in ten, in a band of 3+ grown-ups, someone doesn't come back.  The leader keeps the story for the rumors (u_pf_trouble_*).",
+    "effect": [
+      { "math": [ "pf_sb_n = 1" ] },
+      { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_sb_0" } },
+      {
+        "if": { "not": { "compare_string": [ { "u_val": "pf_member_0" }, "none" ] } },
+        "then": [
+          { "set_string_var": "pf_sb_<global_val:pf_sb_n>", "target_var": { "context_val": "ref" }, "parse_tags": true },
+          { "copy_var": { "u_val": "pf_member_0" }, "target_var": { "var_val": "ref" } },
+          { "math": [ "pf_sb_n += 1" ] }
+        ]
+      },
+      {
+        "if": { "not": { "compare_string": [ { "u_val": "pf_member_1" }, "none" ] } },
+        "then": [
+          { "set_string_var": "pf_sb_<global_val:pf_sb_n>", "target_var": { "context_val": "ref" }, "parse_tags": true },
+          { "copy_var": { "u_val": "pf_member_1" }, "target_var": { "var_val": "ref" } },
+          { "math": [ "pf_sb_n += 1" ] }
+        ]
+      },
+      {
+        "if": { "not": { "compare_string": [ { "u_val": "pf_member_2" }, "none" ] } },
+        "then": [
+          { "set_string_var": "pf_sb_<global_val:pf_sb_n>", "target_var": { "context_val": "ref" }, "parse_tags": true },
+          { "copy_var": { "u_val": "pf_member_2" }, "target_var": { "var_val": "ref" } },
+          { "math": [ "pf_sb_n += 1" ] }
+        ]
+      },
+      {
+        "if": { "not": { "compare_string": [ { "u_val": "pf_member_3" }, "none" ] } },
+        "then": [
+          { "set_string_var": "pf_sb_<global_val:pf_sb_n>", "target_var": { "context_val": "ref" }, "parse_tags": true },
+          { "copy_var": { "u_val": "pf_member_3" }, "target_var": { "var_val": "ref" } },
+          { "math": [ "pf_sb_n += 1" ] }
+        ]
+      },
+      {
+        "if": { "not": { "compare_string": [ { "u_val": "pf_member_4" }, "none" ] } },
+        "then": [
+          { "set_string_var": "pf_sb_<global_val:pf_sb_n>", "target_var": { "context_val": "ref" }, "parse_tags": true },
+          { "copy_var": { "u_val": "pf_member_4" }, "target_var": { "var_val": "ref" } },
+          { "math": [ "pf_sb_n += 1" ] }
+        ]
+      },
+      { "math": [ "pf_rd_adults = 0" ] },
+      {
+        "if": { "math": [ "pf_sb_n > 0" ] },
+        "then": [
+          { "math": [ "pf_rd_qi = 0" ] },
+          {
+            "set_string_var": "pf_sb_<global_val:pf_rd_qi>",
+            "target_var": { "context_val": "qs" },
+            "parse_tags": true
+          },
+          { "copy_var": { "var_val": "qs" }, "target_var": { "global_val": "pf_rd_q_uid" } },
+          {
+            "set_string_var": "pf_reg_<global_val:pf_rd_q_uid>_a",
+            "target_var": { "context_val": "qa" },
+            "parse_tags": true
+          },
+          { "math": [ "_ad = value_or(v_qa, 0) == 1" ] },
+          { "math": [ "pf_rd_adults += _ad" ] }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_sb_n > 1" ] },
+        "then": [
+          { "math": [ "pf_rd_qi = 1" ] },
+          {
+            "set_string_var": "pf_sb_<global_val:pf_rd_qi>",
+            "target_var": { "context_val": "qs" },
+            "parse_tags": true
+          },
+          { "copy_var": { "var_val": "qs" }, "target_var": { "global_val": "pf_rd_q_uid" } },
+          {
+            "set_string_var": "pf_reg_<global_val:pf_rd_q_uid>_a",
+            "target_var": { "context_val": "qa" },
+            "parse_tags": true
+          },
+          { "math": [ "_ad = value_or(v_qa, 0) == 1" ] },
+          { "math": [ "pf_rd_adults += _ad" ] }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_sb_n > 2" ] },
+        "then": [
+          { "math": [ "pf_rd_qi = 2" ] },
+          {
+            "set_string_var": "pf_sb_<global_val:pf_rd_qi>",
+            "target_var": { "context_val": "qs" },
+            "parse_tags": true
+          },
+          { "copy_var": { "var_val": "qs" }, "target_var": { "global_val": "pf_rd_q_uid" } },
+          {
+            "set_string_var": "pf_reg_<global_val:pf_rd_q_uid>_a",
+            "target_var": { "context_val": "qa" },
+            "parse_tags": true
+          },
+          { "math": [ "_ad = value_or(v_qa, 0) == 1" ] },
+          { "math": [ "pf_rd_adults += _ad" ] }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_sb_n > 3" ] },
+        "then": [
+          { "math": [ "pf_rd_qi = 3" ] },
+          {
+            "set_string_var": "pf_sb_<global_val:pf_rd_qi>",
+            "target_var": { "context_val": "qs" },
+            "parse_tags": true
+          },
+          { "copy_var": { "var_val": "qs" }, "target_var": { "global_val": "pf_rd_q_uid" } },
+          {
+            "set_string_var": "pf_reg_<global_val:pf_rd_q_uid>_a",
+            "target_var": { "context_val": "qa" },
+            "parse_tags": true
+          },
+          { "math": [ "_ad = value_or(v_qa, 0) == 1" ] },
+          { "math": [ "pf_rd_adults += _ad" ] }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_sb_n > 4" ] },
+        "then": [
+          { "math": [ "pf_rd_qi = 4" ] },
+          {
+            "set_string_var": "pf_sb_<global_val:pf_rd_qi>",
+            "target_var": { "context_val": "qs" },
+            "parse_tags": true
+          },
+          { "copy_var": { "var_val": "qs" }, "target_var": { "global_val": "pf_rd_q_uid" } },
+          {
+            "set_string_var": "pf_reg_<global_val:pf_rd_q_uid>_a",
+            "target_var": { "context_val": "qa" },
+            "parse_tags": true
+          },
+          { "math": [ "_ad = value_or(v_qa, 0) == 1" ] },
+          { "math": [ "pf_rd_adults += _ad" ] }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_sb_n > 5" ] },
+        "then": [
+          { "math": [ "pf_rd_qi = 5" ] },
+          {
+            "set_string_var": "pf_sb_<global_val:pf_rd_qi>",
+            "target_var": { "context_val": "qs" },
+            "parse_tags": true
+          },
+          { "copy_var": { "var_val": "qs" }, "target_var": { "global_val": "pf_rd_q_uid" } },
+          {
+            "set_string_var": "pf_reg_<global_val:pf_rd_q_uid>_a",
+            "target_var": { "context_val": "qa" },
+            "parse_tags": true
+          },
+          { "math": [ "_ad = value_or(v_qa, 0) == 1" ] },
+          { "math": [ "pf_rd_adults += _ad" ] }
+        ]
+      },
+      { "math": [ "pf_rd_k = rand(2) == 2 ? 2 : 1" ] },
+      {
+        "if": { "math": [ "(pf_rd_k == 2) * (rand(9) == 0) * (pf_rd_adults >= 3)" ] },
+        "then": [ { "math": [ "pf_rd_k = 3" ] } ]
+      },
+      { "if": { "math": [ "value_or(pf_road_kind, 0) > 0" ] }, "then": [ { "math": [ "pf_rd_k = pf_road_kind" ] } ] },
+      { "if": { "math": [ "(pf_rd_k == 3) * (pf_sb_n < 3)" ] }, "then": [ { "math": [ "pf_rd_k = 2" ] } ] },
+      { "if": { "math": [ "(pf_rd_k == 2) * (pf_sb_n < 2)" ] }, "then": [ { "math": [ "pf_rd_k = 1" ] } ] },
+      { "math": [ "pf_sb_hunt_str = 60" ] },
+      {
+        "if": { "math": [ "pf_sb_n > 1" ] },
+        "then": [
+          { "math": [ "pf_sb_self = 0" ] },
+          {
+            "u_run_npc_eocs": [ "PF_SOCIAL_hunt_viewer" ],
+            "unique_ids": [ { "global_val": "pf_sb_0" } ],
+            "local": false
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_sb_n > 1" ] },
+        "then": [
+          { "math": [ "pf_sb_self = 1" ] },
+          {
+            "u_run_npc_eocs": [ "PF_SOCIAL_hunt_viewer" ],
+            "unique_ids": [ { "global_val": "pf_sb_1" } ],
+            "local": false
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_sb_n > 2" ] },
+        "then": [
+          { "math": [ "pf_sb_self = 2" ] },
+          {
+            "u_run_npc_eocs": [ "PF_SOCIAL_hunt_viewer" ],
+            "unique_ids": [ { "global_val": "pf_sb_2" } ],
+            "local": false
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_sb_n > 3" ] },
+        "then": [
+          { "math": [ "pf_sb_self = 3" ] },
+          {
+            "u_run_npc_eocs": [ "PF_SOCIAL_hunt_viewer" ],
+            "unique_ids": [ { "global_val": "pf_sb_3" } ],
+            "local": false
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_sb_n > 4" ] },
+        "then": [
+          { "math": [ "pf_sb_self = 4" ] },
+          {
+            "u_run_npc_eocs": [ "PF_SOCIAL_hunt_viewer" ],
+            "unique_ids": [ { "global_val": "pf_sb_4" } ],
+            "local": false
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_sb_n > 5" ] },
+        "then": [
+          { "math": [ "pf_sb_self = 5" ] },
+          {
+            "u_run_npc_eocs": [ "PF_SOCIAL_hunt_viewer" ],
+            "unique_ids": [ { "global_val": "pf_sb_5" } ],
+            "local": false
+          }
+        ]
+      },
+      { "if": { "math": [ "pf_rd_k == 2" ] }, "then": [ { "run_eocs": "PF_ROAD_hurt" } ] },
+      { "if": { "math": [ "pf_rd_k == 3" ] }, "then": [ { "run_eocs": "PF_ROAD_lost" } ] },
+      { "math": [ "u_pf_trouble_t = time('now')" ] },
+      { "math": [ "u_pf_trouble_kind = pf_rd_k" ] },
+      {
+        "if": { "math": [ "pf_rd_k == 1" ] },
+        "then": [ { "math": [ "pf_road_scares = value_or(pf_road_scares, 0) + 1" ] } ]
+      },
+      {
+        "if": { "math": [ "pf_rd_k == 2" ] },
+        "then": [ { "math": [ "pf_road_hurts = value_or(pf_road_hurts, 0) + 1" ] } ]
+      },
+      {
+        "if": { "math": [ "pf_rd_k == 3" ] },
+        "then": [ { "math": [ "pf_road_deaths = value_or(pf_road_deaths, 0) + 1" ] } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ROAD_hurt",
+    "//": "u = the leader.  Someone in the band is hurt; the next grown-up round the band pulls them out.",
+    "effect": [
+      { "math": [ "pf_rd_v = rand(pf_sb_n - 1)" ] },
+      { "math": [ "pf_rd_s = -1" ] },
+      { "math": [ "pf_rd_j = 1" ] },
+      {
+        "run_eocs": "PF_ROAD_find_saver",
+        "condition": { "math": [ "(pf_rd_s < 0) * (pf_rd_j < pf_sb_n)" ] },
+        "iterations": 7
+      },
+      { "set_string_var": "pf_sb_<global_val:pf_rd_v>", "target_var": { "context_val": "vs" }, "parse_tags": true },
+      { "copy_var": { "var_val": "vs" }, "target_var": { "global_val": "pf_rd_vuid" } },
+      {
+        "if": { "math": [ "pf_rd_s >= 0" ] },
+        "then": [
+          { "set_string_var": "pf_sb_<global_val:pf_rd_s>", "target_var": { "context_val": "ss" }, "parse_tags": true },
+          { "copy_var": { "var_val": "ss" }, "target_var": { "global_val": "pf_rd_suid" } }
+        ],
+        "else": [ { "set_string_var": "none", "target_var": { "global_val": "pf_rd_suid" } } ]
+      },
+      { "u_run_npc_eocs": [ "PF_ROAD_hurt_one" ], "unique_ids": [ { "global_val": "pf_rd_vuid" } ], "local": false },
+      {
+        "if": { "not": { "compare_string": [ { "global_val": "pf_rd_suid" }, "none" ] } },
+        "then": [ { "u_run_npc_eocs": [ "PF_ROAD_saver_one" ], "unique_ids": [ { "global_val": "pf_rd_suid" } ], "local": false } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ROAD_find_saver",
+    "effect": [
+      { "math": [ "pf_rd_qi = (pf_rd_v + pf_rd_j) % pf_sb_n" ] },
+      { "set_string_var": "pf_sb_<global_val:pf_rd_qi>", "target_var": { "context_val": "qs" }, "parse_tags": true },
+      { "copy_var": { "var_val": "qs" }, "target_var": { "global_val": "pf_rd_q_uid" } },
+      {
+        "set_string_var": "pf_reg_<global_val:pf_rd_q_uid>_a",
+        "target_var": { "context_val": "qa" },
+        "parse_tags": true
+      },
+      { "math": [ "_ad = value_or(v_qa, 0) == 1" ] },
+      { "if": { "math": [ "_ad == 1" ] }, "then": [ { "math": [ "pf_rd_s = (pf_rd_v + pf_rd_j) % pf_sb_n" ] } ] },
+      { "math": [ "pf_rd_j += 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ROAD_hurt_one",
+    "//": "u = the one hurt (off-screen, by unique id: math only).  Grateful to whoever pulled them out.",
+    "effect": [
+      { "math": [ "u_hp('torso') = max(u_hp('torso') - 20, 5)" ] },
+      { "math": [ "u_pf_hurt_t = time('now')" ] },
+      {
+        "if": { "not": { "compare_string": [ { "global_val": "pf_rd_suid" }, "none" ] } },
+        "then": [
+          { "copy_var": { "global_val": "pf_rd_suid" }, "target_var": { "global_val": "pf_m_other" } },
+          { "math": [ "pf_mv_role = 1" ] },
+          { "math": [ "pf_m_str_in = 90" ] },
+          { "run_eocs": "PF_MV_saved_life" }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ROAD_saver_one",
+    "//": "u = the one who pulled them out (off-screen).  Protective of them from now on.",
+    "effect": [
+      { "copy_var": { "global_val": "pf_rd_vuid" }, "target_var": { "global_val": "pf_m_other" } },
+      { "math": [ "pf_mv_role = 2" ] },
+      { "math": [ "pf_m_str_in = 90" ] },
+      { "run_eocs": "PF_MV_saved_life" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ROAD_lost",
+    "//": "u = the leader.  A grown-up who isn't the leader doesn't come back; if there's none, it's a wound instead.",
+    "effect": [
+      { "math": [ "pf_rd_v = -1" ] },
+      { "math": [ "pf_rd_j = 0" ] },
+      {
+        "run_eocs": "PF_ROAD_pick_lost",
+        "condition": { "math": [ "(pf_rd_v < 0) * (pf_rd_j < 12)" ] },
+        "iterations": 13
+      },
+      {
+        "if": { "math": [ "pf_rd_v >= 1" ] },
+        "then": [
+          { "set_string_var": "pf_sb_<global_val:pf_rd_v>", "target_var": { "context_val": "vs" }, "parse_tags": true },
+          { "copy_var": { "var_val": "vs" }, "target_var": { "global_val": "pf_rd_vuid" } },
+          {
+            "set_string_var": "pf_name_<global_val:pf_rd_vuid>",
+            "target_var": { "context_val": "vn" },
+            "parse_tags": true
+          },
+          { "copy_var": { "var_val": "vn" }, "target_var": { "u_val": "pf_trouble_lost" } },
+          { "u_run_npc_eocs": [ "PF_ROAD_die" ], "unique_ids": [ { "global_val": "pf_rd_vuid" } ], "local": false }
+        ],
+        "else": [ { "math": [ "pf_rd_k = 2" ] }, { "run_eocs": "PF_ROAD_hurt" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ROAD_pick_lost",
+    "effect": [
+      { "math": [ "pf_rd_j += 1" ] },
+      { "math": [ "_c = 1 + rand(pf_sb_n - 2)" ] },
+      { "math": [ "pf_rd_qi = _c" ] },
+      { "set_string_var": "pf_sb_<global_val:pf_rd_qi>", "target_var": { "context_val": "qs" }, "parse_tags": true },
+      { "copy_var": { "var_val": "qs" }, "target_var": { "global_val": "pf_rd_q_uid" } },
+      {
+        "set_string_var": "pf_reg_<global_val:pf_rd_q_uid>_a",
+        "target_var": { "context_val": "qa" },
+        "parse_tags": true
+      },
+      { "math": [ "_ad = value_or(v_qa, 0) == 1" ] },
+      { "if": { "math": [ "_ad == 1" ] }, "then": [ { "math": [ "pf_rd_v = _c" ] } ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ROAD_die",
+    "//": "u = the one lost (off-screen, by unique id).  No body: the death hooks (character_dies) bring grief to the band, mourning and, for a leader, succession.",
+    "effect": [ { "math": [ "u_pf_road_dead = 1" ] }, { "u_die": { "remove_corpse": true, "supress_message": true } } ]
+  }
+]

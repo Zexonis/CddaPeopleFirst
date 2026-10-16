@@ -1,0 +1,2390 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_NB_contact_tick",
+    "//": "Checked once a day around 14:00: once the place has 2+ households or has held a meeting, every 5 days or so a new settlement out there takes notice (up to 3).",
+    "recurrence": "1 hours",
+    "global": true,
+    "condition": {
+      "and": [
+        { "math": [ "value_or(pf_home_set, 0) == 1" ] },
+        { "math": [ "time_since('midnight', 'unit': 'hours') >= 14" ] },
+        { "math": [ "time_since('midnight', 'unit': 'hours') < 15" ] },
+        { "math": [ "value_or(pf_nb_cday, -1) != floor(time('now') / time('1 d'))" ] },
+        { "math": [ "value_or(pf_st_n, 0) < 3" ] },
+        { "math": [ "(value_or(pf_households_n, 0) >= 1) + (value_or(pf_meetings_total, 0) >= 1) > 0" ] },
+        { "math": [ "floor(time('now') / time('1 d')) - value_or(pf_nb_last_found, -999) >= 5" ] }
+      ]
+    },
+    "effect": [
+      { "math": [ "pf_nb_cday = floor(time('now') / time('1 d'))" ] },
+      { "u_location_variable": { "global_val": "pf_kp_av" } },
+      {
+        "if": { "math": [ "(distance(pf_kp_av, pf_home_loc) <= 30) * (rand(1) == 0)" ] },
+        "then": [ { "run_eocs": "PF_NB_found" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_NB_found",
+    "//": "u = avatar.  A new settlement takes notice: a keep, the eyeglasses or the woodlanders (in turn, from a random start), with a name, a leader, a direction and a first view of you.",
+    "effect": [
+      { "if": { "math": [ "has_var(pf_nb_kseed) == 0" ] }, "then": [ { "math": [ "pf_nb_kseed = rand(2)" ] } ] },
+      { "math": [ "pf_st_i = value_or(pf_st_n, 0)" ] },
+      { "math": [ "pf_cur_kind = (pf_nb_kseed + pf_st_i) % 3" ] },
+      {
+        "if": { "math": [ "pf_cur_kind == 0" ] },
+        "then": [
+          { "math": [ "pf_cur_rel = -10 + rand(10) - 5" ] },
+          { "set_string_var": "a fortified keep under a lord", "target_var": { "global_val": "pf_cur_kdesc" } },
+          { "math": [ "_n = rand(3)" ] },
+          { "math": [ "_t = rand(1)" ] },
+          {
+            "if": { "math": [ "_n == 0" ] },
+            "then": [ { "set_string_var": "the Ridge Keep", "target_var": { "global_val": "pf_cur_name" } } ]
+          },
+          {
+            "if": { "math": [ "_n == 1" ] },
+            "then": [ { "set_string_var": "Stonegate", "target_var": { "global_val": "pf_cur_name" } } ]
+          },
+          {
+            "if": { "math": [ "_n == 2" ] },
+            "then": [ { "set_string_var": "Fort Halloran", "target_var": { "global_val": "pf_cur_name" } } ]
+          },
+          {
+            "if": { "math": [ "_n == 3" ] },
+            "then": [ { "set_string_var": "Castle Burke", "target_var": { "global_val": "pf_cur_name" } } ]
+          },
+          {
+            "if": { "math": [ "_t == 0" ] },
+            "then": [ { "set_string_var": "Lord", "target_var": { "global_val": "pf_nb_title" } } ]
+          },
+          {
+            "if": { "math": [ "_t == 1" ] },
+            "then": [ { "set_string_var": "Lady", "target_var": { "global_val": "pf_nb_title" } } ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_cur_kind == 1" ] },
+        "then": [
+          { "math": [ "pf_cur_rel = 0 + rand(10) - 5" ] },
+          {
+            "set_string_var": "an office of the old government's survivors, all clipboards and ration cards",
+            "target_var": { "global_val": "pf_cur_kdesc" }
+          },
+          { "math": [ "_n = rand(3)" ] },
+          { "math": [ "_t = rand(1)" ] },
+          {
+            "if": { "math": [ "_n == 0" ] },
+            "then": [ { "set_string_var": "the Office of Continuity", "target_var": { "global_val": "pf_cur_name" } } ]
+          },
+          {
+            "if": { "math": [ "_n == 1" ] },
+            "then": [ { "set_string_var": "Relief Station Nine", "target_var": { "global_val": "pf_cur_name" } } ]
+          },
+          {
+            "if": { "math": [ "_n == 2" ] },
+            "then": [ { "set_string_var": "the Registry", "target_var": { "global_val": "pf_cur_name" } } ]
+          },
+          {
+            "if": { "math": [ "_n == 3" ] },
+            "then": [ { "set_string_var": "District Four Administration", "target_var": { "global_val": "pf_cur_name" } } ]
+          },
+          {
+            "if": { "math": [ "_t == 0" ] },
+            "then": [ { "set_string_var": "Administrator", "target_var": { "global_val": "pf_nb_title" } } ]
+          },
+          {
+            "if": { "math": [ "_t == 1" ] },
+            "then": [ { "set_string_var": "Deputy Director", "target_var": { "global_val": "pf_nb_title" } } ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_cur_kind == 2" ] },
+        "then": [
+          { "math": [ "pf_cur_rel = 10 + rand(10) - 5" ] },
+          {
+            "set_string_var": "forest folk, who keep to the trees and trade fair",
+            "target_var": { "global_val": "pf_cur_kdesc" }
+          },
+          { "math": [ "_n = rand(3)" ] },
+          { "math": [ "_t = rand(1)" ] },
+          {
+            "if": { "math": [ "_n == 0" ] },
+            "then": [ { "set_string_var": "the Pines", "target_var": { "global_val": "pf_cur_name" } } ]
+          },
+          {
+            "if": { "math": [ "_n == 1" ] },
+            "then": [ { "set_string_var": "Hollow Oak", "target_var": { "global_val": "pf_cur_name" } } ]
+          },
+          {
+            "if": { "math": [ "_n == 2" ] },
+            "then": [ { "set_string_var": "the Fern Camp", "target_var": { "global_val": "pf_cur_name" } } ]
+          },
+          {
+            "if": { "math": [ "_n == 3" ] },
+            "then": [ { "set_string_var": "Cedar Run", "target_var": { "global_val": "pf_cur_name" } } ]
+          },
+          {
+            "if": { "math": [ "_t == 0" ] },
+            "then": [ { "set_string_var": "old", "target_var": { "global_val": "pf_nb_title" } } ]
+          },
+          {
+            "if": { "math": [ "_t == 1" ] },
+            "then": [ { "set_string_var": "young", "target_var": { "global_val": "pf_nb_title" } } ]
+          }
+        ]
+      },
+      { "math": [ "_s = rand(9)" ] },
+      {
+        "if": { "math": [ "_s == 0" ] },
+        "then": [
+          {
+            "set_string_var": "<global_val:pf_nb_title> Halloran",
+            "target_var": { "global_val": "pf_cur_lead" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "_s == 1" ] },
+        "then": [
+          { "set_string_var": "<global_val:pf_nb_title> Pike", "target_var": { "global_val": "pf_cur_lead" }, "parse_tags": true }
+        ]
+      },
+      {
+        "if": { "math": [ "_s == 2" ] },
+        "then": [
+          {
+            "set_string_var": "<global_val:pf_nb_title> Maren",
+            "target_var": { "global_val": "pf_cur_lead" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "_s == 3" ] },
+        "then": [
+          { "set_string_var": "<global_val:pf_nb_title> Voss", "target_var": { "global_val": "pf_cur_lead" }, "parse_tags": true }
+        ]
+      },
+      {
+        "if": { "math": [ "_s == 4" ] },
+        "then": [
+          {
+            "set_string_var": "<global_val:pf_nb_title> Abernathy",
+            "target_var": { "global_val": "pf_cur_lead" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "_s == 5" ] },
+        "then": [
+          {
+            "set_string_var": "<global_val:pf_nb_title> Quill",
+            "target_var": { "global_val": "pf_cur_lead" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "_s == 6" ] },
+        "then": [
+          {
+            "set_string_var": "<global_val:pf_nb_title> Okafor",
+            "target_var": { "global_val": "pf_cur_lead" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "_s == 7" ] },
+        "then": [
+          {
+            "set_string_var": "<global_val:pf_nb_title> Lindqvist",
+            "target_var": { "global_val": "pf_cur_lead" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "_s == 8" ] },
+        "then": [
+          {
+            "set_string_var": "<global_val:pf_nb_title> Ferro",
+            "target_var": { "global_val": "pf_cur_lead" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "_s == 9" ] },
+        "then": [
+          { "set_string_var": "<global_val:pf_nb_title> Hale", "target_var": { "global_val": "pf_cur_lead" }, "parse_tags": true }
+        ]
+      },
+      { "math": [ "_d = rand(7)" ] },
+      {
+        "if": { "math": [ "_d == 0" ] },
+        "then": [ { "set_string_var": "north", "target_var": { "global_val": "pf_cur_dir" } } ]
+      },
+      {
+        "if": { "math": [ "_d == 1" ] },
+        "then": [ { "set_string_var": "northeast", "target_var": { "global_val": "pf_cur_dir" } } ]
+      },
+      {
+        "if": { "math": [ "_d == 2" ] },
+        "then": [ { "set_string_var": "east", "target_var": { "global_val": "pf_cur_dir" } } ]
+      },
+      {
+        "if": { "math": [ "_d == 3" ] },
+        "then": [ { "set_string_var": "southeast", "target_var": { "global_val": "pf_cur_dir" } } ]
+      },
+      {
+        "if": { "math": [ "_d == 4" ] },
+        "then": [ { "set_string_var": "south", "target_var": { "global_val": "pf_cur_dir" } } ]
+      },
+      {
+        "if": { "math": [ "_d == 5" ] },
+        "then": [ { "set_string_var": "southwest", "target_var": { "global_val": "pf_cur_dir" } } ]
+      },
+      {
+        "if": { "math": [ "_d == 6" ] },
+        "then": [ { "set_string_var": "west", "target_var": { "global_val": "pf_cur_dir" } } ]
+      },
+      {
+        "if": { "math": [ "_d == 7" ] },
+        "then": [ { "set_string_var": "northwest", "target_var": { "global_val": "pf_cur_dir" } } ]
+      },
+      { "math": [ "pf_cur_pact = 0" ] },
+      { "math": [ "pf_cur_trib = 0" ] },
+      { "math": [ "pf_cur_str = 10 + rand(30)" ] },
+      { "math": [ "pf_cur_raid = -1" ] },
+      {
+        "set_string_var": "pf_st_kind_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wkind" },
+        "parse_tags": true
+      },
+      { "math": [ "v_wkind = pf_cur_kind" ] },
+      {
+        "set_string_var": "pf_st_rel_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wrel" },
+        "parse_tags": true
+      },
+      { "math": [ "v_wrel = pf_cur_rel" ] },
+      {
+        "set_string_var": "pf_st_pact_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wpact" },
+        "parse_tags": true
+      },
+      { "math": [ "v_wpact = pf_cur_pact" ] },
+      {
+        "set_string_var": "pf_st_trib_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wtrib" },
+        "parse_tags": true
+      },
+      { "math": [ "v_wtrib = pf_cur_trib" ] },
+      {
+        "set_string_var": "pf_st_str_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wstr" },
+        "parse_tags": true
+      },
+      { "math": [ "v_wstr = pf_cur_str" ] },
+      {
+        "set_string_var": "pf_st_raid_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wraid" },
+        "parse_tags": true
+      },
+      { "math": [ "v_wraid = pf_cur_raid" ] },
+      {
+        "set_string_var": "pf_st_kin_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wkin" },
+        "parse_tags": true
+      },
+      { "math": [ "v_wkin = pf_cur_kin" ] },
+      {
+        "set_string_var": "pf_st_name_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wname" },
+        "parse_tags": true
+      },
+      { "copy_var": { "global_val": "pf_cur_name" }, "target_var": { "var_val": "wname" } },
+      {
+        "set_string_var": "pf_st_lead_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wlead" },
+        "parse_tags": true
+      },
+      { "copy_var": { "global_val": "pf_cur_lead" }, "target_var": { "var_val": "wlead" } },
+      {
+        "set_string_var": "pf_st_dir_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wdir" },
+        "parse_tags": true
+      },
+      { "copy_var": { "global_val": "pf_cur_dir" }, "target_var": { "var_val": "wdir" } },
+      { "math": [ "pf_st_n = pf_st_i + 1" ] },
+      { "math": [ "pf_nb_last_found = floor(time('now') / time('1 d'))" ] },
+      { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "nb_contact" } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_NB_week_tick",
+    "//": "One afternoon a week (day 4 of 7, 15:00-17:00): every settlement's agreement does its weekly work, and one of them (in turn) sends an envoy, if you're home.",
+    "recurrence": "1 hours",
+    "global": true,
+    "condition": {
+      "and": [
+        { "math": [ "value_or(pf_home_set, 0) == 1" ] },
+        { "math": [ "value_or(pf_st_n, 0) > 0" ] },
+        { "math": [ "floor(time('now') / time('1 d')) % 7 == 4" ] },
+        { "math": [ "time_since('midnight', 'unit': 'hours') >= 15" ] },
+        { "math": [ "time_since('midnight', 'unit': 'hours') < 17" ] },
+        { "math": [ "value_or(pf_nb_wday, -1) != floor(time('now') / time('1 d'))" ] }
+      ]
+    },
+    "effect": [
+      { "math": [ "pf_nb_wday = floor(time('now') / time('1 d'))" ] },
+      { "u_location_variable": { "global_val": "pf_kp_av" } },
+      { "math": [ "pf_st_i = 0" ] },
+      { "run_eocs": "PF_NB_upkeep", "condition": { "math": [ "pf_st_i < pf_st_n" ] }, "iterations": 4 },
+      {
+        "if": { "math": [ "distance(pf_kp_av, pf_home_loc) <= 30" ] },
+        "then": [
+          { "math": [ "pf_st_rot = (value_or(pf_st_rot, -1) + 1) % pf_st_n" ] },
+          { "math": [ "pf_st_i = pf_st_rot" ] },
+          { "run_eocs": "PF_NB_envoy" }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_NB_trib_warn",
+    "//": "The day before the week's tribute (day 3 of 7, by day, once): if the stores can't cover it, you're told.",
+    "recurrence": "30 minutes",
+    "global": true,
+    "condition": {
+      "and": [
+        { "math": [ "value_or(pf_home_set, 0) == 1" ] },
+        { "math": [ "value_or(pf_st_n, 0) > 0" ] },
+        { "math": [ "floor(time('now') / time('1 d')) % 7 == 3" ] },
+        { "math": [ "time_since('midnight', 'unit': 'hours') >= 8" ] },
+        { "math": [ "time_since('midnight', 'unit': 'hours') < 20" ] },
+        { "math": [ "value_or(pf_nb_twday, -1) != floor(time('now') / time('1 d'))" ] },
+        { "not": { "u_has_effect": "sleep" } }
+      ]
+    },
+    "effect": [
+      { "math": [ "pf_nb_twday = floor(time('now') / time('1 d'))" ] },
+      { "math": [ "pf_st_i = 0" ] },
+      { "run_eocs": "PF_NB_trib_warn_one", "condition": { "math": [ "pf_st_i < pf_st_n" ] }, "iterations": 4 }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_NB_trib_warn_one",
+    "effect": [
+      { "set_string_var": "pf_st_kind_<global_val:pf_st_i>", "target_var": { "context_val": "rkind" }, "parse_tags": true },
+      { "math": [ "pf_cur_kind = value_or(v_rkind, 0)" ] },
+      {
+        "set_string_var": "pf_st_rel_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rrel" },
+        "parse_tags": true
+      },
+      { "math": [ "pf_cur_rel = value_or(v_rrel, 0)" ] },
+      {
+        "set_string_var": "pf_st_pact_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rpact" },
+        "parse_tags": true
+      },
+      { "math": [ "pf_cur_pact = value_or(v_rpact, 0)" ] },
+      {
+        "set_string_var": "pf_st_trib_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rtrib" },
+        "parse_tags": true
+      },
+      { "math": [ "pf_cur_trib = value_or(v_rtrib, 0)" ] },
+      {
+        "set_string_var": "pf_st_str_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rstr" },
+        "parse_tags": true
+      },
+      { "math": [ "pf_cur_str = value_or(v_rstr, 0)" ] },
+      {
+        "set_string_var": "pf_st_raid_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rraid" },
+        "parse_tags": true
+      },
+      { "math": [ "pf_cur_raid = value_or(v_rraid, 0)" ] },
+      {
+        "set_string_var": "pf_st_kin_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rkin" },
+        "parse_tags": true
+      },
+      { "math": [ "pf_cur_kin = value_or(v_rkin, 0)" ] },
+      {
+        "set_string_var": "pf_st_name_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rname" },
+        "parse_tags": true
+      },
+      { "copy_var": { "var_val": "rname" }, "target_var": { "global_val": "pf_cur_name" } },
+      {
+        "set_string_var": "pf_st_lead_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rlead" },
+        "parse_tags": true
+      },
+      { "copy_var": { "var_val": "rlead" }, "target_var": { "global_val": "pf_cur_lead" } },
+      {
+        "set_string_var": "pf_st_dir_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rdir" },
+        "parse_tags": true
+      },
+      { "copy_var": { "var_val": "rdir" }, "target_var": { "global_val": "pf_cur_dir" } },
+      { "run_eocs": "PF_STORES_count", "alpha_talker": "avatar" },
+      {
+        "if": { "math": [ "(pf_cur_trib == 1) * (value_or(pf_stores, 0) + pf_dr_real < 5)" ] },
+        "then": [
+          { "math": [ "pf_nb_tw_have = value_or(pf_stores, 0) + pf_dr_real" ] },
+          { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "nb_tribute_warn" } }
+        ]
+      },
+      { "math": [ "pf_st_i += 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_NB_upkeep",
+    "//": "One settlement's week: what an agreement brings (the woodlanders' food and seed, the eyeglasses' medicine, the keep's bolts), tribute paid out of the stores (or the agreement breaks), and a hostile one starts arming (a raid in 1-3 nights).",
+    "effect": [
+      { "set_string_var": "pf_st_kind_<global_val:pf_st_i>", "target_var": { "context_val": "rkind" }, "parse_tags": true },
+      { "math": [ "pf_cur_kind = value_or(v_rkind, 0)" ] },
+      {
+        "set_string_var": "pf_st_rel_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rrel" },
+        "parse_tags": true
+      },
+      { "math": [ "pf_cur_rel = value_or(v_rrel, 0)" ] },
+      {
+        "set_string_var": "pf_st_pact_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rpact" },
+        "parse_tags": true
+      },
+      { "math": [ "pf_cur_pact = value_or(v_rpact, 0)" ] },
+      {
+        "set_string_var": "pf_st_trib_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rtrib" },
+        "parse_tags": true
+      },
+      { "math": [ "pf_cur_trib = value_or(v_rtrib, 0)" ] },
+      {
+        "set_string_var": "pf_st_str_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rstr" },
+        "parse_tags": true
+      },
+      { "math": [ "pf_cur_str = value_or(v_rstr, 0)" ] },
+      {
+        "set_string_var": "pf_st_raid_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rraid" },
+        "parse_tags": true
+      },
+      { "math": [ "pf_cur_raid = value_or(v_rraid, 0)" ] },
+      {
+        "set_string_var": "pf_st_kin_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rkin" },
+        "parse_tags": true
+      },
+      { "math": [ "pf_cur_kin = value_or(v_rkin, 0)" ] },
+      {
+        "set_string_var": "pf_st_name_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rname" },
+        "parse_tags": true
+      },
+      { "copy_var": { "var_val": "rname" }, "target_var": { "global_val": "pf_cur_name" } },
+      {
+        "set_string_var": "pf_st_lead_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rlead" },
+        "parse_tags": true
+      },
+      { "copy_var": { "var_val": "rlead" }, "target_var": { "global_val": "pf_cur_lead" } },
+      {
+        "set_string_var": "pf_st_dir_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rdir" },
+        "parse_tags": true
+      },
+      { "copy_var": { "var_val": "rdir" }, "target_var": { "global_val": "pf_cur_dir" } },
+      {
+        "if": { "math": [ "pf_cur_pact == 1" ] },
+        "then": [
+          {
+            "if": { "math": [ "value_or(pf_aw_state, 0) == 1" ] },
+            "then": [ { "run_eocs": "PF_AW_delivery" } ],
+            "else": [
+              {
+                "if": { "math": [ "pf_cur_kind == 2" ] },
+                "then": [
+                  { "map_spawn_item": "pemmican", "loc": { "global_val": "pf_stores_loc" }, "count": 3 },
+                  { "map_spawn_item": "seed_potato_raw", "loc": { "global_val": "pf_stores_loc" }, "count": 5 }
+                ]
+              },
+              {
+                "if": { "math": [ "pf_cur_kind == 1" ] },
+                "then": [
+                  { "map_spawn_item": "aspirin", "loc": { "global_val": "pf_stores_loc" }, "count": 10 },
+                  { "map_spawn_item": "bandages", "loc": { "global_val": "pf_stores_loc" }, "count": 5 }
+                ]
+              },
+              {
+                "if": { "math": [ "pf_cur_kind == 0" ] },
+                "then": [ { "map_spawn_item": "bolt_metal", "loc": { "global_val": "pf_stores_loc" }, "count": 10 } ]
+              },
+              {
+                "if": { "math": [ "value_or(pf_set_chatter, 1) == 1" ] },
+                "then": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "nb_delivery" } } ]
+              }
+            ]
+          },
+          { "math": [ "pf_cur_rel = min(pf_cur_rel + 2, 100)" ] }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_cur_trib == 1" ] },
+        "then": [
+          { "math": [ "pf_dr_want = 5" ] },
+          { "math": [ "pf_dr_all = 1" ] },
+          { "run_eocs": "PF_STORES_draw", "alpha_talker": "avatar" },
+          {
+            "if": { "math": [ "value_or(pf_stores, 0) >= 5" ] },
+            "then": [
+              { "math": [ "pf_stores -= 5" ] },
+              {
+                "if": { "math": [ "value_or(pf_set_chatter, 1) == 1" ] },
+                "then": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "nb_tribute_paid" } } ]
+              }
+            ],
+            "else": [
+              { "math": [ "pf_cur_trib = 0" ] },
+              { "math": [ "pf_cur_rel -= 25" ] },
+              { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "nb_tribute_short" } }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "(pf_cur_rel <= -30) * (pf_cur_raid < 0) * (pf_cur_kin == 0)" ] },
+        "then": [
+          { "math": [ "pf_cur_raid = floor(time('now') / time('1 d')) + 1 + rand(2)" ] },
+          { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "nb_arming" } }
+        ]
+      },
+      {
+        "set_string_var": "pf_st_kind_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wkind" },
+        "parse_tags": true
+      },
+      { "math": [ "v_wkind = pf_cur_kind" ] },
+      {
+        "set_string_var": "pf_st_rel_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wrel" },
+        "parse_tags": true
+      },
+      { "math": [ "v_wrel = pf_cur_rel" ] },
+      {
+        "set_string_var": "pf_st_pact_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wpact" },
+        "parse_tags": true
+      },
+      { "math": [ "v_wpact = pf_cur_pact" ] },
+      {
+        "set_string_var": "pf_st_trib_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wtrib" },
+        "parse_tags": true
+      },
+      { "math": [ "v_wtrib = pf_cur_trib" ] },
+      {
+        "set_string_var": "pf_st_str_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wstr" },
+        "parse_tags": true
+      },
+      { "math": [ "v_wstr = pf_cur_str" ] },
+      {
+        "set_string_var": "pf_st_raid_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wraid" },
+        "parse_tags": true
+      },
+      { "math": [ "v_wraid = pf_cur_raid" ] },
+      {
+        "set_string_var": "pf_st_kin_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wkin" },
+        "parse_tags": true
+      },
+      { "math": [ "v_wkin = pf_cur_kin" ] },
+      {
+        "set_string_var": "pf_st_name_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wname" },
+        "parse_tags": true
+      },
+      { "copy_var": { "global_val": "pf_cur_name" }, "target_var": { "var_val": "wname" } },
+      {
+        "set_string_var": "pf_st_lead_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wlead" },
+        "parse_tags": true
+      },
+      { "copy_var": { "global_val": "pf_cur_lead" }, "target_var": { "var_val": "wlead" } },
+      {
+        "set_string_var": "pf_st_dir_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wdir" },
+        "parse_tags": true
+      },
+      { "copy_var": { "global_val": "pf_cur_dir" }, "target_var": { "var_val": "wdir" } },
+      { "math": [ "pf_st_i += 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_NB_offer",
+    "//": "u = avatar.  What one settlement's envoy says at the gate (pass 6: the envoy walks in first, PF_NB_envoy), by how things stand: a family-minded one may offer a match (pass 6); hostile ones send nobody (they're arming); a friendly one (40+) offers to stand together; a keep with no agreement demands tribute; the eyeglasses offer registration for medicine, the woodlanders (and a keep that wants trade) offer trade; anyone already agreed just pays a courtesy visit (+5).",
+    "effect": [
+      { "set_string_var": "pf_st_kind_<global_val:pf_st_i>", "target_var": { "context_val": "rkind" }, "parse_tags": true },
+      { "math": [ "pf_cur_kind = value_or(v_rkind, 0)" ] },
+      {
+        "set_string_var": "pf_st_rel_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rrel" },
+        "parse_tags": true
+      },
+      { "math": [ "pf_cur_rel = value_or(v_rrel, 0)" ] },
+      {
+        "set_string_var": "pf_st_pact_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rpact" },
+        "parse_tags": true
+      },
+      { "math": [ "pf_cur_pact = value_or(v_rpact, 0)" ] },
+      {
+        "set_string_var": "pf_st_trib_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rtrib" },
+        "parse_tags": true
+      },
+      { "math": [ "pf_cur_trib = value_or(v_rtrib, 0)" ] },
+      {
+        "set_string_var": "pf_st_str_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rstr" },
+        "parse_tags": true
+      },
+      { "math": [ "pf_cur_str = value_or(v_rstr, 0)" ] },
+      {
+        "set_string_var": "pf_st_raid_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rraid" },
+        "parse_tags": true
+      },
+      { "math": [ "pf_cur_raid = value_or(v_rraid, 0)" ] },
+      {
+        "set_string_var": "pf_st_kin_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rkin" },
+        "parse_tags": true
+      },
+      { "math": [ "pf_cur_kin = value_or(v_rkin, 0)" ] },
+      {
+        "set_string_var": "pf_st_name_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rname" },
+        "parse_tags": true
+      },
+      { "copy_var": { "var_val": "rname" }, "target_var": { "global_val": "pf_cur_name" } },
+      {
+        "set_string_var": "pf_st_lead_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rlead" },
+        "parse_tags": true
+      },
+      { "copy_var": { "var_val": "rlead" }, "target_var": { "global_val": "pf_cur_lead" } },
+      {
+        "set_string_var": "pf_st_dir_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rdir" },
+        "parse_tags": true
+      },
+      { "copy_var": { "var_val": "rdir" }, "target_var": { "global_val": "pf_cur_dir" } },
+      {
+        "if": { "math": [ "pf_cur_kind == 0" ] },
+        "then": [ { "set_string_var": "a fortified keep under a lord", "target_var": { "global_val": "pf_cur_kdesc" } } ]
+      },
+      {
+        "if": { "math": [ "pf_cur_kind == 1" ] },
+        "then": [
+          {
+            "set_string_var": "an office of the old government's survivors, all clipboards and ration cards",
+            "target_var": { "global_val": "pf_cur_kdesc" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_cur_kind == 2" ] },
+        "then": [
+          {
+            "set_string_var": "forest folk, who keep to the trees and trade fair",
+            "target_var": { "global_val": "pf_cur_kdesc" }
+          }
+        ]
+      },
+      { "math": [ "pf_nb_off = 0" ] },
+      {
+        "if": { "math": [ "pf_cur_rel <= -30" ] },
+        "then": [ { "math": [ "pf_nb_off = -1" ] } ],
+        "else": [
+          {
+            "if": { "math": [ "(pf_cur_rel >= 40) * (pf_cur_pact != 2)" ] },
+            "then": [ { "math": [ "pf_nb_off = 2" ] } ],
+            "else": [
+              {
+                "if": { "math": [ "(pf_cur_kind == 0) * (pf_cur_trib == 0) * (pf_cur_pact == 0)" ] },
+                "then": [ { "math": [ "pf_nb_off = 3" ] } ],
+                "else": [ { "if": { "math": [ "pf_cur_pact == 0" ] }, "then": [ { "math": [ "pf_nb_off = 1" ] } ] } ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": {
+          "math": [
+            "(pf_nb_off == 0) * (pf_cur_rel >= 50) * (pf_cur_pact >= 1) * (pf_cur_kin == 0) * (value_or(pf_nb_mpend, 0) == 0) * ((rand(1) == 0) + value_or(pf_kl_nb_match, 0) > 0)"
+          ]
+        },
+        "then": [ { "math": [ "pf_nb_off = 4" ] } ]
+      },
+      {
+        "switch": { "math": [ "pf_nb_off" ] },
+        "cases": [
+          {
+            "case": -1,
+            "effect": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "nb_no_envoy" } } ]
+          },
+          {
+            "case": 0,
+            "effect": [
+              { "math": [ "pf_cur_rel = min(pf_cur_rel + 5, 100)" ] },
+              { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "nb_courtesy" } }
+            ]
+          },
+          {
+            "case": 1,
+            "effect": [
+              {
+                "if": { "math": [ "pf_cur_kind == 1" ] },
+                "then": [
+                  {
+                    "set_string_var": "An envoy from <global_val:pf_cur_name> wants everyone here registered and counted.  In return: medicine, every week.  Agree?",
+                    "target_var": { "global_val": "pf_nb_q" },
+                    "parse_tags": true
+                  }
+                ],
+                "else": [
+                  {
+                    "set_string_var": "An envoy from <global_val:pf_cur_name> offers to trade: what they have for what you have, every week.  Agree?",
+                    "target_var": { "global_val": "pf_nb_q" },
+                    "parse_tags": true
+                  }
+                ]
+              },
+              { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "nb_envoy" } },
+              { "run_eocs": "PF_NB_decide" },
+              {
+                "if": { "math": [ "pf_nb_yes" ] },
+                "then": [
+                  { "math": [ "pf_cur_pact = 1" ] },
+                  { "math": [ "pf_cur_rel += 15" ] },
+                  { "math": [ "pf_st_pacts = value_or(pf_st_pacts, 0) + 1" ] },
+                  { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "nb_trade_yes" } }
+                ],
+                "else": [
+                  { "math": [ "pf_cur_rel -= 5" ] },
+                  { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "nb_trade_no" } }
+                ]
+              }
+            ]
+          },
+          {
+            "case": 2,
+            "effect": [
+              {
+                "set_string_var": "<global_val:pf_cur_lead> of <global_val:pf_cur_name> proposes a pact: if either place is attacked, the other comes.  Agree?",
+                "target_var": { "global_val": "pf_nb_q" },
+                "parse_tags": true
+              },
+              { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "nb_envoy" } },
+              { "run_eocs": "PF_NB_decide" },
+              {
+                "if": { "math": [ "pf_nb_yes" ] },
+                "then": [
+                  { "math": [ "pf_cur_pact = 2" ] },
+                  { "math": [ "pf_cur_rel += 10" ] },
+                  { "math": [ "pf_st_allied = 1" ] },
+                  { "copy_var": { "global_val": "pf_cur_name" }, "target_var": { "global_val": "pf_st_ally_name" } },
+                  { "math": [ "pf_st_pacts = value_or(pf_st_pacts, 0) + 1" ] },
+                  { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "nb_pact_yes" } }
+                ],
+                "else": [
+                  { "math": [ "pf_cur_rel -= 10" ] },
+                  { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "nb_pact_no" } }
+                ]
+              }
+            ]
+          },
+          {
+            "case": 3,
+            "effect": [
+              { "math": [ "pf_nb_have = value_or(pf_stores, 0)" ] },
+              {
+                "set_string_var": "<global_val:pf_cur_lead> of <global_val:pf_cur_name> sends word: the land is theirs, and so is a share of what grows on it.  Five stores a week.  (The stores hold <global_val:pf_nb_have>.)  Pay?",
+                "target_var": { "global_val": "pf_nb_q" },
+                "parse_tags": true
+              },
+              { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "nb_envoy" } },
+              { "math": [ "pf_nb_tribute = 1" ] },
+              { "run_eocs": "PF_NB_decide" },
+              { "math": [ "pf_nb_tribute = 0" ] },
+              {
+                "if": { "math": [ "pf_nb_yes" ] },
+                "then": [
+                  { "math": [ "pf_cur_trib = 1" ] },
+                  { "math": [ "pf_cur_rel += 10" ] },
+                  { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "nb_tribute_yes" } }
+                ],
+                "else": [
+                  { "math": [ "pf_cur_rel -= 30" ] },
+                  { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "nb_tribute_no" } }
+                ]
+              }
+            ]
+          },
+          {
+            "case": 4,
+            "effect": [
+              { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "nb_envoy" } },
+              { "run_eocs": "PF_NB_match_offer" }
+            ]
+          }
+        ]
+      },
+      {
+        "set_string_var": "pf_st_kind_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wkind" },
+        "parse_tags": true
+      },
+      { "math": [ "v_wkind = pf_cur_kind" ] },
+      {
+        "set_string_var": "pf_st_rel_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wrel" },
+        "parse_tags": true
+      },
+      { "math": [ "v_wrel = pf_cur_rel" ] },
+      {
+        "set_string_var": "pf_st_pact_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wpact" },
+        "parse_tags": true
+      },
+      { "math": [ "v_wpact = pf_cur_pact" ] },
+      {
+        "set_string_var": "pf_st_trib_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wtrib" },
+        "parse_tags": true
+      },
+      { "math": [ "v_wtrib = pf_cur_trib" ] },
+      {
+        "set_string_var": "pf_st_str_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wstr" },
+        "parse_tags": true
+      },
+      { "math": [ "v_wstr = pf_cur_str" ] },
+      {
+        "set_string_var": "pf_st_raid_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wraid" },
+        "parse_tags": true
+      },
+      { "math": [ "v_wraid = pf_cur_raid" ] },
+      {
+        "set_string_var": "pf_st_kin_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wkin" },
+        "parse_tags": true
+      },
+      { "math": [ "v_wkin = pf_cur_kin" ] },
+      {
+        "set_string_var": "pf_st_name_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wname" },
+        "parse_tags": true
+      },
+      { "copy_var": { "global_val": "pf_cur_name" }, "target_var": { "var_val": "wname" } },
+      {
+        "set_string_var": "pf_st_lead_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wlead" },
+        "parse_tags": true
+      },
+      { "copy_var": { "global_val": "pf_cur_lead" }, "target_var": { "var_val": "wlead" } },
+      {
+        "set_string_var": "pf_st_dir_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wdir" },
+        "parse_tags": true
+      },
+      { "copy_var": { "global_val": "pf_cur_dir" }, "target_var": { "var_val": "wdir" } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_NB_decide",
+    "//": "u = avatar.  Who answers an envoy: the council if there is one (pass 6), else the chief (or lord) if someone else holds the chair and is here, else you (a popup).",
+    "effect": [
+      { "math": [ "pf_nb_yes = 0" ] },
+      {
+        "if": { "math": [ "(value_or(pf_law_council, 0) == 1) * (value_or(pf_cn_n, 0) >= 2)" ] },
+        "then": [ { "run_eocs": "PF_NB_council_decides" } ],
+        "else": [
+          {
+            "if": { "math": [ "value_or(pf_chief_set, 0) == 1" ] },
+            "then": [
+              { "copy_var": { "global_val": "pf_chief_uid" }, "target_var": { "global_val": "pf_find_uid" } },
+              { "run_eocs": "PF_FIND_by_uid" },
+              {
+                "if": { "math": [ "pf_find_ok == 1" ] },
+                "then": [ { "run_eocs": "PF_NB_chief_decides", "alpha_talker": { "global_val": "pf_find_who" } } ],
+                "else": [ { "if": { "u_query": { "global_val": "pf_nb_q" }, "default": false }, "then": [ { "math": [ "pf_nb_yes = 1" ] } ] } ]
+              }
+            ],
+            "else": [ { "if": { "u_query": { "global_val": "pf_nb_q" }, "default": false }, "then": [ { "math": [ "pf_nb_yes = 1" ] } ] } ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_NB_chief_decides",
+    "effect": [
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_kd_judge" }, "parse_tags": true },
+      { "run_eocs": "PF_NB_vote_calc" },
+      {
+        "if": { "math": [ "pf_nb_yes" ] },
+        "then": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "nb_chief_yes" } } ],
+        "else": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "nb_chief_no" } } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_NB_vote_calc",
+    "//": "u = the chief (or a councillor).  Tribute: they pay if the stores can bear it, unless they're proud (loyal and mother-hen chiefs pay; others half the time).  Anything else: their temperament plus how things stand with that settlement.",
+    "effect": [
+      {
+        "if": { "math": [ "value_or(pf_nb_tribute, 0) == 1" ] },
+        "then": [
+          {
+            "math": [
+              "pf_nb_yes = (value_or(pf_stores, 0) >= 15) * (u_has_trait('PF_Q_PROUD') == 0) * (u_has_trait('PF_Q_LOYAL') + u_has_trait('PF_Q_MOTHER_HEN') + rand(1) > 0)"
+            ]
+          }
+        ],
+        "else": [
+          {
+            "math": [
+              "pf_nb_yes = (pf_cur_rel + u_has_trait('PF_T_SOCIABLE') * 20 + u_has_trait('PF_Q_MOTHER_HEN') * 10 - u_has_trait('PF_Q_GRUDGE') * 20 + rand(20) - 10) >= 0"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_NB_raid_tick",
+    "//": "Every 30 minutes between 01:00 and 04:00, once a night: a settlement whose raid is due hits the place (one raid a night).",
+    "recurrence": "30 minutes",
+    "global": true,
+    "condition": {
+      "and": [
+        { "math": [ "value_or(pf_home_set, 0) == 1" ] },
+        { "math": [ "value_or(pf_st_n, 0) > 0" ] },
+        { "math": [ "time_since('midnight', 'unit': 'hours') >= 1" ] },
+        { "math": [ "time_since('midnight', 'unit': 'hours') < 4" ] },
+        { "math": [ "value_or(pf_nb_rnight, -1) != floor(time('now') / time('1 d'))" ] }
+      ]
+    },
+    "effect": [
+      { "math": [ "pf_nb_rnight = floor(time('now') / time('1 d'))" ] },
+      { "math": [ "pf_st_i = 0" ] },
+      { "math": [ "pf_nb_raided = 0" ] },
+      {
+        "run_eocs": "PF_NB_raid_check",
+        "condition": { "math": [ "(pf_st_i < pf_st_n) * (pf_nb_raided == 0)" ] },
+        "iterations": 4
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_NB_raid_check",
+    "effect": [
+      { "set_string_var": "pf_st_kind_<global_val:pf_st_i>", "target_var": { "context_val": "rkind" }, "parse_tags": true },
+      { "math": [ "pf_cur_kind = value_or(v_rkind, 0)" ] },
+      {
+        "set_string_var": "pf_st_rel_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rrel" },
+        "parse_tags": true
+      },
+      { "math": [ "pf_cur_rel = value_or(v_rrel, 0)" ] },
+      {
+        "set_string_var": "pf_st_pact_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rpact" },
+        "parse_tags": true
+      },
+      { "math": [ "pf_cur_pact = value_or(v_rpact, 0)" ] },
+      {
+        "set_string_var": "pf_st_trib_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rtrib" },
+        "parse_tags": true
+      },
+      { "math": [ "pf_cur_trib = value_or(v_rtrib, 0)" ] },
+      {
+        "set_string_var": "pf_st_str_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rstr" },
+        "parse_tags": true
+      },
+      { "math": [ "pf_cur_str = value_or(v_rstr, 0)" ] },
+      {
+        "set_string_var": "pf_st_raid_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rraid" },
+        "parse_tags": true
+      },
+      { "math": [ "pf_cur_raid = value_or(v_rraid, 0)" ] },
+      {
+        "set_string_var": "pf_st_kin_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rkin" },
+        "parse_tags": true
+      },
+      { "math": [ "pf_cur_kin = value_or(v_rkin, 0)" ] },
+      {
+        "set_string_var": "pf_st_name_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rname" },
+        "parse_tags": true
+      },
+      { "copy_var": { "var_val": "rname" }, "target_var": { "global_val": "pf_cur_name" } },
+      {
+        "set_string_var": "pf_st_lead_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rlead" },
+        "parse_tags": true
+      },
+      { "copy_var": { "var_val": "rlead" }, "target_var": { "global_val": "pf_cur_lead" } },
+      {
+        "set_string_var": "pf_st_dir_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rdir" },
+        "parse_tags": true
+      },
+      { "copy_var": { "var_val": "rdir" }, "target_var": { "global_val": "pf_cur_dir" } },
+      {
+        "if": { "math": [ "(pf_cur_raid >= 0) * (pf_cur_raid <= floor(time('now') / time('1 d')))" ] },
+        "then": [ { "math": [ "pf_nb_raided = 1" ] }, { "run_eocs": "PF_NB_raid" } ]
+      },
+      { "math": [ "pf_st_i += 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_NB_raid",
+    "//": "u = avatar, current settlement.  A raid, decided by strength against defense: the wall (+2), the watch being up (+2), a third of the grown-ups, an ally (+1), against an eighth of their people plus luck.  Held: they're driven off.  Not held: they take up to 10 stores and, if you're home, someone is hurt (a resident who was out there, bleeding).  Either way they think less of you.",
+    "effect": [
+      { "math": [ "pf_cur_raid = -1" ] },
+      { "math": [ "pf_raids_total = value_or(pf_raids_total, 0) + 1" ] },
+      { "u_location_variable": { "global_val": "pf_kp_av" } },
+      { "math": [ "pf_nb_here = distance(pf_kp_av, pf_home_loc) <= 40" ] },
+      { "run_eocs": "PF_KEEP_count" },
+      {
+        "if": { "math": [ "value_or(pf_aw_state, 0) == 1" ] },
+        "then": [ { "math": [ "pf_kp_n = value_or(pf_hh_adults, 0)" ] } ]
+      },
+      {
+        "math": [
+          "pf_nb_def = 2 * (value_or(pf_wall_state, 0) == 2) + 2 * value_or(pf_wt_on, 0) + floor(value_or(pf_kp_n, 0) / 3) + value_or(pf_st_allied, 0)"
+        ]
+      },
+      { "math": [ "pf_nb_att = floor(pf_cur_str / 8) + rand(2) + value_or(pf_kl_nb_force, 0) * 99" ] },
+      {
+        "if": { "math": [ "pf_nb_def >= pf_nb_att" ] },
+        "then": [
+          { "math": [ "pf_cur_rel -= 5" ] },
+          { "math": [ "pf_raids_repelled = value_or(pf_raids_repelled, 0) + 1" ] },
+          {
+            "if": { "math": [ "value_or(pf_aw_state, 0) == 1" ] },
+            "then": [ { "math": [ "pf_aw_raid_held = 1" ] }, { "run_eocs": "PF_AW_raid_news" } ],
+            "else": [
+              {
+                "if": { "math": [ "pf_nb_here" ] },
+                "then": [
+                  {
+                    "u_make_sound": "gunfire and shouting at the wall",
+                    "volume": 40,
+                    "type": "alert",
+                    "target_var": { "global_val": "pf_stores_loc" }
+                  },
+                  { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "nb_raid_repelled" } }
+                ],
+                "else": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "nb_raid_repelled_away" } } ]
+              }
+            ]
+          }
+        ],
+        "else": [
+          { "math": [ "pf_nb_took = min(value_or(pf_stores, 0), 10)" ] },
+          { "math": [ "pf_stores = value_or(pf_stores, 0) - pf_nb_took" ] },
+          { "math": [ "pf_cur_rel -= 5" ] },
+          {
+            "if": { "and": [ { "math": [ "pf_nb_took <= 0" ] }, { "math": [ "pf_nb_here" ] }, { "math": [ "has_var(pf_stores_loc)" ] } ] },
+            "then": [
+              { "math": [ "pf_nb_real = 0" ] },
+              {
+                "u_map_run_item_eocs": "all",
+                "loc": { "global_val": "pf_stores_loc" },
+                "min_radius": 0,
+                "max_radius": 2,
+                "search_data": [ { "category": [ "food", "drugs" ] } ],
+                "true_eocs": [ { "id": "PF_NB_raid_count", "effect": [ { "math": [ "pf_nb_real += 1" ] } ] } ]
+              },
+              { "math": [ "pf_nb_rtake = min(10, floor((pf_nb_real + 2) / 3))" ] },
+              {
+                "u_map_run_item_eocs": "all",
+                "loc": { "global_val": "pf_stores_loc" },
+                "min_radius": 0,
+                "max_radius": 2,
+                "search_data": [ { "category": [ "food", "drugs" ] } ],
+                "true_eocs": [
+                  {
+                    "id": "PF_NB_raid_take",
+                    "effect": [ { "if": { "math": [ "pf_nb_took < pf_nb_rtake" ] }, "then": [ { "math": [ "pf_nb_took += 1" ] }, "npc_die" ] } ]
+                  }
+                ]
+              }
+            ]
+          },
+          { "set_string_var": "", "target_var": { "global_val": "pf_nb_hurt" } },
+          {
+            "if": { "math": [ "value_or(pf_aw_state, 0) == 1" ] },
+            "then": [ { "math": [ "pf_aw_raid_held = 0" ] }, { "run_eocs": "PF_AW_raid_news" } ],
+            "else": [
+              {
+                "if": { "math": [ "pf_nb_here" ] },
+                "then": [
+                  {
+                    "u_make_sound": "shouting, running feet and something breaking",
+                    "volume": 40,
+                    "type": "alert",
+                    "target_var": { "global_val": "pf_stores_loc" }
+                  },
+                  { "math": [ "pf_nb_h = 0" ] },
+                  {
+                    "u_run_npc_eocs": [
+                      {
+                        "id": "PF_NB_raid_wound",
+                        "condition": {
+                          "and": [
+                            {
+                              "and": [
+                                { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+                                { "math": [ "value_or(u_pf_resident, 0) == 1" ] },
+                                { "math": [ "has_var(u_pf_uid)" ] }
+                              ]
+                            },
+                            { "math": [ "pf_nb_h == 0" ] },
+                            { "math": [ "rand(2) == 0" ] }
+                          ]
+                        },
+                        "effect": [
+                          { "math": [ "pf_nb_h = 1" ] },
+                          { "math": [ "u_hp('torso') = max(u_hp('torso') - 15, 1)" ] },
+                          { "u_add_effect": "bleed", "duration": "5 minutes", "target_part": "torso" },
+                          {
+                            "set_string_var": "<u_name>",
+                            "target_var": { "global_val": "pf_nb_hurt" },
+                            "parse_tags": true
+                          }
+                        ]
+                      }
+                    ],
+                    "local": true,
+                    "npc_range": 60
+                  },
+                  {
+                    "if": { "math": [ "pf_nb_took <= 0" ] },
+                    "then": [
+                      {
+                        "if": { "math": [ "pf_nb_h == 1" ] },
+                        "then": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "nb_raid_empty_hurt" } } ],
+                        "else": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "nb_raid_empty" } } ]
+                      }
+                    ],
+                    "else": [
+                      {
+                        "if": { "math": [ "pf_nb_h == 1" ] },
+                        "then": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "nb_raid_hit_hurt" } } ],
+                        "else": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "nb_raid_hit" } } ]
+                      }
+                    ]
+                  },
+                  { "math": [ "pf_nb_af_day = floor(time('now') / time('1 d'))" ] },
+                  { "math": [ "pf_nb_af_took = pf_nb_took" ] },
+                  { "copy_var": { "global_val": "pf_cur_name" }, "target_var": { "global_val": "pf_nb_af_name" } },
+                  { "copy_var": { "global_val": "pf_cur_dir" }, "target_var": { "global_val": "pf_nb_af_dir" } }
+                ],
+                "else": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "nb_raid_hit_away" } } ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "set_string_var": "pf_st_kind_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wkind" },
+        "parse_tags": true
+      },
+      { "math": [ "v_wkind = pf_cur_kind" ] },
+      {
+        "set_string_var": "pf_st_rel_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wrel" },
+        "parse_tags": true
+      },
+      { "math": [ "v_wrel = pf_cur_rel" ] },
+      {
+        "set_string_var": "pf_st_pact_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wpact" },
+        "parse_tags": true
+      },
+      { "math": [ "v_wpact = pf_cur_pact" ] },
+      {
+        "set_string_var": "pf_st_trib_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wtrib" },
+        "parse_tags": true
+      },
+      { "math": [ "v_wtrib = pf_cur_trib" ] },
+      {
+        "set_string_var": "pf_st_str_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wstr" },
+        "parse_tags": true
+      },
+      { "math": [ "v_wstr = pf_cur_str" ] },
+      {
+        "set_string_var": "pf_st_raid_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wraid" },
+        "parse_tags": true
+      },
+      { "math": [ "v_wraid = pf_cur_raid" ] },
+      {
+        "set_string_var": "pf_st_kin_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wkin" },
+        "parse_tags": true
+      },
+      { "math": [ "v_wkin = pf_cur_kin" ] },
+      {
+        "set_string_var": "pf_st_name_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wname" },
+        "parse_tags": true
+      },
+      { "copy_var": { "global_val": "pf_cur_name" }, "target_var": { "var_val": "wname" } },
+      {
+        "set_string_var": "pf_st_lead_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wlead" },
+        "parse_tags": true
+      },
+      { "copy_var": { "global_val": "pf_cur_lead" }, "target_var": { "var_val": "wlead" } },
+      {
+        "set_string_var": "pf_st_dir_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wdir" },
+        "parse_tags": true
+      },
+      { "copy_var": { "global_val": "pf_cur_dir" }, "target_var": { "var_val": "wdir" } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_NB_raid_after",
+    "//": "The morning after a raid got through while you were home: where they came in, and what's gone.",
+    "recurrence": "10 minutes",
+    "global": true,
+    "condition": {
+      "and": [
+        { "math": [ "value_or(pf_home_set, 0) == 1" ] },
+        { "math": [ "value_or(pf_nb_af_day, -1) == floor(time('now') / time('1 d'))" ] },
+        { "math": [ "time_since('midnight', 'unit': 'hours') >= 6" ] },
+        { "math": [ "time_since('midnight', 'unit': 'hours') < 20" ] },
+        { "not": { "u_has_effect": "sleep" } }
+      ]
+    },
+    "effect": [
+      { "math": [ "pf_nb_af_day = -1" ] },
+      {
+        "if": { "math": [ "pf_nb_af_took <= 0" ] },
+        "then": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "nb_raid_after_empty" } } ],
+        "else": [
+          {
+            "if": { "math": [ "value_or(pf_wall_state, 0) == 2" ] },
+            "then": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "nb_raid_after_wall" } } ],
+            "else": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "nb_raid_after" } } ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_NB_menu",
+    "//": "u = avatar.  Home menu: The neighbors.",
+    "condition": { "math": [ "value_or(pf_home_set, 0) == 1" ] },
+    "effect": [
+      {
+        "if": { "math": [ "value_or(pf_st_n, 0) == 0" ] },
+        "then": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "nb_none" } } ]
+      },
+      { "math": [ "pf_st_i = 0" ] },
+      {
+        "run_eocs": {
+          "id": "PF_NB_list_one",
+          "effect": [
+            { "set_string_var": "pf_st_kind_<global_val:pf_st_i>", "target_var": { "context_val": "rkind" }, "parse_tags": true },
+            { "math": [ "pf_cur_kind = value_or(v_rkind, 0)" ] },
+            {
+              "set_string_var": "pf_st_rel_<global_val:pf_st_i>",
+              "target_var": { "context_val": "rrel" },
+              "parse_tags": true
+            },
+            { "math": [ "pf_cur_rel = value_or(v_rrel, 0)" ] },
+            {
+              "set_string_var": "pf_st_pact_<global_val:pf_st_i>",
+              "target_var": { "context_val": "rpact" },
+              "parse_tags": true
+            },
+            { "math": [ "pf_cur_pact = value_or(v_rpact, 0)" ] },
+            {
+              "set_string_var": "pf_st_trib_<global_val:pf_st_i>",
+              "target_var": { "context_val": "rtrib" },
+              "parse_tags": true
+            },
+            { "math": [ "pf_cur_trib = value_or(v_rtrib, 0)" ] },
+            {
+              "set_string_var": "pf_st_str_<global_val:pf_st_i>",
+              "target_var": { "context_val": "rstr" },
+              "parse_tags": true
+            },
+            { "math": [ "pf_cur_str = value_or(v_rstr, 0)" ] },
+            {
+              "set_string_var": "pf_st_raid_<global_val:pf_st_i>",
+              "target_var": { "context_val": "rraid" },
+              "parse_tags": true
+            },
+            { "math": [ "pf_cur_raid = value_or(v_rraid, 0)" ] },
+            {
+              "set_string_var": "pf_st_kin_<global_val:pf_st_i>",
+              "target_var": { "context_val": "rkin" },
+              "parse_tags": true
+            },
+            { "math": [ "pf_cur_kin = value_or(v_rkin, 0)" ] },
+            {
+              "set_string_var": "pf_st_name_<global_val:pf_st_i>",
+              "target_var": { "context_val": "rname" },
+              "parse_tags": true
+            },
+            { "copy_var": { "var_val": "rname" }, "target_var": { "global_val": "pf_cur_name" } },
+            {
+              "set_string_var": "pf_st_lead_<global_val:pf_st_i>",
+              "target_var": { "context_val": "rlead" },
+              "parse_tags": true
+            },
+            { "copy_var": { "var_val": "rlead" }, "target_var": { "global_val": "pf_cur_lead" } },
+            {
+              "set_string_var": "pf_st_dir_<global_val:pf_st_i>",
+              "target_var": { "context_val": "rdir" },
+              "parse_tags": true
+            },
+            { "copy_var": { "var_val": "rdir" }, "target_var": { "global_val": "pf_cur_dir" } },
+            {
+              "if": { "math": [ "pf_cur_rel <= -30" ] },
+              "then": [ { "set_string_var": "hostile", "target_var": { "global_val": "pf_cur_relw" } } ]
+            },
+            {
+              "if": { "math": [ "(pf_cur_rel > -30) * (pf_cur_rel < 0)" ] },
+              "then": [ { "set_string_var": "wary", "target_var": { "global_val": "pf_cur_relw" } } ]
+            },
+            {
+              "if": { "math": [ "(pf_cur_rel >= 0) * (pf_cur_rel < 30)" ] },
+              "then": [ { "set_string_var": "neutral", "target_var": { "global_val": "pf_cur_relw" } } ]
+            },
+            {
+              "if": { "math": [ "(pf_cur_rel >= 30) * (pf_cur_rel < 60)" ] },
+              "then": [ { "set_string_var": "friendly", "target_var": { "global_val": "pf_cur_relw" } } ]
+            },
+            {
+              "if": { "math": [ "pf_cur_rel >= 60" ] },
+              "then": [ { "set_string_var": "close allies", "target_var": { "global_val": "pf_cur_relw" } } ]
+            },
+            {
+              "if": { "math": [ "pf_cur_pact == 0" ] },
+              "then": [
+                {
+                  "if": { "math": [ "pf_cur_trib == 1" ] },
+                  "then": [ { "set_string_var": "you pay them tribute", "target_var": { "global_val": "pf_cur_pactw" } } ],
+                  "else": [ { "set_string_var": "no agreement", "target_var": { "global_val": "pf_cur_pactw" } } ]
+                }
+              ]
+            },
+            {
+              "if": { "math": [ "pf_cur_pact == 1" ] },
+              "then": [ { "set_string_var": "a trade agreement", "target_var": { "global_val": "pf_cur_pactw" } } ]
+            },
+            {
+              "if": { "math": [ "pf_cur_pact == 2" ] },
+              "then": [ { "set_string_var": "a pact to stand together", "target_var": { "global_val": "pf_cur_pactw" } } ]
+            },
+            {
+              "if": { "math": [ "pf_cur_kin == 1" ] },
+              "then": [
+                {
+                  "set_string_var": "<global_val:pf_cur_pactw>, and family by marriage",
+                  "target_var": { "global_val": "pf_cur_pactw" },
+                  "parse_tags": true
+                }
+              ]
+            },
+            { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "nb_list" } },
+            { "math": [ "pf_st_i += 1" ] }
+          ]
+        },
+        "condition": { "math": [ "pf_st_i < value_or(pf_st_n, 0)" ] },
+        "iterations": 4
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_NB_envoy",
+    "//": "u = avatar, pf_st_i = the settlement.  Pass 6: the envoy is a real person.  They're spawned 22 tiles out in the settlement's direction and walk to your door (one envoy on the road at a time); if nowhere out there will hold them, the word just arrives, as before.  Hostile settlements send nobody.",
+    "effect": [
+      { "set_string_var": "pf_st_kind_<global_val:pf_st_i>", "target_var": { "context_val": "rkind" }, "parse_tags": true },
+      { "math": [ "pf_cur_kind = value_or(v_rkind, 0)" ] },
+      {
+        "set_string_var": "pf_st_rel_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rrel" },
+        "parse_tags": true
+      },
+      { "math": [ "pf_cur_rel = value_or(v_rrel, 0)" ] },
+      {
+        "set_string_var": "pf_st_pact_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rpact" },
+        "parse_tags": true
+      },
+      { "math": [ "pf_cur_pact = value_or(v_rpact, 0)" ] },
+      {
+        "set_string_var": "pf_st_trib_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rtrib" },
+        "parse_tags": true
+      },
+      { "math": [ "pf_cur_trib = value_or(v_rtrib, 0)" ] },
+      {
+        "set_string_var": "pf_st_str_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rstr" },
+        "parse_tags": true
+      },
+      { "math": [ "pf_cur_str = value_or(v_rstr, 0)" ] },
+      {
+        "set_string_var": "pf_st_raid_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rraid" },
+        "parse_tags": true
+      },
+      { "math": [ "pf_cur_raid = value_or(v_rraid, 0)" ] },
+      {
+        "set_string_var": "pf_st_kin_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rkin" },
+        "parse_tags": true
+      },
+      { "math": [ "pf_cur_kin = value_or(v_rkin, 0)" ] },
+      {
+        "set_string_var": "pf_st_name_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rname" },
+        "parse_tags": true
+      },
+      { "copy_var": { "var_val": "rname" }, "target_var": { "global_val": "pf_cur_name" } },
+      {
+        "set_string_var": "pf_st_lead_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rlead" },
+        "parse_tags": true
+      },
+      { "copy_var": { "var_val": "rlead" }, "target_var": { "global_val": "pf_cur_lead" } },
+      {
+        "set_string_var": "pf_st_dir_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rdir" },
+        "parse_tags": true
+      },
+      { "copy_var": { "var_val": "rdir" }, "target_var": { "global_val": "pf_cur_dir" } },
+      {
+        "if": { "math": [ "pf_cur_rel <= -30" ] },
+        "then": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "nb_no_envoy" } } ],
+        "else": [
+          {
+            "if": { "math": [ "value_or(pf_nv_state, 0) > 0" ] },
+            "then": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "nv_busy" } } ],
+            "else": [
+              { "math": [ "pf_nv_dx = 0" ] },
+              { "math": [ "pf_nv_dy = -1" ] },
+              {
+                "if": { "compare_string": [ { "global_val": "pf_cur_dir" }, "north" ] },
+                "then": [ { "math": [ "pf_nv_dx = 0" ] }, { "math": [ "pf_nv_dy = -1" ] } ]
+              },
+              {
+                "if": { "compare_string": [ { "global_val": "pf_cur_dir" }, "northeast" ] },
+                "then": [ { "math": [ "pf_nv_dx = 1" ] }, { "math": [ "pf_nv_dy = -1" ] } ]
+              },
+              {
+                "if": { "compare_string": [ { "global_val": "pf_cur_dir" }, "east" ] },
+                "then": [ { "math": [ "pf_nv_dx = 1" ] }, { "math": [ "pf_nv_dy = 0" ] } ]
+              },
+              {
+                "if": { "compare_string": [ { "global_val": "pf_cur_dir" }, "southeast" ] },
+                "then": [ { "math": [ "pf_nv_dx = 1" ] }, { "math": [ "pf_nv_dy = 1" ] } ]
+              },
+              {
+                "if": { "compare_string": [ { "global_val": "pf_cur_dir" }, "south" ] },
+                "then": [ { "math": [ "pf_nv_dx = 0" ] }, { "math": [ "pf_nv_dy = 1" ] } ]
+              },
+              {
+                "if": { "compare_string": [ { "global_val": "pf_cur_dir" }, "southwest" ] },
+                "then": [ { "math": [ "pf_nv_dx = -1" ] }, { "math": [ "pf_nv_dy = 1" ] } ]
+              },
+              {
+                "if": { "compare_string": [ { "global_val": "pf_cur_dir" }, "west" ] },
+                "then": [ { "math": [ "pf_nv_dx = -1" ] }, { "math": [ "pf_nv_dy = 0" ] } ]
+              },
+              {
+                "if": { "compare_string": [ { "global_val": "pf_cur_dir" }, "northwest" ] },
+                "then": [ { "math": [ "pf_nv_dx = -1" ] }, { "math": [ "pf_nv_dy = -1" ] } ]
+              },
+              { "copy_var": { "global_val": "pf_home_loc" }, "target_var": { "global_val": "pf_nv_at" } },
+              {
+                "location_variable_adjust": { "global_val": "pf_nv_at" },
+                "x_adjust": { "math": [ "pf_nv_dx * 22" ] },
+                "y_adjust": { "math": [ "pf_nv_dy * 22" ] }
+              },
+              { "copy_var": { "global_val": "pf_home_loc" }, "target_var": { "global_val": "pf_nv_door" } },
+              {
+                "location_variable_adjust": { "global_val": "pf_nv_door" },
+                "x_adjust": { "math": [ "pf_nv_dx * 3" ] },
+                "y_adjust": { "math": [ "pf_nv_dy * 3" ] }
+              },
+              { "math": [ "pf_nv_seq = value_or(pf_nv_seq, 0) + 1" ] },
+              {
+                "set_string_var": "PF_NV_<global_val:pf_nv_seq>",
+                "target_var": { "global_val": "pf_nv_uid" },
+                "parse_tags": true
+              },
+              { "copy_var": { "global_val": "pf_cur_name" }, "target_var": { "global_val": "pf_nv_from" } },
+              { "copy_var": { "global_val": "pf_cur_lead" }, "target_var": { "global_val": "pf_nv_lead" } },
+              { "copy_var": { "global_val": "pf_cur_dir" }, "target_var": { "global_val": "pf_nv_dir" } },
+              {
+                "set_string_var": "I've come from <global_val:pf_nv_from>, with word from <global_val:pf_nv_lead>.  It's for your door, where everyone can hear it.",
+                "target_var": { "global_val": "pf_nv_says" },
+                "parse_tags": true
+              },
+              { "math": [ "pf_nv_ok = 0" ] },
+              {
+                "if": { "math": [ "pf_cur_kind == 0" ] },
+                "then": [
+                  {
+                    "u_spawn_npc": "PF_NV_KEEP",
+                    "unique_id": { "global_val": "pf_nv_uid" },
+                    "real_count": 1,
+                    "target_var": { "global_val": "pf_nv_at" },
+                    "min_radius": 0,
+                    "max_radius": 6,
+                    "outdoor_only": true,
+                    "lifespan": "1 d"
+                  }
+                ]
+              },
+              {
+                "if": { "math": [ "pf_cur_kind == 1" ] },
+                "then": [
+                  {
+                    "u_spawn_npc": "PF_NV_EYES",
+                    "unique_id": { "global_val": "pf_nv_uid" },
+                    "real_count": 1,
+                    "target_var": { "global_val": "pf_nv_at" },
+                    "min_radius": 0,
+                    "max_radius": 6,
+                    "outdoor_only": true,
+                    "lifespan": "1 d"
+                  }
+                ]
+              },
+              {
+                "if": { "math": [ "pf_cur_kind == 2" ] },
+                "then": [
+                  {
+                    "u_spawn_npc": "PF_NV_WOOD",
+                    "unique_id": { "global_val": "pf_nv_uid" },
+                    "real_count": 1,
+                    "target_var": { "global_val": "pf_nv_at" },
+                    "min_radius": 0,
+                    "max_radius": 6,
+                    "outdoor_only": true,
+                    "lifespan": "1 d"
+                  }
+                ]
+              },
+              {
+                "u_run_npc_eocs": [ "PF_NB_nv_init" ],
+                "unique_ids": [ { "global_val": "pf_nv_uid" } ],
+                "local": false
+              },
+              {
+                "if": { "math": [ "pf_nv_ok == 1" ] },
+                "then": [
+                  { "math": [ "pf_nv_state = 1" ] },
+                  { "math": [ "pf_nv_t = time('now')" ] },
+                  { "math": [ "pf_nv_st = pf_st_i" ] },
+                  { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "nv_coming" } }
+                ],
+                "else": [ { "run_eocs": "PF_NB_offer" } ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_NB_nv_init",
+    "//": "u = the envoy, just spawned: marked, named, and sent to the door.",
+    "effect": [
+      { "math": [ "pf_nv_ok = 1" ] },
+      { "math": [ "u_pf_envoy = 1" ] },
+      { "math": [ "u_pf_nv_gone = 0" ] },
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_nv_name" }, "parse_tags": true },
+      { "u_set_guard_pos": { "global_val": "pf_nv_door" } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_NB_nv_tick",
+    "//": "Every minute while an envoy is out: walking in, they're kept on their way to the door, and say their piece when they get there (or after 90 minutes, from the gate); leaving, they're removed once out of your sight.  If you go away, the visit is over (the envoy disappears on their own within the day).",
+    "recurrence": "1 minutes",
+    "global": true,
+    "condition": { "math": [ "value_or(pf_nv_state, 0) > 0" ] },
+    "effect": [
+      { "u_location_variable": { "global_val": "pf_nv_av" } },
+      {
+        "if": { "math": [ "distance(pf_nv_av, pf_home_loc) > 40" ] },
+        "then": [
+          {
+            "if": { "math": [ "pf_nv_state == 1" ] },
+            "then": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "nv_missed" } } ]
+          },
+          { "math": [ "pf_nv_state = 0" ] }
+        ],
+        "else": [
+          { "math": [ "pf_nv_seen = 0" ] },
+          { "u_run_npc_eocs": [ "PF_NB_nv_step" ], "unique_ids": [ { "global_val": "pf_nv_uid" } ], "local": false },
+          { "if": { "math": [ "pf_nv_seen == 0" ] }, "then": [ { "math": [ "pf_nv_state = 0" ] } ] }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_NB_nv_step",
+    "//": "u = the envoy (reached by unique id, only while you're near home).",
+    "effect": [
+      { "math": [ "pf_nv_seen = 1" ] },
+      { "u_location_variable": { "u_val": "pf_pos" } },
+      {
+        "if": { "math": [ "pf_nv_state == 1" ] },
+        "then": [
+          {
+            "if": {
+              "math": [
+                "(distance(u_pf_pos, pf_home_loc) <= 5) + (distance(u_pf_pos, pf_nv_av) <= 2) + (time('now') - pf_nv_t >= time('90 m')) > 0"
+              ]
+            },
+            "then": [
+              { "math": [ "pf_nv_state = 2" ] },
+              { "run_eocs": "PF_NB_nv_arrive", "alpha_talker": "avatar" },
+              { "math": [ "u_pf_nv_gone = 1" ] },
+              { "u_set_guard_pos": { "global_val": "pf_nv_at" } },
+              { "math": [ "pf_nv_state = 3" ] },
+              { "math": [ "pf_nv_t2 = time('now')" ] },
+              {
+                "set_string_var": "I've said what I came to say.  I'll carry your answer back to <global_val:pf_nv_from>.",
+                "target_var": { "global_val": "pf_nv_says" },
+                "parse_tags": true
+              }
+            ],
+            "else": [ { "u_set_guard_pos": { "global_val": "pf_nv_door" } } ]
+          }
+        ],
+        "else": [
+          {
+            "if": {
+              "or": [
+                { "math": [ "time('now') - pf_nv_t2 >= time('1 h')" ] },
+                {
+                  "and": [
+                    { "math": [ "distance(u_pf_pos, pf_nv_av) >= 12" ] },
+                    {
+                      "not": { "line_of_sight": 60, "loc_1": { "global_val": "pf_nv_av" }, "loc_2": { "u_val": "pf_pos" } }
+                    }
+                  ]
+                }
+              ]
+            },
+            "then": [ { "math": [ "pf_nv_state = 0" ] }, { "u_die": { "remove_corpse": true, "supress_message": true } } ],
+            "else": [ { "u_set_guard_pos": { "global_val": "pf_nv_at" } } ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_NB_nv_arrive",
+    "//": "u = avatar.  The envoy is at the door: what they came to say (PF_NB_offer), and the answer goes home with them.",
+    "effect": [
+      { "math": [ "pf_st_i = pf_nv_st" ] },
+      { "u_location_variable": { "global_val": "pf_kp_av" } },
+      {
+        "if": { "math": [ "distance(pf_kp_av, pf_home_loc) <= 30" ] },
+        "then": [
+          { "run_eocs": "PF_NB_offer" },
+          { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "nv_leaves" } }
+        ],
+        "else": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "nv_missed" } } ]
+      },
+      { "math": [ "pf_nv_visits_total = value_or(pf_nv_visits_total, 0) + 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_NB_nv_died",
+    "//": "An envoy died on the way in (u = the envoy): their people think less of the place (-15).",
+    "eoc_type": "EVENT",
+    "required_event": "character_dies",
+    "condition": {
+      "and": [
+        "has_alpha",
+        "u_is_npc",
+        { "math": [ "value_or(u_pf_envoy, 0) == 1" ] },
+        { "math": [ "value_or(u_pf_nv_gone, 0) == 0" ] }
+      ]
+    },
+    "effect": [
+      { "math": [ "pf_nv_state = 0" ] },
+      { "math": [ "pf_st_i = pf_nv_st" ] },
+      {
+        "set_string_var": "pf_st_kind_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rkind" },
+        "parse_tags": true
+      },
+      { "math": [ "pf_cur_kind = value_or(v_rkind, 0)" ] },
+      {
+        "set_string_var": "pf_st_rel_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rrel" },
+        "parse_tags": true
+      },
+      { "math": [ "pf_cur_rel = value_or(v_rrel, 0)" ] },
+      {
+        "set_string_var": "pf_st_pact_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rpact" },
+        "parse_tags": true
+      },
+      { "math": [ "pf_cur_pact = value_or(v_rpact, 0)" ] },
+      {
+        "set_string_var": "pf_st_trib_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rtrib" },
+        "parse_tags": true
+      },
+      { "math": [ "pf_cur_trib = value_or(v_rtrib, 0)" ] },
+      {
+        "set_string_var": "pf_st_str_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rstr" },
+        "parse_tags": true
+      },
+      { "math": [ "pf_cur_str = value_or(v_rstr, 0)" ] },
+      {
+        "set_string_var": "pf_st_raid_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rraid" },
+        "parse_tags": true
+      },
+      { "math": [ "pf_cur_raid = value_or(v_rraid, 0)" ] },
+      {
+        "set_string_var": "pf_st_kin_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rkin" },
+        "parse_tags": true
+      },
+      { "math": [ "pf_cur_kin = value_or(v_rkin, 0)" ] },
+      {
+        "set_string_var": "pf_st_name_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rname" },
+        "parse_tags": true
+      },
+      { "copy_var": { "var_val": "rname" }, "target_var": { "global_val": "pf_cur_name" } },
+      {
+        "set_string_var": "pf_st_lead_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rlead" },
+        "parse_tags": true
+      },
+      { "copy_var": { "var_val": "rlead" }, "target_var": { "global_val": "pf_cur_lead" } },
+      {
+        "set_string_var": "pf_st_dir_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rdir" },
+        "parse_tags": true
+      },
+      { "copy_var": { "var_val": "rdir" }, "target_var": { "global_val": "pf_cur_dir" } },
+      { "math": [ "pf_cur_rel -= 15" ] },
+      {
+        "set_string_var": "pf_st_kind_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wkind" },
+        "parse_tags": true
+      },
+      { "math": [ "v_wkind = pf_cur_kind" ] },
+      {
+        "set_string_var": "pf_st_rel_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wrel" },
+        "parse_tags": true
+      },
+      { "math": [ "v_wrel = pf_cur_rel" ] },
+      {
+        "set_string_var": "pf_st_pact_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wpact" },
+        "parse_tags": true
+      },
+      { "math": [ "v_wpact = pf_cur_pact" ] },
+      {
+        "set_string_var": "pf_st_trib_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wtrib" },
+        "parse_tags": true
+      },
+      { "math": [ "v_wtrib = pf_cur_trib" ] },
+      {
+        "set_string_var": "pf_st_str_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wstr" },
+        "parse_tags": true
+      },
+      { "math": [ "v_wstr = pf_cur_str" ] },
+      {
+        "set_string_var": "pf_st_raid_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wraid" },
+        "parse_tags": true
+      },
+      { "math": [ "v_wraid = pf_cur_raid" ] },
+      {
+        "set_string_var": "pf_st_kin_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wkin" },
+        "parse_tags": true
+      },
+      { "math": [ "v_wkin = pf_cur_kin" ] },
+      {
+        "set_string_var": "pf_st_name_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wname" },
+        "parse_tags": true
+      },
+      { "copy_var": { "global_val": "pf_cur_name" }, "target_var": { "var_val": "wname" } },
+      {
+        "set_string_var": "pf_st_lead_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wlead" },
+        "parse_tags": true
+      },
+      { "copy_var": { "global_val": "pf_cur_lead" }, "target_var": { "var_val": "wlead" } },
+      {
+        "set_string_var": "pf_st_dir_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wdir" },
+        "parse_tags": true
+      },
+      { "copy_var": { "global_val": "pf_cur_dir" }, "target_var": { "var_val": "wdir" } },
+      { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "nv_dead" } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_NB_match_offer",
+    "//": "u = avatar, pf_cur_* = the settlement.  A match: the single grown-up here (romantic, unpartnered, 50 or under) who most wants one (romantics and the sociable and loyal; loners and the proud less so).  If they're willing, the ruler answers (the council, the chief, or you).  Yes: in two days someone comes to marry them.",
+    "effect": [
+      { "math": [ "pf_kl_nb_match = 0" ] },
+      { "math": [ "pf_nb_mbest = 0" ] },
+      { "math": [ "pf_nb_mfound = 0" ] },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_NB_match_cand",
+            "condition": {
+              "and": [
+                {
+                  "and": [
+                    { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+                    { "math": [ "value_or(u_pf_resident, 0) == 1" ] },
+                    { "math": [ "has_var(u_pf_uid)" ] }
+                  ]
+                },
+                { "math": [ "value_or(u_pf_has_sweet, 0) == 0" ] },
+                { "math": [ "value_or(u_pf_rom, 0) == 1" ] },
+                { "math": [ "u_val('age') <= 50" ] }
+              ]
+            },
+            "effect": [
+              { "math": [ "pf_nb_mfound = 1" ] },
+              {
+                "math": [
+                  "_w = 1 + u_has_trait('PF_Q_ROMANTIC') * 2 + u_has_trait('PF_T_SOCIABLE') + u_has_trait('PF_Q_LOYAL') - u_has_trait('PF_T_LONER') * 2 - u_has_trait('PF_Q_PROUD') + rand(2)"
+                ]
+              },
+              {
+                "if": { "math": [ "_w > pf_nb_mbest" ] },
+                "then": [
+                  { "math": [ "pf_nb_mbest = _w" ] },
+                  { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_nb_mc_uid" } },
+                  {
+                    "set_string_var": "<u_name>",
+                    "target_var": { "global_val": "pf_nb_mc_name" },
+                    "parse_tags": true
+                  },
+                  { "math": [ "pf_nb_mc_or = value_or(u_pf_orient, 2)" ] }
+                ]
+              }
+            ]
+          }
+        ],
+        "local": true,
+        "npc_range": 60
+      },
+      {
+        "if": { "math": [ "pf_nb_mfound == 0" ] },
+        "then": [
+          { "math": [ "pf_cur_rel = min(pf_cur_rel + 5, 100)" ] },
+          { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "nb_match_nobody" } }
+        ],
+        "else": [
+          {
+            "if": { "math": [ "pf_nb_mbest <= 0" ] },
+            "then": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "nb_match_unwilling" } } ],
+            "else": [
+              {
+                "set_string_var": "<global_val:pf_cur_lead> of <global_val:pf_cur_name> offers a match: one of theirs, to marry <global_val:pf_nb_mc_name> and make a home here.  <global_val:pf_nb_mc_name> is willing.  Agree?",
+                "target_var": { "global_val": "pf_nb_q" },
+                "parse_tags": true
+              },
+              { "run_eocs": "PF_NB_decide" },
+              {
+                "if": { "math": [ "pf_nb_yes" ] },
+                "then": [
+                  { "math": [ "pf_nb_mpend = 1" ] },
+                  { "math": [ "pf_nb_mst = pf_st_i" ] },
+                  { "math": [ "pf_nb_mday = floor(time('now') / time('1 d')) + 2" ] },
+                  { "math": [ "pf_nb_mp_or = pf_nb_mc_or" ] },
+                  { "copy_var": { "global_val": "pf_nb_mc_uid" }, "target_var": { "global_val": "pf_nb_mp_uid" } },
+                  { "copy_var": { "global_val": "pf_nb_mc_name" }, "target_var": { "global_val": "pf_nb_mp_name" } },
+                  { "math": [ "pf_cur_rel += 10" ] },
+                  { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "nb_match_yes" } }
+                ],
+                "else": [
+                  { "math": [ "pf_cur_rel -= 10" ] },
+                  { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "nb_match_no" } }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_NB_match_tick",
+    "//": "Every 30 minutes, 10:00-17:00, once the day has come and you're home: the one from the other place arrives.",
+    "recurrence": "30 minutes",
+    "global": true,
+    "condition": {
+      "and": [
+        { "math": [ "value_or(pf_home_set, 0) == 1" ] },
+        { "math": [ "value_or(pf_nb_mpend, 0) == 1" ] },
+        { "math": [ "floor(time('now') / time('1 d')) >= pf_nb_mday" ] },
+        { "math": [ "time_since('midnight', 'unit': 'hours') >= 10" ] },
+        { "math": [ "time_since('midnight', 'unit': 'hours') < 17" ] }
+      ]
+    },
+    "effect": [
+      { "u_location_variable": { "global_val": "pf_kp_av" } },
+      {
+        "if": { "math": [ "distance(pf_kp_av, pf_home_loc) <= 30" ] },
+        "then": [ { "run_eocs": "PF_NB_match_arrive" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_NB_match_arrive",
+    "//": "u = avatar.  The day has come: if the one promised is still here and still free, someone from the other place walks in from their direction to marry them.  They live here from now on (a resident with a job, in their partner's house), engaged, so the wedding is at the next evening's fire.  The two places are family now: no more arming against each other, and it counts toward the place's draw.",
+    "effect": [
+      { "math": [ "pf_nb_mpend = 0" ] },
+      { "math": [ "pf_st_i = pf_nb_mst" ] },
+      {
+        "set_string_var": "pf_st_kind_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rkind" },
+        "parse_tags": true
+      },
+      { "math": [ "pf_cur_kind = value_or(v_rkind, 0)" ] },
+      {
+        "set_string_var": "pf_st_rel_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rrel" },
+        "parse_tags": true
+      },
+      { "math": [ "pf_cur_rel = value_or(v_rrel, 0)" ] },
+      {
+        "set_string_var": "pf_st_pact_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rpact" },
+        "parse_tags": true
+      },
+      { "math": [ "pf_cur_pact = value_or(v_rpact, 0)" ] },
+      {
+        "set_string_var": "pf_st_trib_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rtrib" },
+        "parse_tags": true
+      },
+      { "math": [ "pf_cur_trib = value_or(v_rtrib, 0)" ] },
+      {
+        "set_string_var": "pf_st_str_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rstr" },
+        "parse_tags": true
+      },
+      { "math": [ "pf_cur_str = value_or(v_rstr, 0)" ] },
+      {
+        "set_string_var": "pf_st_raid_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rraid" },
+        "parse_tags": true
+      },
+      { "math": [ "pf_cur_raid = value_or(v_rraid, 0)" ] },
+      {
+        "set_string_var": "pf_st_kin_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rkin" },
+        "parse_tags": true
+      },
+      { "math": [ "pf_cur_kin = value_or(v_rkin, 0)" ] },
+      {
+        "set_string_var": "pf_st_name_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rname" },
+        "parse_tags": true
+      },
+      { "copy_var": { "var_val": "rname" }, "target_var": { "global_val": "pf_cur_name" } },
+      {
+        "set_string_var": "pf_st_lead_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rlead" },
+        "parse_tags": true
+      },
+      { "copy_var": { "var_val": "rlead" }, "target_var": { "global_val": "pf_cur_lead" } },
+      {
+        "set_string_var": "pf_st_dir_<global_val:pf_st_i>",
+        "target_var": { "context_val": "rdir" },
+        "parse_tags": true
+      },
+      { "copy_var": { "var_val": "rdir" }, "target_var": { "global_val": "pf_cur_dir" } },
+      { "math": [ "pf_nb_bok = 0" ] },
+      { "copy_var": { "global_val": "pf_nb_mp_uid" }, "target_var": { "global_val": "pf_find_uid" } },
+      { "run_eocs": "PF_FIND_by_uid" },
+      {
+        "if": { "math": [ "pf_find_ok == 1" ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_find_who" }, "target_var": { "global_val": "pf_nb_bt" } },
+          { "run_eocs": "PF_NB_match_free", "alpha_talker": { "global_val": "pf_find_who" } }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_nb_bok == 0" ] },
+        "then": [
+          { "math": [ "pf_cur_rel -= 10" ] },
+          { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "nb_match_off" } }
+        ],
+        "else": [
+          { "math": [ "pf_nv_dx = 0" ] },
+          { "math": [ "pf_nv_dy = -1" ] },
+          {
+            "if": { "compare_string": [ { "global_val": "pf_cur_dir" }, "north" ] },
+            "then": [ { "math": [ "pf_nv_dx = 0" ] }, { "math": [ "pf_nv_dy = -1" ] } ]
+          },
+          {
+            "if": { "compare_string": [ { "global_val": "pf_cur_dir" }, "northeast" ] },
+            "then": [ { "math": [ "pf_nv_dx = 1" ] }, { "math": [ "pf_nv_dy = -1" ] } ]
+          },
+          {
+            "if": { "compare_string": [ { "global_val": "pf_cur_dir" }, "east" ] },
+            "then": [ { "math": [ "pf_nv_dx = 1" ] }, { "math": [ "pf_nv_dy = 0" ] } ]
+          },
+          {
+            "if": { "compare_string": [ { "global_val": "pf_cur_dir" }, "southeast" ] },
+            "then": [ { "math": [ "pf_nv_dx = 1" ] }, { "math": [ "pf_nv_dy = 1" ] } ]
+          },
+          {
+            "if": { "compare_string": [ { "global_val": "pf_cur_dir" }, "south" ] },
+            "then": [ { "math": [ "pf_nv_dx = 0" ] }, { "math": [ "pf_nv_dy = 1" ] } ]
+          },
+          {
+            "if": { "compare_string": [ { "global_val": "pf_cur_dir" }, "southwest" ] },
+            "then": [ { "math": [ "pf_nv_dx = -1" ] }, { "math": [ "pf_nv_dy = 1" ] } ]
+          },
+          {
+            "if": { "compare_string": [ { "global_val": "pf_cur_dir" }, "west" ] },
+            "then": [ { "math": [ "pf_nv_dx = -1" ] }, { "math": [ "pf_nv_dy = 0" ] } ]
+          },
+          {
+            "if": { "compare_string": [ { "global_val": "pf_cur_dir" }, "northwest" ] },
+            "then": [ { "math": [ "pf_nv_dx = -1" ] }, { "math": [ "pf_nv_dy = -1" ] } ]
+          },
+          { "copy_var": { "global_val": "pf_home_loc" }, "target_var": { "global_val": "pf_nb_mat" } },
+          {
+            "location_variable_adjust": { "global_val": "pf_nb_mat" },
+            "x_adjust": { "math": [ "pf_nv_dx * 16" ] },
+            "y_adjust": { "math": [ "pf_nv_dy * 16" ] }
+          },
+          { "math": [ "_g = pf_nb_mp_or == 2 ? rand(1) : pf_nb_mp_or" ] },
+          { "run_eocs": "PF_ALIFE_register_person" },
+          {
+            "if": { "math": [ "(pf_cur_kind == 0) * (_g == 1)" ] },
+            "then": [
+              {
+                "u_spawn_npc": "PF_MATCH_0_male",
+                "unique_id": { "global_val": "pf_person_uid" },
+                "real_count": 1,
+                "traits": [ "PF_AGENT" ],
+                "target_var": { "global_val": "pf_nb_mat" },
+                "min_radius": 0,
+                "max_radius": 4,
+                "outdoor_only": true
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "(pf_cur_kind == 0) * (_g == 0)" ] },
+            "then": [
+              {
+                "u_spawn_npc": "PF_MATCH_0_female",
+                "unique_id": { "global_val": "pf_person_uid" },
+                "real_count": 1,
+                "traits": [ "PF_AGENT" ],
+                "target_var": { "global_val": "pf_nb_mat" },
+                "min_radius": 0,
+                "max_radius": 4,
+                "outdoor_only": true
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "(pf_cur_kind == 1) * (_g == 1)" ] },
+            "then": [
+              {
+                "u_spawn_npc": "PF_MATCH_1_male",
+                "unique_id": { "global_val": "pf_person_uid" },
+                "real_count": 1,
+                "traits": [ "PF_AGENT" ],
+                "target_var": { "global_val": "pf_nb_mat" },
+                "min_radius": 0,
+                "max_radius": 4,
+                "outdoor_only": true
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "(pf_cur_kind == 1) * (_g == 0)" ] },
+            "then": [
+              {
+                "u_spawn_npc": "PF_MATCH_1_female",
+                "unique_id": { "global_val": "pf_person_uid" },
+                "real_count": 1,
+                "traits": [ "PF_AGENT" ],
+                "target_var": { "global_val": "pf_nb_mat" },
+                "min_radius": 0,
+                "max_radius": 4,
+                "outdoor_only": true
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "(pf_cur_kind == 2) * (_g == 1)" ] },
+            "then": [
+              {
+                "u_spawn_npc": "PF_MATCH_2_male",
+                "unique_id": { "global_val": "pf_person_uid" },
+                "real_count": 1,
+                "traits": [ "PF_AGENT" ],
+                "target_var": { "global_val": "pf_nb_mat" },
+                "min_radius": 0,
+                "max_radius": 4,
+                "outdoor_only": true
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "(pf_cur_kind == 2) * (_g == 0)" ] },
+            "then": [
+              {
+                "u_spawn_npc": "PF_MATCH_2_female",
+                "unique_id": { "global_val": "pf_person_uid" },
+                "real_count": 1,
+                "traits": [ "PF_AGENT" ],
+                "target_var": { "global_val": "pf_nb_mat" },
+                "min_radius": 0,
+                "max_radius": 4,
+                "outdoor_only": true
+              }
+            ]
+          },
+          { "math": [ "pf_nb_sp_ok = 0" ] },
+          {
+            "u_run_npc_eocs": [ "PF_ALIFE_store_uid", "PF_ID_ensure", "PF_NB_spouse_init" ],
+            "unique_ids": [ { "global_val": "pf_person_uid" } ],
+            "local": false
+          },
+          {
+            "if": { "math": [ "pf_nb_sp_ok == 1" ] },
+            "then": [
+              {
+                "run_eocs": "PF_NB_match_bond",
+                "alpha_talker": { "global_val": "pf_nb_bt" },
+                "beta_talker": { "global_val": "pf_nb_sp_t" }
+              },
+              { "math": [ "pf_cur_kin = 1" ] },
+              { "math": [ "pf_cur_rel = min(pf_cur_rel + 15, 100)" ] },
+              { "math": [ "pf_st_pacts = value_or(pf_st_pacts, 0) + 1" ] },
+              { "math": [ "pf_matches_total = value_or(pf_matches_total, 0) + 1" ] },
+              { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "nb_match_arrive" } }
+            ],
+            "else": [ { "math": [ "pf_nb_mpend = 1" ] } ]
+          }
+        ]
+      },
+      {
+        "set_string_var": "pf_st_kind_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wkind" },
+        "parse_tags": true
+      },
+      { "math": [ "v_wkind = pf_cur_kind" ] },
+      {
+        "set_string_var": "pf_st_rel_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wrel" },
+        "parse_tags": true
+      },
+      { "math": [ "v_wrel = pf_cur_rel" ] },
+      {
+        "set_string_var": "pf_st_pact_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wpact" },
+        "parse_tags": true
+      },
+      { "math": [ "v_wpact = pf_cur_pact" ] },
+      {
+        "set_string_var": "pf_st_trib_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wtrib" },
+        "parse_tags": true
+      },
+      { "math": [ "v_wtrib = pf_cur_trib" ] },
+      {
+        "set_string_var": "pf_st_str_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wstr" },
+        "parse_tags": true
+      },
+      { "math": [ "v_wstr = pf_cur_str" ] },
+      {
+        "set_string_var": "pf_st_raid_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wraid" },
+        "parse_tags": true
+      },
+      { "math": [ "v_wraid = pf_cur_raid" ] },
+      {
+        "set_string_var": "pf_st_kin_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wkin" },
+        "parse_tags": true
+      },
+      { "math": [ "v_wkin = pf_cur_kin" ] },
+      {
+        "set_string_var": "pf_st_name_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wname" },
+        "parse_tags": true
+      },
+      { "copy_var": { "global_val": "pf_cur_name" }, "target_var": { "var_val": "wname" } },
+      {
+        "set_string_var": "pf_st_lead_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wlead" },
+        "parse_tags": true
+      },
+      { "copy_var": { "global_val": "pf_cur_lead" }, "target_var": { "var_val": "wlead" } },
+      {
+        "set_string_var": "pf_st_dir_<global_val:pf_st_i>",
+        "target_var": { "context_val": "wdir" },
+        "parse_tags": true
+      },
+      { "copy_var": { "global_val": "pf_cur_dir" }, "target_var": { "var_val": "wdir" } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_NB_match_free",
+    "//": "u = the one promised: still unpartnered and still living here?",
+    "effect": [
+      { "math": [ "pf_nb_mp_g = u_gender()" ] },
+      {
+        "if": { "and": [ { "math": [ "value_or(u_pf_has_sweet, 0) == 0" ] }, { "math": [ "value_or(u_pf_resident, 0) == 1" ] } ] },
+        "then": [ { "math": [ "pf_nb_bok = 1" ] } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_NB_spouse_init",
+    "//": "u = the one who came to marry: romantic, drawn to the one they're marrying, devoted (for now), and living here.",
+    "effect": [
+      { "math": [ "pf_nb_sp_ok = 1" ] },
+      { "u_set_talker": { "global_val": "pf_nb_sp_t" } },
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_nb_sp_name" }, "parse_tags": true },
+      { "math": [ "u_pf_adult = 1" ] },
+      { "math": [ "u_pf_rom = 1" ] },
+      { "math": [ "u_pf_rom_rolled = 1" ] },
+      { "math": [ "u_pf_orient = pf_nb_mp_g" ] },
+      { "math": [ "u_pf_commit = 1" ] },
+      { "run_eocs": "PF_REG_write" },
+      { "math": [ "u_pf_from_st = pf_st_i" ] },
+      { "run_eocs": "PF_HOME_join_one" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_NB_match_bond",
+    "//": "u = the one promised, npc = the one who came: sweethearts, partners and engaged at once (the wedding is at the next evening's fire), with a little courting behind them so the match holds; they share a house.",
+    "effect": [
+      { "copy_var": { "u_val": "pf_uid" }, "target_var": { "npc_val": "pf_sweet" } },
+      { "copy_var": { "npc_val": "pf_uid" }, "target_var": { "u_val": "pf_sweet" } },
+      { "math": [ "u_pf_has_sweet = 1" ] },
+      { "math": [ "n_pf_has_sweet = 1" ] },
+      { "math": [ "u_pf_rel_stage = 2" ] },
+      { "math": [ "n_pf_rel_stage = 2" ] },
+      { "math": [ "u_pf_sweet_since = time('now')" ] },
+      { "math": [ "n_pf_sweet_since = time('now')" ] },
+      { "math": [ "u_pf_stage_since = time('now')" ] },
+      { "math": [ "n_pf_stage_since = time('now')" ] },
+      { "math": [ "u_pf_engaged = 1" ] },
+      { "math": [ "n_pf_engaged = 1" ] },
+      { "math": [ "u_pf_wed_t = time('now')" ] },
+      { "math": [ "n_pf_wed_t = time('now')" ] },
+      { "math": [ "pf_m_str_in = 80" ] },
+      { "run_eocs": "PF_MK_courting" },
+      { "math": [ "pf_m_str_in = 80" ] },
+      { "run_eocs": "PF_MK_courting", "alpha_talker": "npc", "beta_talker": "u" },
+      { "math": [ "pf_m_str_in = 80" ] },
+      { "run_eocs": "PF_MK_partnered" },
+      { "math": [ "pf_m_str_in = 70" ] },
+      { "run_eocs": "PF_MK_welcomed" },
+      {
+        "if": { "math": [ "has_var(u_pf_house)" ] },
+        "then": [ { "copy_var": { "u_val": "pf_house" }, "target_var": { "npc_val": "pf_house" } } ]
+      },
+      {
+        "if": { "math": [ "has_var(u_pf_household)" ] },
+        "then": [ { "math": [ "n_pf_household = u_pf_household" ] } ]
+      }
+    ]
+  }
+]

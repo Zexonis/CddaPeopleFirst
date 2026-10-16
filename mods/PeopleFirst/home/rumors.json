@@ -1,0 +1,366 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOME_rumor_try",
+    "//": "u = you, at tonight's evening (called from the evening's beat).  About one evening in two, at most every 12 hours, if you're there.",
+    "condition": {
+      "and": [
+        { "math": [ "value_or(pf_fire_av_here, 0) == 1" ] },
+        { "math": [ "pf_fire_n > 0" ] },
+        { "math": [ "value_or(pf_set_chatter, 1) == 1" ] },
+        { "math": [ "value_or(pf_band_n, 0) > 0" ] },
+        {
+          "or": [
+            { "math": [ "value_or(pf_rm_force, 0) == 1" ] },
+            {
+              "and": [
+                { "math": [ "rand(1) == 0" ] },
+                {
+                  "or": [ { "math": [ "time_since(pf_rumor_last) < 0" ] }, { "math": [ "time_since(pf_rumor_last) > time('12 h')" ] } ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "effect": [ { "run_eocs": "PF_HOME_rumor_do" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOME_rumor_do",
+    "//": "u = you.  Someone at the evening mentions a real band they've heard of: what kind, how many, how far and which way.  It's true: it comes from the simulation (the band's virtual position).  Bands closer than 80 tiles don't count (you can see those).",
+    "effect": [
+      { "math": [ "pf_rumor_last = time('now')" ] },
+      { "math": [ "pf_rm_ok = 0" ] },
+      { "u_location_variable": { "global_val": "pf_rm_av" } },
+      { "math": [ "pf_rm_s = rand(max(value_or(pf_band_n, 1) - 1, 0))" ] },
+      { "math": [ "pf_rm_j = 0" ] },
+      {
+        "run_eocs": "PF_HOME_rumor_pick",
+        "condition": { "and": [ { "math": [ "pf_rm_j < value_or(pf_band_n, 0)" ] }, { "math": [ "pf_rm_ok == 0" ] } ] },
+        "iterations": 1000
+      },
+      {
+        "if": { "math": [ "pf_rm_ok == 0" ] },
+        "then": [ { "math": [ "pf_rm_none = 1" ] } ],
+        "else": [ { "math": [ "pf_rm_none = 0" ] } ]
+      },
+      {
+        "if": { "math": [ "pf_rm_ok == 1" ] },
+        "then": [
+          {
+            "if": { "math": [ "pf_rm_ok == 1" ] },
+            "then": [
+              { "math": [ "pf_rm_dx = pf_rm_pos.x - pf_rm_av.x" ] },
+              { "math": [ "pf_rm_dy = pf_rm_pos.y - pf_rm_av.y" ] },
+              { "math": [ "pf_rm_km = round(pf_rm_d / 100) / 10" ] },
+              { "set_string_var": "somewhere", "target_var": { "global_val": "pf_rm_dir" } },
+              {
+                "if": { "math": [ "(pf_rm_dx > 0) * (pf_rm_dy > 0)" ] },
+                "then": [ { "set_string_var": "southeast", "target_var": { "global_val": "pf_rm_dir" } } ]
+              },
+              {
+                "if": { "math": [ "(pf_rm_dx < 0) * (pf_rm_dy > 0)" ] },
+                "then": [ { "set_string_var": "southwest", "target_var": { "global_val": "pf_rm_dir" } } ]
+              },
+              {
+                "if": { "math": [ "(pf_rm_dx > 0) * (pf_rm_dy < 0)" ] },
+                "then": [ { "set_string_var": "northeast", "target_var": { "global_val": "pf_rm_dir" } } ]
+              },
+              {
+                "if": { "math": [ "(pf_rm_dx < 0) * (pf_rm_dy < 0)" ] },
+                "then": [ { "set_string_var": "northwest", "target_var": { "global_val": "pf_rm_dir" } } ]
+              },
+              {
+                "if": { "math": [ "pf_rm_dx > 2 * abs(pf_rm_dy)" ] },
+                "then": [ { "set_string_var": "east", "target_var": { "global_val": "pf_rm_dir" } } ]
+              },
+              {
+                "if": { "math": [ "-pf_rm_dx > 2 * abs(pf_rm_dy)" ] },
+                "then": [ { "set_string_var": "west", "target_var": { "global_val": "pf_rm_dir" } } ]
+              },
+              {
+                "if": { "math": [ "pf_rm_dy > 2 * abs(pf_rm_dx)" ] },
+                "then": [ { "set_string_var": "south", "target_var": { "global_val": "pf_rm_dir" } } ]
+              },
+              {
+                "if": { "math": [ "-pf_rm_dy > 2 * abs(pf_rm_dx)" ] },
+                "then": [ { "set_string_var": "north", "target_var": { "global_val": "pf_rm_dir" } } ]
+              },
+              { "math": [ "pf_rm_sp = rand(max(pf_fire_n - 1, 0))" ] },
+              {
+                "set_string_var": "pf_fire_c_<global_val:pf_rm_sp>",
+                "target_var": { "context_val": "sp" },
+                "parse_tags": true
+              },
+              {
+                "run_eocs": {
+                  "id": "PF_HOME_rumor_speaker",
+                  "effect": [ { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true } ]
+                },
+                "alpha_talker": { "var_val": "sp" }
+              },
+              {
+                "set_string_var": "<global_val:pf_say_a> mentions <global_val:pf_rm_what>, about <global_val:pf_rm_km> km <global_val:pf_rm_dir> of here.",
+                "target_var": { "global_val": "pf_rm_text" },
+                "parse_tags": true
+              },
+              { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "rumor" } },
+              { "math": [ "pf_rm_k = value_or(pf_rumors_n, 0) % 6" ] },
+              {
+                "set_string_var": "pf_rumor_<global_val:pf_rm_k>",
+                "target_var": { "context_val": "rk" },
+                "parse_tags": true
+              },
+              { "copy_var": { "global_val": "pf_rm_text" }, "target_var": { "var_val": "rk" } },
+              {
+                "set_string_var": "pf_rumor_t_<global_val:pf_rm_k>",
+                "target_var": { "context_val": "rt" },
+                "parse_tags": true
+              },
+              { "math": [ "v_rt = time('now')" ] },
+              { "math": [ "pf_rumors_n = value_or(pf_rumors_n, 0) + 1" ] }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOME_rumor_pick",
+    "//": "Tries roster slot (start + j): a living band at least 80 tiles away (closer ones you can see for yourself), not talked about in the last 3 days.",
+    "effect": [
+      { "math": [ "pf_rm_i = (pf_rm_s + pf_rm_j) % value_or(pf_band_n, 1)" ] },
+      { "set_string_var": "pf_slot_<global_val:pf_rm_i>", "target_var": { "context_val": "ref" }, "parse_tags": true },
+      {
+        "if": { "not": { "compare_string": [ { "var_val": "ref" }, "none" ] } },
+        "then": [
+          { "u_run_npc_eocs": [ "PF_HOME_rumor_band" ], "unique_ids": [ { "var_val": "ref" } ], "local": false },
+          {
+            "if": { "math": [ "pf_rm_ok == 1" ] },
+            "then": [
+              { "math": [ "pf_rm_d = distance(pf_rm_av, pf_rm_pos)" ] },
+              { "if": { "math": [ "pf_rm_d < 80" ] }, "then": [ { "math": [ "pf_rm_ok = 0" ] } ] }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_rm_ok == 1" ] },
+            "then": [
+              {
+                "u_run_npc_eocs": [ { "id": "PF_HOME_rumor_mark", "effect": [ { "math": [ "u_pf_rumor_t = time('now')" ] } ] } ],
+                "unique_ids": [ { "var_val": "ref" } ],
+                "local": false
+              }
+            ]
+          }
+        ]
+      },
+      { "math": [ "pf_rm_j += 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOME_rumor_band",
+    "//": "u = a band's leader (by unique id, anywhere).  Off-screen its position is data (u_pf_vpos), so this never loads a map.",
+    "effect": [
+      { "math": [ "pf_rm_ok = 1" ] },
+      {
+        "if": {
+          "and": [
+            { "math": [ "value_or(pf_rm_force, 0) == 0" ] },
+            { "math": [ "time('now') - value_or(u_pf_rumor_t, 0) < time('3 d')" ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_rm_ok = 0" ] } ]
+      },
+      {
+        "if": { "and": [ { "math": [ "value_or(u_pf_online, 0) == 0" ] }, { "math": [ "has_var(u_pf_vpos)" ] } ] },
+        "then": [ { "copy_var": { "u_val": "pf_vpos" }, "target_var": { "global_val": "pf_rm_pos" } } ],
+        "else": [ { "u_location_variable": { "global_val": "pf_rm_pos" } } ]
+      },
+      { "math": [ "pf_rm_n = value_or(u_pf_band_size, 0) + 1" ] },
+      {
+        "set_string_var": "<global_val:pf_rm_n> hunters on the move",
+        "target_var": { "global_val": "pf_rm_what" },
+        "parse_tags": true
+      },
+      {
+        "if": { "math": [ "value_or(u_pf_task, 1) == 0" ] },
+        "then": [ { "set_string_var": "a family on the road, kids and all", "target_var": { "global_val": "pf_rm_what" } } ]
+      },
+      {
+        "if": { "math": [ "value_or(u_pf_settled, 0) == 1" ] },
+        "then": [ { "set_string_var": "a family who've made a home for themselves", "target_var": { "global_val": "pf_rm_what" } } ]
+      },
+      {
+        "if": { "math": [ "has_var(u_pf_trouble_t) * (time('now') - value_or(u_pf_trouble_t, 0) < time('7 d'))" ] },
+        "then": [
+          {
+            "if": { "math": [ "value_or(u_pf_trouble_kind, 0) == 3" ] },
+            "then": [
+              {
+                "set_string_var": "<global_val:pf_rm_what>, who lost one of theirs to the dead on the road",
+                "target_var": { "global_val": "pf_rm_what" },
+                "parse_tags": true
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "value_or(u_pf_trouble_kind, 0) == 2" ] },
+            "then": [
+              {
+                "set_string_var": "<global_val:pf_rm_what>, one of them still limping from a run-in with the dead",
+                "target_var": { "global_val": "pf_rm_what" },
+                "parse_tags": true
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "value_or(u_pf_trouble_kind, 0) == 1" ] },
+            "then": [
+              {
+                "set_string_var": "<global_val:pf_rm_what>, jumpy after a run-in with the dead",
+                "target_var": { "global_val": "pf_rm_what" },
+                "parse_tags": true
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOME_rumors",
+    "//": "u = you (Home: What people have heard).  The last six rumors, newest first, with how many days ago.",
+    "effect": [
+      { "math": [ "pf_rl_n = 0" ] },
+      { "math": [ "pf_rl_k = (value_or(pf_rumors_n, 0) - 1 - 0 + 6 * 10) % 6" ] },
+      {
+        "if": { "math": [ "value_or(pf_rumors_n, 0) > 0" ] },
+        "then": [
+          { "set_string_var": "pf_rumor_<global_val:pf_rl_k>", "target_var": { "context_val": "rk" }, "parse_tags": true },
+          {
+            "set_string_var": "pf_rumor_t_<global_val:pf_rl_k>",
+            "target_var": { "context_val": "rt" },
+            "parse_tags": true
+          },
+          { "copy_var": { "var_val": "rk" }, "target_var": { "global_val": "pf_rl_text" } },
+          { "math": [ "pf_rl_ago = floor((time('now') - value_or(v_rt, 0)) / time('1 d'))" ] },
+          {
+            "if": { "math": [ "pf_rl_ago == 0" ] },
+            "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "rumor_list_today" } } ],
+            "else": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "rumor_list" } } ]
+          },
+          { "math": [ "pf_rl_n += 1" ] }
+        ]
+      },
+      { "math": [ "pf_rl_k = (value_or(pf_rumors_n, 0) - 1 - 1 + 6 * 10) % 6" ] },
+      {
+        "if": { "math": [ "value_or(pf_rumors_n, 0) > 1" ] },
+        "then": [
+          { "set_string_var": "pf_rumor_<global_val:pf_rl_k>", "target_var": { "context_val": "rk" }, "parse_tags": true },
+          {
+            "set_string_var": "pf_rumor_t_<global_val:pf_rl_k>",
+            "target_var": { "context_val": "rt" },
+            "parse_tags": true
+          },
+          { "copy_var": { "var_val": "rk" }, "target_var": { "global_val": "pf_rl_text" } },
+          { "math": [ "pf_rl_ago = floor((time('now') - value_or(v_rt, 0)) / time('1 d'))" ] },
+          {
+            "if": { "math": [ "pf_rl_ago == 0" ] },
+            "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "rumor_list_today" } } ],
+            "else": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "rumor_list" } } ]
+          },
+          { "math": [ "pf_rl_n += 1" ] }
+        ]
+      },
+      { "math": [ "pf_rl_k = (value_or(pf_rumors_n, 0) - 1 - 2 + 6 * 10) % 6" ] },
+      {
+        "if": { "math": [ "value_or(pf_rumors_n, 0) > 2" ] },
+        "then": [
+          { "set_string_var": "pf_rumor_<global_val:pf_rl_k>", "target_var": { "context_val": "rk" }, "parse_tags": true },
+          {
+            "set_string_var": "pf_rumor_t_<global_val:pf_rl_k>",
+            "target_var": { "context_val": "rt" },
+            "parse_tags": true
+          },
+          { "copy_var": { "var_val": "rk" }, "target_var": { "global_val": "pf_rl_text" } },
+          { "math": [ "pf_rl_ago = floor((time('now') - value_or(v_rt, 0)) / time('1 d'))" ] },
+          {
+            "if": { "math": [ "pf_rl_ago == 0" ] },
+            "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "rumor_list_today" } } ],
+            "else": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "rumor_list" } } ]
+          },
+          { "math": [ "pf_rl_n += 1" ] }
+        ]
+      },
+      { "math": [ "pf_rl_k = (value_or(pf_rumors_n, 0) - 1 - 3 + 6 * 10) % 6" ] },
+      {
+        "if": { "math": [ "value_or(pf_rumors_n, 0) > 3" ] },
+        "then": [
+          { "set_string_var": "pf_rumor_<global_val:pf_rl_k>", "target_var": { "context_val": "rk" }, "parse_tags": true },
+          {
+            "set_string_var": "pf_rumor_t_<global_val:pf_rl_k>",
+            "target_var": { "context_val": "rt" },
+            "parse_tags": true
+          },
+          { "copy_var": { "var_val": "rk" }, "target_var": { "global_val": "pf_rl_text" } },
+          { "math": [ "pf_rl_ago = floor((time('now') - value_or(v_rt, 0)) / time('1 d'))" ] },
+          {
+            "if": { "math": [ "pf_rl_ago == 0" ] },
+            "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "rumor_list_today" } } ],
+            "else": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "rumor_list" } } ]
+          },
+          { "math": [ "pf_rl_n += 1" ] }
+        ]
+      },
+      { "math": [ "pf_rl_k = (value_or(pf_rumors_n, 0) - 1 - 4 + 6 * 10) % 6" ] },
+      {
+        "if": { "math": [ "value_or(pf_rumors_n, 0) > 4" ] },
+        "then": [
+          { "set_string_var": "pf_rumor_<global_val:pf_rl_k>", "target_var": { "context_val": "rk" }, "parse_tags": true },
+          {
+            "set_string_var": "pf_rumor_t_<global_val:pf_rl_k>",
+            "target_var": { "context_val": "rt" },
+            "parse_tags": true
+          },
+          { "copy_var": { "var_val": "rk" }, "target_var": { "global_val": "pf_rl_text" } },
+          { "math": [ "pf_rl_ago = floor((time('now') - value_or(v_rt, 0)) / time('1 d'))" ] },
+          {
+            "if": { "math": [ "pf_rl_ago == 0" ] },
+            "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "rumor_list_today" } } ],
+            "else": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "rumor_list" } } ]
+          },
+          { "math": [ "pf_rl_n += 1" ] }
+        ]
+      },
+      { "math": [ "pf_rl_k = (value_or(pf_rumors_n, 0) - 1 - 5 + 6 * 10) % 6" ] },
+      {
+        "if": { "math": [ "value_or(pf_rumors_n, 0) > 5" ] },
+        "then": [
+          { "set_string_var": "pf_rumor_<global_val:pf_rl_k>", "target_var": { "context_val": "rk" }, "parse_tags": true },
+          {
+            "set_string_var": "pf_rumor_t_<global_val:pf_rl_k>",
+            "target_var": { "context_val": "rt" },
+            "parse_tags": true
+          },
+          { "copy_var": { "var_val": "rk" }, "target_var": { "global_val": "pf_rl_text" } },
+          { "math": [ "pf_rl_ago = floor((time('now') - value_or(v_rt, 0)) / time('1 d'))" ] },
+          {
+            "if": { "math": [ "pf_rl_ago == 0" ] },
+            "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "rumor_list_today" } } ],
+            "else": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "rumor_list" } } ]
+          },
+          { "math": [ "pf_rl_n += 1" ] }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_rl_n == 0" ] },
+        "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "rumor_none" } } ]
+      }
+    ]
+  }
+]

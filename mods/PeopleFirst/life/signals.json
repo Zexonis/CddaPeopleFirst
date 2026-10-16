@@ -1,0 +1,50 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_SIG_near_death",
+    "//": "Signal: the avatar takes a hit that leaves the torso or head at 40% or less.  Everyone who saw it gets a near_death memory of you (once an hour at most).",
+    "eoc_type": "EVENT",
+    "required_event": "character_takes_damage",
+    "condition": {
+      "and": [
+        "u_is_avatar",
+        {
+          "or": [ { "math": [ "u_hp('torso') <= u_hp_max('torso') * 0.4" ] }, { "math": [ "u_hp('head') <= u_hp_max('head') * 0.4" ] } ]
+        },
+        {
+          "or": [ { "math": [ "time_since(pf_neardeath_last) < 0" ] }, { "math": [ "time_since(pf_neardeath_last) > time('1 h')" ] } ]
+        }
+      ]
+    },
+    "effect": [
+      { "math": [ "pf_neardeath_last = time('now')" ] },
+      { "math": [ "pf_m_str_in = 70" ] },
+      { "run_eocs": "PF_MK_near_death" },
+      { "run_eocs": "PF_HEART_partner_scare" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_SIG_meal",
+    "//": "Signal: the avatar eats with people within 6 tiles.  A meal_shared moment with each (once every 4 hours).",
+    "eoc_type": "EVENT",
+    "required_event": "character_eats_item",
+    "condition": {
+      "and": [
+        "u_is_avatar",
+        {
+          "or": [ { "math": [ "time_since(pf_meal_last) < 0" ] }, { "math": [ "time_since(pf_meal_last) > time('4 h')" ] } ]
+        }
+      ]
+    },
+    "effect": [
+      { "math": [ "pf_meal_last = time('now')" ] },
+      { "u_run_npc_eocs": [ "PF_SIG_meal_with" ], "local": true, "npc_range": 6 }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_SIG_meal_with",
+    "effect": [ { "run_eocs": "PF_MK_meal_shared", "alpha_talker": "avatar", "beta_talker": "u" } ]
+  }
+]

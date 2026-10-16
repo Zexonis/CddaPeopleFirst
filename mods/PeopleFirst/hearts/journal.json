@@ -1,0 +1,800 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_JOURNAL_add",
+    "//": "u = you, keeping a memory (called by the spine's PF_MEM_store).  One remembrance is one entry, however many people mourned with you.",
+    "effect": [
+      { "math": [ "pf_jn_skip = 0" ] },
+      {
+        "if": {
+          "and": [
+            { "compare_string": [ { "global_val": "pf_m_kind" }, "funeral" ] },
+            { "math": [ "time_since(value_or(pf_jn_fun_t, -1)) >= 0" ] },
+            { "math": [ "time_since(value_or(pf_jn_fun_t, -1)) < time('1 h')" ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_jn_skip = 1" ] } ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_m_kind" }, "funeral" ] },
+        "then": [ { "math": [ "pf_jn_fun_t = time('now')" ] } ]
+      },
+      { "run_eocs": "PF_JOURNAL_write", "condition": { "math": [ "pf_jn_skip == 0" ] }, "iterations": 1 }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_JOURNAL_write",
+    "//": "u = you, keeping a memory (called by the spine's PF_MEM_store).  Adds a dated line to your journal, a ring of 30 entries, written from your side (role-aware).",
+    "effect": [
+      { "math": [ "pf_jn_i = value_or(pf_jn_count, 0) % 30" ] },
+      { "set_string_var": "someone", "target_var": { "global_val": "pf_jn_name" } },
+      {
+        "if": { "not": { "compare_string": [ { "global_val": "pf_m_other" }, "none" ] } },
+        "then": [
+          { "set_string_var": "pf_name_<global_val:pf_m_other>", "target_var": { "context_val": "nref" }, "parse_tags": true },
+          { "copy_var": { "var_val": "nref" }, "target_var": { "global_val": "pf_jn_name" } }
+        ]
+      },
+      {
+        "set_string_var": "Something happened with <global_val:pf_jn_name>.",
+        "target_var": { "global_val": "pf_jn_text" },
+        "parse_tags": true
+      },
+      {
+        "if": { "and": [ { "compare_string": [ { "global_val": "pf_m_kind" }, "saved_life" ] }, { "math": [ "pf_m_role == 1" ] } ] },
+        "then": [
+          {
+            "set_string_var": "<global_val:pf_jn_name> saved your life.",
+            "target_var": { "global_val": "pf_jn_text" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "compare_string": [ { "global_val": "pf_m_kind" }, "saved_life" ] }, { "math": [ "pf_m_role == 2" ] } ] },
+        "then": [
+          {
+            "set_string_var": "You saved <global_val:pf_jn_name>'s life.",
+            "target_var": { "global_val": "pf_jn_text" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "compare_string": [ { "global_val": "pf_m_kind" }, "care_given" ] }, { "math": [ "pf_m_role == 1" ] } ] },
+        "then": [
+          {
+            "set_string_var": "<global_val:pf_jn_name> looked after you.",
+            "target_var": { "global_val": "pf_jn_text" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "compare_string": [ { "global_val": "pf_m_kind" }, "care_given" ] }, { "math": [ "pf_m_role == 2" ] } ] },
+        "then": [
+          {
+            "set_string_var": "You looked after <global_val:pf_jn_name>.",
+            "target_var": { "global_val": "pf_jn_text" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_m_kind" }, "shared_danger" ] },
+        "then": [
+          {
+            "set_string_var": "You and <global_val:pf_jn_name> fought side by side.",
+            "target_var": { "global_val": "pf_jn_text" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": {
+          "and": [ { "compare_string": [ { "global_val": "pf_m_kind" }, "watch_covered" ] }, { "math": [ "pf_m_role == 1" ] } ]
+        },
+        "then": [
+          {
+            "set_string_var": "<global_val:pf_jn_name> kept watch while you slept.",
+            "target_var": { "global_val": "pf_jn_text" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_m_kind" }, "near_death" ] },
+        "then": [
+          {
+            "set_string_var": "You saw <global_val:pf_jn_name> nearly die.",
+            "target_var": { "global_val": "pf_jn_text" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "compare_string": [ { "global_val": "pf_m_kind" }, "gift" ] }, { "math": [ "pf_m_role == 1" ] } ] },
+        "then": [
+          {
+            "set_string_var": "<global_val:pf_jn_name> made you something.",
+            "target_var": { "global_val": "pf_jn_text" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "compare_string": [ { "global_val": "pf_m_kind" }, "gift" ] }, { "math": [ "pf_m_role == 2" ] } ] },
+        "then": [
+          {
+            "set_string_var": "You gave <global_val:pf_jn_name> a gift.",
+            "target_var": { "global_val": "pf_jn_text" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "compare_string": [ { "global_val": "pf_m_kind" }, "confession" ] }, { "math": [ "pf_m_role == 1" ] } ] },
+        "then": [
+          {
+            "set_string_var": "<global_val:pf_jn_name> told you how they feel.",
+            "target_var": { "global_val": "pf_jn_text" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "compare_string": [ { "global_val": "pf_m_kind" }, "confession" ] }, { "math": [ "pf_m_role == 2" ] } ] },
+        "then": [
+          {
+            "set_string_var": "You told <global_val:pf_jn_name> how you feel.",
+            "target_var": { "global_val": "pf_jn_text" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "compare_string": [ { "global_val": "pf_m_kind" }, "rejected" ] }, { "math": [ "pf_m_role == 1" ] } ] },
+        "then": [
+          {
+            "set_string_var": "<global_val:pf_jn_name> turned you down.",
+            "target_var": { "global_val": "pf_jn_text" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "compare_string": [ { "global_val": "pf_m_kind" }, "rejected" ] }, { "math": [ "pf_m_role == 2" ] } ] },
+        "then": [
+          {
+            "set_string_var": "You turned <global_val:pf_jn_name> down.",
+            "target_var": { "global_val": "pf_jn_text" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_m_kind" }, "partnered" ] },
+        "then": [
+          {
+            "set_string_var": "You and <global_val:pf_jn_name> stopped pretending.",
+            "target_var": { "global_val": "pf_jn_text" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "compare_string": [ { "global_val": "pf_m_kind" }, "wedding" ] }, { "math": [ "pf_m_role == 3" ] } ] },
+        "then": [
+          {
+            "set_string_var": "You saw <global_val:pf_jn_name> get married.",
+            "target_var": { "global_val": "pf_jn_text" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_m_kind" }, "wedding" ] },
+        "then": [
+          {
+            "set_string_var": "You married <global_val:pf_jn_name>.",
+            "target_var": { "global_val": "pf_jn_text" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_m_kind" }, "breakup" ] },
+        "then": [
+          {
+            "set_string_var": "You and <global_val:pf_jn_name> broke up.",
+            "target_var": { "global_val": "pf_jn_text" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_m_kind" }, "proposal_declined" ] },
+        "then": [
+          {
+            "set_string_var": "A proposal, and a 'not yet', with <global_val:pf_jn_name>.",
+            "target_var": { "global_val": "pf_jn_text" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_m_kind" }, "lost_companion" ] },
+        "then": [
+          { "set_string_var": "<global_val:pf_jn_name> died.", "target_var": { "global_val": "pf_jn_text" }, "parse_tags": true }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_m_kind" }, "funeral" ] },
+        "then": [
+          {
+            "set_string_var": "You and the others mourned <global_val:pf_unmourned_name>.",
+            "target_var": { "global_val": "pf_jn_text" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_m_kind" }, "birth" ] },
+        "then": [
+          {
+            "set_string_var": "<global_val:pf_jn_name> was born.",
+            "target_var": { "global_val": "pf_jn_text" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "compare_string": [ { "global_val": "pf_m_kind" }, "adopted" ] }, { "math": [ "pf_m_role == 2" ] } ] },
+        "then": [
+          {
+            "set_string_var": "You took <global_val:pf_jn_name> in.",
+            "target_var": { "global_val": "pf_jn_text" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "compare_string": [ { "global_val": "pf_m_kind" }, "taught" ] }, { "math": [ "pf_m_role == 1" ] } ] },
+        "then": [
+          {
+            "set_string_var": "<global_val:pf_jn_name> taught you something.",
+            "target_var": { "global_val": "pf_jn_text" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "compare_string": [ { "global_val": "pf_m_kind" }, "taught" ] }, { "math": [ "pf_m_role == 2" ] } ] },
+        "then": [
+          {
+            "set_string_var": "You taught <global_val:pf_jn_name> something.",
+            "target_var": { "global_val": "pf_jn_text" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_m_kind" }, "welcomed" ] },
+        "then": [
+          {
+            "set_string_var": "<global_val:pf_jn_name> and their people came to live with you.",
+            "target_var": { "global_val": "pf_jn_text" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "compare_string": [ { "global_val": "pf_m_kind" }, "secret_kept" ] }, { "math": [ "pf_m_role == 1" ] } ] },
+        "then": [
+          {
+            "set_string_var": "<global_val:pf_jn_name> knows what you are, and kept it to themselves.",
+            "target_var": { "global_val": "pf_jn_text" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_m_kind" }, "frightened" ] },
+        "then": [
+          {
+            "set_string_var": "<global_val:pf_jn_name> saw what you are, and it frightened them.",
+            "target_var": { "global_val": "pf_jn_text" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "compare_string": [ { "global_val": "pf_m_kind" }, "ran_off" ] }, { "math": [ "pf_m_role == 1" ] } ] },
+        "then": [
+          {
+            "set_string_var": "<global_val:pf_jn_name> ran when you needed them.",
+            "target_var": { "global_val": "pf_jn_text" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "compare_string": [ { "global_val": "pf_m_kind" }, "ran_off" ] }, { "math": [ "pf_m_role == 2" ] } ] },
+        "then": [
+          {
+            "set_string_var": "You ran, and <global_val:pf_jn_name> was hurt.",
+            "target_var": { "global_val": "pf_jn_text" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "compare_string": [ { "global_val": "pf_m_kind" }, "betrayal" ] }, { "math": [ "pf_m_role == 1" ] } ] },
+        "then": [
+          {
+            "set_string_var": "<global_val:pf_jn_name> betrayed you.",
+            "target_var": { "global_val": "pf_jn_text" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "compare_string": [ { "global_val": "pf_m_kind" }, "insult" ] }, { "math": [ "pf_m_role == 1" ] } ] },
+        "then": [
+          {
+            "set_string_var": "<global_val:pf_jn_name> insulted you.",
+            "target_var": { "global_val": "pf_jn_text" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_m_kind" }, "argument" ] },
+        "then": [
+          {
+            "set_string_var": "You and <global_val:pf_jn_name> argued.",
+            "target_var": { "global_val": "pf_jn_text" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_m_kind" }, "memory_recalled" ] },
+        "then": [
+          {
+            "set_string_var": "<global_val:pf_jn_name> brought up an old memory with you.",
+            "target_var": { "global_val": "pf_jn_text" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "compare_string": [ { "global_val": "pf_m_kind" }, "voted_for" ] }, { "math": [ "pf_m_role == 1" ] } ] },
+        "then": [
+          {
+            "set_string_var": "<global_val:pf_jn_name> voted for you.",
+            "target_var": { "global_val": "pf_jn_text" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "compare_string": [ { "global_val": "pf_m_kind" }, "voted_for" ] }, { "math": [ "pf_m_role == 2" ] } ] },
+        "then": [
+          {
+            "set_string_var": "You voted for <global_val:pf_jn_name>.",
+            "target_var": { "global_val": "pf_jn_text" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "compare_string": [ { "global_val": "pf_m_kind" }, "ruled_for" ] }, { "math": [ "pf_m_role == 1" ] } ] },
+        "then": [
+          {
+            "set_string_var": "<global_val:pf_jn_name> took your side at the meeting.",
+            "target_var": { "global_val": "pf_jn_text" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "compare_string": [ { "global_val": "pf_m_kind" }, "ruled_for" ] }, { "math": [ "pf_m_role == 2" ] } ] },
+        "then": [
+          {
+            "set_string_var": "You ruled for <global_val:pf_jn_name> at the meeting.",
+            "target_var": { "global_val": "pf_jn_text" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": {
+          "and": [ { "compare_string": [ { "global_val": "pf_m_kind" }, "ruled_against" ] }, { "math": [ "pf_m_role == 1" ] } ]
+        },
+        "then": [
+          {
+            "set_string_var": "<global_val:pf_jn_name> ruled against you at the meeting.",
+            "target_var": { "global_val": "pf_jn_text" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": {
+          "and": [ { "compare_string": [ { "global_val": "pf_m_kind" }, "ruled_against" ] }, { "math": [ "pf_m_role == 2" ] } ]
+        },
+        "then": [
+          {
+            "set_string_var": "You ruled against <global_val:pf_jn_name> at the meeting.",
+            "target_var": { "global_val": "pf_jn_text" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_m_kind" }, "made_peace" ] },
+        "then": [
+          {
+            "set_string_var": "You and <global_val:pf_jn_name> made peace.",
+            "target_var": { "global_val": "pf_jn_text" },
+            "parse_tags": true
+          }
+        ]
+      },
+      { "set_string_var": "pf_jn_<global_val:pf_jn_i>", "target_var": { "context_val": "jref" }, "parse_tags": true },
+      { "copy_var": { "global_val": "pf_jn_text" }, "target_var": { "var_val": "jref" } },
+      {
+        "set_string_var": "pf_jn_t_<global_val:pf_jn_i>",
+        "target_var": { "context_val": "jtref" },
+        "parse_tags": true
+      },
+      { "math": [ "v_jtref = time('now')" ] },
+      { "math": [ "pf_jn_count = value_or(pf_jn_count, 0) + 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_JN_open",
+    "//": "Journal screen: the newest 12 entries.",
+    "effect": [
+      { "math": [ "pf_jn_i = (value_or(pf_jn_count, 0) - 1 - 0 + 30 * 10) % 30" ] },
+      { "set_string_var": "pf_jn_<global_val:pf_jn_i>", "target_var": { "context_val": "jt" }, "parse_tags": true },
+      { "set_string_var": "pf_jn_t_<global_val:pf_jn_i>", "target_var": { "context_val": "jtt" }, "parse_tags": true },
+      { "math": [ "pf_jn_ago_0 = floor((time('now') - value_or(v_jtt, 0)) / time('1 d'))" ] },
+      { "copy_var": { "var_val": "jt" }, "target_var": { "global_val": "pf_jn_tmp" } },
+      {
+        "if": { "math": [ "pf_jn_ago_0 == 0" ] },
+        "then": [
+          { "set_string_var": "<global_val:pf_jn_tmp>  (today)", "target_var": { "global_val": "pf_jn_l_0" }, "parse_tags": true }
+        ],
+        "else": [
+          {
+            "set_string_var": "<global_val:pf_jn_tmp>  (<global_val:pf_jn_ago_0> days ago)",
+            "target_var": { "global_val": "pf_jn_l_0" },
+            "parse_tags": true
+          }
+        ]
+      },
+      { "math": [ "pf_jn_i = (value_or(pf_jn_count, 0) - 1 - 1 + 30 * 10) % 30" ] },
+      { "set_string_var": "pf_jn_<global_val:pf_jn_i>", "target_var": { "context_val": "jt" }, "parse_tags": true },
+      { "set_string_var": "pf_jn_t_<global_val:pf_jn_i>", "target_var": { "context_val": "jtt" }, "parse_tags": true },
+      { "math": [ "pf_jn_ago_1 = floor((time('now') - value_or(v_jtt, 0)) / time('1 d'))" ] },
+      { "copy_var": { "var_val": "jt" }, "target_var": { "global_val": "pf_jn_tmp" } },
+      {
+        "if": { "math": [ "pf_jn_ago_1 == 0" ] },
+        "then": [
+          { "set_string_var": "<global_val:pf_jn_tmp>  (today)", "target_var": { "global_val": "pf_jn_l_1" }, "parse_tags": true }
+        ],
+        "else": [
+          {
+            "set_string_var": "<global_val:pf_jn_tmp>  (<global_val:pf_jn_ago_1> days ago)",
+            "target_var": { "global_val": "pf_jn_l_1" },
+            "parse_tags": true
+          }
+        ]
+      },
+      { "math": [ "pf_jn_i = (value_or(pf_jn_count, 0) - 1 - 2 + 30 * 10) % 30" ] },
+      { "set_string_var": "pf_jn_<global_val:pf_jn_i>", "target_var": { "context_val": "jt" }, "parse_tags": true },
+      { "set_string_var": "pf_jn_t_<global_val:pf_jn_i>", "target_var": { "context_val": "jtt" }, "parse_tags": true },
+      { "math": [ "pf_jn_ago_2 = floor((time('now') - value_or(v_jtt, 0)) / time('1 d'))" ] },
+      { "copy_var": { "var_val": "jt" }, "target_var": { "global_val": "pf_jn_tmp" } },
+      {
+        "if": { "math": [ "pf_jn_ago_2 == 0" ] },
+        "then": [
+          { "set_string_var": "<global_val:pf_jn_tmp>  (today)", "target_var": { "global_val": "pf_jn_l_2" }, "parse_tags": true }
+        ],
+        "else": [
+          {
+            "set_string_var": "<global_val:pf_jn_tmp>  (<global_val:pf_jn_ago_2> days ago)",
+            "target_var": { "global_val": "pf_jn_l_2" },
+            "parse_tags": true
+          }
+        ]
+      },
+      { "math": [ "pf_jn_i = (value_or(pf_jn_count, 0) - 1 - 3 + 30 * 10) % 30" ] },
+      { "set_string_var": "pf_jn_<global_val:pf_jn_i>", "target_var": { "context_val": "jt" }, "parse_tags": true },
+      { "set_string_var": "pf_jn_t_<global_val:pf_jn_i>", "target_var": { "context_val": "jtt" }, "parse_tags": true },
+      { "math": [ "pf_jn_ago_3 = floor((time('now') - value_or(v_jtt, 0)) / time('1 d'))" ] },
+      { "copy_var": { "var_val": "jt" }, "target_var": { "global_val": "pf_jn_tmp" } },
+      {
+        "if": { "math": [ "pf_jn_ago_3 == 0" ] },
+        "then": [
+          { "set_string_var": "<global_val:pf_jn_tmp>  (today)", "target_var": { "global_val": "pf_jn_l_3" }, "parse_tags": true }
+        ],
+        "else": [
+          {
+            "set_string_var": "<global_val:pf_jn_tmp>  (<global_val:pf_jn_ago_3> days ago)",
+            "target_var": { "global_val": "pf_jn_l_3" },
+            "parse_tags": true
+          }
+        ]
+      },
+      { "math": [ "pf_jn_i = (value_or(pf_jn_count, 0) - 1 - 4 + 30 * 10) % 30" ] },
+      { "set_string_var": "pf_jn_<global_val:pf_jn_i>", "target_var": { "context_val": "jt" }, "parse_tags": true },
+      { "set_string_var": "pf_jn_t_<global_val:pf_jn_i>", "target_var": { "context_val": "jtt" }, "parse_tags": true },
+      { "math": [ "pf_jn_ago_4 = floor((time('now') - value_or(v_jtt, 0)) / time('1 d'))" ] },
+      { "copy_var": { "var_val": "jt" }, "target_var": { "global_val": "pf_jn_tmp" } },
+      {
+        "if": { "math": [ "pf_jn_ago_4 == 0" ] },
+        "then": [
+          { "set_string_var": "<global_val:pf_jn_tmp>  (today)", "target_var": { "global_val": "pf_jn_l_4" }, "parse_tags": true }
+        ],
+        "else": [
+          {
+            "set_string_var": "<global_val:pf_jn_tmp>  (<global_val:pf_jn_ago_4> days ago)",
+            "target_var": { "global_val": "pf_jn_l_4" },
+            "parse_tags": true
+          }
+        ]
+      },
+      { "math": [ "pf_jn_i = (value_or(pf_jn_count, 0) - 1 - 5 + 30 * 10) % 30" ] },
+      { "set_string_var": "pf_jn_<global_val:pf_jn_i>", "target_var": { "context_val": "jt" }, "parse_tags": true },
+      { "set_string_var": "pf_jn_t_<global_val:pf_jn_i>", "target_var": { "context_val": "jtt" }, "parse_tags": true },
+      { "math": [ "pf_jn_ago_5 = floor((time('now') - value_or(v_jtt, 0)) / time('1 d'))" ] },
+      { "copy_var": { "var_val": "jt" }, "target_var": { "global_val": "pf_jn_tmp" } },
+      {
+        "if": { "math": [ "pf_jn_ago_5 == 0" ] },
+        "then": [
+          { "set_string_var": "<global_val:pf_jn_tmp>  (today)", "target_var": { "global_val": "pf_jn_l_5" }, "parse_tags": true }
+        ],
+        "else": [
+          {
+            "set_string_var": "<global_val:pf_jn_tmp>  (<global_val:pf_jn_ago_5> days ago)",
+            "target_var": { "global_val": "pf_jn_l_5" },
+            "parse_tags": true
+          }
+        ]
+      },
+      { "math": [ "pf_jn_i = (value_or(pf_jn_count, 0) - 1 - 6 + 30 * 10) % 30" ] },
+      { "set_string_var": "pf_jn_<global_val:pf_jn_i>", "target_var": { "context_val": "jt" }, "parse_tags": true },
+      { "set_string_var": "pf_jn_t_<global_val:pf_jn_i>", "target_var": { "context_val": "jtt" }, "parse_tags": true },
+      { "math": [ "pf_jn_ago_6 = floor((time('now') - value_or(v_jtt, 0)) / time('1 d'))" ] },
+      { "copy_var": { "var_val": "jt" }, "target_var": { "global_val": "pf_jn_tmp" } },
+      {
+        "if": { "math": [ "pf_jn_ago_6 == 0" ] },
+        "then": [
+          { "set_string_var": "<global_val:pf_jn_tmp>  (today)", "target_var": { "global_val": "pf_jn_l_6" }, "parse_tags": true }
+        ],
+        "else": [
+          {
+            "set_string_var": "<global_val:pf_jn_tmp>  (<global_val:pf_jn_ago_6> days ago)",
+            "target_var": { "global_val": "pf_jn_l_6" },
+            "parse_tags": true
+          }
+        ]
+      },
+      { "math": [ "pf_jn_i = (value_or(pf_jn_count, 0) - 1 - 7 + 30 * 10) % 30" ] },
+      { "set_string_var": "pf_jn_<global_val:pf_jn_i>", "target_var": { "context_val": "jt" }, "parse_tags": true },
+      { "set_string_var": "pf_jn_t_<global_val:pf_jn_i>", "target_var": { "context_val": "jtt" }, "parse_tags": true },
+      { "math": [ "pf_jn_ago_7 = floor((time('now') - value_or(v_jtt, 0)) / time('1 d'))" ] },
+      { "copy_var": { "var_val": "jt" }, "target_var": { "global_val": "pf_jn_tmp" } },
+      {
+        "if": { "math": [ "pf_jn_ago_7 == 0" ] },
+        "then": [
+          { "set_string_var": "<global_val:pf_jn_tmp>  (today)", "target_var": { "global_val": "pf_jn_l_7" }, "parse_tags": true }
+        ],
+        "else": [
+          {
+            "set_string_var": "<global_val:pf_jn_tmp>  (<global_val:pf_jn_ago_7> days ago)",
+            "target_var": { "global_val": "pf_jn_l_7" },
+            "parse_tags": true
+          }
+        ]
+      },
+      { "math": [ "pf_jn_i = (value_or(pf_jn_count, 0) - 1 - 8 + 30 * 10) % 30" ] },
+      { "set_string_var": "pf_jn_<global_val:pf_jn_i>", "target_var": { "context_val": "jt" }, "parse_tags": true },
+      { "set_string_var": "pf_jn_t_<global_val:pf_jn_i>", "target_var": { "context_val": "jtt" }, "parse_tags": true },
+      { "math": [ "pf_jn_ago_8 = floor((time('now') - value_or(v_jtt, 0)) / time('1 d'))" ] },
+      { "copy_var": { "var_val": "jt" }, "target_var": { "global_val": "pf_jn_tmp" } },
+      {
+        "if": { "math": [ "pf_jn_ago_8 == 0" ] },
+        "then": [
+          { "set_string_var": "<global_val:pf_jn_tmp>  (today)", "target_var": { "global_val": "pf_jn_l_8" }, "parse_tags": true }
+        ],
+        "else": [
+          {
+            "set_string_var": "<global_val:pf_jn_tmp>  (<global_val:pf_jn_ago_8> days ago)",
+            "target_var": { "global_val": "pf_jn_l_8" },
+            "parse_tags": true
+          }
+        ]
+      },
+      { "math": [ "pf_jn_i = (value_or(pf_jn_count, 0) - 1 - 9 + 30 * 10) % 30" ] },
+      { "set_string_var": "pf_jn_<global_val:pf_jn_i>", "target_var": { "context_val": "jt" }, "parse_tags": true },
+      { "set_string_var": "pf_jn_t_<global_val:pf_jn_i>", "target_var": { "context_val": "jtt" }, "parse_tags": true },
+      { "math": [ "pf_jn_ago_9 = floor((time('now') - value_or(v_jtt, 0)) / time('1 d'))" ] },
+      { "copy_var": { "var_val": "jt" }, "target_var": { "global_val": "pf_jn_tmp" } },
+      {
+        "if": { "math": [ "pf_jn_ago_9 == 0" ] },
+        "then": [
+          { "set_string_var": "<global_val:pf_jn_tmp>  (today)", "target_var": { "global_val": "pf_jn_l_9" }, "parse_tags": true }
+        ],
+        "else": [
+          {
+            "set_string_var": "<global_val:pf_jn_tmp>  (<global_val:pf_jn_ago_9> days ago)",
+            "target_var": { "global_val": "pf_jn_l_9" },
+            "parse_tags": true
+          }
+        ]
+      },
+      { "math": [ "pf_jn_i = (value_or(pf_jn_count, 0) - 1 - 10 + 30 * 10) % 30" ] },
+      { "set_string_var": "pf_jn_<global_val:pf_jn_i>", "target_var": { "context_val": "jt" }, "parse_tags": true },
+      { "set_string_var": "pf_jn_t_<global_val:pf_jn_i>", "target_var": { "context_val": "jtt" }, "parse_tags": true },
+      { "math": [ "pf_jn_ago_10 = floor((time('now') - value_or(v_jtt, 0)) / time('1 d'))" ] },
+      { "copy_var": { "var_val": "jt" }, "target_var": { "global_val": "pf_jn_tmp" } },
+      {
+        "if": { "math": [ "pf_jn_ago_10 == 0" ] },
+        "then": [
+          {
+            "set_string_var": "<global_val:pf_jn_tmp>  (today)",
+            "target_var": { "global_val": "pf_jn_l_10" },
+            "parse_tags": true
+          }
+        ],
+        "else": [
+          {
+            "set_string_var": "<global_val:pf_jn_tmp>  (<global_val:pf_jn_ago_10> days ago)",
+            "target_var": { "global_val": "pf_jn_l_10" },
+            "parse_tags": true
+          }
+        ]
+      },
+      { "math": [ "pf_jn_i = (value_or(pf_jn_count, 0) - 1 - 11 + 30 * 10) % 30" ] },
+      { "set_string_var": "pf_jn_<global_val:pf_jn_i>", "target_var": { "context_val": "jt" }, "parse_tags": true },
+      { "set_string_var": "pf_jn_t_<global_val:pf_jn_i>", "target_var": { "context_val": "jtt" }, "parse_tags": true },
+      { "math": [ "pf_jn_ago_11 = floor((time('now') - value_or(v_jtt, 0)) / time('1 d'))" ] },
+      { "copy_var": { "var_val": "jt" }, "target_var": { "global_val": "pf_jn_tmp" } },
+      {
+        "if": { "math": [ "pf_jn_ago_11 == 0" ] },
+        "then": [
+          {
+            "set_string_var": "<global_val:pf_jn_tmp>  (today)",
+            "target_var": { "global_val": "pf_jn_l_11" },
+            "parse_tags": true
+          }
+        ],
+        "else": [
+          {
+            "set_string_var": "<global_val:pf_jn_tmp>  (<global_val:pf_jn_ago_11> days ago)",
+            "target_var": { "global_val": "pf_jn_l_11" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "value_or(pf_jn_count, 0) == 0" ] },
+        "then": [ { "u_message": "Your journal is empty.  The moments people remember will be written here.", "type": "info" } ],
+        "else": [
+          {
+            "run_eoc_selector": [
+              "PF_JN_pick_0",
+              "PF_JN_pick_1",
+              "PF_JN_pick_2",
+              "PF_JN_pick_3",
+              "PF_JN_pick_4",
+              "PF_JN_pick_5",
+              "PF_JN_pick_6",
+              "PF_JN_pick_7",
+              "PF_JN_pick_8",
+              "PF_JN_pick_9",
+              "PF_JN_pick_10",
+              "PF_JN_pick_11"
+            ],
+            "names": [
+              { "global_val": "pf_jn_l_0" },
+              { "global_val": "pf_jn_l_1" },
+              { "global_val": "pf_jn_l_2" },
+              { "global_val": "pf_jn_l_3" },
+              { "global_val": "pf_jn_l_4" },
+              { "global_val": "pf_jn_l_5" },
+              { "global_val": "pf_jn_l_6" },
+              { "global_val": "pf_jn_l_7" },
+              { "global_val": "pf_jn_l_8" },
+              { "global_val": "pf_jn_l_9" },
+              { "global_val": "pf_jn_l_10" },
+              { "global_val": "pf_jn_l_11" }
+            ],
+            "keys": [ "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l" ],
+            "title": "Journal: what you remember (newest first)",
+            "hide_failing": true,
+            "allow_cancel": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_JN_pick_0",
+    "condition": { "math": [ "value_or(pf_jn_count, 0) > 0" ] },
+    "effect": [ { "run_eocs": "PF_JN_open" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_JN_pick_1",
+    "condition": { "math": [ "value_or(pf_jn_count, 0) > 1" ] },
+    "effect": [ { "run_eocs": "PF_JN_open" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_JN_pick_2",
+    "condition": { "math": [ "value_or(pf_jn_count, 0) > 2" ] },
+    "effect": [ { "run_eocs": "PF_JN_open" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_JN_pick_3",
+    "condition": { "math": [ "value_or(pf_jn_count, 0) > 3" ] },
+    "effect": [ { "run_eocs": "PF_JN_open" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_JN_pick_4",
+    "condition": { "math": [ "value_or(pf_jn_count, 0) > 4" ] },
+    "effect": [ { "run_eocs": "PF_JN_open" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_JN_pick_5",
+    "condition": { "math": [ "value_or(pf_jn_count, 0) > 5" ] },
+    "effect": [ { "run_eocs": "PF_JN_open" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_JN_pick_6",
+    "condition": { "math": [ "value_or(pf_jn_count, 0) > 6" ] },
+    "effect": [ { "run_eocs": "PF_JN_open" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_JN_pick_7",
+    "condition": { "math": [ "value_or(pf_jn_count, 0) > 7" ] },
+    "effect": [ { "run_eocs": "PF_JN_open" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_JN_pick_8",
+    "condition": { "math": [ "value_or(pf_jn_count, 0) > 8" ] },
+    "effect": [ { "run_eocs": "PF_JN_open" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_JN_pick_9",
+    "condition": { "math": [ "value_or(pf_jn_count, 0) > 9" ] },
+    "effect": [ { "run_eocs": "PF_JN_open" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_JN_pick_10",
+    "condition": { "math": [ "value_or(pf_jn_count, 0) > 10" ] },
+    "effect": [ { "run_eocs": "PF_JN_open" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_JN_pick_11",
+    "condition": { "math": [ "value_or(pf_jn_count, 0) > 11" ] },
+    "effect": [ { "run_eocs": "PF_JN_open" } ]
+  }
+]

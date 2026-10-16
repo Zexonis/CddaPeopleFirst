@@ -1,0 +1,442 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TOWN_workday",
+    "//": "Once a day, 09:00-12:00, when you're home: school, the healer's round, the smithy (every 3 days), and on the seventh day the market (once at least two people live with you: playtest 3 had neighbors turning up for market day at a lone evac shelter).",
+    "recurrence": "30 minutes",
+    "global": true,
+    "condition": {
+      "and": [
+        { "math": [ "value_or(pf_home_set, 0) == 1" ] },
+        { "math": [ "time_since('midnight', 'unit': 'hours') >= 9" ] },
+        { "math": [ "time_since('midnight', 'unit': 'hours') < 12" ] },
+        { "math": [ "value_or(pf_wd_day, -1) != floor(time('now') / time('1 d'))" ] },
+        { "math": [ "(value_or(pf_law_rest, 0) == 1) * (floor(time('now') / time('1 d')) % 7 == 2) == 0" ] }
+      ]
+    },
+    "effect": [
+      { "math": [ "pf_wd_day = floor(time('now') / time('1 d'))" ] },
+      { "u_location_variable": { "global_val": "pf_tw_av" } },
+      {
+        "if": { "math": [ "distance(pf_tw_av, pf_home_loc) <= 30" ] },
+        "then": [
+          { "run_eocs": "PF_TOWN_school" },
+          { "run_eocs": "PF_TOWN_healer_round" },
+          {
+            "if": { "math": [ "time('now') - value_or(pf_smith_t, 0) >= time('3 d')" ] },
+            "then": [ { "run_eocs": "PF_TOWN_smithy" } ]
+          },
+          {
+            "if": {
+              "and": [
+                { "math": [ "floor(time('now') / time('1 d')) % 7 == 6" ] },
+                { "math": [ "value_or(pf_band_n, 0) > 0" ] },
+                { "math": [ "value_or(pf_residents_n, 0) >= 2" ] }
+              ]
+            },
+            "then": [ { "run_eocs": "PF_TOWN_market" } ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TOWN_school",
+    "//": "u = avatar.  Morning school: the teacher (job 10) teaches every child of 4 or more who hasn't learned anything today (the v0.4 teaching moment, quietly), with one line for the whole class.",
+    "effect": [
+      { "math": [ "pf_tw_role = 10" ] },
+      { "run_eocs": "PF_TOWN_worker" },
+      { "math": [ "pf_tw_wjob = pf_tw_wbest >= 100" ] },
+      {
+        "if": { "math": [ "pf_tw_wjob" ] },
+        "then": [
+          { "math": [ "pf_sc_n = 0" ] },
+          { "math": [ "pf_tk_quiet = 1" ] },
+          { "copy_var": { "global_val": "pf_say_a" }, "target_var": { "global_val": "pf_sc_who" } },
+          {
+            "u_run_npc_eocs": [
+              {
+                "id": "PF_TOWN_pupil",
+                "condition": {
+                  "and": [
+                    { "u_has_trait": "PF_CHILD" },
+                    { "not": { "u_has_effect": "PF_infant" } },
+                    { "math": [ "u_val('age') >= 4" ] },
+                    { "math": [ "value_or(u_pf_taught_t, -1) < time('now') - time('1 d')" ] }
+                  ]
+                },
+                "effect": [
+                  { "math": [ "pf_sc_n += 1" ] },
+                  {
+                    "run_eocs": "PF_FAM_teach_do",
+                    "alpha_talker": { "global_val": "pf_tw_worker" },
+                    "beta_talker": "u"
+                  }
+                ]
+              }
+            ],
+            "local": true,
+            "npc_range": 40
+          },
+          { "math": [ "pf_tk_quiet = 0" ] },
+          {
+            "if": { "math": [ "pf_sc_n > 0" ] },
+            "then": [
+              { "math": [ "_p = rand(2)" ] },
+              {
+                "if": { "math": [ "_p == 0" ] },
+                "then": [
+                  {
+                    "set_string_var": "<global_val:pf_sc_who> sits the children in a row under the nearest tree and teaches them their letters, with a stick in the dirt.",
+                    "target_var": { "global_val": "pf_sc_text" },
+                    "parse_tags": true
+                  }
+                ]
+              },
+              {
+                "if": { "math": [ "_p == 1" ] },
+                "then": [
+                  {
+                    "set_string_var": "<global_val:pf_sc_who> has the kids tying knots until they can do it with their eyes shut.",
+                    "target_var": { "global_val": "pf_sc_text" },
+                    "parse_tags": true
+                  }
+                ]
+              },
+              {
+                "if": { "math": [ "_p == 2" ] },
+                "then": [
+                  {
+                    "set_string_var": "<global_val:pf_sc_who> teaches the children how to tell which berries will kill you.  They listen to that one.",
+                    "target_var": { "global_val": "pf_sc_text" },
+                    "parse_tags": true
+                  }
+                ]
+              },
+              { "math": [ "pf_school_total = value_or(pf_school_total, 0) + 1" ] },
+              {
+                "if": { "math": [ "value_or(pf_set_chatter, 1) == 1" ] },
+                "then": [ { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "school" } } ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TOWN_healer_round",
+    "//": "u = avatar.  The healer (job 9) goes round once a day: bites, infections and bleeding are treated, and anyone a little hurt gets patched up (you too: a care moment).",
+    "effect": [
+      { "math": [ "pf_tw_role = 9" ] },
+      { "run_eocs": "PF_TOWN_worker" },
+      { "math": [ "pf_tw_wjob = pf_tw_wbest >= 100" ] },
+      {
+        "if": { "math": [ "pf_tw_wjob" ] },
+        "then": [
+          { "math": [ "pf_hr_n = 0" ] },
+          {
+            "u_run_npc_eocs": [
+              {
+                "id": "PF_TOWN_patient",
+                "condition": {
+                  "and": [
+                    { "math": [ "has_var(u_pf_uid)" ] },
+                    {
+                      "or": [
+                        {
+                          "or": [
+                            { "u_has_effect": "bite", "bodypart": "torso" },
+                            { "u_has_effect": "bite", "bodypart": "head" },
+                            { "u_has_effect": "bite", "bodypart": "eyes" },
+                            { "u_has_effect": "bite", "bodypart": "mouth" },
+                            { "u_has_effect": "bite", "bodypart": "arm_l" },
+                            { "u_has_effect": "bite", "bodypart": "arm_r" },
+                            { "u_has_effect": "bite", "bodypart": "hand_l" },
+                            { "u_has_effect": "bite", "bodypart": "hand_r" },
+                            { "u_has_effect": "bite", "bodypart": "leg_l" },
+                            { "u_has_effect": "bite", "bodypart": "leg_r" },
+                            { "u_has_effect": "bite", "bodypart": "foot_l" },
+                            { "u_has_effect": "bite", "bodypart": "foot_r" },
+                            { "u_has_effect": "infected", "bodypart": "torso" },
+                            { "u_has_effect": "infected", "bodypart": "head" },
+                            { "u_has_effect": "infected", "bodypart": "eyes" },
+                            { "u_has_effect": "infected", "bodypart": "mouth" },
+                            { "u_has_effect": "infected", "bodypart": "arm_l" },
+                            { "u_has_effect": "infected", "bodypart": "arm_r" },
+                            { "u_has_effect": "infected", "bodypart": "hand_l" },
+                            { "u_has_effect": "infected", "bodypart": "hand_r" },
+                            { "u_has_effect": "infected", "bodypart": "leg_l" },
+                            { "u_has_effect": "infected", "bodypart": "leg_r" },
+                            { "u_has_effect": "infected", "bodypart": "foot_l" },
+                            { "u_has_effect": "infected", "bodypart": "foot_r" },
+                            { "u_has_effect": "bleed", "bodypart": "torso" },
+                            { "u_has_effect": "bleed", "bodypart": "head" },
+                            { "u_has_effect": "bleed", "bodypart": "eyes" },
+                            { "u_has_effect": "bleed", "bodypart": "mouth" },
+                            { "u_has_effect": "bleed", "bodypart": "arm_l" },
+                            { "u_has_effect": "bleed", "bodypart": "arm_r" },
+                            { "u_has_effect": "bleed", "bodypart": "hand_l" },
+                            { "u_has_effect": "bleed", "bodypart": "hand_r" },
+                            { "u_has_effect": "bleed", "bodypart": "leg_l" },
+                            { "u_has_effect": "bleed", "bodypart": "leg_r" },
+                            { "u_has_effect": "bleed", "bodypart": "foot_l" },
+                            { "u_has_effect": "bleed", "bodypart": "foot_r" },
+                            { "u_has_effect": "bite" },
+                            { "u_has_effect": "infected" },
+                            { "u_has_effect": "bleed" }
+                          ]
+                        },
+                        { "math": [ "u_hp('torso') < u_hp_max('torso') * 0.9" ] }
+                      ]
+                    }
+                  ]
+                },
+                "effect": [
+                  { "math": [ "pf_hr_n += 1" ] },
+                  { "u_lose_effect": [ "bite", "infected", "bleed" ], "target_part": "ALL" },
+                  { "math": [ "u_hp('torso') = min(u_hp('torso') + 5, u_hp_max('torso'))" ] }
+                ]
+              }
+            ],
+            "local": true,
+            "npc_range": 40
+          },
+          {
+            "if": {
+              "or": [
+                { "u_has_effect": "bite", "bodypart": "torso" },
+                { "u_has_effect": "bite", "bodypart": "head" },
+                { "u_has_effect": "bite", "bodypart": "eyes" },
+                { "u_has_effect": "bite", "bodypart": "mouth" },
+                { "u_has_effect": "bite", "bodypart": "arm_l" },
+                { "u_has_effect": "bite", "bodypart": "arm_r" },
+                { "u_has_effect": "bite", "bodypart": "hand_l" },
+                { "u_has_effect": "bite", "bodypart": "hand_r" },
+                { "u_has_effect": "bite", "bodypart": "leg_l" },
+                { "u_has_effect": "bite", "bodypart": "leg_r" },
+                { "u_has_effect": "bite", "bodypart": "foot_l" },
+                { "u_has_effect": "bite", "bodypart": "foot_r" },
+                { "u_has_effect": "infected", "bodypart": "torso" },
+                { "u_has_effect": "infected", "bodypart": "head" },
+                { "u_has_effect": "infected", "bodypart": "eyes" },
+                { "u_has_effect": "infected", "bodypart": "mouth" },
+                { "u_has_effect": "infected", "bodypart": "arm_l" },
+                { "u_has_effect": "infected", "bodypart": "arm_r" },
+                { "u_has_effect": "infected", "bodypart": "hand_l" },
+                { "u_has_effect": "infected", "bodypart": "hand_r" },
+                { "u_has_effect": "infected", "bodypart": "leg_l" },
+                { "u_has_effect": "infected", "bodypart": "leg_r" },
+                { "u_has_effect": "infected", "bodypart": "foot_l" },
+                { "u_has_effect": "infected", "bodypart": "foot_r" },
+                { "u_has_effect": "bleed", "bodypart": "torso" },
+                { "u_has_effect": "bleed", "bodypart": "head" },
+                { "u_has_effect": "bleed", "bodypart": "eyes" },
+                { "u_has_effect": "bleed", "bodypart": "mouth" },
+                { "u_has_effect": "bleed", "bodypart": "arm_l" },
+                { "u_has_effect": "bleed", "bodypart": "arm_r" },
+                { "u_has_effect": "bleed", "bodypart": "hand_l" },
+                { "u_has_effect": "bleed", "bodypart": "hand_r" },
+                { "u_has_effect": "bleed", "bodypart": "leg_l" },
+                { "u_has_effect": "bleed", "bodypart": "leg_r" },
+                { "u_has_effect": "bleed", "bodypart": "foot_l" },
+                { "u_has_effect": "bleed", "bodypart": "foot_r" },
+                { "u_has_effect": "bite" },
+                { "u_has_effect": "infected" },
+                { "u_has_effect": "bleed" }
+              ]
+            },
+            "then": [
+              { "math": [ "pf_hr_n += 1" ] },
+              { "u_lose_effect": [ "bite", "infected", "bleed" ], "target_part": "ALL" },
+              { "math": [ "pf_m_str_in = 45" ] },
+              {
+                "run_eocs": "PF_MK_care_given",
+                "alpha_talker": { "global_val": "pf_tw_worker" },
+                "beta_talker": "avatar"
+              }
+            ]
+          },
+          {
+            "if": { "and": [ { "math": [ "pf_hr_n > 0" ] }, { "math": [ "value_or(pf_set_chatter, 1) == 1" ] } ] },
+            "then": [ { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "healer_round" } } ]
+          },
+          { "math": [ "pf_healed_total = value_or(pf_healed_total, 0) + pf_hr_n" ] }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TOWN_smithy",
+    "//": "u = avatar.  Every 3 days the smith (job 8) turns scrap into something useful: nails, a knife, a machete, a crowbar or bolts (real items at home).",
+    "effect": [
+      { "math": [ "pf_tw_role = 8" ] },
+      { "run_eocs": "PF_TOWN_worker" },
+      { "math": [ "pf_tw_wjob = pf_tw_wbest >= 100" ] },
+      {
+        "if": { "math": [ "pf_tw_wjob" ] },
+        "then": [
+          { "math": [ "pf_smith_t = time('now')" ] },
+          { "math": [ "_g = rand(4)" ] },
+          {
+            "if": { "math": [ "_g == 0" ] },
+            "then": [
+              { "map_spawn_item": "nail", "loc": { "global_val": "pf_stores_loc" }, "count": 30 },
+              { "set_string_var": "a bucket of nails", "target_var": { "global_val": "pf_say_b" } }
+            ]
+          },
+          {
+            "if": { "math": [ "_g == 1" ] },
+            "then": [
+              { "map_spawn_item": "knife_hunting", "loc": { "global_val": "pf_stores_loc" }, "count": 1 },
+              { "set_string_var": "a hunting knife, edge like a razor", "target_var": { "global_val": "pf_say_b" } }
+            ]
+          },
+          {
+            "if": { "math": [ "_g == 2" ] },
+            "then": [
+              { "map_spawn_item": "machete", "loc": { "global_val": "pf_stores_loc" }, "count": 1 },
+              { "set_string_var": "a machete, rough but true", "target_var": { "global_val": "pf_say_b" } }
+            ]
+          },
+          {
+            "if": { "math": [ "_g == 3" ] },
+            "then": [
+              { "map_spawn_item": "crowbar", "loc": { "global_val": "pf_stores_loc" }, "count": 1 },
+              { "set_string_var": "a crowbar out of an old axle", "target_var": { "global_val": "pf_say_b" } }
+            ]
+          },
+          {
+            "if": { "math": [ "_g == 4" ] },
+            "then": [
+              { "map_spawn_item": "bolt_metal", "loc": { "global_val": "pf_stores_loc" }, "count": 10 },
+              { "set_string_var": "a bundle of crossbow bolts", "target_var": { "global_val": "pf_say_b" } }
+            ]
+          },
+          { "math": [ "pf_smith_total = value_or(pf_smith_total, 0) + 1" ] },
+          {
+            "if": { "math": [ "value_or(pf_set_chatter, 1) == 1" ] },
+            "then": [ { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "smith" } } ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TOWN_market",
+    "//": "u = avatar.  Market day (every seventh day, when there are other people out there): neighbors come with handcarts, and each 10 of the place's stores becomes something you need (up to 3 goods, real items at home).  A meal shared with everyone who lives here.",
+    "effect": [
+      { "math": [ "pf_mk_n = 0" ] },
+      { "set_string_var": "", "target_var": { "global_val": "pf_mk_list" } },
+      { "math": [ "pf_dr_want = 30" ] },
+      { "math": [ "pf_dr_div = 3" ] },
+      { "run_eocs": "PF_STORES_draw", "alpha_talker": "avatar" },
+      {
+        "run_eocs": "PF_TOWN_market_buy",
+        "condition": { "and": [ { "math": [ "value_or(pf_stores, 0) >= 10" ] }, { "math": [ "pf_mk_n < 3" ] } ] },
+        "iterations": 4
+      },
+      {
+        "if": { "math": [ "pf_mk_n > 0" ] },
+        "then": [
+          { "math": [ "pf_markets_total = value_or(pf_markets_total, 0) + 1" ] },
+          {
+            "u_run_npc_eocs": [
+              {
+                "id": "PF_TOWN_market_meal",
+                "condition": { "math": [ "value_or(u_pf_resident, 0) == 1" ] },
+                "effect": [ { "math": [ "pf_m_str_in = 25" ] }, { "run_eocs": "PF_MK_meal_shared", "beta_talker": "avatar" } ]
+              }
+            ],
+            "local": true,
+            "npc_range": 30
+          },
+          {
+            "if": { "math": [ "value_or(pf_town_named, 0) == 1" ] },
+            "then": [ { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "market_named" } } ],
+            "else": [ { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "market" } } ]
+          }
+        ],
+        "else": [
+          {
+            "if": { "math": [ "value_or(pf_set_chatter, 1) == 1" ] },
+            "then": [ { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "market_none" } } ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TOWN_market_buy",
+    "effect": [
+      { "math": [ "_g = rand(6)" ] },
+      {
+        "if": { "math": [ "_g == 0" ] },
+        "then": [
+          { "map_spawn_item": "bandages", "loc": { "global_val": "pf_stores_loc" }, "count": 5 },
+          { "set_string_var": "bandages", "target_var": { "global_val": "pf_mk_last" } }
+        ]
+      },
+      {
+        "if": { "math": [ "_g == 1" ] },
+        "then": [
+          { "map_spawn_item": "aspirin", "loc": { "global_val": "pf_stores_loc" }, "count": 10 },
+          { "set_string_var": "a bottle of aspirin", "target_var": { "global_val": "pf_mk_last" } }
+        ]
+      },
+      {
+        "if": { "math": [ "_g == 2" ] },
+        "then": [
+          { "map_spawn_item": "antibiotics", "loc": { "global_val": "pf_stores_loc" }, "count": 2 },
+          { "set_string_var": "a few antibiotics", "target_var": { "global_val": "pf_mk_last" } }
+        ]
+      },
+      {
+        "if": { "math": [ "_g == 3" ] },
+        "then": [
+          { "map_spawn_item": "salt", "loc": { "global_val": "pf_stores_loc" }, "count": 10 },
+          { "set_string_var": "salt", "target_var": { "global_val": "pf_mk_last" } }
+        ]
+      },
+      {
+        "if": { "math": [ "_g == 4" ] },
+        "then": [
+          { "map_spawn_item": "soap", "loc": { "global_val": "pf_stores_loc" }, "count": 3 },
+          { "set_string_var": "soap", "target_var": { "global_val": "pf_mk_last" } }
+        ]
+      },
+      {
+        "if": { "math": [ "_g == 5" ] },
+        "then": [
+          { "map_spawn_item": "candle", "loc": { "global_val": "pf_stores_loc" }, "count": 5 },
+          { "set_string_var": "candles", "target_var": { "global_val": "pf_mk_last" } }
+        ]
+      },
+      {
+        "if": { "math": [ "_g == 6" ] },
+        "then": [
+          { "map_spawn_item": "seed_potato_raw", "loc": { "global_val": "pf_stores_loc" }, "count": 10 },
+          { "set_string_var": "seed potatoes", "target_var": { "global_val": "pf_mk_last" } }
+        ]
+      },
+      { "math": [ "pf_stores -= 10" ] },
+      { "math": [ "pf_mk_n += 1" ] },
+      {
+        "if": { "math": [ "pf_mk_n == 1" ] },
+        "then": [ { "copy_var": { "global_val": "pf_mk_last" }, "target_var": { "global_val": "pf_mk_list" } } ],
+        "else": [
+          {
+            "set_string_var": "<global_val:pf_mk_list>, <global_val:pf_mk_last>",
+            "target_var": { "global_val": "pf_mk_list" },
+            "parse_tags": true
+          }
+        ]
+      }
+    ]
+  }
+]

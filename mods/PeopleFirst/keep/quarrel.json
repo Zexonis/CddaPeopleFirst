@@ -1,0 +1,328 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KEEP_dispute_scan",
+    "//": "u = avatar.  The worst quarrel in the place: of every grown-up who lives here (not the chief), whose own tension toward someone else here is highest (35+).  A pair settled at a meeting rests for 4 weeks (a ruling only takes the edge off; otherwise the same quarrel would top the list every week).",
+    "effect": [
+      { "math": [ "pf_kd_found = 0" ] },
+      { "math": [ "pf_kd_best = 34" ] },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_KEEP_ds_a",
+            "condition": {
+              "and": [
+                {
+                  "and": [
+                    { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+                    { "math": [ "value_or(u_pf_resident, 0) == 1" ] },
+                    { "math": [ "has_var(u_pf_uid)" ] }
+                  ]
+                },
+                {
+                  "not": {
+                    "and": [
+                      { "math": [ "value_or(pf_chief_set, 0) == 1" ] },
+                      { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_chief_uid" } ] }
+                    ]
+                  }
+                }
+              ]
+            },
+            "effect": [
+              { "u_set_talker": { "global_val": "pf_kd_ta" } },
+              { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_kd_tauid" } },
+              { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_kd_taname" }, "parse_tags": true },
+              { "math": [ "pf_kd_tarole = value_or(u_pf_role, 0)" ] },
+              { "math": [ "pf_kd_tahh = value_or(u_pf_household, 0)" ] },
+              {
+                "u_run_npc_eocs": [
+                  {
+                    "id": "PF_KEEP_ds_b",
+                    "condition": {
+                      "and": [
+                        {
+                          "and": [
+                            { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+                            { "math": [ "value_or(u_pf_resident, 0) == 1" ] },
+                            { "math": [ "has_var(u_pf_uid)" ] }
+                          ]
+                        },
+                        {
+                          "not": {
+                            "and": [
+                              { "math": [ "value_or(pf_chief_set, 0) == 1" ] },
+                              { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_chief_uid" } ] }
+                            ]
+                          }
+                        },
+                        { "not": { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_kd_tauid" } ] } },
+                        {
+                          "not": {
+                            "and": [
+                              { "math": [ "time('now') - value_or(pf_kd_last_t, -999999) < time('28 d')" ] },
+                              {
+                                "or": [
+                                  {
+                                    "and": [
+                                      { "compare_string": [ { "global_val": "pf_kd_tauid" }, { "global_val": "pf_kd_last_a" } ] },
+                                      {
+                                        "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_kd_last_b" } ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "and": [
+                                      { "compare_string": [ { "global_val": "pf_kd_tauid" }, { "global_val": "pf_kd_last_b" } ] },
+                                      {
+                                        "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_kd_last_a" } ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "effect": [
+                      { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_m_other" } },
+                      { "run_eocs": "PF_VIEW_read", "alpha_talker": { "global_val": "pf_kd_ta" } },
+                      {
+                        "if": { "math": [ "pf_read_x > pf_kd_best" ] },
+                        "then": [
+                          { "math": [ "pf_kd_best = pf_read_x" ] },
+                          { "math": [ "pf_kd_found = 1" ] },
+                          { "copy_var": { "global_val": "pf_kd_ta" }, "target_var": { "global_val": "pf_kd_a" } },
+                          {
+                            "copy_var": { "global_val": "pf_kd_tauid" },
+                            "target_var": { "global_val": "pf_kd_auid" }
+                          },
+                          {
+                            "copy_var": { "global_val": "pf_kd_taname" },
+                            "target_var": { "global_val": "pf_kd_aname" }
+                          },
+                          { "math": [ "pf_kd_arole = pf_kd_tarole" ] },
+                          { "math": [ "pf_kd_ahh = pf_kd_tahh" ] },
+                          { "u_set_talker": { "global_val": "pf_kd_b" } },
+                          { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_kd_buid" } },
+                          {
+                            "set_string_var": "<u_name>",
+                            "target_var": { "global_val": "pf_kd_bname" },
+                            "parse_tags": true
+                          },
+                          { "math": [ "pf_kd_brole = value_or(u_pf_role, 0)" ] },
+                          { "math": [ "pf_kd_bhh = value_or(u_pf_household, 0)" ] }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "local": true,
+                "npc_range": 60
+              }
+            ]
+          }
+        ],
+        "local": true,
+        "npc_range": 60
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KEEP_dispute",
+    "//": "u = avatar.  The quarrel is brought to the meeting.  If you're chief, you decide (side with one, or tell them to shake on it); otherwise the chief does.  Under a council, the council does (pass 6).",
+    "effect": [
+      { "math": [ "_t = rand(5)" ] },
+      {
+        "if": { "math": [ "_t == 0" ] },
+        "then": [
+          {
+            "set_string_var": "who's been taking more than their share from the stores",
+            "target_var": { "global_val": "pf_kd_topic" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "_t == 1" ] },
+        "then": [ { "set_string_var": "a borrowed tool that came back broken", "target_var": { "global_val": "pf_kd_topic" } } ]
+      },
+      {
+        "if": { "math": [ "_t == 2" ] },
+        "then": [ { "set_string_var": "whose turn it really was on the watch", "target_var": { "global_val": "pf_kd_topic" } } ]
+      },
+      {
+        "if": { "math": [ "_t == 3" ] },
+        "then": [ { "set_string_var": "the noise at night", "target_var": { "global_val": "pf_kd_topic" } } ]
+      },
+      {
+        "if": { "math": [ "_t == 4" ] },
+        "then": [
+          {
+            "set_string_var": "what to do with the dead, and how far from the houses",
+            "target_var": { "global_val": "pf_kd_topic" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "_t == 5" ] },
+        "then": [ { "set_string_var": "a promise made on the road and never kept", "target_var": { "global_val": "pf_kd_topic" } } ]
+      },
+      {
+        "if": { "math": [ "(pf_kd_arole == 1) + (pf_kd_brole == 1) > 0" ] },
+        "then": [
+          {
+            "if": { "math": [ "rand(1) == 0" ] },
+            "then": [ { "set_string_var": "the cooking, and who keeps burning it", "target_var": { "global_val": "pf_kd_topic" } } ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "(pf_kd_ahh > 0) * (pf_kd_ahh == pf_kd_bhh)" ] },
+        "then": [
+          {
+            "set_string_var": "a family matter that should have stayed in the family",
+            "target_var": { "global_val": "pf_kd_topic" }
+          }
+        ]
+      },
+      { "math": [ "pf_disputes_total = value_or(pf_disputes_total, 0) + 1" ] },
+      { "math": [ "pf_kd_last_t = time('now')" ] },
+      { "copy_var": { "global_val": "pf_kd_auid" }, "target_var": { "global_val": "pf_kd_last_a" } },
+      { "copy_var": { "global_val": "pf_kd_buid" }, "target_var": { "global_val": "pf_kd_last_b" } },
+      { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "quarrel" } },
+      {
+        "if": { "math": [ "value_or(pf_kp_council, 0) == 1" ] },
+        "then": [ { "run_eocs": "PF_KEEP_council_judge" } ],
+        "else": [
+          {
+            "if": { "math": [ "pf_kp_judge == 2" ] },
+            "then": [
+              {
+                "set_string_var": "<global_val:pf_kd_aname> and <global_val:pf_kd_bname> want you to settle it: <global_val:pf_kd_topic>.  Do you side with <global_val:pf_kd_aname>?",
+                "target_var": { "global_val": "pf_kd_q1" },
+                "parse_tags": true
+              },
+              {
+                "set_string_var": "Do you side with <global_val:pf_kd_bname>, then?  (No: you tell them both to shake on it.)",
+                "target_var": { "global_val": "pf_kd_q2" },
+                "parse_tags": true
+              },
+              {
+                "if": { "u_query": { "global_val": "pf_kd_q1" }, "default": false },
+                "then": [
+                  { "run_eocs": "PF_MK_ruled_for", "alpha_talker": "avatar", "beta_talker": { "global_val": "pf_kd_a" } },
+                  {
+                    "run_eocs": "PF_MK_ruled_against",
+                    "alpha_talker": "avatar",
+                    "beta_talker": { "global_val": "pf_kd_b" }
+                  },
+                  { "math": [ "pf_m_str_in = 20" ] },
+                  {
+                    "run_eocs": "PF_MK_made_peace",
+                    "alpha_talker": { "global_val": "pf_kd_a" },
+                    "beta_talker": { "global_val": "pf_kd_b" }
+                  },
+                  { "copy_var": { "global_val": "pf_kd_aname" }, "target_var": { "global_val": "pf_kd_wname" } },
+                  { "copy_var": { "global_val": "pf_kd_bname" }, "target_var": { "global_val": "pf_kd_lname" } },
+                  { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "you_rule" } }
+                ],
+                "else": [
+                  {
+                    "if": { "u_query": { "global_val": "pf_kd_q2" }, "default": false },
+                    "then": [
+                      { "run_eocs": "PF_MK_ruled_for", "alpha_talker": "avatar", "beta_talker": { "global_val": "pf_kd_b" } },
+                      {
+                        "run_eocs": "PF_MK_ruled_against",
+                        "alpha_talker": "avatar",
+                        "beta_talker": { "global_val": "pf_kd_a" }
+                      },
+                      { "math": [ "pf_m_str_in = 20" ] },
+                      {
+                        "run_eocs": "PF_MK_made_peace",
+                        "alpha_talker": { "global_val": "pf_kd_a" },
+                        "beta_talker": { "global_val": "pf_kd_b" }
+                      },
+                      { "copy_var": { "global_val": "pf_kd_bname" }, "target_var": { "global_val": "pf_kd_wname" } },
+                      { "copy_var": { "global_val": "pf_kd_aname" }, "target_var": { "global_val": "pf_kd_lname" } },
+                      { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "you_rule" } }
+                    ],
+                    "else": [
+                      { "math": [ "pf_m_str_in = 45" ] },
+                      {
+                        "run_eocs": "PF_MK_made_peace",
+                        "alpha_talker": { "global_val": "pf_kd_a" },
+                        "beta_talker": { "global_val": "pf_kd_b" }
+                      },
+                      { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "you_split" } }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "else": [ { "run_eocs": "PF_KEEP_judge", "alpha_talker": { "global_val": "pf_kp_chief_t" } } ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KEEP_judge",
+    "//": "u = the chief.  They side with whoever they think more of (their own view: trust + warmth / 2 - tension); if it's close, both are told to shake on it.  The winner trusts the chief more, the loser resents them, and the two of them let some of it go either way.",
+    "effect": [
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_kd_judge" }, "parse_tags": true },
+      { "copy_var": { "global_val": "pf_kd_auid" }, "target_var": { "global_val": "pf_m_other" } },
+      { "run_eocs": "PF_VIEW_read" },
+      { "math": [ "pf_kd_sa = pf_read_t + pf_read_w / 2 - pf_read_x" ] },
+      { "copy_var": { "global_val": "pf_kd_buid" }, "target_var": { "global_val": "pf_m_other" } },
+      { "run_eocs": "PF_VIEW_read" },
+      { "math": [ "pf_kd_sb = pf_read_t + pf_read_w / 2 - pf_read_x" ] },
+      {
+        "if": { "math": [ "abs(pf_kd_sa - pf_kd_sb) < 5" ] },
+        "then": [
+          { "math": [ "pf_m_str_in = 45" ] },
+          {
+            "run_eocs": "PF_MK_made_peace",
+            "alpha_talker": { "global_val": "pf_kd_a" },
+            "beta_talker": { "global_val": "pf_kd_b" }
+          },
+          { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "chief_split" } }
+        ],
+        "else": [
+          {
+            "if": { "math": [ "pf_kd_sa > pf_kd_sb" ] },
+            "then": [
+              { "run_eocs": "PF_MK_ruled_for", "alpha_talker": "u", "beta_talker": { "global_val": "pf_kd_a" } },
+              { "run_eocs": "PF_MK_ruled_against", "alpha_talker": "u", "beta_talker": { "global_val": "pf_kd_b" } },
+              { "math": [ "pf_m_str_in = 20" ] },
+              {
+                "run_eocs": "PF_MK_made_peace",
+                "alpha_talker": { "global_val": "pf_kd_a" },
+                "beta_talker": { "global_val": "pf_kd_b" }
+              },
+              { "copy_var": { "global_val": "pf_kd_aname" }, "target_var": { "global_val": "pf_kd_wname" } },
+              { "copy_var": { "global_val": "pf_kd_bname" }, "target_var": { "global_val": "pf_kd_lname" } },
+              { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "chief_rules" } }
+            ],
+            "else": [
+              { "run_eocs": "PF_MK_ruled_for", "alpha_talker": "u", "beta_talker": { "global_val": "pf_kd_b" } },
+              { "run_eocs": "PF_MK_ruled_against", "alpha_talker": "u", "beta_talker": { "global_val": "pf_kd_a" } },
+              { "math": [ "pf_m_str_in = 20" ] },
+              {
+                "run_eocs": "PF_MK_made_peace",
+                "alpha_talker": { "global_val": "pf_kd_a" },
+                "beta_talker": { "global_val": "pf_kd_b" }
+              },
+              { "copy_var": { "global_val": "pf_kd_bname" }, "target_var": { "global_val": "pf_kd_wname" } },
+              { "copy_var": { "global_val": "pf_kd_aname" }, "target_var": { "global_val": "pf_kd_lname" } },
+              { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "chief_rules" } }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,1161 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_SAY_keep",
+    "//": "u = avatar.  Keep lines, picked by the context var 'line'.",
+    "effect": [
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "call_first" ] },
+        "then": [
+          {
+            "u_message": "Somebody bangs a pot and calls everyone over.  \"If we're going to live like this, we'd better start deciding things together.\"",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "call_0" ] },
+        "then": [
+          {
+            "u_message": "Somebody bangs a pot: meeting tonight.  People drift over, grumbling, with their chairs.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "call_1" ] },
+        "then": [
+          {
+            "u_message": "Word goes round that there's a meeting tonight.  People finish what they're doing and come over.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "call_2" ] },
+        "then": [ { "u_message": "Meeting night.  Somebody has already set out the chairs in a rough circle.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "first" ] },
+        "then": [
+          {
+            "u_message": "The first meeting <global_val:pf_kp_place> has ever held.  Nobody knows how to run one, so everyone talks at once.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "open_0" ] },
+        "then": [ { "u_message": "The meeting sits.  Somebody reads out a list that nobody asked for.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "open_1" ] },
+        "then": [ { "u_message": "The meeting sits.  It starts with the leaking roof, as it always does.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "open_2" ] },
+        "then": [ { "u_message": "The meeting sits.  The children are sent off to play, and mostly don't go.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "quiet_0" ] },
+        "then": [ { "u_message": "It's a quiet one: the latrine, again.  It takes an hour.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "quiet_1" ] },
+        "then": [ { "u_message": "Nothing much to settle.  It turns into stories, and then into somebody's bottle.", "type": "good" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "quiet_2" ] },
+        "then": [
+          {
+            "u_message": "A quiet meeting: who's going out scavenging, and where not to go.  Everyone's home by dark.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "quiet_3" ] },
+        "then": [ { "u_message": "They spend the whole meeting arguing about a name for the dog.  Nobody wins.", "type": "good" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "chief_absent" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_chief_name> isn't here tonight.  The meeting goes on without its chief, and decides nothing.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "chief_gone" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_chief_name> hasn't been seen at two meetings running.  The chair is empty, and someone says it out loud.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "chief_died" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_chief_dead_name> is dead, and the place has no chief.  People look at each other.  Then at you.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "confidence" ] },
+        "then": [
+          {
+            "u_message": "Somebody finally says it: <global_val:pf_chief_name> isn't working out.  More hands go up than anyone expected.  It goes to a vote.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "no_chief" ] },
+        "then": [
+          {
+            "u_message": "Hardly anyone will put their hand up for anybody.  The place goes on without a chief for now.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "elected_0" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_kw_name> is chief, <global_val:pf_kw_best> of <global_val:pf_ke_total> votes.  They look like they'd rather not be.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "elected_1" ] },
+        "then": [
+          {
+            "u_message": "The hands go up for <global_val:pf_kw_name>: <global_val:pf_kw_best> of <global_val:pf_ke_total>.  Somebody claps them on the back.  \"Your problem now.\"",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "kept" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_kw_name> keeps the chair, <global_val:pf_kw_best> of <global_val:pf_ke_total>.  They let out a breath they'd been holding all night.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "elected_you" ] },
+        "then": [
+          {
+            "u_message": "They choose you, <global_val:pf_kw_best> of <global_val:pf_ke_total>.  Somebody starts clapping, and then everyone does.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "kept_you" ] },
+        "then": [
+          {
+            "u_message": "They keep you on, <global_val:pf_kw_best> of <global_val:pf_ke_total>.  Not everyone looks happy about it.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "quarrel" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_kd_aname> and <global_val:pf_kd_bname> bring a quarrel to the meeting: <global_val:pf_kd_topic>.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "chief_rules" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_kd_judge> hears them both out, and rules for <global_val:pf_kd_wname>.  <global_val:pf_kd_lname> doesn't say anything for the rest of the night.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "chief_split" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_kd_judge> hears them both out and tells them they're both wrong, and to shake on it.  Eventually, they do.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "you_rule" ] },
+        "then": [
+          {
+            "u_message": "You rule for <global_val:pf_kd_wname>.  <global_val:pf_kd_lname> takes it badly, but the matter's closed.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "you_split" ] },
+        "then": [
+          {
+            "u_message": "You tell <global_val:pf_kd_aname> and <global_val:pf_kd_bname> to shake on it.  They do, eventually, and the meeting lets out a breath.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "door_yes" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_kd_judge> is chief, so it's their call.  \"More hands.  Find them a roof.\"",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "door_no" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_kd_judge> is chief, so it's their call.  \"Not this time.  We can't keep who we've got.\"",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "deposed" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_kp_old_name> hands over the keys to the stores without a word, and keeps to themselves for the rest of the day.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "deposed_kept" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_kp_old_name> keeps the chair, by a thread, and knows exactly whose hands stayed down.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "deposed_you" ] },
+        "then": [
+          {
+            "u_message": "You hand over the keys.  Nobody quite meets your eye, and then somebody does, and nods.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "deposed_kept_you" ] },
+        "then": [ { "u_message": "You keep the chair, by a thread.  You know exactly whose hands went up.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "who_none" ] },
+        "then": [ { "u_message": "Nobody's in charge yet.  The next meeting (<global_val:pf_km_when>) will choose.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "meet_too_few" ] },
+        "then": [
+          {
+            "u_message": "It's meeting night, and there's nobody to meet: <global_val:pf_kp_n> grown-ups live here besides you.  Nobody stacks the chairs out.  Someone says what everyone's thinking: this isn't a town anymore, just a family hanging on.  Meetings start again with 4 grown-ups.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "who_small" ] },
+        "then": [
+          {
+            "u_message": "Nobody's in charge.  <global_val:pf_kp_n> grown-ups live here besides you; once there are 4, the place will start holding meetings.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "who_npc" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_chief_name> is chief, for <global_val:pf_km_since_t> now.  Next meeting: <global_val:pf_km_when>.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "who_you" ] },
+        "then": [
+          {
+            "u_message": "You're chief, for <global_val:pf_km_since_t> now.  Next meeting: <global_val:pf_km_when>.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "you_call" ] },
+        "then": [ { "u_message": "You put the word out: meeting tomorrow evening.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "you_call_tonight" ] },
+        "then": [ { "u_message": "You put the word out: meeting this evening.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "law_put" ] },
+        "then": [ { "u_message": "<global_val:pf_kl_pname> stands up: they want a law that <global_val:pf_kl_text>.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "law_put_repeal" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_kl_pname> stands up: they want to do away with the law that <global_val:pf_kl_text>.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "law_put_you" ] },
+        "then": [ { "u_message": "You stand up and put it to them: a law that <global_val:pf_kl_text>.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "law_put_repeal_you" ] },
+        "then": [
+          { "u_message": "You stand up and put it to them: do away with the law that <global_val:pf_kl_text>.", "type": "info" }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "law_passed" ] },
+        "then": [
+          {
+            "u_message": "It passes, <global_val:pf_kl_yes> to <global_val:pf_kl_no>.  From now on, <global_val:pf_kl_text>.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "law_failed" ] },
+        "then": [ { "u_message": "It's voted down, <global_val:pf_kl_yes> to <global_val:pf_kl_no>.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "law_repealed" ] },
+        "then": [
+          {
+            "u_message": "It goes, <global_val:pf_kl_yes> to <global_val:pf_kl_no>.  No more '<global_val:pf_kl_name>'.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "law_kept" ] },
+        "then": [ { "u_message": "The law stays, <global_val:pf_kl_no> to <global_val:pf_kl_yes>.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "you_propose" ] },
+        "then": [ { "u_message": "You'll put it to the next meeting: that <global_val:pf_kl_text>.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "you_propose_repeal" ] },
+        "then": [ { "u_message": "You'll ask the next meeting to do away with '<global_val:pf_kl_name>'.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "law_list" ] },
+        "then": [ { "u_message": "The law: <global_val:pf_kl_text>.  (In force for <global_val:pf_kl_days_t>.)", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "law_none" ] },
+        "then": [ { "u_message": "The place has no laws yet, beyond the ones everybody just knows.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "law_pending" ] },
+        "then": [ { "u_message": "Up at the next meeting: '<global_val:pf_kl_name>'.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "tithe_report" ] },
+        "then": [ { "u_message": "The tithe brought <global_val:pf_tithe_week> into the stores this week.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "tithe_shirk" ] },
+        "then": [
+          {
+            "u_message": "Somebody brings it up: <global_val:pf_tithe_shirk_name> has been keeping back their share of the tithe.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "tithe_fined" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_kd_judge> makes <global_val:pf_tithe_shirk_name> pay it back, with some on top.  They pay.  They don't like it.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "tithe_fined_you" ] },
+        "then": [
+          {
+            "u_message": "You make <global_val:pf_tithe_shirk_name> pay it back, with some on top.  They pay.  They don't look at you.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "tithe_let_go" ] },
+        "then": [ { "u_message": "You let it go.  A few people exchange looks.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "tithe_nobody" ] },
+        "then": [ { "u_message": "With nobody in charge, nobody makes them pay.  People remember.", "type": "bad" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "rest_0" ] },
+        "then": [
+          {
+            "u_message": "It's the rest day.  Nobody works if they can help it.  Somebody brings out a pack of cards.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "rest_1" ] },
+        "then": [
+          {
+            "u_message": "The rest day.  The whole place sleeps late, eats late, and spends the afternoon telling lies about the old days.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "rest_2" ] },
+        "then": [
+          {
+            "u_message": "The rest day.  The tools stay where they are, and the kids get everyone's attention for once.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "door_vote_yes" ] },
+        "then": [
+          {
+            "u_message": "The meeting votes on the spot, <global_val:pf_kv_dyes> to <global_val:pf_kv_dno>: they can stay.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "door_vote_no" ] },
+        "then": [
+          {
+            "u_message": "The meeting votes on the spot, <global_val:pf_kv_dno> to <global_val:pf_kv_dyes> against.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "law_passed_lord" ] },
+        "then": [
+          {
+            "u_message": "So it passes, whatever the count said (<global_val:pf_kl_yes> for, <global_val:pf_kl_no> against).  From now on, <global_val:pf_kl_text>.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "law_failed_lord" ] },
+        "then": [
+          {
+            "u_message": "So it doesn't pass, whatever the count said (<global_val:pf_kl_yes> for, <global_val:pf_kl_no> against).",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "law_repealed_lord" ] },
+        "then": [ { "u_message": "So it goes, whatever the count said.  No more '<global_val:pf_kl_name>'.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "law_kept_lord" ] },
+        "then": [
+          {
+            "u_message": "So the law stays, whatever the count said (<global_val:pf_kl_yes> wanted it gone, <global_val:pf_kl_no> didn't).",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "law_lord_overrule" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_chief_name> hears the count, and overrules it.  That's what a lord is for, apparently.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "law_you_overrule" ] },
+        "then": [ { "u_message": "You hear the count, and overrule it.  You're the lord; that's the job.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "coup" ] },
+        "then": [
+          {
+            "u_message": "Enough of them have had enough.  <global_val:pf_chief_name> is pulled out of the chair, and the place goes back to choosing its own.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "lord_crowned" ] },
+        "then": [ { "u_message": "<global_val:pf_kw_name> takes the chair: lord of the place now, for life.", "type": "good" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "long_live" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_chief_dead_name> is gone.  <global_val:pf_heir_name> takes the chair, as was agreed.  Not everyone looks at them the same way yet.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "no_heir" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_chief_dead_name> is gone, and there's no heir.  It goes back to the meeting.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "heir_named" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_chief_name> names <global_val:pf_heir_name> heir, in front of everyone.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "exile_motion" ] },
+        "then": [ { "u_message": "Somebody says what everyone has been thinking: <global_val:pf_ex_name> can't stay.", "type": "bad" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "exile_yes" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_ex_yes> hands go up against <global_val:pf_ex_name>, <global_val:pf_ex_no> for.  <global_val:pf_ex_name> is put out of the place with what they can carry.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "exile_no" ] },
+        "then": [
+          {
+            "u_message": "It's close, but <global_val:pf_ex_name> stays, <global_val:pf_ex_no> to <global_val:pf_ex_yes>.  Nobody looks at them for the rest of the night.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "exile_lord_yes" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_chief_name> decides it: <global_val:pf_ex_name> goes.  They're put out with what they can carry.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "exile_lord_no" ] },
+        "then": [ { "u_message": "<global_val:pf_chief_name> decides it: <global_val:pf_ex_name> stays.  For now.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "who_lord" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_chief_name> is lord of the place, for <global_val:pf_km_since_t> now.  Heir: <global_val:pf_km_heir>.  Next meeting: <global_val:pf_km_when>.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "who_you_lord" ] },
+        "then": [
+          {
+            "u_message": "You're lord of the place, for <global_val:pf_km_since_t> now.  Next meeting: <global_val:pf_km_when>.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "law_watch_note" ] },
+        "then": [ { "u_message": "By the law of the place, everyone takes a turn.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "join_dark" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_tj_name> and their family are outside, but it's dark, and the law is the law.  They make camp until morning.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "siege_keeper" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> stays inside with the children, back to the wall, facing the door.  \"Nobody gets past me.  Go.\"",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "wall_start" ] },
+        "then": [
+          {
+            "u_message": "You put it to everyone: a wall, all the way round.  Starting tomorrow morning, a side a day.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "wall_side" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> leads the work on the <global_val:pf_wl_name> wall.  By noon there's a line of sharpened logs where there was grass, and a gate in the middle.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "wall_side_you" ] },
+        "then": [
+          {
+            "u_message": "You put up the <global_val:pf_wl_name> wall yourselves, log by log, with a gate in the middle.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "wall_done" ] },
+        "then": [
+          {
+            "u_message": "The last side goes up.  <global_val:pf_kp_Place> has a wall now, all the way round.  People keep walking along it, touching it.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "gates_shut" ] },
+        "then": [ { "u_message": "The gates are pulled shut for the night.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "siege_warn" ] },
+        "then": [
+          {
+            "u_message": "A neighbor comes running, out of breath: a horde is moving this way, out of the <global_val:pf_sg_dirname>.  It'll be here tomorrow night.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "siege_passes" ] },
+        "then": [ { "u_message": "The horde turned aside while you were away.  Nobody's sorry.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "siege_wave1" ] },
+        "then": [
+          {
+            "u_message": "Out of the <global_val:pf_sg_dirname>, in the dark: the first of them.  Then more.  Then too many to count.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "siege_wake" ] },
+        "then": [
+          { "u_message": "Hands on you in the dark, shaking.  \"Up.  They're here, all of them.  It's tonight.\"", "type": "bad" }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "siege_wave2" ] },
+        "then": [
+          {
+            "u_message": "A second wave comes out of the <global_val:pf_sg_dirname>, faster this time: runners, and dogs that used to be dogs.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "siege_wave3" ] },
+        "then": [ { "u_message": "The last wave: the big ones, the ones that don't go down.", "type": "bad" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "siege_held" ] },
+        "then": [
+          {
+            "u_message": "It's over.  The dead lie in heaps at the foot of the wall, and every one of you is still standing.  <global_val:pf_kp_Place> held.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "siege_guest_fell" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_sg_guest_name> wasn't one of yours, and fought at the wall anyway.  They didn't get up again.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "siege_guests_fell" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_sg_guest_dead> who weren't yours fought at the wall anyway, and didn't get up again.  The last of them was <global_val:pf_sg_guest_name>.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "siege_held_loss" ] },
+        "then": [
+          {
+            "u_message": "It's over.  <global_val:pf_kp_Place> held, but <global_val:pf_sg_lost> of yours didn't live to see it.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "siege_retell" ] },
+        "then": [
+          {
+            "u_message": "At the fire, the siege gets told again.  It's already bigger than it was.  Nobody minds.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "siege_retell_loss" ] },
+        "then": [
+          {
+            "u_message": "At the fire, they tell the siege again, and then they say the names of the ones who didn't make it.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "nb_contact" ] },
+        "then": [
+          {
+            "u_message": "A rider comes up the road and stops at a distance, looking the place over: from <global_val:pf_cur_name>, out to the <global_val:pf_cur_dir>, <global_val:pf_cur_kdesc>.  <global_val:pf_cur_lead> sends greetings.  Or a warning.  Hard to tell.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "nb_envoy" ] },
+        "then": [
+          {
+            "u_message": "An envoy from <global_val:pf_cur_name> comes to the gate, with <global_val:pf_cur_lead>'s words.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "nb_courtesy" ] },
+        "then": [
+          {
+            "u_message": "An envoy from <global_val:pf_cur_name> drops by: news, gossip, a bottle passed round.  Things are good with them.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "nb_no_envoy" ] },
+        "then": [
+          {
+            "u_message": "Nobody comes from <global_val:pf_cur_name> this week.  Smoke on the <global_val:pf_cur_dir> horizon, at their end.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "nb_trade_yes" ] },
+        "then": [
+          { "u_message": "It's agreed: from now on, every week, something comes from <global_val:pf_cur_name>.", "type": "good" }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "nb_trade_no" ] },
+        "then": [ { "u_message": "The envoy from <global_val:pf_cur_name> shrugs and goes.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "nb_pact_yes" ] },
+        "then": [
+          {
+            "u_message": "A pact with <global_val:pf_cur_name>: if either place is attacked, the other comes.  Hands are shaken on it.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "nb_pact_no" ] },
+        "then": [
+          {
+            "u_message": "The envoy from <global_val:pf_cur_name> takes the refusal politely, and doesn't come back soon.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "nb_tribute_yes" ] },
+        "then": [
+          {
+            "u_message": "So it's tribute to <global_val:pf_cur_name>, five stores a week.  Nobody likes it.  Nobody gets hurt, either.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "nb_tribute_no" ] },
+        "then": [
+          {
+            "u_message": "The answer goes back to <global_val:pf_cur_lead>: no.  The envoy looks at the wall for a long time before leaving.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "nb_tribute_paid" ] },
+        "then": [ { "u_message": "The tribute goes out to <global_val:pf_cur_name>: five stores.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "nb_tribute_warn" ] },
+        "then": [
+          {
+            "u_message": "Tomorrow the tribute to <global_val:pf_cur_name> is due: five stores, and there are only <global_val:pf_nb_tw_have>.  If it isn't there, the agreement's off, and they won't take it kindly.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "nb_tribute_short" ] },
+        "then": [
+          {
+            "u_message": "There's not enough to pay <global_val:pf_cur_name> this week.  Their envoy leaves without a word.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "nb_delivery" ] },
+        "then": [ { "u_message": "Carts come from <global_val:pf_cur_name>, as agreed.  The goods are at home.", "type": "good" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "nb_arming" ] },
+        "then": [ { "u_message": "Word comes from the road: <global_val:pf_cur_name> is arming.  Not for the dead.", "type": "bad" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "nb_chief_yes" ] },
+        "then": [ { "u_message": "<global_val:pf_kd_judge> is chief, so it's their answer: yes.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "nb_chief_no" ] },
+        "then": [ { "u_message": "<global_val:pf_kd_judge> is chief, so it's their answer: no.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "nb_raid_repelled" ] },
+        "then": [
+          {
+            "u_message": "Shots in the dark from the <global_val:pf_cur_dir>: raiders from <global_val:pf_cur_name>.  The wall holds, the watch fires back, and by the time anyone gets there, they're gone.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "nb_raid_repelled_away" ] },
+        "then": [
+          {
+            "u_message": "Word reaches you: raiders from <global_val:pf_cur_name> tried the place in the night, and were driven off.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "nb_raid_hit" ] },
+        "then": [
+          {
+            "u_message": "Raiders from <global_val:pf_cur_name>, out of the <global_val:pf_cur_dir>, in the dark.  By the time anyone gets there, they're gone, and so are <global_val:pf_nb_took> of the stores.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "nb_raid_hit_hurt" ] },
+        "then": [
+          {
+            "u_message": "Raiders from <global_val:pf_cur_name>, out of the <global_val:pf_cur_dir>.  They take <global_val:pf_nb_took> of the stores, and <global_val:pf_nb_hurt> is hurt trying to stop them.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "nb_raid_empty" ] },
+        "then": [
+          {
+            "u_message": "Raiders from <global_val:pf_cur_name>, out of the <global_val:pf_cur_dir>, in the dark.  They find the stores bare, and take it out on everything else before they go.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "nb_raid_empty_hurt" ] },
+        "then": [
+          {
+            "u_message": "Raiders from <global_val:pf_cur_name>, out of the <global_val:pf_cur_dir>.  The stores are bare, so they take it out on whoever's in the way: <global_val:pf_nb_hurt> is hurt trying to stop them.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "nb_raid_after_empty" ] },
+        "then": [
+          {
+            "u_message": "In daylight you can see what they did: the empty store shelves kicked over, a water barrel split, mud everywhere on the <global_val:pf_nb_af_dir> side.  There was nothing to take, so they broke what they could.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "nb_raid_after" ] },
+        "then": [
+          {
+            "u_message": "In daylight you can see how they came: boot prints in the mud on the <global_val:pf_nb_af_dir> side, the fence cut and bent back, a dropped glove.  <global_val:pf_nb_af_took> stores gone.  Nobody says much at breakfast.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "nb_raid_after_wall" ] },
+        "then": [
+          {
+            "u_message": "In daylight you can see how they came: a ladder still leaning on the <global_val:pf_nb_af_dir> wall, rope marks on the top, mud tracked to the stores.  <global_val:pf_nb_af_took> of them gone.  People keep looking at the wall.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "nb_raid_hit_away" ] },
+        "then": [
+          {
+            "u_message": "Word reaches you: raiders from <global_val:pf_cur_name> hit the place in the night and took <global_val:pf_nb_took> of the stores.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "nb_list" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_cur_name>, out to the <global_val:pf_cur_dir> (<global_val:pf_cur_lead>): <global_val:pf_cur_relw>; <global_val:pf_cur_pactw>.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "nb_none" ] },
+        "then": [ { "u_message": "Nobody out there has taken notice of the place yet.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "siege_allies" ] },
+        "then": [
+          {
+            "u_message": "Riders from <global_val:pf_st_ally_name> hit the horde's flank, as agreed.  Fewer of them reach the wall.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "council_term" ] },
+        "then": [ { "u_message": "The council's month is up.  Every seat goes back to the meeting.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "council_law" ] },
+        "then": [ { "u_message": "So the place will be run by a council of three.  The next meeting chooses it.", "type": "good" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "council_gone" ] },
+        "then": [ { "u_message": "No more council.  Whoever spoke for it holds the chair alone, for now.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "council_none" ] },
+        "then": [ { "u_message": "Not enough hands go up for anyone.  The place goes on without a council for now.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "council_chosen" ] },
+        "then": [
+          { "u_message": "The meeting chooses its council: <global_val:pf_cn_list>, and <global_val:pf_cn_spk>.", "type": "good" }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "council_rules" ] },
+        "then": [
+          {
+            "u_message": "The council hears them both out: <global_val:pf_cq_a> for <global_val:pf_kd_aname>, <global_val:pf_cq_b> for <global_val:pf_kd_bname>, <global_val:pf_cq_s> for shaking on it.  It's ruled for <global_val:pf_kd_wname>, and <global_val:pf_kd_lname> doesn't say much after that.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "council_split" ] },
+        "then": [
+          {
+            "u_message": "The council hears them both out and can't agree who's right (<global_val:pf_cq_a> for <global_val:pf_kd_aname>, <global_val:pf_cq_b> for <global_val:pf_kd_bname>, <global_val:pf_cq_s> for shaking on it).  The two of them are told to shake on it.  Eventually, they do.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "council_door_yes" ] },
+        "then": [
+          {
+            "u_message": "The council talks it over at the door, <global_val:pf_cnv_y> to <global_val:pf_cnv_no>: they can stay.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "council_door_no" ] },
+        "then": [
+          {
+            "u_message": "The council talks it over at the door, <global_val:pf_cnv_no> to <global_val:pf_cnv_y> against.  Not this time.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "nb_council_yes" ] },
+        "then": [ { "u_message": "The council talks it over, <global_val:pf_cnv_y> to <global_val:pf_cnv_no>: yes.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "nb_council_no" ] },
+        "then": [ { "u_message": "The council talks it over, <global_val:pf_cnv_no> to <global_val:pf_cnv_y>: no.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "council_lost" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_cn_dead_name> is gone, and the council is a seat short.  The meeting will choose it again tomorrow evening.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "who_council" ] },
+        "then": [
+          {
+            "u_message": "The place is run by its council: <global_val:pf_cn_list>, and <global_val:pf_cn_spk>.  The seats come up again in <global_val:pf_km_cn_days> days.  Next meeting: <global_val:pf_km_when>.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "nv_coming" ] },
+        "then": [
+          {
+            "u_message": "Someone is coming up the road from the <global_val:pf_nv_dir>, alone, hands where you can see them: <global_val:pf_nv_name>, from <global_val:pf_nv_from>.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "nv_busy" ] },
+        "then": [ { "u_message": "An envoy is already on the road.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "nv_leaves" ] },
+        "then": [ { "u_message": "<global_val:pf_nv_name> nods, and starts back toward <global_val:pf_nv_from>.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "nv_missed" ] },
+        "then": [
+          {
+            "u_message": "Word reaches you: the envoy from <global_val:pf_nv_from> waited at the gate, and went home without seeing you.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "nv_dead" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_nv_name>, the envoy from <global_val:pf_nv_from>, is dead before they ever reached the gate.  <global_val:pf_nv_from> will hear of it.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "nb_match_nobody" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_cur_lead> asks after a match between the two places, but there's nobody here free to marry.  Next time, maybe.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "nb_match_unwilling" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_cur_lead> offers a match, but nobody here who's free wants one.  The envoy takes it well enough.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "nb_match_yes" ] },
+        "then": [
+          {
+            "u_message": "It's agreed: in two days someone comes from <global_val:pf_cur_name> to marry <global_val:pf_nb_mp_name>.  <global_val:pf_nb_mp_name> doesn't sleep much that night.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "nb_match_no" ] },
+        "then": [ { "u_message": "The answer goes back: no match.  <global_val:pf_cur_name> takes it as a slight.", "type": "bad" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "nb_match_off" ] },
+        "then": [
+          {
+            "u_message": "Someone comes from <global_val:pf_cur_name> for the wedding, and turns back at the gate: <global_val:pf_nb_mp_name> isn't free any more.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "nb_match_arrive" ] },
+        "then": [
+          {
+            "u_message": "Down the road from the <global_val:pf_cur_dir> comes <global_val:pf_nb_sp_name> of <global_val:pf_cur_name>, with everything they own on their back, to marry <global_val:pf_nb_mp_name>.  The wedding will be at the next evening's fire.  From now on, <global_val:pf_cur_name> is family.",
+            "type": "good"
+          }
+        ]
+      }
+    ]
+  }
+]

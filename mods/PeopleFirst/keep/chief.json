@@ -1,0 +1,195 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KEEP_on_death",
+    "//": "The chief died: the chair is empty, and the place meets the next evening to choose again.  Under a lord, the heir takes the chair at once (or, with no heir, it's back to the meeting).",
+    "eoc_type": "EVENT",
+    "required_event": "character_dies",
+    "condition": {
+      "and": [
+        "has_alpha",
+        "u_is_npc",
+        { "math": [ "has_var(u_pf_uid)" ] },
+        {
+          "and": [
+            { "math": [ "value_or(pf_chief_set, 0) == 1" ] },
+            { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_chief_uid" } ] }
+          ]
+        }
+      ]
+    },
+    "effect": [
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_chief_dead_name" }, "parse_tags": true },
+      { "math": [ "pf_chiefs_lost_total = value_or(pf_chiefs_lost_total, 0) + 1" ] },
+      {
+        "if": { "math": [ "value_or(pf_law_lord, 0) == 1" ] },
+        "then": [ { "run_eocs": "PF_KEEP_succession", "alpha_talker": "avatar" } ],
+        "else": [
+          { "math": [ "pf_chief_set = 0" ] },
+          { "math": [ "pf_mt_due = 1" ] },
+          { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "chief_died" } }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KEEP_door",
+    "//": "u = avatar.  A family at the door when someone else is chief: it's the chief's call (if the chief isn't around, it's yours).",
+    "effect": [
+      { "copy_var": { "global_val": "pf_chief_uid" }, "target_var": { "global_val": "pf_find_uid" } },
+      { "run_eocs": "PF_FIND_by_uid" },
+      {
+        "if": { "math": [ "pf_find_ok == 1" ] },
+        "then": [ { "run_eocs": "PF_KEEP_door_decide", "alpha_talker": { "global_val": "pf_find_who" } } ],
+        "else": [
+          {
+            "if": { "u_query": { "global_val": "pf_tj_q" }, "default": true },
+            "then": [ { "run_eocs": "PF_TOWN_join_yes" } ],
+            "else": [ { "run_eocs": "PF_TOWN_join_no" } ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KEEP_door_decide",
+    "//": "u = the chief.  While the place is small (fewer than 4 households) they take people in; after that only a sociable or mother-hen chief keeps the door open.",
+    "effect": [
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_kd_judge" }, "parse_tags": true },
+      {
+        "math": [ "_y = (value_or(pf_households_n, 0) < 4) + u_has_trait('PF_T_SOCIABLE') + u_has_trait('PF_Q_MOTHER_HEN')" ]
+      },
+      {
+        "if": { "math": [ "_y > 0" ] },
+        "then": [
+          { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "door_yes" } },
+          { "run_eocs": "PF_TOWN_join_yes", "alpha_talker": "avatar" }
+        ],
+        "else": [
+          { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "door_no" } },
+          { "run_eocs": "PF_TOWN_join_no", "alpha_talker": "avatar" }
+        ]
+      },
+      { "math": [ "pf_chief_doors_total = value_or(pf_chief_doors_total, 0) + 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KEEP_menu",
+    "//": "u = avatar.  Home menu: Who's in charge.",
+    "condition": { "math": [ "value_or(pf_home_set, 0) == 1" ] },
+    "effect": [
+      { "math": [ "pf_km_days = (2 - floor(time('now') / time('1 d')) % 7 + 7) % 7" ] },
+      { "if": { "math": [ "value_or(pf_mt_due, 0) == 1" ] }, "then": [ { "math": [ "pf_km_days = 0" ] } ] },
+      {
+        "if": { "math": [ "pf_km_days == 0" ] },
+        "then": [ { "set_string_var": "tonight", "target_var": { "global_val": "pf_km_when" } } ],
+        "else": [
+          {
+            "if": { "math": [ "pf_km_days == 1" ] },
+            "then": [ { "set_string_var": "tomorrow evening", "target_var": { "global_val": "pf_km_when" } } ],
+            "else": [
+              {
+                "set_string_var": "in <global_val:pf_km_days> days",
+                "target_var": { "global_val": "pf_km_when" },
+                "parse_tags": true
+              }
+            ]
+          }
+        ]
+      },
+      { "math": [ "pf_km_since = floor((time('now') - value_or(pf_chief_since, 0)) / time('1 d'))" ] },
+      { "math": [ "pf_km_days_c = pf_km_since" ] },
+      {
+        "set_string_var": "<global_val:pf_km_since> days",
+        "target_var": { "global_val": "pf_km_since_t" },
+        "parse_tags": true
+      },
+      {
+        "if": { "math": [ "pf_km_since == 1" ] },
+        "then": [ { "set_string_var": "a day", "target_var": { "global_val": "pf_km_since_t" } } ]
+      },
+      {
+        "if": { "math": [ "pf_km_since < 1" ] },
+        "then": [ { "set_string_var": "less than a day", "target_var": { "global_val": "pf_km_since_t" } } ]
+      },
+      {
+        "if": { "math": [ "has_var(pf_heir_name) * (value_or(pf_heir_set, 0) == 1)" ] },
+        "then": [ { "copy_var": { "global_val": "pf_heir_name" }, "target_var": { "global_val": "pf_km_heir" } } ],
+        "else": [ { "set_string_var": "nobody named yet", "target_var": { "global_val": "pf_km_heir" } } ]
+      },
+      {
+        "if": { "math": [ "value_or(pf_law_lord, 0) == 1" ] },
+        "then": [ { "math": [ "pf_km_lord = value_or(pf_chief_set, 0)" ] } ],
+        "else": [ { "math": [ "pf_km_lord = 0" ] } ]
+      },
+      {
+        "if": { "math": [ "pf_km_lord == 1" ] },
+        "then": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "who_lord" } } ]
+      },
+      {
+        "if": { "math": [ "pf_km_lord == 2" ] },
+        "then": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "who_you_lord" } } ]
+      },
+      {
+        "if": { "math": [ "(pf_km_lord == 0) * ((value_or(pf_law_council, 0) == 1) * (value_or(pf_cn_n, 0) >= 2))" ] },
+        "then": [
+          { "run_eocs": "PF_KEEP_cn_list" },
+          { "math": [ "pf_km_cn_days = max(28 - floor((time('now') - value_or(pf_cn_since, 0)) / time('1 d')), 0)" ] },
+          { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "who_council" } }
+        ]
+      },
+      {
+        "if": { "math": [ "(pf_km_lord == 0) * (((value_or(pf_law_council, 0) == 1) * (value_or(pf_cn_n, 0) >= 2)) == 0)" ] },
+        "then": [
+          {
+            "switch": { "math": [ "value_or(pf_chief_set, 0)" ] },
+            "cases": [
+              {
+                "case": 0,
+                "effect": [
+                  { "run_eocs": "PF_KEEP_count" },
+                  {
+                    "if": { "math": [ "pf_kp_n >= 4" ] },
+                    "then": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "who_none" } } ],
+                    "else": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "who_small" } } ]
+                  }
+                ]
+              },
+              {
+                "case": 1,
+                "effect": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "who_npc" } } ]
+              },
+              {
+                "case": 2,
+                "effect": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "who_you" } } ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KEEP_call_now",
+    "//": "u = avatar.  Home menu: Call a meeting (if you're chief): tomorrow evening, or tonight if it's not yet late.",
+    "condition": {
+      "and": [
+        { "math": [ "value_or(pf_home_set, 0) == 1" ] },
+        { "math": [ "value_or(pf_chief_set, 0) == 2" ] },
+        { "math": [ "value_or(pf_mt_due, 0) == 0" ] }
+      ]
+    },
+    "effect": [
+      { "math": [ "pf_mt_due = 1" ] },
+      {
+        "if": { "math": [ "time_since('midnight', 'unit': 'hours') < 21" ] },
+        "then": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "you_call_tonight" } } ],
+        "else": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "you_call" } } ]
+      }
+    ]
+  }
+]

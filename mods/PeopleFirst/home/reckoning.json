@@ -1,0 +1,777 @@
+[
+  {
+    "type": "morale_type",
+    "id": "PF_morale_alive",
+    "text": "Still alive, all of us"
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_RK_hurt",
+    "//": "Signal: you or one of ours is hurt by a monster.  Stamps the time: v0.1's rescue check counts it, and wounded NPCs get tended (you are tended by v0.1's PF_WOUND_tick).",
+    "condition": {
+      "and": [
+        "has_alpha",
+        "has_beta",
+        "npc_is_monster",
+        { "or": [ "u_is_avatar", { "and": [ "u_is_npc", { "math": [ "has_var(u_pf_uid)" ] } ] } ] }
+      ]
+    },
+    "eoc_type": "EVENT",
+    "required_event": "character_takes_damage",
+    "effect": [
+      { "math": [ "u_pf_hurt_t = time('now')" ] },
+      { "math": [ "u_pf_fright_t = time('now')" ] },
+      { "math": [ "pf_rk_need = 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_RK_note_rescue",
+    "//": "Called by PF_SAVE_record (pf_say_a = the saver, pf_say_b = the saved, pf_save_case 1 = you were saved, 2 = you saved them, 3 = between NPCs).  Notes today's rescue for the evening retelling.",
+    "effect": [
+      {
+        "if": { "math": [ "value_or(pf_rk_day, -1) != floor(time('now') / time('1 d'))" ] },
+        "then": [ { "math": [ "pf_rk_n_today = 0" ] } ]
+      },
+      { "math": [ "pf_rk_day = floor(time('now') / time('1 d'))" ] },
+      { "math": [ "pf_rk_n_today += 1" ] },
+      { "math": [ "pf_rescues_total = value_or(pf_rescues_total, 0) + 1" ] },
+      { "copy_var": { "global_val": "pf_say_a" }, "target_var": { "global_val": "pf_rk_hero" } },
+      { "copy_var": { "global_val": "pf_say_b" }, "target_var": { "global_val": "pf_rk_hsaved" } },
+      { "math": [ "pf_rk_hero_av = pf_save_case == 2" ] },
+      { "math": [ "pf_rk_saved_av = pf_save_case == 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_RK_tick",
+    "//": "Every 3 minutes, only after someone was hurt (pf_rk_need): once nothing hostile is around, up to three wounded people are tended by a carer or the nearest adult who isn't hurt themselves.",
+    "condition": { "math": [ "value_or(pf_rk_need, 0) == 1" ] },
+    "recurrence": "3 minutes",
+    "global": true,
+    "effect": [
+      { "run_eocs": "PF_THREAT_scan" },
+      {
+        "if": { "math": [ "pf_threat == 0" ] },
+        "then": [
+          { "math": [ "pf_rk_need = 0" ] },
+          { "math": [ "pf_rk_hn = 0" ] },
+          { "u_run_npc_eocs": [ "PF_RK_hurt_one" ], "local": true, "npc_range": 30 },
+          {
+            "if": { "math": [ "pf_rk_hn > 0" ] },
+            "then": [ { "run_eocs": "PF_RK_tend", "beta_talker": { "global_val": "pf_rk_h0" } } ]
+          },
+          {
+            "if": { "math": [ "pf_rk_hn > 1" ] },
+            "then": [ { "run_eocs": "PF_RK_tend", "beta_talker": { "global_val": "pf_rk_h1" } } ]
+          },
+          {
+            "if": { "math": [ "pf_rk_hn > 2" ] },
+            "then": [ { "run_eocs": "PF_RK_tend", "beta_talker": { "global_val": "pf_rk_h2" } } ]
+          },
+          { "u_location_variable": { "global_val": "pf_rk_avpos" } },
+          { "u_run_npc_eocs": [ "PF_RK_fled_one" ], "local": true, "npc_range": 30 }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_RK_sweep",
+    "//": "Every 30 minutes: look for anyone still bleeding (old wounds, someone who arrived hurt), not only after a fresh hit.",
+    "recurrence": "30 minutes",
+    "global": true,
+    "effect": [ { "math": [ "pf_rk_need = 1" ] } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_RK_hurt_one",
+    "condition": {
+      "and": [
+        { "math": [ "has_var(u_pf_uid)" ] },
+        { "math": [ "pf_rk_hn < 3" ] },
+        {
+          "and": [
+            {
+              "or": [
+                {
+                  "and": [
+                    { "math": [ "value_or(u_pf_hurt_t, -1) > value_or(u_pf_tended_t, -1)" ] },
+                    { "math": [ "u_pf_hurt_t >= time('now') - time('6 h')" ] },
+                    { "math": [ "u_pf_hurt_t < time('now') - time('2 m')" ] }
+                  ]
+                },
+                {
+                  "or": [
+                    { "u_has_effect": "bleed", "bodypart": "torso" },
+                    { "u_has_effect": "bleed", "bodypart": "head" },
+                    { "u_has_effect": "bleed", "bodypart": "eyes" },
+                    { "u_has_effect": "bleed", "bodypart": "mouth" },
+                    { "u_has_effect": "bleed", "bodypart": "arm_l" },
+                    { "u_has_effect": "bleed", "bodypart": "arm_r" },
+                    { "u_has_effect": "bleed", "bodypart": "hand_l" },
+                    { "u_has_effect": "bleed", "bodypart": "hand_r" },
+                    { "u_has_effect": "bleed", "bodypart": "leg_l" },
+                    { "u_has_effect": "bleed", "bodypart": "leg_r" },
+                    { "u_has_effect": "bleed", "bodypart": "foot_l" },
+                    { "u_has_effect": "bleed", "bodypart": "foot_r" },
+                    { "u_has_effect": "bleed" }
+                  ]
+                }
+              ]
+            },
+            { "math": [ "value_or(u_pf_tended_t, -1) < time('now') - time('30 m')" ] },
+            { "math": [ "u_monsters_nearby('radius': 3) == 0" ] }
+          ]
+        }
+      ]
+    },
+    "effect": [
+      { "if": { "math": [ "pf_rk_hn == 0" ] }, "then": [ { "u_set_talker": { "global_val": "pf_rk_h0" } } ] },
+      { "if": { "math": [ "pf_rk_hn == 1" ] }, "then": [ { "u_set_talker": { "global_val": "pf_rk_h1" } } ] },
+      { "if": { "math": [ "pf_rk_hn == 2" ] }, "then": [ { "u_set_talker": { "global_val": "pf_rk_h2" } } ] },
+      { "math": [ "pf_rk_hn += 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_RK_tend",
+    "//": "u = avatar, n = someone wounded.  Picks who tends them: an awake adult within 20 tiles of them who isn't hurt, preferring the household carer and first aid skill.",
+    "effect": [
+      { "npc_location_variable": { "global_val": "pf_rk_hpos" } },
+      { "copy_var": { "npc_val": "pf_uid" }, "target_var": { "global_val": "pf_rk_huid" } },
+      { "npc_set_talker": { "global_val": "pf_rk_hcur" } },
+      { "set_string_var": "<npc_name>", "target_var": { "global_val": "pf_say_b" }, "parse_tags": true },
+      { "math": [ "pf_rk_tb = -999" ] },
+      { "math": [ "pf_rk_relax = 0" ] },
+      { "u_run_npc_eocs": [ "PF_RK_tender_cand" ], "local": true, "npc_range": 40 },
+      {
+        "if": { "math": [ "pf_rk_tb == -999" ] },
+        "then": [ { "math": [ "pf_rk_relax = 1" ] }, { "u_run_npc_eocs": [ "PF_RK_tender_cand" ], "local": true, "npc_range": 40 } ]
+      },
+      {
+        "if": { "math": [ "pf_rk_tb > -999" ] },
+        "then": [
+          {
+            "run_eocs": "PF_RK_tend_do",
+            "alpha_talker": { "global_val": "pf_rk_tender" },
+            "beta_talker": { "global_val": "pf_rk_hcur" }
+          },
+          {
+            "if": { "math": [ "value_or(pf_set_chatter, 1) == 1" ] },
+            "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "rk_tended" } } ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_RK_tender_cand",
+    "condition": {
+      "and": [
+        { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+        { "math": [ "has_var(u_pf_uid)" ] },
+        { "not": { "u_has_effect": "sleep" } },
+        { "not": { "u_has_flag": "CANNOT_ATTACK" } },
+        { "not": { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_rk_huid" } ] } },
+        {
+          "or": [
+            { "math": [ "value_or(u_pf_hurt_t, -1) < time('now') - time('1 m')" ] },
+            { "math": [ "value_or(pf_rk_relax, 0) == 1" ] }
+          ]
+        }
+      ]
+    },
+    "effect": [
+      { "u_location_variable": { "u_val": "pf_pos" } },
+      {
+        "if": { "math": [ "distance(u_pf_pos, pf_rk_hpos) <= 20" ] },
+        "then": [
+          {
+            "math": [
+              "_s = 100 - distance(u_pf_pos, pf_rk_hpos) * 2 + u_skill('firstaid') * 8 + (value_or(u_pf_role, 0) == 5) * 40 + (value_or(u_pf_role, 0) == 9) * 80"
+            ]
+          },
+          {
+            "if": { "math": [ "_s > pf_rk_tb" ] },
+            "then": [
+              { "math": [ "pf_rk_tb = _s" ] },
+              { "u_set_talker": { "global_val": "pf_rk_tender" } },
+              { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_RK_tend_do",
+    "//": "u = the one tending, n = the wounded.  Cleans and wraps the wounds: a little hp back on every part, bleeding stopped, bites cleaned (so they don't go bad), and a care_given moment.",
+    "effect": [
+      { "math": [ "n_hp('torso') = min(n_hp('torso') + 8, n_hp_max('torso'))" ] },
+      { "math": [ "n_hp('head') = min(n_hp('head') + 8, n_hp_max('head'))" ] },
+      { "math": [ "n_hp('arm_l') = min(n_hp('arm_l') + 8, n_hp_max('arm_l'))" ] },
+      { "math": [ "n_hp('arm_r') = min(n_hp('arm_r') + 8, n_hp_max('arm_r'))" ] },
+      { "math": [ "n_hp('leg_l') = min(n_hp('leg_l') + 8, n_hp_max('leg_l'))" ] },
+      { "math": [ "n_hp('leg_r') = min(n_hp('leg_r') + 8, n_hp_max('leg_r'))" ] },
+      { "npc_lose_effect": "bleed", "target_part": "ALL" },
+      { "npc_lose_effect": "bite", "target_part": "ALL" },
+      { "math": [ "n_pf_tended_t = time('now')" ] },
+      { "run_eocs": "PF_MK_care_given" },
+      { "math": [ "pf_tended_total = value_or(pf_tended_total, 0) + 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_RK_fled_one",
+    "//": "u = an adult who broke and ran in the last 15 minutes (engine stamp pf_fled_t), and isn't badly hurt themselves (torso and head at 50% or more: running wounded is sensible).  If you or one of ours was hurt nearby, the one they left behind (you first, else the most recently hurt) gets a ran_off moment: they trust the runner less, and so does everyone who saw it.  Running when nobody got hurt costs nothing.",
+    "condition": {
+      "and": [
+        { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+        { "math": [ "has_var(u_pf_uid)" ] },
+        { "not": { "u_has_flag": "CANNOT_ATTACK" } },
+        { "math": [ "value_or(u_pf_fled_t, -1) >= time('now') - time('15 m')" ] },
+        { "math": [ "value_or(u_pf_fled_seen, -1) < u_pf_fled_t" ] },
+        {
+          "math": [ "min(u_hp('torso') / max(1, u_hp_max('torso')), u_hp('head') / max(1, u_hp_max('head'))) >= 0.5" ]
+        }
+      ]
+    },
+    "effect": [
+      { "math": [ "u_pf_fled_seen = u_pf_fled_t" ] },
+      { "u_set_talker": { "global_val": "pf_rk_fleer" } },
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+      { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_rk_fuid" } },
+      { "u_location_variable": { "global_val": "pf_rk_fpos" } },
+      { "math": [ "pf_rk_vbest = -1" ] },
+      { "math": [ "pf_rk_v_av = 0" ] },
+      { "run_eocs": "PF_RK_fled_av", "alpha_talker": "avatar" },
+      {
+        "if": { "math": [ "pf_rk_v_av == 0" ] },
+        "then": [ { "u_run_npc_eocs": [ "PF_RK_fled_victim" ], "local": true, "npc_range": 30 } ]
+      },
+      {
+        "if": { "math": [ "pf_rk_v_av == 1" ] },
+        "then": [
+          { "math": [ "pf_m_str_in = 60" ] },
+          { "run_eocs": "PF_MK_ran_off", "beta_talker": "avatar" },
+          {
+            "if": { "math": [ "value_or(pf_set_chatter, 1) == 1" ] },
+            "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "rk_ran_you" } } ]
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "math": [ "pf_rk_v_av == 0" ] }, { "math": [ "pf_rk_vbest > 0" ] } ] },
+        "then": [
+          { "run_eocs": "PF_MK_ran_off", "beta_talker": { "global_val": "pf_rk_victim" } },
+          {
+            "if": {
+              "and": [ { "math": [ "value_or(pf_set_chatter, 1) == 1" ] }, { "math": [ "distance(pf_rk_avpos, pf_rk_fpos) <= 30" ] } ]
+            },
+            "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "rk_ran" } } ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_rk_v_av + (pf_rk_vbest > 0) > 0" ] },
+        "then": [ { "math": [ "pf_ran_total = value_or(pf_ran_total, 0) + 1" ] } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_RK_fled_av",
+    "//": "u = avatar.  Were you the one left behind?",
+    "effect": [
+      {
+        "if": {
+          "and": [
+            { "math": [ "distance(pf_rk_avpos, pf_rk_fpos) <= 30" ] },
+            { "math": [ "value_or(u_pf_hurt_t, -1) >= time('now') - time('15 m')" ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_rk_v_av = 1" ] }, { "math": [ "pf_rk_vbest = u_pf_hurt_t" ] } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_RK_fled_victim",
+    "condition": {
+      "and": [
+        { "math": [ "has_var(u_pf_uid)" ] },
+        { "not": { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_rk_fuid" } ] } },
+        { "math": [ "value_or(u_pf_hurt_t, -1) >= time('now') - time('15 m')" ] },
+        { "math": [ "u_pf_hurt_t > pf_rk_vbest" ] }
+      ]
+    },
+    "effect": [
+      { "math": [ "pf_rk_vbest = u_pf_hurt_t" ] },
+      { "u_set_talker": { "global_val": "pf_rk_victim" } },
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_b" }, "parse_tags": true }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_RK_night_tick",
+    "//": "Once an hour, 01:00-04:00, until someone has had a nightmare tonight: someone frightened in the last day (hurt, carried off in an alarm, caught in a portal storm) or in mourning may wake up screaming.",
+    "condition": {
+      "and": [
+        { "math": [ "time_since('midnight', 'unit': 'hours') >= 1" ] },
+        { "math": [ "time_since('midnight', 'unit': 'hours') < 4" ] },
+        { "math": [ "value_or(pf_nm_night, -1) != floor(time('now') / time('1 d'))" ] }
+      ]
+    },
+    "recurrence": "1 hours",
+    "global": true,
+    "effect": [
+      { "run_eocs": "PF_THREAT_scan" },
+      { "if": { "math": [ "pf_threat == 0" ] }, "then": [ { "run_eocs": "PF_RK_nm_try" } ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_RK_nm_try",
+    "//": "u = avatar.",
+    "effect": [
+      { "u_location_variable": { "global_val": "pf_nm_av" } },
+      { "math": [ "pf_nm_best = -1" ] },
+      { "u_run_npc_eocs": [ "PF_RK_nm_cand" ], "local": true, "npc_range": 30 },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_nm_best >= 0" ] },
+            { "or": [ { "math": [ "rand(1) == 0" ] }, { "math": [ "value_or(pf_nm_force, 0) == 1" ] } ] }
+          ]
+        },
+        "then": [ { "run_eocs": "PF_RK_nm_do" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_RK_nm_cand",
+    "//": "u = someone near you.  Children are the likeliest to have the nightmare.  Whoever is awake on watch (yours or the town's) can't have one (full run: \"kept watch through the night\" and \"cries out in their sleep\" the same night).",
+    "condition": {
+      "and": [
+        { "math": [ "has_var(u_pf_uid)" ] },
+        { "not": { "u_has_effect": "PF_infant" } },
+        {
+          "not": {
+            "and": [
+              { "math": [ "value_or(pf_watch_active, 0) == 1" ] },
+              { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_watch_uid" } ] }
+            ]
+          }
+        },
+        {
+          "not": {
+            "and": [
+              { "math": [ "value_or(u_pf_on_watch, 0) == 1" ] },
+              { "math": [ "value_or(u_pf_watch_night, -1) == floor((time('now') - time('12 h')) / time('1 d'))" ] }
+            ]
+          }
+        },
+        { "not": { "and": [ { "math": [ "value_or(pf_nm_adult_only, 0) == 1" ] }, { "u_has_trait": "PF_CHILD" } ] } },
+        {
+          "or": [
+            { "math": [ "value_or(u_pf_fright_t, -1) >= time('now') - time('1 d')" ] },
+            { "math": [ "time('now') < value_or(u_pf_mourn_until, 0)" ] }
+          ]
+        }
+      ]
+    },
+    "effect": [
+      { "math": [ "_s = rand(100) + (u_has_trait('PF_CHILD') ? 60 : 0)" ] },
+      {
+        "if": { "math": [ "_s > pf_nm_best" ] },
+        "then": [
+          { "math": [ "pf_nm_best = _s" ] },
+          { "u_set_talker": { "global_val": "pf_nm_who" } },
+          { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_nm_name" }, "parse_tags": true },
+          { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_nm_uid" } },
+          { "u_location_variable": { "global_val": "pf_nm_pos" } },
+          { "math": [ "pf_nm_kid = 0" ] },
+          { "if": { "u_has_trait": "PF_CHILD" }, "then": [ { "math": [ "pf_nm_kid = 1" ] } ] },
+          { "math": [ "pf_nm_band = value_or(u_pf_band, 0)" ] },
+          { "set_string_var": "none", "target_var": { "global_val": "pf_nm_mom" } },
+          { "set_string_var": "none", "target_var": { "global_val": "pf_nm_dad" } },
+          { "set_string_var": "none", "target_var": { "global_val": "pf_nm_grd" } },
+          {
+            "if": { "math": [ "has_var(u_pf_mom)" ] },
+            "then": [
+              { "copy_var": { "u_val": "pf_mom" }, "target_var": { "global_val": "pf_nm_mom" } },
+              { "copy_var": { "u_val": "pf_dad" }, "target_var": { "global_val": "pf_nm_dad" } }
+            ]
+          },
+          {
+            "if": { "math": [ "has_var(u_pf_guardian)" ] },
+            "then": [ { "copy_var": { "u_val": "pf_guardian" }, "target_var": { "global_val": "pf_nm_grd" } } ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_RK_nm_do",
+    "//": "u = avatar.  The nightmare: your own child wakes you (you go to them); otherwise their parent, or whoever cares most about them within 20 tiles, sits with them (a parenting or care moment).  Nobody: they cry it out alone.",
+    "effect": [
+      { "math": [ "pf_nm_night = floor(time('now') / time('1 d'))" ] },
+      { "math": [ "pf_nightmares_total = value_or(pf_nightmares_total, 0) + 1" ] },
+      { "copy_var": { "global_val": "pf_nm_name" }, "target_var": { "global_val": "pf_say_b" } },
+      { "math": [ "pf_nm_c = 0" ] },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_nm_kid == 1" ] },
+            {
+              "or": [
+                { "compare_string": [ { "global_val": "pf_nm_mom" }, "AVATAR" ] },
+                { "compare_string": [ { "global_val": "pf_nm_dad" }, "AVATAR" ] },
+                { "compare_string": [ { "global_val": "pf_nm_grd" }, "AVATAR" ] }
+              ]
+            }
+          ]
+        },
+        "then": [ { "math": [ "pf_nm_c = 2" ] } ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_nm_c == 2" ] },
+            { "math": [ "value_or(pf_nm_you_day, -9) >= floor(time('now') / time('1 d')) - 1" ] }
+          ]
+        },
+        "then": [
+          { "math": [ "pf_nm_cb = -1" ] },
+          { "u_run_npc_eocs": [ "PF_RK_nm_comforter" ], "local": true, "npc_range": 40 },
+          { "if": { "math": [ "pf_nm_cb >= 0" ] }, "then": [ { "math": [ "pf_nm_c = 1" ] } ] }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_nm_c == 0" ] },
+        "then": [
+          { "math": [ "pf_nm_cb = -1" ] },
+          { "u_run_npc_eocs": [ "PF_RK_nm_comforter" ], "local": true, "npc_range": 40 },
+          { "if": { "math": [ "pf_nm_cb >= 0" ] }, "then": [ { "math": [ "pf_nm_c = 1" ] } ] }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_nm_c == 2" ] },
+        "then": [
+          {
+            "if": { "u_has_effect": "sleep" },
+            "then": [ { "u_lose_effect": "sleep" }, { "u_lose_effect": "lying_down" }, { "u_lose_effect": "PF_sleep_easy" } ]
+          },
+          { "math": [ "pf_nm_you_day = floor(time('now') / time('1 d'))" ] },
+          { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "nm_kid_you" } },
+          { "math": [ "pf_m_str_in = 40" ] },
+          { "run_eocs": "PF_MK_parenting", "alpha_talker": "avatar", "beta_talker": { "global_val": "pf_nm_who" } }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_nm_c == 1" ] },
+        "then": [
+          {
+            "if": { "math": [ "pf_nm_kid == 1" ] },
+            "then": [
+              { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "nm_kid" } },
+              { "math": [ "pf_m_str_in = 40" ] },
+              {
+                "run_eocs": "PF_MK_parenting",
+                "alpha_talker": { "global_val": "pf_nm_comf" },
+                "beta_talker": { "global_val": "pf_nm_who" }
+              }
+            ],
+            "else": [
+              { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "nm_adult" } },
+              { "math": [ "pf_m_str_in = 45" ] },
+              {
+                "run_eocs": "PF_MK_care_given",
+                "alpha_talker": { "global_val": "pf_nm_comf" },
+                "beta_talker": { "global_val": "pf_nm_who" }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_nm_c == 0" ] },
+        "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "nm_alone" } } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_RK_nm_comforter",
+    "//": "u = someone who might go to them: a parent first, then whoever cares most (warmth 15+; for a screaming child 5+ is enough, and housemates and bandmates count a little extra).",
+    "condition": {
+      "and": [
+        { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+        { "math": [ "has_var(u_pf_uid)" ] },
+        { "not": { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_nm_uid" } ] } }
+      ]
+    },
+    "effect": [
+      { "u_location_variable": { "u_val": "pf_pos" } },
+      {
+        "if": { "math": [ "distance(u_pf_pos, pf_nm_pos) <= 20" ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_nm_uid" }, "target_var": { "global_val": "pf_m_other" } },
+          { "run_eocs": "PF_VIEW_read" },
+          { "math": [ "_s = pf_read_w" ] },
+          {
+            "if": {
+              "or": [
+                { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_nm_mom" } ] },
+                { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_nm_dad" } ] },
+                { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_nm_grd" } ] }
+              ]
+            },
+            "then": [ { "math": [ "_s += 100" ] } ]
+          },
+          { "if": { "u_has_trait": "PF_Q_MOTHER_HEN" }, "then": [ { "math": [ "_s += 15" ] } ] },
+          {
+            "if": {
+              "math": [ "(value_or(u_pf_resident, 0) == 1) + (value_or(u_pf_band, 0) > 0) * (value_or(u_pf_band, 0) == pf_nm_band) > 0" ]
+            },
+            "then": [ { "math": [ "_s += 10" ] } ]
+          },
+          {
+            "if": { "and": [ { "math": [ "_s >= (pf_nm_kid == 1 ? 5 : 15)" ] }, { "math": [ "_s > pf_nm_cb" ] } ] },
+            "then": [
+              { "math": [ "pf_nm_cb = _s" ] },
+              { "u_set_talker": { "global_val": "pf_nm_comf" } },
+              { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_RK_storm_tick",
+    "//": "Every 5 minutes: notices a portal storm beginning and ending (vanilla weather; personal_portal_storms only changes who the storm's creatures attack).  The end needs 30 minutes without storm weather.",
+    "recurrence": "5 minutes",
+    "global": true,
+    "effect": [
+      {
+        "if": {
+          "or": [
+            { "is_weather": "early_portal_storm" },
+            { "is_weather": "distant_portal_storm" },
+            { "is_weather": "close_portal_storm" },
+            { "is_weather": "portal_storm" },
+            { "is_weather": "strong_portal_storm" }
+          ]
+        },
+        "then": [ { "math": [ "pf_ps_calm_t = -1" ] } ]
+      },
+      {
+        "if": {
+          "or": [
+            { "is_weather": "distant_portal_storm" },
+            { "is_weather": "close_portal_storm" },
+            { "is_weather": "portal_storm" },
+            { "is_weather": "strong_portal_storm" }
+          ]
+        },
+        "then": [ { "math": [ "pf_ps_main = 1" ] } ]
+      },
+      {
+        "if": {
+          "and": [
+            {
+              "or": [
+                { "is_weather": "early_portal_storm" },
+                { "is_weather": "distant_portal_storm" },
+                { "is_weather": "close_portal_storm" },
+                { "is_weather": "portal_storm" },
+                { "is_weather": "strong_portal_storm" }
+              ]
+            },
+            { "math": [ "value_or(pf_ps_on, 0) == 0" ] }
+          ]
+        },
+        "then": [ { "run_eocs": "PF_RK_storm_start" } ],
+        "else": [
+          {
+            "if": {
+              "and": [
+                {
+                  "not": {
+                    "or": [
+                      { "is_weather": "early_portal_storm" },
+                      { "is_weather": "distant_portal_storm" },
+                      { "is_weather": "close_portal_storm" },
+                      { "is_weather": "portal_storm" },
+                      { "is_weather": "strong_portal_storm" }
+                    ]
+                  }
+                },
+                { "math": [ "value_or(pf_ps_on, 0) == 1" ] }
+              ]
+            },
+            "then": [
+              {
+                "if": { "math": [ "value_or(pf_ps_calm_t, -1) < 0" ] },
+                "then": [ { "math": [ "pf_ps_calm_t = time('now')" ] } ],
+                "else": [
+                  {
+                    "if": { "math": [ "time('now') - pf_ps_calm_t >= (value_or(pf_ps_main, 0) == 1 ? time('30 m') : time('6 h'))" ] },
+                    "then": [ { "math": [ "pf_ps_calm_t = -1" ] }, { "math": [ "pf_ps_main = 0" ] }, { "run_eocs": "PF_RK_storm_end" } ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_RK_storm_start",
+    "//": "u = avatar.  The sky goes wrong: everyone near is frightened, and the first adult found herds people together.",
+    "effect": [
+      { "math": [ "pf_ps_on = 1" ] },
+      { "math": [ "pf_ps_t = time('now')" ] },
+      { "math": [ "pf_ps_n = 0" ] },
+      { "u_run_npc_eocs": [ "PF_RK_storm_mark" ], "local": true, "npc_range": 30 },
+      {
+        "if": { "and": [ { "math": [ "pf_ps_n > 0" ] }, { "math": [ "value_or(pf_set_chatter, 1) == 1" ] } ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_ps_first" }, "target_var": { "global_val": "pf_say_a" } },
+          { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "storm_start" } }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_RK_storm_mark",
+    "condition": { "math": [ "has_var(u_pf_uid)" ] },
+    "effect": [
+      { "math": [ "u_pf_fright_t = time('now')" ] },
+      {
+        "if": {
+          "and": [
+            { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+            { "math": [ "pf_ps_n == 0" ] },
+            { "not": { "u_has_effect": "sleep" } }
+          ]
+        },
+        "then": [ { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_ps_first" }, "parse_tags": true } ]
+      },
+      {
+        "if": { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+        "then": [ { "math": [ "pf_ps_n += 1" ] } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_RK_storm_end",
+    "//": "u = avatar.  The storm passes: everyone who went through it with you shares the danger (a shared_danger moment with you), and it'll be talked about tonight.",
+    "effect": [
+      { "math": [ "pf_ps_on = 0" ] },
+      { "math": [ "pf_ps_n = 0" ] },
+      { "u_run_npc_eocs": [ "PF_RK_storm_after" ], "local": true, "npc_range": 30 },
+      {
+        "if": { "math": [ "pf_ps_n > 0" ] },
+        "then": [
+          { "math": [ "pf_rk_storm_day = floor(time('now') / time('1 d'))" ] },
+          { "math": [ "pf_storms_total = value_or(pf_storms_total, 0) + 1" ] },
+          {
+            "if": { "math": [ "value_or(pf_set_chatter, 1) == 1" ] },
+            "then": [
+              { "copy_var": { "global_val": "pf_ps_first" }, "target_var": { "global_val": "pf_say_a" } },
+              { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "storm_end" } }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_RK_storm_after",
+    "condition": { "math": [ "has_var(u_pf_uid)" ] },
+    "effect": [
+      { "math": [ "u_pf_fright_t = time('now')" ] },
+      {
+        "if": {
+          "and": [
+            { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+            { "math": [ "pf_ps_n == 0" ] }
+          ]
+        },
+        "then": [ { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_ps_first" }, "parse_tags": true } ]
+      },
+      {
+        "if": { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+        "then": [
+          { "math": [ "pf_ps_n += 1" ] },
+          { "math": [ "pf_m_str_in = 50" ] },
+          { "run_eocs": "PF_MK_shared_danger", "beta_talker": "avatar" }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_RK_retell",
+    "//": "u = avatar, at the evening beat (fire or home) on a day with a rescue, unless the fight broke up this very evening (then nobody talks, the bottle goes around).",
+    "condition": {
+      "and": [
+        {
+          "or": [
+            { "math": [ "value_or(pf_rk_day, -1) == floor(time('now') / time('1 d'))" ] },
+            { "math": [ "value_or(pf_rk_storm_day, -1) == floor(time('now') / time('1 d'))" ] }
+          ]
+        },
+        { "math": [ "value_or(pf_rk_told_day, -1) != floor(time('now') / time('1 d'))" ] }
+      ]
+    },
+    "effect": [
+      { "math": [ "pf_rk_told_day = floor(time('now') / time('1 d'))" ] },
+      { "copy_var": { "global_val": "pf_rk_hero" }, "target_var": { "global_val": "pf_say_a" } },
+      { "copy_var": { "global_val": "pf_rk_hsaved" }, "target_var": { "global_val": "pf_say_b" } },
+      {
+        "if": { "math": [ "value_or(pf_rk_day, -1) != floor(time('now') / time('1 d'))" ] },
+        "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "storm_retell" } } ],
+        "else": [
+          {
+            "if": { "math": [ "pf_rk_hero_av == 1" ] },
+            "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "rk_retell_you" } } ],
+            "else": [
+              {
+                "if": { "math": [ "pf_rk_saved_av == 1" ] },
+                "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "rk_retell_saved" } } ],
+                "else": [
+                  {
+                    "if": { "math": [ "value_or(pf_fire_n, 0) <= 1" ] },
+                    "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "rk_retell_two" } } ],
+                    "else": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "rk_retell" } } ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "u_add_morale": "PF_morale_alive",
+        "bonus": 10,
+        "max_bonus": 10,
+        "duration": "8 hours",
+        "decay_start": "4 hours"
+      }
+    ]
+  }
+]

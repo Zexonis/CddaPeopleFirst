@@ -1,0 +1,830 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HORN_tick",
+    "//": "Every 2 minutes, when there are people around you: if something hostile is close (PF_THREAT_scan), the camp is alarmed; while it lasts, everyone keeps to their job (defenders re-aim at the threat as it moves, children stay away); once it has been calm for a few minutes, the all-clear.",
+    "condition": { "math": [ "value_or(pf_horn_on, 1) == 1" ] },
+    "recurrence": "2 minutes",
+    "global": true,
+    "effect": [
+      { "run_eocs": "PF_THREAT_scan" },
+      {
+        "if": { "or": [ { "math": [ "pf_threat > 0" ] }, { "math": [ "value_or(pf_wt_seen_t, -1) >= time('now') - time('3 m')" ] } ] },
+        "then": [
+          {
+            "if": { "math": [ "value_or(pf_horn_active, 0) == 0" ] },
+            "then": [ { "run_eocs": "PF_HORN_alarm" } ],
+            "else": [ { "run_eocs": "PF_HORN_scramble" } ]
+          }
+        ],
+        "else": [
+          {
+            "if": {
+              "and": [
+                { "math": [ "value_or(pf_horn_active, 0) == 1" ] },
+                { "math": [ "time('now') - max(pf_horn_t, value_or(pf_horn_last, 0)) >= time('6 m')" ] }
+              ]
+            },
+            "then": [ { "run_eocs": "PF_HORN_allclear" } ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HORN_alarm",
+    "//": "u = avatar, a new threat.  The watcher (if someone has the watch) or the nearest awake adult raises the alarm; you're shaken awake if you were asleep; then the scramble.",
+    "effect": [
+      { "math": [ "pf_horn_active = 1" ] },
+      { "math": [ "pf_horn_t = time('now')" ] },
+      { "math": [ "pf_hn_escd = 0" ] },
+      { "math": [ "pf_horn_deaths0 = value_or(pf_ours_dead_total, 0)" ] },
+      { "run_eocs": "PF_HORN_locate" },
+      {
+        "if": { "math": [ "pf_hn_found == 0" ] },
+        "then": [ { "math": [ "pf_horn_active = 0" ] } ],
+        "else": [
+          { "math": [ "pf_hn_people = 0" ] },
+          { "u_run_npc_eocs": [ "PF_HORN_count" ], "local": true, "npc_range": 30 },
+          {
+            "if": { "math": [ "pf_hn_people == 0" ] },
+            "then": [ { "math": [ "pf_horn_active = 0" ] } ],
+            "else": [
+              { "set_string_var": "", "target_var": { "global_val": "pf_hn_spot" } },
+              {
+                "if": { "math": [ "value_or(pf_wt_seen_t, -1) >= time('now') - time('3 m')" ] },
+                "then": [ { "copy_var": { "global_val": "pf_wt_spot" }, "target_var": { "global_val": "pf_hn_spot" } } ]
+              },
+              {
+                "if": {
+                  "and": [ { "math": [ "value_or(pf_watch_active, 0) == 1" ] }, { "compare_string": [ { "global_val": "pf_hn_spot" }, "" ] } ]
+                },
+                "then": [
+                  { "set_string_var": "pf_name_<global_val:pf_watch_uid>", "target_var": { "context_val": "wn" }, "parse_tags": true },
+                  { "copy_var": { "var_val": "wn" }, "target_var": { "global_val": "pf_hn_spot" } }
+                ]
+              },
+              {
+                "if": { "compare_string": [ { "global_val": "pf_hn_spot" }, "" ] },
+                "then": [ { "math": [ "pf_hn_best = 9999" ] }, { "u_run_npc_eocs": [ "PF_HORN_spotter" ], "local": true, "npc_range": 30 } ]
+              },
+              {
+                "math": [
+                  "pf_hn_quiet = (time('now') - value_or(pf_horn_clear_t, -999999) < time('30 m')) + (time('now') - value_or(pf_horn_said_t, -999999) < time('3 h')) > 0"
+                ]
+              },
+              {
+                "if": {
+                  "and": [ { "not": { "compare_string": [ { "global_val": "pf_hn_spot" }, "" ] } }, { "math": [ "pf_hn_quiet == 0" ] } ]
+                },
+                "then": [
+                  { "math": [ "pf_horn_said_t = time('now')" ] },
+                  { "math": [ "_v = rand(3)" ] },
+                  {
+                    "if": { "math": [ "_v == value_or(pf_hn_last, -1)" ] },
+                    "then": [ { "math": [ "_v = (_v + 1) % 4" ] } ]
+                  },
+                  { "math": [ "pf_hn_last = _v" ] },
+                  {
+                    "if": { "math": [ "_v == 0" ] },
+                    "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "horn_alarm" } } ]
+                  },
+                  {
+                    "if": { "math": [ "_v == 1" ] },
+                    "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "horn_alarm_1" } } ]
+                  },
+                  {
+                    "if": { "math": [ "_v == 2" ] },
+                    "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "horn_alarm_2" } } ]
+                  },
+                  {
+                    "if": { "math": [ "_v == 3" ] },
+                    "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "horn_alarm_3" } } ]
+                  }
+                ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "u_has_effect": "sleep" },
+                    { "math": [ "u_monsters_nearby('radius': 6) > 0" ] },
+                    { "math": [ "distance(pf_hn_av, pf_hn_att) <= 6" ] },
+                    {
+                      "line_of_sight": 6,
+                      "loc_1": { "global_val": "pf_hn_av" },
+                      "loc_2": { "global_val": "pf_hn_att" }
+                    }
+                  ]
+                },
+                "then": [
+                  { "u_lose_effect": "sleep" },
+                  { "u_lose_effect": "lying_down" },
+                  { "u_lose_effect": "PF_sleep_easy" },
+                  { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "horn_wake_you" } }
+                ]
+              },
+              { "math": [ "pf_horn_new = 1" ] },
+              { "run_eocs": "PF_HORN_scramble" },
+              { "math": [ "pf_horn_new = 0" ] },
+              { "math": [ "pf_horn_alarms_total = value_or(pf_horn_alarms_total, 0) + 1" ] }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HORN_count",
+    "condition": {
+      "and": [
+        { "math": [ "has_var(u_pf_uid)" ] },
+        { "math": [ "u_val('age') >= 2" ] },
+        {
+          "or": [ { "math": [ "value_or(u_pf_resident, 0) == 1" ] }, { "math": [ "value_or(u_pf_v_AVATAR_w, 0) >= 20" ] } ]
+        }
+      ]
+    },
+    "effect": [ { "math": [ "pf_hn_people += 1" ] } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_OURS_died",
+    "//": "Signal: one of ours dies (resident, or someone who cares for you).",
+    "condition": {
+      "and": [
+        "has_alpha",
+        "u_is_npc",
+        { "math": [ "has_var(u_pf_uid)" ] },
+        {
+          "or": [ { "math": [ "value_or(u_pf_resident, 0) == 1" ] }, { "math": [ "value_or(u_pf_v_AVATAR_w, 0) >= 20" ] } ]
+        },
+        { "math": [ "value_or(u_pf_envoy, 0) == 0" ] },
+        { "math": [ "value_or(u_pf_nv_gone, 0) == 0" ] }
+      ]
+    },
+    "eoc_type": "EVENT",
+    "required_event": "character_dies",
+    "effect": [
+      { "math": [ "pf_ours_dead_total = value_or(pf_ours_dead_total, 0) + 1" ] },
+      { "math": [ "pf_loss_multi = (time('now') - value_or(pf_loss_t, -999999) < time('12 h')) ? 1 : 0" ] },
+      { "math": [ "pf_loss_n = value_or(pf_loss_n, 0) + 1" ] },
+      { "math": [ "pf_loss_t = time('now')" ] },
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_loss_name" }, "parse_tags": true },
+      {
+        "if": { "math": [ "value_or(u_pf_resident, 0) == 1" ] },
+        "then": [
+          { "math": [ "pf_est_pending = 1" ] },
+          { "math": [ "pf_est_t = time('now')" ] },
+          { "u_location_variable": { "global_val": "pf_est_at" } },
+          { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_est_name" }, "parse_tags": true },
+          { "math": [ "pf_est_hascn = has_var(u_pf_corner)" ] },
+          {
+            "if": { "math": [ "pf_est_hascn == 1" ] },
+            "then": [ { "copy_var": { "u_val": "pf_corner" }, "target_var": { "global_val": "pf_est_cn" } } ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_WAKE_on_hurt",
+    "//": "Signal: one of ours is hit by a monster within 20 tiles of you while you sleep: you're shaken awake (once every 10 minutes).",
+    "condition": {
+      "and": [
+        "has_alpha",
+        "has_beta",
+        "u_is_npc",
+        "npc_is_monster",
+        { "math": [ "has_var(u_pf_uid)" ] },
+        {
+          "or": [ { "math": [ "value_or(u_pf_resident, 0) == 1" ] }, { "math": [ "value_or(u_pf_v_AVATAR_w, 0) >= 20" ] } ]
+        }
+      ]
+    },
+    "eoc_type": "EVENT",
+    "required_event": "character_takes_damage",
+    "effect": [
+      { "u_location_variable": { "global_val": "pf_wk_at" } },
+      {
+        "run_eocs": {
+          "id": "PF_WAKE_on_hurt_av",
+          "effect": [
+            { "u_location_variable": { "global_val": "pf_wk_av" } },
+            {
+              "if": {
+                "and": [
+                  { "u_has_effect": "sleep" },
+                  { "math": [ "distance(pf_wk_av, pf_wk_at) <= 20" ] },
+                  { "math": [ "time('now') - value_or(pf_wk_t, -999999) >= time('10 m')" ] }
+                ]
+              },
+              "then": [
+                { "math": [ "pf_wk_t = time('now')" ] },
+                { "u_lose_effect": "sleep" },
+                { "u_lose_effect": "lying_down" },
+                { "u_lose_effect": "PF_sleep_easy" },
+                { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+                { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "hurt_wake_you" } }
+              ]
+            }
+          ]
+        },
+        "alpha_talker": "avatar"
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HORN_locate",
+    "//": "u = avatar.  pf_hn_att = the nearest hostile monster within 25 tiles of you, or else whatever just hurt one of ours (it can be out of your sight: playtest 2), or else what the town watch saw (Town pass 3).",
+    "effect": [
+      { "math": [ "pf_hn_found = 0" ] },
+      { "math": [ "pf_hn_dmin = 9999" ] },
+      { "u_location_variable": { "global_val": "pf_hn_av" } },
+      { "u_run_monster_eocs": [ "PF_HORN_mon" ], "monster_range": 25 },
+      {
+        "if": {
+          "and": [ { "math": [ "pf_hn_found == 0" ] }, { "math": [ "value_or(pf_hn_hurt_t, -1) >= time('now') - time('1 m')" ] } ]
+        },
+        "then": [
+          { "copy_var": { "global_val": "pf_hn_hurt_mpos" }, "target_var": { "global_val": "pf_hn_att" } },
+          { "math": [ "pf_hn_found = 1" ] }
+        ]
+      },
+      {
+        "if": {
+          "and": [ { "math": [ "pf_hn_found == 0" ] }, { "math": [ "value_or(pf_wt_seen_t, -1) >= time('now') - time('3 m')" ] } ]
+        },
+        "then": [
+          { "copy_var": { "global_val": "pf_wt_seen_mpos" }, "target_var": { "global_val": "pf_hn_att" } },
+          { "math": [ "pf_hn_found = 1" ] }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HORN_mon",
+    "condition": { "math": [ "u_monsters_nearby('radius': 0) > 0" ] },
+    "effect": [
+      { "u_location_variable": { "global_val": "pf_hn_mpos" } },
+      {
+        "if": { "math": [ "distance(pf_hn_mpos, pf_hn_av) < pf_hn_dmin" ] },
+        "then": [
+          { "math": [ "pf_hn_dmin = distance(pf_hn_mpos, pf_hn_av)" ] },
+          { "math": [ "pf_hn_found = 1" ] },
+          { "copy_var": { "global_val": "pf_hn_mpos" }, "target_var": { "global_val": "pf_hn_att" } }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HORN_spotter",
+    "condition": {
+      "and": [
+        { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+        { "not": { "u_has_effect": "sleep" } },
+        { "math": [ "has_var(u_pf_uid)" ] },
+        {
+          "or": [ { "math": [ "value_or(u_pf_resident, 0) == 1" ] }, { "math": [ "value_or(u_pf_v_AVATAR_w, 0) >= 20" ] } ]
+        }
+      ]
+    },
+    "effect": [
+      { "u_location_variable": { "u_val": "pf_pos" } },
+      {
+        "if": { "math": [ "distance(u_pf_pos, pf_hn_att) < pf_hn_best" ] },
+        "then": [
+          { "math": [ "pf_hn_best = distance(u_pf_pos, pf_hn_att)" ] },
+          { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_hn_spot" }, "parse_tags": true }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HORN_scramble",
+    "//": "u = avatar.  Children first (each one runs to safety and names who should go with them), then the adults (a child's parent or guardian goes with them; everyone else runs at the threat).",
+    "effect": [
+      { "run_eocs": "PF_HORN_locate" },
+      {
+        "if": { "math": [ "pf_hn_found == 1" ] },
+        "then": [
+          { "math": [ "pf_hn_esc_n = 0" ] },
+          { "u_run_npc_eocs": [ "PF_HORN_child" ], "local": true, "npc_range": 30 },
+          { "math": [ "pf_hn_n = 0" ] },
+          { "math": [ "pf_hn_esc_said = 0" ] },
+          { "u_run_npc_eocs": [ "PF_HORN_adult" ], "local": true, "npc_range": 30 }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HORN_child",
+    "//": "u = a child (walking; babies are carried, so they go wherever their carrier goes).  Runs to the safe spot (and it frightened them: Reckoning nightmares).",
+    "condition": {
+      "and": [
+        { "u_has_trait": "PF_CHILD" },
+        { "not": { "u_has_effect": "PF_infant" } },
+        {
+          "or": [ { "math": [ "value_or(u_pf_resident, 0) == 1" ] }, { "math": [ "value_or(u_pf_v_AVATAR_w, 0) >= 20" ] } ]
+        }
+      ]
+    },
+    "effect": [
+      { "u_location_variable": { "u_val": "pf_pos" } },
+      { "run_eocs": "PF_HORN_safe_spot" },
+      { "copy_var": { "global_val": "pf_hn_safe" }, "target_var": { "u_val": "pf_walk_to" } },
+      { "u_set_guard_pos": { "u_val": "pf_walk_to" } },
+      { "set_string_var": "none", "target_var": { "global_val": "pf_hn_esc" } },
+      { "copy_var": { "u_val": "pf_dad" }, "target_var": { "global_val": "pf_hn_esc" } },
+      {
+        "if": { "not": { "compare_string": [ { "u_val": "pf_mom" }, "none" ] } },
+        "then": [ { "copy_var": { "u_val": "pf_mom" }, "target_var": { "global_val": "pf_hn_esc" } } ]
+      },
+      {
+        "if": { "not": { "compare_string": [ { "u_val": "pf_guardian" }, "none" ] } },
+        "then": [ { "copy_var": { "u_val": "pf_guardian" }, "target_var": { "global_val": "pf_hn_esc" } } ]
+      },
+      {
+        "if": {
+          "and": [ { "math": [ "pf_hn_esc_n < 6" ] }, { "not": { "compare_string": [ { "global_val": "pf_hn_esc" }, "none" ] } } ]
+        },
+        "then": [
+          { "set_string_var": "pf_hn_esc_<global_val:pf_hn_esc_n>", "target_var": { "context_val": "er" }, "parse_tags": true },
+          { "copy_var": { "global_val": "pf_hn_esc" }, "target_var": { "var_val": "er" } },
+          {
+            "set_string_var": "pf_hn_kid_<global_val:pf_hn_esc_n>",
+            "target_var": { "context_val": "ek" },
+            "parse_tags": true
+          },
+          { "set_string_var": "<u_name>", "target_var": { "var_val": "ek" }, "parse_tags": true },
+          { "math": [ "pf_hn_esc_n += 1" ] }
+        ]
+      },
+      { "math": [ "u_pf_fright_t = time('now')" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HORN_safe_spot",
+    "//": "u = someone getting away from pf_hn_att.  Home, if it's away from the threat and not far; otherwise 12 tiles straight away from it.",
+    "effect": [
+      {
+        "if": {
+          "and": [
+            { "math": [ "value_or(pf_home_set, 0) == 1" ] },
+            { "math": [ "distance(pf_home_loc, pf_hn_att) > 15" ] },
+            { "math": [ "distance(pf_home_loc, u_pf_pos) < 40" ] }
+          ]
+        },
+        "then": [ { "copy_var": { "global_val": "pf_home_loc" }, "target_var": { "global_val": "pf_hn_safe" } } ],
+        "else": [
+          { "copy_var": { "u_val": "pf_pos" }, "target_var": { "global_val": "pf_hn_safe" } },
+          {
+            "location_variable_adjust": { "global_val": "pf_hn_safe" },
+            "x_adjust": { "math": [ "((u_pf_pos.x > pf_hn_att.x) - (u_pf_pos.x < pf_hn_att.x)) * 12" ] },
+            "y_adjust": { "math": [ "((u_pf_pos.y > pf_hn_att.y) - (u_pf_pos.y < pf_hn_att.y)) * 12" ] }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HORN_adult",
+    "//": "u = an adult near the trouble (woken if asleep).  A parent or guardian of a child who is running goes with them; everyone else runs at the threat (vanilla combat takes it from there).",
+    "condition": {
+      "and": [
+        { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+        { "math": [ "has_var(u_pf_uid)" ] },
+        {
+          "or": [ { "math": [ "value_or(u_pf_resident, 0) == 1" ] }, { "math": [ "value_or(u_pf_v_AVATAR_w, 0) >= 20" ] } ]
+        },
+        {
+          "math": [ "(value_or(pf_sg_state, 0) == 1) * (value_or(u_pf_sg_keep_t, -1) == value_or(pf_sg_t0, -2)) == 0" ]
+        }
+      ]
+    },
+    "effect": [
+      { "u_location_variable": { "u_val": "pf_pos" } },
+      {
+        "if": { "u_has_effect": "sleep" },
+        "then": [ { "u_lose_effect": "sleep" }, { "u_lose_effect": "lying_down" } ]
+      },
+      { "math": [ "pf_hn_escort = -1" ] },
+      {
+        "if": {
+          "and": [ { "math": [ "pf_hn_esc_n > 0" ] }, { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_hn_esc_0" } ] } ]
+        },
+        "then": [ { "math": [ "pf_hn_escort = 0" ] } ]
+      },
+      {
+        "if": {
+          "and": [ { "math": [ "pf_hn_esc_n > 1" ] }, { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_hn_esc_1" } ] } ]
+        },
+        "then": [ { "math": [ "pf_hn_escort = 1" ] } ]
+      },
+      {
+        "if": {
+          "and": [ { "math": [ "pf_hn_esc_n > 2" ] }, { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_hn_esc_2" } ] } ]
+        },
+        "then": [ { "math": [ "pf_hn_escort = 2" ] } ]
+      },
+      {
+        "if": {
+          "and": [ { "math": [ "pf_hn_esc_n > 3" ] }, { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_hn_esc_3" } ] } ]
+        },
+        "then": [ { "math": [ "pf_hn_escort = 3" ] } ]
+      },
+      {
+        "if": {
+          "and": [ { "math": [ "pf_hn_esc_n > 4" ] }, { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_hn_esc_4" } ] } ]
+        },
+        "then": [ { "math": [ "pf_hn_escort = 4" ] } ]
+      },
+      {
+        "if": {
+          "and": [ { "math": [ "pf_hn_esc_n > 5" ] }, { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_hn_esc_5" } ] } ]
+        },
+        "then": [ { "math": [ "pf_hn_escort = 5" ] } ]
+      },
+      {
+        "if": { "math": [ "pf_hn_escort >= 0" ] },
+        "then": [
+          { "run_eocs": "PF_HORN_safe_spot" },
+          { "copy_var": { "global_val": "pf_hn_safe" }, "target_var": { "u_val": "pf_walk_to" } },
+          { "u_set_guard_pos": { "u_val": "pf_walk_to" } },
+          {
+            "if": { "math": [ "value_or(pf_hn_escd, 0) == 0" ] },
+            "then": [
+              { "math": [ "pf_hn_escd = 1" ] },
+              { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_hn_escd_a" }, "parse_tags": true },
+              {
+                "set_string_var": "pf_hn_kid_<global_val:pf_hn_escort>",
+                "target_var": { "context_val": "ek2" },
+                "parse_tags": true
+              },
+              { "copy_var": { "var_val": "ek2" }, "target_var": { "global_val": "pf_hn_escd_b" } }
+            ]
+          },
+          {
+            "if": {
+              "and": [
+                { "math": [ "pf_hn_esc_said == 0" ] },
+                { "math": [ "value_or(pf_horn_new, 0) == 1" ] },
+                { "math": [ "value_or(pf_set_chatter, 1) == 1" ] },
+                { "math": [ "value_or(pf_hn_quiet, 0) == 0" ] }
+              ]
+            },
+            "then": [
+              { "math": [ "pf_hn_esc_said = 1" ] },
+              { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+              {
+                "set_string_var": "pf_hn_kid_<global_val:pf_hn_escort>",
+                "target_var": { "context_val": "ek" },
+                "parse_tags": true
+              },
+              { "copy_var": { "var_val": "ek" }, "target_var": { "global_val": "pf_say_b" } },
+              { "math": [ "_p = rand(3)" ] },
+              {
+                "if": { "math": [ "_p == value_or(pf_hn_sh_last, -1)" ] },
+                "then": [ { "math": [ "_p = (_p + 1) % 4" ] } ]
+              },
+              { "math": [ "pf_hn_sh_last = _p" ] },
+              {
+                "if": { "math": [ "_p == 0" ] },
+                "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "horn_shield" } } ]
+              },
+              {
+                "if": { "math": [ "_p == 1" ] },
+                "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "horn_shield_1" } } ]
+              },
+              {
+                "if": { "math": [ "_p == 2" ] },
+                "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "horn_shield_2" } } ]
+              },
+              {
+                "if": { "math": [ "_p == 3" ] },
+                "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "horn_shield_3" } } ]
+              }
+            ]
+          }
+        ],
+        "else": [
+          {
+            "if": { "not": { "map_terrain_with_flag": "SWIMMABLE", "loc": { "global_val": "pf_hn_att" } } },
+            "then": [
+              { "copy_var": { "global_val": "pf_hn_att" }, "target_var": { "u_val": "pf_walk_to" } },
+              { "u_set_guard_pos": { "u_val": "pf_walk_to" } }
+            ]
+          },
+          { "math": [ "pf_hn_n += 1" ] },
+          {
+            "if": { "math": [ "pf_hn_n == 1" ] },
+            "then": [ { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_hn_first" }, "parse_tags": true } ]
+          },
+          { "math": [ "u_pf_horn_alarm = pf_horn_t" ] }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HORN_allclear",
+    "//": "u = avatar, a few minutes after the last threat.  Everyone stands down (walk orders dropped); those who were there share the danger with you (shared_danger moment); a head count, with a different line if someone didn't make it.",
+    "effect": [
+      { "math": [ "pf_horn_active = 0" ] },
+      { "math": [ "pf_hn_lost = value_or(pf_ours_dead_total, 0) - value_or(pf_horn_deaths0, 0)" ] },
+      { "math": [ "pf_hn_hurt = 0" ] },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_HORN_hurt_count",
+            "condition": {
+              "and": [
+                { "or": [ { "math": [ "value_or(u_pf_resident, 0) == 1" ] }, { "math": [ "value_or(u_pf_v_AVATAR_w, 0) >= 20" ] } ] },
+                {
+                  "or": [
+                    { "math": [ "u_hp('torso') <= u_hp_max('torso') * 0.5" ] },
+                    { "math": [ "u_hp('head') <= u_hp_max('head') * 0.5" ] },
+                    { "u_has_effect": "bleed", "bodypart": "torso" },
+                    { "u_has_effect": "bleed", "bodypart": "head" },
+                    { "u_has_effect": "bleed", "bodypart": "arm_l" },
+                    { "u_has_effect": "bleed", "bodypart": "arm_r" },
+                    { "u_has_effect": "bleed", "bodypart": "leg_l" },
+                    { "u_has_effect": "bleed", "bodypart": "leg_r" }
+                  ]
+                }
+              ]
+            },
+            "effect": [
+              { "math": [ "pf_hn_hurt += 1" ] },
+              {
+                "if": { "math": [ "pf_hn_hurt == 1" ] },
+                "then": [ { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_hn_hurt_a" }, "parse_tags": true } ]
+              }
+            ]
+          }
+        ],
+        "local": true,
+        "npc_range": 60
+      },
+      {
+        "if": { "math": [ "pf_hn_lost > 0" ] },
+        "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "horn_clear_loss" } } ],
+        "else": [
+          {
+            "if": { "and": [ { "math": [ "value_or(pf_set_chatter, 1) == 1" ] }, { "math": [ "value_or(pf_hn_quiet, 0) == 0" ] } ] },
+            "then": [
+              {
+                "if": { "math": [ "(value_or(pf_sg_state, 0) == 1) * (value_or(pf_sg_wave, 0) > 0)" ] },
+                "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "horn_lull" } } ],
+                "else": [
+                  {
+                    "if": { "math": [ "pf_hn_hurt > 0" ] },
+                    "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "horn_clear_hurt" } } ],
+                    "else": [
+                      {
+                        "if": { "math": [ "time('now') - value_or(pf_loss_t, -999999) < time('12 h')" ] },
+                        "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "horn_clear_grief" } } ],
+                        "else": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "horn_clear" } } ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      { "math": [ "pf_horn_clear_t = time('now')" ] },
+      {
+        "if": {
+          "and": [
+            { "math": [ "value_or(pf_hn_escd, 0) == 1" ] },
+            { "math": [ "pf_hn_lost == 0" ] },
+            { "math": [ "value_or(pf_cling_day, -1) != floor(time('now') / time('1 d'))" ] }
+          ]
+        },
+        "then": [
+          { "math": [ "pf_cling_day = floor(time('now') / time('1 d'))" ] },
+          { "copy_var": { "global_val": "pf_hn_escd_a" }, "target_var": { "global_val": "pf_say_a" } },
+          { "copy_var": { "global_val": "pf_hn_escd_b" }, "target_var": { "global_val": "pf_say_b" } },
+          {
+            "if": {
+              "and": [
+                { "math": [ "time_since('midnight', 'unit': 'hours') >= 5" ] },
+                { "math": [ "time_since('midnight', 'unit': 'hours') < 20" ] }
+              ]
+            },
+            "then": [ { "set_string_var": "day", "target_var": { "global_val": "pf_rk_part" } } ],
+            "else": [ { "set_string_var": "night", "target_var": { "global_val": "pf_rk_part" } } ]
+          },
+          { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "rk_clings" } }
+        ]
+      },
+      { "math": [ "pf_hn_escd = 0" ] },
+      { "math": [ "pf_hn_esc_n = 0" ] },
+      { "math": [ "pf_hn_n = 0" ] },
+      { "u_run_npc_eocs": [ "PF_HORN_stand_down" ], "local": true, "npc_range": 60 }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HORN_stand_down",
+    "condition": { "math": [ "has_var(u_pf_uid)" ] },
+    "effect": [
+      { "u_location_variable": { "u_val": "pf_pos" } },
+      { "u_set_guard_pos": { "u_val": "pf_pos" } },
+      { "if": { "math": [ "value_or(u_pf_resident, 0) == 1" ] }, "then": [ { "run_eocs": "PF_HOME_walk_home" } ] },
+      {
+        "if": {
+          "and": [
+            { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+            { "math": [ "value_or(u_pf_horn_alarm, -1) == pf_horn_t" ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_m_str_in = 45" ] }, { "run_eocs": "PF_MK_shared_danger", "beta_talker": "avatar" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HORN_hurt",
+    "//": "Signal: one of ours is hurt by a monster.  Don't wait for the 2-minute scan: alarm now (or, if already alarmed, scramble again).  Vanilla neutral NPCs only fight for themselves; the playtest had a zombie kill Rhonda and a child while adults stood a few tiles away.",
+    "condition": {
+      "and": [
+        "has_alpha",
+        "has_beta",
+        "u_is_npc",
+        "npc_is_monster",
+        { "math": [ "has_var(u_pf_uid)" ] },
+        { "math": [ "value_or(pf_horn_on, 1) == 1" ] },
+        {
+          "or": [ { "math": [ "time_since(u_pf_horn_t) < 0" ] }, { "math": [ "time_since(u_pf_horn_t) > time('1 m')" ] } ]
+        }
+      ]
+    },
+    "eoc_type": "EVENT",
+    "required_event": "character_takes_damage",
+    "effect": [
+      { "math": [ "u_pf_horn_t = time('now')" ] },
+      { "npc_location_variable": { "global_val": "pf_hn_hurt_mpos" } },
+      { "math": [ "pf_hn_hurt_t = time('now')" ] },
+      { "math": [ "pf_horn_last = time('now')" ] },
+      { "run_eocs": "PF_HORN_hurt_now", "alpha_talker": "avatar" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HORN_hurt_now",
+    "//": "u = avatar.",
+    "effect": [
+      {
+        "if": { "math": [ "value_or(pf_horn_active, 0) == 0" ] },
+        "then": [ { "run_eocs": "PF_HORN_alarm" } ],
+        "else": [ { "run_eocs": "PF_HORN_scramble" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_BAND_hurt",
+    "//": "Signal: a band member is hurt by a monster.  Their band's adults come; a child runs to the nearest one.",
+    "condition": {
+      "and": [
+        "has_alpha",
+        "has_beta",
+        "u_is_npc",
+        "npc_is_monster",
+        { "math": [ "has_var(u_pf_uid)" ] },
+        { "math": [ "value_or(u_pf_band, 0) > 0" ] },
+        { "math": [ "value_or(u_pf_resident, 0) == 0" ] },
+        {
+          "or": [ { "math": [ "time_since(u_pf_bh_t) < 0" ] }, { "math": [ "time_since(u_pf_bh_t) > time('1 m')" ] } ]
+        }
+      ]
+    },
+    "eoc_type": "EVENT",
+    "required_event": "character_takes_damage",
+    "effect": [
+      { "math": [ "u_pf_bh_t = time('now')" ] },
+      { "math": [ "pf_bh_band = u_pf_band" ] },
+      { "math": [ "pf_bh_kid = 0" ] },
+      { "math": [ "pf_bh_n = 0" ] },
+      { "math": [ "pf_bh_best = 999" ] },
+      { "if": { "u_has_trait": "PF_CHILD" }, "then": [ { "math": [ "pf_bh_kid = 1" ] } ] },
+      { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_bh_uid" } },
+      { "u_location_variable": { "global_val": "pf_bh_pos" } },
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_bh_who" }, "parse_tags": true },
+      { "u_run_npc_eocs": [ "PF_BAND_hurt_come" ], "local": true, "npc_range": 30 },
+      {
+        "if": { "math": [ "pf_bh_n > 0" ] },
+        "then": [
+          {
+            "if": { "math": [ "pf_bh_kid == 1" ] },
+            "then": [
+              { "math": [ "u_pf_wave_until = time('now') + time('10 m')" ] },
+              { "copy_var": { "global_val": "pf_bh_safe" }, "target_var": { "u_val": "pf_walk_to" } },
+              { "u_set_guard_pos": { "u_val": "pf_walk_to" } }
+            ]
+          },
+          { "math": [ "pf_band_cries_total = value_or(pf_band_cries_total, 0) + 1" ] },
+          { "run_eocs": "PF_BAND_hurt_say", "alpha_talker": "avatar" }
+        ],
+        "else": [ { "if": { "math": [ "pf_bh_kid == 1" ] }, "then": [ { "run_eocs": "PF_HURT_away_do" } ] } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HURT_away",
+    "//": "Signal: one of ours (not a band child: they run to an adult) is hit by a monster.  Step away from it.",
+    "condition": {
+      "and": [
+        "has_alpha",
+        "has_beta",
+        "u_is_npc",
+        "npc_is_monster",
+        { "math": [ "has_var(u_pf_uid)" ] },
+        {
+          "or": [ { "math": [ "time_since(u_pf_away_t) < 0" ] }, { "math": [ "time_since(u_pf_away_t) > time('30 s')" ] } ]
+        },
+        { "not": { "and": [ { "u_has_trait": "PF_CHILD" }, { "math": [ "value_or(u_pf_band, 0) > 0" ] } ] } }
+      ]
+    },
+    "eoc_type": "EVENT",
+    "required_event": "character_takes_damage",
+    "effect": [ { "run_eocs": "PF_HURT_away_do" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HURT_away_do",
+    "//": "u = the hurt person, n = the monster.  A walk order 6 tiles straight away from it.",
+    "effect": [
+      { "math": [ "u_pf_away_t = time('now')" ] },
+      { "u_location_variable": { "global_val": "pf_ha_me" } },
+      { "npc_location_variable": { "global_val": "pf_ha_mon" } },
+      { "copy_var": { "global_val": "pf_ha_me" }, "target_var": { "u_val": "pf_walk_to" } },
+      {
+        "location_variable_adjust": { "u_val": "pf_walk_to" },
+        "x_adjust": { "math": [ "clamp(pf_ha_me.x - pf_ha_mon.x, -1, 1) * 6" ] },
+        "y_adjust": { "math": [ "clamp(pf_ha_me.y - pf_ha_mon.y, -1, 1) * 6" ] }
+      },
+      { "u_set_guard_pos": { "u_val": "pf_walk_to" } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_BAND_hurt_come",
+    "//": "u = an adult of the hurt person's band (not them).  Comes to them; the nearest is the one named.",
+    "condition": {
+      "and": [
+        { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+        { "math": [ "value_or(u_pf_band, 0) == pf_bh_band" ] },
+        { "math": [ "value_or(u_pf_resident, 0) == 0" ] },
+        { "not": { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_bh_uid" } ] } }
+      ]
+    },
+    "effect": [
+      { "math": [ "u_pf_wave_until = time('now') + time('30 m')" ] },
+      { "copy_var": { "global_val": "pf_bh_pos" }, "target_var": { "u_val": "pf_walk_to" } },
+      { "location_variable_adjust": { "u_val": "pf_walk_to" }, "x_adjust": 1 },
+      { "u_set_guard_pos": { "u_val": "pf_walk_to" } },
+      { "math": [ "pf_bh_n += 1" ] },
+      { "u_location_variable": { "u_val": "pf_pos" } },
+      {
+        "if": { "math": [ "distance(u_pf_pos, pf_bh_pos) < pf_bh_best" ] },
+        "then": [
+          { "math": [ "pf_bh_best = distance(u_pf_pos, pf_bh_pos)" ] },
+          { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_bh_resc" }, "parse_tags": true },
+          { "copy_var": { "u_val": "pf_pos" }, "target_var": { "global_val": "pf_bh_safe" } }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_BAND_hurt_say",
+    "//": "u = avatar.  Only if you're close enough to hear it (30 tiles).",
+    "effect": [
+      { "u_location_variable": { "global_val": "pf_bh_av" } },
+      {
+        "if": { "math": [ "distance(pf_bh_av, pf_bh_pos) <= 30" ] },
+        "then": [
+          {
+            "if": { "math": [ "pf_bh_kid == 1" ] },
+            "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "band_cry_kid" } } ],
+            "else": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "band_cry" } } ]
+          }
+        ]
+      }
+    ]
+  }
+]

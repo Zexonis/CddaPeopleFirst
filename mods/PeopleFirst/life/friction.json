@@ -1,0 +1,59 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TEASE_on_throwup",
+    "//": "Bottom-up signal: anyone throws up.  A nearby NPC with gallows humor can't resist.",
+    "eoc_type": "EVENT",
+    "required_event": "throws_up",
+    "condition": {
+      "and": [
+        "has_alpha",
+        {
+          "or": [ { "math": [ "time_since(pf_tease_last) < 0" ] }, { "math": [ "time_since(pf_tease_last) > time('30 m')" ] } ]
+        }
+      ]
+    },
+    "effect": [
+      { "run_eocs": "PF_ID_ensure" },
+      { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_tease_victim_uid" } },
+      { "u_set_talker": { "global_val": "pf_tease_victim" } },
+      { "math": [ "pf_tease_done = 0" ] },
+      { "u_run_npc_eocs": [ "PF_TEASE_candidate" ], "local": true, "npc_range": 10 }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TEASE_candidate",
+    "effect": [
+      { "run_eocs": "PF_ID_ensure" },
+      {
+        "if": {
+          "and": [
+            { "u_has_trait": "PF_Q_GALLOWS" },
+            { "math": [ "pf_tease_done == 0" ] },
+            { "not": { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_tease_victim_uid" } ] } }
+          ]
+        },
+        "then": [
+          { "math": [ "pf_tease_done = 1" ] },
+          { "math": [ "pf_tease_last = time('now')" ] },
+          { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+          { "run_eocs": "PF_TEASE_name_victim", "alpha_talker": { "global_val": "pf_tease_victim" } },
+          { "run_eocs": "PF_SAY", "alpha_talker": "avatar", "variables": { "line": "tease" } },
+          { "run_eocs": "PF_MK_teased", "beta_talker": { "global_val": "pf_tease_victim" } }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TEASE_name_victim",
+    "effect": [
+      {
+        "if": "u_is_avatar",
+        "then": [ { "set_string_var": "you", "target_var": { "global_val": "pf_say_b" } } ],
+        "else": [ { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_b" }, "parse_tags": true } ]
+      }
+    ]
+  }
+]

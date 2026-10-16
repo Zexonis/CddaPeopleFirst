@@ -1,0 +1,170 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TOWN_name",
+    "//": "u = avatar.  Home menu: Name this place.",
+    "condition": { "math": [ "value_or(pf_home_set, 0) == 1" ] },
+    "effect": [
+      {
+        "set_string_var": "",
+        "target_var": { "global_val": "pf_town_name_in" },
+        "string_input": {
+          "title": "What do you call this place?",
+          "description": "A name for your home.  The people who live here will use it.  (Leave it empty to keep it as it is.)",
+          "width": 30,
+          "identifier": "pf_town_name"
+        }
+      },
+      {
+        "if": { "not": { "compare_string": [ { "global_val": "pf_town_name_in" }, "" ] } },
+        "then": [
+          { "copy_var": { "global_val": "pf_town_name_in" }, "target_var": { "global_val": "pf_town_name" } },
+          { "math": [ "pf_town_named = 1" ] },
+          { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "named" } }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TOWN_status",
+    "//": "u = avatar.  Home menu: How the place is doing.",
+    "condition": { "math": [ "value_or(pf_home_set, 0) == 1" ] },
+    "effect": [
+      { "math": [ "pf_tw_cows = monsters_nearby('mon_cow', 'radius': 25, 'location': pf_home_loc, 'attitude': 'friendly')" ] },
+      {
+        "math": [ "pf_tw_goats = monsters_nearby('mon_goat', 'radius': 25, 'location': pf_home_loc, 'attitude': 'friendly')" ]
+      },
+      {
+        "math": [ "pf_tw_hens = monsters_nearby('mon_chicken', 'radius': 25, 'location': pf_home_loc, 'attitude': 'friendly')" ]
+      },
+      {
+        "if": { "math": [ "pf_hm_res == 1" ] },
+        "then": [ { "set_string_var": "1 person lives", "target_var": { "global_val": "pf_tw_restxt" } } ],
+        "else": [
+          {
+            "set_string_var": "<global_val:pf_hm_res> people live",
+            "target_var": { "global_val": "pf_tw_restxt" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "value_or(pf_town_named, 0) == 1" ] },
+        "then": [ { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "status_named" } } ],
+        "else": [ { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "status" } } ]
+      },
+      {
+        "switch": { "math": [ "value_or(pf_field_state, 0)" ] },
+        "cases": [
+          {
+            "case": 0,
+            "effect": [ { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "field_none" } } ]
+          },
+          {
+            "case": 1,
+            "effect": [ { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "field_fallow" } } ]
+          },
+          {
+            "case": 2,
+            "effect": [
+              {
+                "math": [
+                  "pf_tw_days = round((value_or(pf_set_grow, 1) == 0 ? 90 : (value_or(pf_set_grow, 1) == 1 ? 30 : 2)) - (time('now') - pf_field_t) / time('1 d'))"
+                ]
+              },
+              {
+                "if": { "math": [ "pf_tw_days <= 1" ] },
+                "then": [ { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "field_growing_1" } } ],
+                "else": [ { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "field_growing" } } ]
+              }
+            ]
+          },
+          {
+            "case": 3,
+            "effect": [ { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "field_ready" } } ]
+          }
+        ]
+      },
+      { "run_eocs": "PF_TOWN_appeal" },
+      { "math": [ "pf_tw_hh = 1 + value_or(pf_households_n, 0)" ] },
+      {
+        "if": { "math": [ "pf_town_appeal < 25" ] },
+        "then": [ { "set_string_var": "Nobody out there has heard of the place", "target_var": { "global_val": "pf_tw_word_cap" } } ]
+      },
+      {
+        "if": { "math": [ "(pf_town_appeal >= 25) * (pf_town_appeal < 50)" ] },
+        "then": [ { "set_string_var": "People out there have heard of the place", "target_var": { "global_val": "pf_tw_word_cap" } } ]
+      },
+      {
+        "if": { "math": [ "(pf_town_appeal >= 50) * (pf_town_appeal < 75)" ] },
+        "then": [ { "set_string_var": "People out there talk about the place", "target_var": { "global_val": "pf_tw_word_cap" } } ]
+      },
+      {
+        "if": { "math": [ "pf_town_appeal >= 75" ] },
+        "then": [ { "set_string_var": "People out there say it's the place to be", "target_var": { "global_val": "pf_tw_word_cap" } } ]
+      },
+      { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "status_hh" } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TOWN_field_here",
+    "//": "u = avatar.  Home menu: Plant a field here.  Marks a 5x5 plot centered on you (within 30 tiles of home); it's planted in spring or summer.",
+    "condition": { "and": [ { "math": [ "value_or(pf_home_set, 0) == 1" ] } ] },
+    "effect": [
+      { "u_location_variable": { "global_val": "pf_field_loc" } },
+      { "math": [ "pf_field_state = 1" ] },
+      { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "field_marked" } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TOWN_ask_animals",
+    "//": "u = avatar.  Home menu: Ask the neighbors for animals (once a week, when there are other people out there).  They arrive the next morning you're home.",
+    "condition": {
+      "and": [
+        { "math": [ "value_or(pf_home_set, 0) == 1" ] },
+        { "math": [ "value_or(pf_band_n, 0) > 0" ] },
+        { "math": [ "value_or(pf_animals_asked, -1) < time('now') - time('7 d')" ] }
+      ]
+    },
+    "effect": [
+      { "math": [ "pf_animals_asked = time('now')" ] },
+      { "math": [ "pf_animals_due = 1" ] },
+      { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "animals_asked" } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TOWN_animals_arrive",
+    "//": "u = avatar, at home in the morning.  Hens (most often), a goat, or now and then a cow, given by neighbors: friendly and permanent (a summon spell cast at home).",
+    "effect": [
+      { "math": [ "pf_animals_due = 0" ] },
+      { "math": [ "_r = rand(5)" ] },
+      {
+        "if": { "math": [ "_r <= 2" ] },
+        "then": [
+          { "u_cast_spell": { "id": "PF_SPELL_hens" }, "loc": { "global_val": "pf_home_loc" } },
+          { "set_string_var": "two hens in a crate", "target_var": { "global_val": "pf_say_b" } }
+        ]
+      },
+      {
+        "if": { "and": [ { "math": [ "_r >= 3" ] }, { "math": [ "_r <= 4" ] } ] },
+        "then": [
+          { "u_cast_spell": { "id": "PF_SPELL_goat" }, "loc": { "global_val": "pf_home_loc" } },
+          { "set_string_var": "a nanny goat on a rope", "target_var": { "global_val": "pf_say_b" } }
+        ]
+      },
+      {
+        "if": { "math": [ "_r == 5" ] },
+        "then": [
+          { "u_cast_spell": { "id": "PF_SPELL_cow" }, "loc": { "global_val": "pf_home_loc" } },
+          { "set_string_var": "a cow, of all things", "target_var": { "global_val": "pf_say_b" } }
+        ]
+      },
+      { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "animals_arrive" } },
+      { "math": [ "pf_animals_total = value_or(pf_animals_total, 0) + 1" ] }
+    ]
+  }
+]

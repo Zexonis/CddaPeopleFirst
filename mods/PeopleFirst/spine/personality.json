@@ -1,0 +1,241 @@
+[
+  {
+    "type": "mutation",
+    "id": "PF_T_SOCIABLE",
+    "name": { "str": "Sociable" },
+    "points": 0,
+    "valid": false,
+    "purifiable": false,
+    "player_display": false,
+    "description": "Draws warmth from company: meals, fires and play count for more."
+  },
+  {
+    "type": "mutation",
+    "id": "PF_T_LONER",
+    "name": { "str": "Loner" },
+    "points": 0,
+    "valid": false,
+    "purifiable": false,
+    "player_display": false,
+    "description": "Company wears on them.  Gatherings count for less, quiet kindness for more."
+  },
+  {
+    "type": "mutation",
+    "id": "PF_Q_LOYAL",
+    "name": { "str": "Loyal to a fault" },
+    "points": 0,
+    "valid": false,
+    "purifiable": false,
+    "player_display": false,
+    "description": "Being covered for, cared for or saved builds trust twice as fast."
+  },
+  {
+    "type": "mutation",
+    "id": "PF_Q_HATES_WASTE",
+    "name": { "str": "Hates waste" },
+    "points": 0,
+    "valid": false,
+    "purifiable": false,
+    "player_display": false,
+    "description": "Wasted food or supplies sour their view of whoever did it."
+  },
+  {
+    "type": "mutation",
+    "id": "PF_Q_MOTHER_HEN",
+    "name": { "str": "Mother hen" },
+    "points": 0,
+    "valid": false,
+    "purifiable": false,
+    "player_display": false,
+    "description": "Seeing someone in danger or being cared for makes them care more."
+  },
+  {
+    "type": "mutation",
+    "id": "PF_Q_GALLOWS",
+    "name": { "str": "Gallows humor" },
+    "points": 0,
+    "valid": false,
+    "purifiable": false,
+    "player_display": false,
+    "description": "Danger rattles them less.  They joke about it afterward."
+  },
+  {
+    "type": "mutation",
+    "id": "PF_Q_PROUD",
+    "name": { "str": "Proud" },
+    "points": 0,
+    "valid": false,
+    "purifiable": false,
+    "player_display": false,
+    "description": "Pride and shame both hit twice as hard."
+  },
+  {
+    "type": "mutation",
+    "id": "PF_Q_GRUDGE",
+    "name": { "str": "Holds grudges" },
+    "points": 0,
+    "valid": false,
+    "purifiable": false,
+    "player_display": false,
+    "description": "Tension fades a third as fast."
+  },
+  {
+    "type": "mutation",
+    "id": "PF_Q_FORGIVING",
+    "name": { "str": "Forgiving" },
+    "points": 0,
+    "valid": false,
+    "purifiable": false,
+    "player_display": false,
+    "description": "Tension fades three times as fast."
+  },
+  {
+    "type": "mutation",
+    "id": "PF_Q_ROMANTIC",
+    "name": { "str": "Hopeless romantic" },
+    "points": 0,
+    "valid": false,
+    "purifiable": false,
+    "player_display": false,
+    "description": "Falls faster and harder, and loves the little rituals of courting."
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PERSONA_roll",
+    "//": "u = an NPC meeting the spine for the first time.  One temperament (or none) and one quirk, then their romantic nature.",
+    "effect": [
+      { "math": [ "_r = rand(2)" ] },
+      { "if": { "math": [ "_r == 0" ] }, "then": [ { "u_add_trait": "PF_T_SOCIABLE" } ] },
+      { "if": { "math": [ "_r == 1" ] }, "then": [ { "u_add_trait": "PF_T_LONER" } ] },
+      { "math": [ "_q = rand(4)" ] },
+      {
+        "switch": { "math": [ "_q" ] },
+        "cases": [
+          { "case": 0, "effect": { "u_add_trait": "PF_Q_LOYAL" } },
+          { "case": 1, "effect": { "u_add_trait": "PF_Q_HATES_WASTE" } },
+          { "case": 2, "effect": { "u_add_trait": "PF_Q_MOTHER_HEN" } },
+          { "case": 3, "effect": { "u_add_trait": "PF_Q_GALLOWS" } },
+          { "case": 4, "effect": { "u_add_trait": "PF_Q_PROUD" } },
+          { "case": 5, "effect": { "u_add_trait": "PF_Q_GRUDGE" } },
+          { "case": 6, "effect": { "u_add_trait": "PF_Q_FORGIVING" } },
+          { "case": 7, "effect": { "u_add_trait": "PF_Q_ROMANTIC" } }
+        ]
+      },
+      { "math": [ "u_pf_persona = 1" ] },
+      { "run_eocs": "PF_ROM_roll" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ROM_roll",
+    "//": "u = an NPC.  Their own romantic nature, rolled once.  Adults only: children are never romantic (PF_CHILD or under 18; enforced again wherever attraction is computed).  u_pf_rom 0/1 (about 15% aromantic); u_pf_orient 0 = drawn to women, 1 = men, 2 = both (about 70% opposite sex, 12% same, 18% both); u_pf_open 0.15 / 0.5 / 0.9 = set in their feelings / can warm up / easily swayed; u_pf_commit 1 devoted, 2 casual, 3 wandering eye (v0.2 reads it); u_pf_rtype 0 likes sociable people, 1 likes loners, 2 no type.",
+    "effect": [
+      { "math": [ "u_pf_adult = u_val('age') >= 18" ] },
+      { "if": { "u_has_trait": "PF_CHILD" }, "then": [ { "math": [ "u_pf_adult = 0" ] } ] },
+      {
+        "if": { "math": [ "u_pf_adult == 1" ] },
+        "then": [
+          { "math": [ "u_pf_rom = rand(19) >= 3" ] },
+          { "math": [ "_o = rand(99)" ] },
+          { "math": [ "u_pf_orient = _o < 70 ? 1 - u_gender() : (_o < 82 ? u_gender() : 2)" ] },
+          { "math": [ "_k = rand(2)" ] },
+          { "math": [ "u_pf_open = _k == 0 ? 0.15 : (_k == 1 ? 0.5 : 0.9)" ] },
+          { "math": [ "_k = rand(9)" ] },
+          { "math": [ "u_pf_commit = _k <= 5 ? 1 : (_k <= 8 ? 2 : 3)" ] },
+          { "math": [ "u_pf_rtype = rand(2)" ] }
+        ],
+        "else": [ { "math": [ "u_pf_rom = 0" ] } ]
+      },
+      { "math": [ "u_pf_rom_rolled = 1" ] },
+      { "run_eocs": "PF_REG_write" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_REG_write",
+    "//": "u = anyone with a pf_uid.  Publishes what others need to know about them without a talker (gender, adult, temperament, and their name in pf_name_<uid>) in globals, so views can be computed off-screen, one person at a time.",
+    "effect": [
+      { "set_string_var": "pf_reg_<u_val:pf_uid>_g", "target_var": { "context_val": "rg" }, "parse_tags": true },
+      { "set_string_var": "pf_reg_<u_val:pf_uid>_a", "target_var": { "context_val": "rad" }, "parse_tags": true },
+      { "set_string_var": "pf_reg_<u_val:pf_uid>_tm", "target_var": { "context_val": "rtm" }, "parse_tags": true },
+      { "math": [ "v_rg = u_gender()" ] },
+      { "math": [ "v_rad = value_or(u_pf_adult, 0)" ] },
+      { "math": [ "v_rtm = 0" ] },
+      { "if": { "u_has_trait": "PF_T_SOCIABLE" }, "then": [ { "math": [ "v_rtm = 1" ] } ] },
+      { "if": { "u_has_trait": "PF_T_LONER" }, "then": [ { "math": [ "v_rtm = 2" ] } ] },
+      { "set_string_var": "pf_reg_<u_val:pf_uid>_q", "target_var": { "context_val": "rq" }, "parse_tags": true },
+      { "math": [ "v_rq = -1" ] },
+      { "if": { "u_has_trait": "PF_Q_LOYAL" }, "then": [ { "math": [ "v_rq = 0" ] } ] },
+      { "if": { "u_has_trait": "PF_Q_HATES_WASTE" }, "then": [ { "math": [ "v_rq = 1" ] } ] },
+      { "if": { "u_has_trait": "PF_Q_MOTHER_HEN" }, "then": [ { "math": [ "v_rq = 2" ] } ] },
+      { "if": { "u_has_trait": "PF_Q_GALLOWS" }, "then": [ { "math": [ "v_rq = 3" ] } ] },
+      { "if": { "u_has_trait": "PF_Q_PROUD" }, "then": [ { "math": [ "v_rq = 4" ] } ] },
+      { "if": { "u_has_trait": "PF_Q_GRUDGE" }, "then": [ { "math": [ "v_rq = 5" ] } ] },
+      { "if": { "u_has_trait": "PF_Q_FORGIVING" }, "then": [ { "math": [ "v_rq = 6" ] } ] },
+      { "if": { "u_has_trait": "PF_Q_ROMANTIC" }, "then": [ { "math": [ "v_rq = 7" ] } ] },
+      { "set_string_var": "pf_name_<u_val:pf_uid>", "target_var": { "context_val": "rnm" }, "parse_tags": true },
+      { "set_string_var": "<u_name>", "target_var": { "var_val": "rnm" }, "parse_tags": true },
+      { "math": [ "u_pf_reg_done = 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_REG_name",
+    "//": "u = someone with a pf_uid.  Refreshes their directory name (full run: a band child renamed to the family surname after registering still showed the old surname in People you know).  Run after every rename, and by the People nearby scan.",
+    "condition": { "math": [ "has_var(u_pf_uid)" ] },
+    "effect": [
+      { "set_string_var": "pf_name_<u_val:pf_uid>", "target_var": { "context_val": "rnm" }, "parse_tags": true },
+      { "set_string_var": "<u_name>", "target_var": { "var_val": "rnm" }, "parse_tags": true }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PERSONA_weigh",
+    "//": "u = viewer.  Turns the moment's tags (pf_m_tag_*) and the viewer's role (pf_m_role) into multipliers on warmth, trust and tension.  Quirks never touch bonds directly; this is the only place they act.",
+    "effect": [
+      { "math": [ "pf_m_mulw = 1" ] },
+      { "math": [ "pf_m_mult = 1" ] },
+      { "math": [ "pf_m_mulx = 1" ] },
+      {
+        "if": { "and": [ { "u_has_trait": "PF_T_SOCIABLE" }, { "math": [ "pf_m_tag_food + pf_m_tag_ritual + pf_m_tag_play > 0" ] } ] },
+        "then": [ { "math": [ "pf_m_mulw *= 1.5" ] } ]
+      },
+      {
+        "if": { "and": [ { "u_has_trait": "PF_T_LONER" }, { "math": [ "pf_m_tag_ritual + pf_m_tag_play > 0" ] } ] },
+        "then": [ { "math": [ "pf_m_mulw *= 0.5" ] } ]
+      },
+      {
+        "if": { "and": [ { "u_has_trait": "PF_T_LONER" }, { "math": [ "(pf_m_tag_care > 0) * (pf_m_role == 1)" ] } ] },
+        "then": [ { "math": [ "pf_m_mulw *= 1.5" ] } ]
+      },
+      {
+        "if": {
+          "and": [ { "u_has_trait": "PF_Q_LOYAL" }, { "math": [ "(pf_m_tag_loyalty + pf_m_tag_care > 0) * (pf_m_role == 1)" ] } ]
+        },
+        "then": [ { "math": [ "pf_m_mult *= 2" ] } ]
+      },
+      {
+        "if": { "and": [ { "u_has_trait": "PF_Q_HATES_WASTE" }, { "math": [ "pf_m_tag_waste > 0" ] } ] },
+        "then": [ { "math": [ "pf_m_mulx *= 3" ] }, { "math": [ "pf_m_mulw *= 0.5" ] } ]
+      },
+      {
+        "if": {
+          "and": [ { "u_has_trait": "PF_Q_MOTHER_HEN" }, { "math": [ "(pf_m_tag_danger + pf_m_tag_care > 0) * (pf_m_role == 3)" ] } ]
+        },
+        "then": [ { "math": [ "pf_m_mulw *= 2" ] } ]
+      },
+      {
+        "if": { "and": [ { "u_has_trait": "PF_Q_GALLOWS" }, { "math": [ "pf_m_tag_danger > 0" ] } ] },
+        "then": [ { "math": [ "pf_m_mulx *= 0.5" ] } ]
+      },
+      {
+        "if": { "and": [ { "u_has_trait": "PF_Q_PROUD" }, { "math": [ "pf_m_tag_pride + pf_m_tag_shame > 0" ] } ] },
+        "then": [ { "math": [ "pf_m_mulw *= 2" ] }, { "math": [ "pf_m_mulx *= 2" ] } ]
+      },
+      {
+        "if": { "and": [ { "u_has_trait": "PF_Q_ROMANTIC" }, { "math": [ "pf_m_tag_romance > 0" ] } ] },
+        "then": [ { "math": [ "pf_m_mulw *= 1.3" ] } ]
+      }
+    ]
+  }
+]

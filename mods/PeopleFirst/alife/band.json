@@ -1,0 +1,589 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_BAND_init_leader",
+    "//": "u = a new band leader.  A band holds up to 5 members besides its leader, in fixed slots u_pf_member_0..4.  'none' is never a real unique id, so empty slots are skipped silently.",
+    "effect": [
+      { "math": [ "u_pf_is_leader = 1" ] },
+      {
+        "//": "Full run: the band id was the 0-based roster index and only the leader had it, so every 'same band' check (engine patch 6 defense, the band's cry for help, band grief) missed A-Life bands.  Now 1-based, and members get it when they join (PF_BAND_link_member).",
+        "math": [ "u_pf_band = pf_band_new_idx + 1" ]
+      },
+      { "math": [ "u_pf_band_v2 = 1" ] },
+      { "math": [ "u_pf_band_size = 0" ] },
+      { "set_string_var": "none", "target_var": { "u_val": "pf_member_0" } },
+      { "set_string_var": "none", "target_var": { "u_val": "pf_member_1" } },
+      { "set_string_var": "none", "target_var": { "u_val": "pf_member_2" } },
+      { "set_string_var": "none", "target_var": { "u_val": "pf_member_3" } },
+      { "set_string_var": "none", "target_var": { "u_val": "pf_member_4" } },
+      { "math": [ "u_pf_member_child_0 = 0" ] },
+      { "math": [ "u_pf_member_child_1 = 0" ] },
+      { "math": [ "u_pf_member_child_2 = 0" ] },
+      { "math": [ "u_pf_member_child_3 = 0" ] },
+      { "math": [ "u_pf_member_child_4 = 0" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_BAND_link",
+    "//": "Runs on anyone.  Adds the NPC with unique id pf_link_member to the band led by pf_link_leader.  Both may be far outside the bubble.",
+    "effect": [
+      { "math": [ "pf_link_idx = 0" ] },
+      {
+        "u_run_npc_eocs": [ "PF_BAND_link_leader" ],
+        "unique_ids": [ { "global_val": "pf_link_leader" } ],
+        "local": false
+      },
+      {
+        "if": { "math": [ "pf_link_idx >= 1" ] },
+        "then": [
+          { "u_run_npc_eocs": [ "PF_BAND_link_member" ], "unique_ids": [ { "global_val": "pf_link_member" } ], "local": false }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_link_idx >= 1" ] },
+        "then": [
+          {
+            "u_run_npc_eocs": [ "PF_BAND_link_child_flag" ],
+            "unique_ids": [ { "global_val": "pf_link_leader" } ],
+            "local": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_BAND_link_leader",
+    "//": "u = leader.  Takes the first free member slot and reports its 1-based index in pf_link_idx (0 = band full).",
+    "effect": [
+      { "math": [ "pf_link_band = value_or(u_pf_band, 0)" ] },
+      {
+        "if": { "and": [ { "math": [ "pf_link_idx == 0" ] }, { "compare_string": [ { "u_val": "pf_member_0" }, "none" ] } ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_link_member" }, "target_var": { "u_val": "pf_member_0" } },
+          { "math": [ "pf_link_idx = 1" ] }
+        ]
+      },
+      {
+        "if": { "and": [ { "math": [ "pf_link_idx == 0" ] }, { "compare_string": [ { "u_val": "pf_member_1" }, "none" ] } ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_link_member" }, "target_var": { "u_val": "pf_member_1" } },
+          { "math": [ "pf_link_idx = 2" ] }
+        ]
+      },
+      {
+        "if": { "and": [ { "math": [ "pf_link_idx == 0" ] }, { "compare_string": [ { "u_val": "pf_member_2" }, "none" ] } ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_link_member" }, "target_var": { "u_val": "pf_member_2" } },
+          { "math": [ "pf_link_idx = 3" ] }
+        ]
+      },
+      {
+        "if": { "and": [ { "math": [ "pf_link_idx == 0" ] }, { "compare_string": [ { "u_val": "pf_member_3" }, "none" ] } ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_link_member" }, "target_var": { "u_val": "pf_member_3" } },
+          { "math": [ "pf_link_idx = 4" ] }
+        ]
+      },
+      {
+        "if": { "and": [ { "math": [ "pf_link_idx == 0" ] }, { "compare_string": [ { "u_val": "pf_member_4" }, "none" ] } ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_link_member" }, "target_var": { "u_val": "pf_member_4" } },
+          { "math": [ "pf_link_idx = 5" ] }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_link_idx >= 1" ] },
+        "then": [ { "math": [ "u_pf_band_size = value_or(u_pf_band_size, 0) + 1" ] } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_BAND_link_member",
+    "//": "u = new member.  Remembers its leader and its formation spot in the band's own frame: u_pf_fx tiles to the right, u_pf_fy tiles behind.  Slots 1-5: left, right, behind, far left (slightly ahead), far right (slightly ahead).",
+    "effect": [
+      {
+        "if": { "u_has_trait": "PF_CHILD" },
+        "then": [ { "math": [ "pf_link_child = 1" ] } ],
+        "else": [ { "math": [ "pf_link_child = 0" ] } ]
+      },
+      { "copy_var": { "global_val": "pf_link_leader" }, "target_var": { "u_val": "pf_leader" } },
+      { "math": [ "u_pf_is_leader = 0" ] },
+      { "math": [ "u_pf_band = pf_link_band" ] },
+      { "math": [ "u_pf_band_idx = pf_link_idx" ] },
+      {
+        "math": [
+          "u_pf_fx = (u_pf_band_idx == 1) * -2 + (u_pf_band_idx == 2) * 2 + (u_pf_band_idx == 4) * -3 + (u_pf_band_idx == 5) * 3"
+        ]
+      },
+      {
+        "math": [
+          "u_pf_fy = (u_pf_band_idx == 1) + (u_pf_band_idx == 2) + (u_pf_band_idx == 3) * 2 - (u_pf_band_idx == 4) - (u_pf_band_idx == 5)"
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_BAND_heading",
+    "//": "Turns the travel step (pf_band_dx, pf_band_dy) into one of 8 headings, and the band's 'right' (pf_band_rx/ry) and 'behind' (pf_band_bx/by) unit vectors.  No movement means facing north.",
+    "effect": [
+      { "math": [ "pf_band_hx = (pf_band_dx > 0) - (pf_band_dx < 0)" ] },
+      { "math": [ "pf_band_hy = (pf_band_dy > 0) - (pf_band_dy < 0)" ] },
+      { "math": [ "pf_band_hy = pf_band_hy - (pf_band_hx == 0) * (pf_band_hy == 0)" ] },
+      { "math": [ "pf_band_rx = 0 - pf_band_hy" ] },
+      { "math": [ "pf_band_ry = pf_band_hx" ] },
+      { "math": [ "pf_band_bx = 0 - pf_band_hx" ] },
+      { "math": [ "pf_band_by = 0 - pf_band_hy" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_BAND_members_snap",
+    "//": "u = leader.  Off-screen (or at handoff): teleport every member to its formation spot around pf_band_anchor, facing the heading from PF_BAND_heading.",
+    "effect": [
+      {
+        "u_run_npc_eocs": [ "PF_BAND_snap_one" ],
+        "unique_ids": [
+          { "u_val": "pf_member_0" },
+          { "u_val": "pf_member_1" },
+          { "u_val": "pf_member_2" },
+          { "u_val": "pf_member_3" },
+          { "u_val": "pf_member_4" }
+        ],
+        "local": false
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_BAND_snap_one",
+    "effect": [
+      { "copy_var": { "global_val": "pf_band_anchor" }, "target_var": { "u_val": "pf_snap_to" } },
+      {
+        "location_variable_adjust": { "u_val": "pf_snap_to" },
+        "x_adjust": { "math": [ "u_pf_fx * pf_band_rx + u_pf_fy * pf_band_bx" ] },
+        "y_adjust": { "math": [ "u_pf_fx * pf_band_ry + u_pf_fy * pf_band_by" ] }
+      },
+      { "u_teleport": { "u_val": "pf_snap_to" }, "force_safe": true },
+      {
+        "if": { "math": [ "distance(u_pf_snap_to, pf_player_pos) <= pf_online_range" ] },
+        "then": [
+          { "copy_var": { "u_val": "pf_snap_to" }, "target_var": { "global_val": "pf_place_at" } },
+          { "run_eocs": "PF_ALIFE_avoid_water" }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_BAND_members_walk",
+    "//": "u = leader.  On-screen: order every member to walk to its formation spot around pf_band_anchor (the leader's own walk target).",
+    "effect": [
+      {
+        "u_run_npc_eocs": [ "PF_BAND_walk_one" ],
+        "unique_ids": [
+          { "u_val": "pf_member_0" },
+          { "u_val": "pf_member_1" },
+          { "u_val": "pf_member_2" },
+          { "u_val": "pf_member_3" },
+          { "u_val": "pf_member_4" }
+        ],
+        "local": false
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_BAND_walk_one",
+    "//": "u = one member.  Skipped while they answer a wave (People menu \"Call them over\" sets pf_wave_until, 30 minutes), or once they've sat down at tonight's fire.",
+    "condition": {
+      "and": [
+        { "math": [ "time('now') >= value_or(u_pf_wave_until, 0)" ] },
+        { "math": [ "value_or(u_pf_fire_seated, -1) != floor(time('now') / time('1 d'))" ] },
+        {
+          "//": "A baby in arms (u_pf_follow 2, gen_family PF_FAM_carry_one) goes where its carrier goes; it gets no walk order of its own.",
+          "math": [ "value_or(u_pf_follow, 0) != 2" ]
+        }
+      ]
+    },
+    "effect": [
+      { "copy_var": { "global_val": "pf_band_anchor" }, "target_var": { "u_val": "pf_walk_to" } },
+      {
+        "location_variable_adjust": { "u_val": "pf_walk_to" },
+        "x_adjust": { "math": [ "u_pf_fx * pf_band_rx + u_pf_fy * pf_band_bx" ] },
+        "y_adjust": { "math": [ "u_pf_fx * pf_band_ry + u_pf_fy * pf_band_by" ] }
+      },
+      {
+        "//": "Full run: a formation spot in the river sent members wading.  A wet spot falls back to the leader's own (dry) target.",
+        "if": { "map_terrain_with_flag": "SWIMMABLE", "loc": { "u_val": "pf_walk_to" } },
+        "then": [ { "copy_var": { "global_val": "pf_band_anchor" }, "target_var": { "u_val": "pf_walk_to" } } ]
+      },
+      { "u_set_guard_pos": { "u_val": "pf_walk_to" } },
+      { "math": [ "pf_dbg_walks += 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_BAND_measure",
+    "//": "u = leader.  Debug: counts members and records the farthest member-to-leader distance this tick in pf_dbg_spread.",
+    "effect": [
+      { "u_location_variable": { "global_val": "pf_band_leader_now" } },
+      {
+        "u_run_npc_eocs": [ "PF_BAND_measure_one" ],
+        "unique_ids": [
+          { "u_val": "pf_member_0" },
+          { "u_val": "pf_member_1" },
+          { "u_val": "pf_member_2" },
+          { "u_val": "pf_member_3" },
+          { "u_val": "pf_member_4" }
+        ],
+        "local": false
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_BAND_measure_one",
+    "effect": [
+      { "u_location_variable": { "u_val": "pf_pos" } },
+      { "math": [ "pf_dbg_members += 1" ] },
+      { "math": [ "pf_dbg_spread = max(pf_dbg_spread, distance(u_pf_pos, pf_band_leader_now))" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_BAND_on_death",
+    "//": "Any A-Life agent dies (u = the dead).  Keeps the roster valid: reaching a dead unique id raises a debugmsg, and the engine never frees ids.",
+    "eoc_type": "EVENT",
+    "required_event": "character_dies",
+    "condition": { "and": [ "has_alpha", { "u_has_trait": "PF_AGENT" } ] },
+    "effect": [
+      { "math": [ "pf_deaths_total = value_or(pf_deaths_total, 0) + 1" ] },
+      {
+        "if": { "math": [ "value_or(u_pf_is_leader, 0) == 1" ] },
+        "then": [ { "run_eocs": "PF_BAND_succession" } ],
+        "else": [ { "run_eocs": "PF_BAND_member_left" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_BAND_member_left",
+    "//": "u = a member who died.  Frees its slot in its leader's band.",
+    "condition": { "math": [ "has_var(u_pf_leader)" ] },
+    "effect": [
+      { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_gone_uid" } },
+      { "u_run_npc_eocs": [ "PF_BAND_drop_member" ], "unique_ids": [ { "u_val": "pf_leader" } ], "local": false }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_BAND_drop_member",
+    "//": "u = leader.  Empties the slot holding pf_gone_uid.",
+    "effect": [
+      {
+        "if": { "compare_string": [ { "u_val": "pf_member_0" }, { "global_val": "pf_gone_uid" } ] },
+        "then": [ { "set_string_var": "none", "target_var": { "u_val": "pf_member_0" } }, { "math": [ "u_pf_band_size -= 1" ] } ]
+      },
+      {
+        "if": { "compare_string": [ { "u_val": "pf_member_1" }, { "global_val": "pf_gone_uid" } ] },
+        "then": [ { "set_string_var": "none", "target_var": { "u_val": "pf_member_1" } }, { "math": [ "u_pf_band_size -= 1" ] } ]
+      },
+      {
+        "if": { "compare_string": [ { "u_val": "pf_member_2" }, { "global_val": "pf_gone_uid" } ] },
+        "then": [ { "set_string_var": "none", "target_var": { "u_val": "pf_member_2" } }, { "math": [ "u_pf_band_size -= 1" ] } ]
+      },
+      {
+        "if": { "compare_string": [ { "u_val": "pf_member_3" }, { "global_val": "pf_gone_uid" } ] },
+        "then": [ { "set_string_var": "none", "target_var": { "u_val": "pf_member_3" } }, { "math": [ "u_pf_band_size -= 1" ] } ]
+      },
+      {
+        "if": { "compare_string": [ { "u_val": "pf_member_4" }, { "global_val": "pf_gone_uid" } ] },
+        "then": [ { "set_string_var": "none", "target_var": { "u_val": "pf_member_4" } }, { "math": [ "u_pf_band_size -= 1" ] } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_BAND_succession",
+    "//": "u = a band leader who died.  The first surviving member (lowest slot) inherits the band: its roster slot, goal, patrol, task and remaining members.  With no survivors the band's slot becomes 'none'.",
+    "effect": [
+      { "math": [ "pf_succ_band = u_pf_band" ] },
+      { "math": [ "pf_succ_size = max(value_or(u_pf_band_size, 0) - 1, 0)" ] },
+      { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_succ_dead" } },
+      { "copy_var": { "u_val": "pf_member_0" }, "target_var": { "global_val": "pf_succ_m0" } },
+      { "copy_var": { "u_val": "pf_member_1" }, "target_var": { "global_val": "pf_succ_m1" } },
+      { "copy_var": { "u_val": "pf_member_2" }, "target_var": { "global_val": "pf_succ_m2" } },
+      { "copy_var": { "u_val": "pf_member_3" }, "target_var": { "global_val": "pf_succ_m3" } },
+      { "copy_var": { "u_val": "pf_member_4" }, "target_var": { "global_val": "pf_succ_m4" } },
+      { "set_string_var": "none", "target_var": { "global_val": "pf_succ_heir" } },
+      {
+        "run_eocs": {
+          "id": "PF_BAND_succ_stage_child_flags",
+          "effect": [
+            { "math": [ "pf_succ_c0 = value_or(u_pf_member_child_0, 0)" ] },
+            { "math": [ "pf_succ_c1 = value_or(u_pf_member_child_1, 0)" ] },
+            { "math": [ "pf_succ_c2 = value_or(u_pf_member_child_2, 0)" ] },
+            { "math": [ "pf_succ_c3 = value_or(u_pf_member_child_3, 0)" ] },
+            { "math": [ "pf_succ_c4 = value_or(u_pf_member_child_4, 0)" ] }
+          ]
+        }
+      },
+      { "math": [ "pf_succ_k = -1" ] },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_succ_k == -1" ] },
+            { "not": { "compare_string": [ { "global_val": "pf_succ_m0" }, "none" ] } },
+            { "math": [ "pf_succ_c0 == 0" ] }
+          ]
+        },
+        "then": [
+          { "copy_var": { "global_val": "pf_succ_m0" }, "target_var": { "global_val": "pf_succ_heir" } },
+          { "math": [ "pf_succ_k = 0" ] },
+          { "set_string_var": "none", "target_var": { "global_val": "pf_succ_m0" } },
+          { "math": [ "pf_succ_heir_child = 0" ] }
+        ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_succ_k == -1" ] },
+            { "not": { "compare_string": [ { "global_val": "pf_succ_m1" }, "none" ] } },
+            { "math": [ "pf_succ_c1 == 0" ] }
+          ]
+        },
+        "then": [
+          { "copy_var": { "global_val": "pf_succ_m1" }, "target_var": { "global_val": "pf_succ_heir" } },
+          { "math": [ "pf_succ_k = 1" ] },
+          { "set_string_var": "none", "target_var": { "global_val": "pf_succ_m1" } },
+          { "math": [ "pf_succ_heir_child = 0" ] }
+        ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_succ_k == -1" ] },
+            { "not": { "compare_string": [ { "global_val": "pf_succ_m2" }, "none" ] } },
+            { "math": [ "pf_succ_c2 == 0" ] }
+          ]
+        },
+        "then": [
+          { "copy_var": { "global_val": "pf_succ_m2" }, "target_var": { "global_val": "pf_succ_heir" } },
+          { "math": [ "pf_succ_k = 2" ] },
+          { "set_string_var": "none", "target_var": { "global_val": "pf_succ_m2" } },
+          { "math": [ "pf_succ_heir_child = 0" ] }
+        ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_succ_k == -1" ] },
+            { "not": { "compare_string": [ { "global_val": "pf_succ_m3" }, "none" ] } },
+            { "math": [ "pf_succ_c3 == 0" ] }
+          ]
+        },
+        "then": [
+          { "copy_var": { "global_val": "pf_succ_m3" }, "target_var": { "global_val": "pf_succ_heir" } },
+          { "math": [ "pf_succ_k = 3" ] },
+          { "set_string_var": "none", "target_var": { "global_val": "pf_succ_m3" } },
+          { "math": [ "pf_succ_heir_child = 0" ] }
+        ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_succ_k == -1" ] },
+            { "not": { "compare_string": [ { "global_val": "pf_succ_m4" }, "none" ] } },
+            { "math": [ "pf_succ_c4 == 0" ] }
+          ]
+        },
+        "then": [
+          { "copy_var": { "global_val": "pf_succ_m4" }, "target_var": { "global_val": "pf_succ_heir" } },
+          { "math": [ "pf_succ_k = 4" ] },
+          { "set_string_var": "none", "target_var": { "global_val": "pf_succ_m4" } },
+          { "math": [ "pf_succ_heir_child = 0" ] }
+        ]
+      },
+      {
+        "if": {
+          "and": [ { "math": [ "pf_succ_k == -1" ] }, { "not": { "compare_string": [ { "global_val": "pf_succ_m0" }, "none" ] } } ]
+        },
+        "then": [
+          { "copy_var": { "global_val": "pf_succ_m0" }, "target_var": { "global_val": "pf_succ_heir" } },
+          { "math": [ "pf_succ_k = 0" ] },
+          { "set_string_var": "none", "target_var": { "global_val": "pf_succ_m0" } },
+          { "math": [ "pf_succ_heir_child = pf_succ_c0" ] }
+        ]
+      },
+      {
+        "if": {
+          "and": [ { "math": [ "pf_succ_k == -1" ] }, { "not": { "compare_string": [ { "global_val": "pf_succ_m1" }, "none" ] } } ]
+        },
+        "then": [
+          { "copy_var": { "global_val": "pf_succ_m1" }, "target_var": { "global_val": "pf_succ_heir" } },
+          { "math": [ "pf_succ_k = 1" ] },
+          { "set_string_var": "none", "target_var": { "global_val": "pf_succ_m1" } },
+          { "math": [ "pf_succ_heir_child = pf_succ_c1" ] }
+        ]
+      },
+      {
+        "if": {
+          "and": [ { "math": [ "pf_succ_k == -1" ] }, { "not": { "compare_string": [ { "global_val": "pf_succ_m2" }, "none" ] } } ]
+        },
+        "then": [
+          { "copy_var": { "global_val": "pf_succ_m2" }, "target_var": { "global_val": "pf_succ_heir" } },
+          { "math": [ "pf_succ_k = 2" ] },
+          { "set_string_var": "none", "target_var": { "global_val": "pf_succ_m2" } },
+          { "math": [ "pf_succ_heir_child = pf_succ_c2" ] }
+        ]
+      },
+      {
+        "if": {
+          "and": [ { "math": [ "pf_succ_k == -1" ] }, { "not": { "compare_string": [ { "global_val": "pf_succ_m3" }, "none" ] } } ]
+        },
+        "then": [
+          { "copy_var": { "global_val": "pf_succ_m3" }, "target_var": { "global_val": "pf_succ_heir" } },
+          { "math": [ "pf_succ_k = 3" ] },
+          { "set_string_var": "none", "target_var": { "global_val": "pf_succ_m3" } },
+          { "math": [ "pf_succ_heir_child = pf_succ_c3" ] }
+        ]
+      },
+      {
+        "if": {
+          "and": [ { "math": [ "pf_succ_k == -1" ] }, { "not": { "compare_string": [ { "global_val": "pf_succ_m4" }, "none" ] } } ]
+        },
+        "then": [
+          { "copy_var": { "global_val": "pf_succ_m4" }, "target_var": { "global_val": "pf_succ_heir" } },
+          { "math": [ "pf_succ_k = 4" ] },
+          { "set_string_var": "none", "target_var": { "global_val": "pf_succ_m4" } },
+          { "math": [ "pf_succ_heir_child = pf_succ_c4" ] }
+        ]
+      },
+      {
+        "set_string_var": "pf_slot_<global_val:pf_succ_band>",
+        "target_var": { "context_val": "ref" },
+        "parse_tags": true
+      },
+      {
+        "if": { "math": [ "pf_succ_k == -1" ] },
+        "then": [
+          { "set_string_var": "none", "target_var": { "var_val": "ref" } },
+          { "math": [ "pf_dissolved_total = value_or(pf_dissolved_total, 0) + 1" ] }
+        ],
+        "else": [
+          {
+            "if": { "math": [ "has_var(u_pf_vpos)" ] },
+            "then": [ { "copy_var": { "u_val": "pf_vpos" }, "target_var": { "global_val": "pf_succ_vpos" } } ],
+            "else": [ { "u_location_variable": { "global_val": "pf_succ_vpos" } } ]
+          },
+          { "math": [ "pf_succ_has_goal = has_var(u_pf_goal)" ] },
+          {
+            "if": { "math": [ "pf_succ_has_goal" ] },
+            "then": [
+              { "copy_var": { "u_val": "pf_goal" }, "target_var": { "global_val": "pf_succ_goal" } },
+              { "copy_var": { "u_val": "pf_wp_a" }, "target_var": { "global_val": "pf_succ_wp_a" } },
+              { "copy_var": { "u_val": "pf_wp_b" }, "target_var": { "global_val": "pf_succ_wp_b" } }
+            ]
+          },
+          { "math": [ "pf_succ_goal_is_b = value_or(u_pf_goal_is_b, 0)" ] },
+          { "math": [ "pf_succ_task = value_or(u_pf_task, 0)" ] },
+          { "math": [ "pf_succ_quarry = value_or(u_pf_quarry_spawned, 0)" ] },
+          { "math": [ "pf_succ_online = value_or(u_pf_online, 0)" ] },
+          { "copy_var": { "global_val": "pf_succ_heir" }, "target_var": { "var_val": "ref" } },
+          {
+            "u_run_npc_eocs": [ "PF_BAND_become_leader" ],
+            "unique_ids": [ { "global_val": "pf_succ_heir" } ],
+            "local": false
+          },
+          {
+            "u_run_npc_eocs": [ "PF_BAND_follow_new_leader" ],
+            "unique_ids": [
+              { "global_val": "pf_succ_m0" },
+              { "global_val": "pf_succ_m1" },
+              { "global_val": "pf_succ_m2" },
+              { "global_val": "pf_succ_m3" },
+              { "global_val": "pf_succ_m4" }
+            ],
+            "local": false
+          },
+          { "math": [ "pf_successions_total = value_or(pf_successions_total, 0) + 1" ] }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_BAND_become_leader",
+    "//": "u = the heir.  Takes over the band state staged by PF_BAND_succession.  An adult always inherits before a child.  A child heir means only children are left: the band is marked orphaned and stops travelling (it stays where it is, out of danger's path).",
+    "effect": [
+      { "math": [ "u_pf_is_leader = 1" ] },
+      { "math": [ "u_pf_band = pf_succ_band" ] },
+      { "math": [ "u_pf_band_v2 = 1" ] },
+      { "math": [ "u_pf_band_size = pf_succ_size" ] },
+      { "copy_var": { "global_val": "pf_succ_m0" }, "target_var": { "u_val": "pf_member_0" } },
+      { "copy_var": { "global_val": "pf_succ_m1" }, "target_var": { "u_val": "pf_member_1" } },
+      { "copy_var": { "global_val": "pf_succ_m2" }, "target_var": { "u_val": "pf_member_2" } },
+      { "copy_var": { "global_val": "pf_succ_m3" }, "target_var": { "u_val": "pf_member_3" } },
+      { "copy_var": { "global_val": "pf_succ_m4" }, "target_var": { "u_val": "pf_member_4" } },
+      {
+        "if": { "math": [ "pf_succ_has_goal" ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_succ_goal" }, "target_var": { "u_val": "pf_goal" } },
+          { "copy_var": { "global_val": "pf_succ_wp_a" }, "target_var": { "u_val": "pf_wp_a" } },
+          { "copy_var": { "global_val": "pf_succ_wp_b" }, "target_var": { "u_val": "pf_wp_b" } }
+        ]
+      },
+      { "math": [ "u_pf_goal_is_b = pf_succ_goal_is_b" ] },
+      { "math": [ "u_pf_task = pf_succ_task" ] },
+      { "math": [ "u_pf_quarry_spawned = pf_succ_quarry" ] },
+      { "math": [ "u_pf_online = pf_succ_online" ] },
+      { "math": [ "u_pf_stuck = -1" ] },
+      { "u_location_variable": { "u_val": "pf_last_online_pos" } },
+      { "copy_var": { "global_val": "pf_succ_vpos" }, "target_var": { "u_val": "pf_vpos" } },
+      { "copy_var": { "u_val": "pf_last_online_pos" }, "target_var": { "u_val": "pf_body" } },
+      { "math": [ "u_pf_member_child_0 = pf_succ_c0 * (pf_succ_k != 0)" ] },
+      { "math": [ "u_pf_member_child_1 = pf_succ_c1 * (pf_succ_k != 1)" ] },
+      { "math": [ "u_pf_member_child_2 = pf_succ_c2 * (pf_succ_k != 2)" ] },
+      { "math": [ "u_pf_member_child_3 = pf_succ_c3 * (pf_succ_k != 3)" ] },
+      { "math": [ "u_pf_member_child_4 = pf_succ_c4 * (pf_succ_k != 4)" ] },
+      {
+        "if": { "math": [ "pf_succ_heir_child == 1" ] },
+        "then": [
+          { "math": [ "u_pf_orphaned = 1" ] },
+          { "copy_var": { "u_val": "pf_vpos" }, "target_var": { "u_val": "pf_wp_a" } },
+          { "copy_var": { "u_val": "pf_vpos" }, "target_var": { "u_val": "pf_wp_b" } },
+          { "copy_var": { "u_val": "pf_vpos" }, "target_var": { "u_val": "pf_goal" } },
+          { "math": [ "u_pf_task = 0" ] },
+          { "math": [ "pf_orphaned_total = value_or(pf_orphaned_total, 0) + 1" ] }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_BAND_follow_new_leader",
+    "//": "u = a surviving member.  Points it at the new leader.",
+    "effect": [ { "copy_var": { "global_val": "pf_succ_heir" }, "target_var": { "u_val": "pf_leader" } } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_BAND_link_child_flag",
+    "//": "u = leader.  Records whether the member just linked into slot pf_link_idx is a child (succession skips children while an adult survives).",
+    "effect": [
+      {
+        "switch": { "math": [ "pf_link_idx" ] },
+        "cases": [
+          { "case": 1, "effect": { "math": [ "u_pf_member_child_0 = pf_link_child" ] } },
+          { "case": 2, "effect": { "math": [ "u_pf_member_child_1 = pf_link_child" ] } },
+          { "case": 3, "effect": { "math": [ "u_pf_member_child_2 = pf_link_child" ] } },
+          { "case": 4, "effect": { "math": [ "u_pf_member_child_3 = pf_link_child" ] } },
+          { "case": 5, "effect": { "math": [ "u_pf_member_child_4 = pf_link_child" ] } }
+        ]
+      }
+    ]
+  }
+]

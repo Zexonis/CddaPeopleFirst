@@ -1,0 +1,466 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_AWL_roll",
+    "//": "Who lives here and the animals, as the away days will see them.",
+    "effect": [
+      { "run_eocs": "PF_AW_roll" },
+      {
+        "u_message": "[away lab] roll: <global_val:pf_hh_n> people (<global_val:pf_hh_adults> grown-ups, <global_val:pf_hh_kids> children), cooks <global_val:pf_hh_cooks>, foragers <global_val:pf_hh_foragers>, hens <global_val:pf_hh_hens>, goats <global_val:pf_hh_goats>, cows <global_val:pf_hh_cows>.",
+        "type": "info"
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_AWL_leave",
+    "//": "Takes the roll, then you count as away; walk back within 30 tiles (or use 'come home now') for the homecoming.",
+    "effect": [
+      { "run_eocs": "PF_AW_roll" },
+      { "run_eocs": "PF_AW_leave" },
+      { "u_message": "[away lab] You're away now (state 1).  Days pass with the next entry.", "type": "info" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_AWL_day",
+    "//": "Moves the time you left back by a day and runs that away day (the pantry, the field, the meeting day).",
+    "effect": [
+      {
+        "if": { "math": [ "value_or(pf_aw_state, 0) == 1" ] },
+        "then": [
+          { "math": [ "pf_aw_since -= time('1 d')" ] },
+          { "math": [ "pf_aw_due = floor((time('now') - pf_aw_since) / time('1 d'))" ] },
+          { "run_eocs": "PF_AW_day", "condition": { "math": [ "pf_aw_days_done < pf_aw_due" ] }, "iterations": 60 },
+          {
+            "u_message": "[away lab] Day <global_val:pf_aw_days_done> away.  News <global_val:pf_aw_news_n>; pantry: soup <global_val:pf_pn_soup>, water <global_val:pf_pn_water>, eggs <global_val:pf_pn_eggs>, forage <global_val:pf_pn_forage>, harvest <global_val:pf_pn_harvest>; field <global_val:pf_field_state>.",
+            "type": "info"
+          }
+        ],
+        "else": [ { "u_message": "[away lab] You're not away (use 'leave now' first).", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_AWL_raid",
+    "//": "The first settlement raids the place and gets through (needs a neighbor; the stores are topped up to 12).  While you're away it goes into the news, maybe with someone hurt.",
+    "effect": [ { "run_eocs": "PF_KL_nb_raid_win" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_AWL_raid_held",
+    "//": "The first settlement raids the place (strength against defense; usually held).",
+    "effect": [ { "run_eocs": "PF_KL_nb_raid" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_AWL_back",
+    "//": "The homecoming, wherever you are (it expects you to be home: the pantry and the field are placed at home).",
+    "effect": [
+      {
+        "if": { "math": [ "value_or(pf_aw_state, 0) == 1" ] },
+        "then": [ { "run_eocs": "PF_AW_return" } ],
+        "else": [ { "u_message": "[away lab] You're not away.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_AWL_status",
+    "//": "State, days away, news, pantry, roll and totals.",
+    "effect": [
+      { "math": [ "pf_hs_a = value_or(pf_aw_state, 0)" ] },
+      { "math": [ "pf_hs_b = value_or(pf_aw_days_done, 0)" ] },
+      { "math": [ "pf_hs_c = value_or(pf_aw_news_n, 0)" ] },
+      { "math": [ "pf_hs_d = value_or(pf_aw_leaves_total, 0)" ] },
+      { "math": [ "pf_hs_e = value_or(pf_aw_returns_total, 0)" ] },
+      { "math": [ "pf_hs_f = value_or(pf_hh_n, 0)" ] },
+      {
+        "u_message": "[away lab] state <global_val:pf_hs_a>, days <global_val:pf_hs_b>, news <global_val:pf_hs_c>, roll <global_val:pf_hs_f> | left <global_val:pf_hs_d> times, came back <global_val:pf_hs_e>.",
+        "type": "info"
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_AWL_road",
+    "//": "The first band off-screen (not settled, not visiting) runs into the dead now; kind: scare, hurt or lost by the next entries' setting (default: by chance).",
+    "effect": [
+      { "math": [ "pf_road_force = 1" ] },
+      { "math": [ "pf_rdl_i = 0" ] },
+      { "math": [ "pf_rdl_done = 0" ] },
+      {
+        "run_eocs": "PF_AWL_road_i",
+        "condition": { "math": [ "(pf_rdl_i < value_or(pf_band_n, 0)) * (pf_rdl_done == 0)" ] },
+        "iterations": 200
+      },
+      { "math": [ "pf_road_force = 0" ] },
+      {
+        "if": { "math": [ "pf_rdl_done == 0" ] },
+        "then": [ { "u_message": "[away lab] No band off-screen that could run into trouble.", "type": "info" } ],
+        "else": [
+          { "math": [ "pf_hs_a = pf_rd_k" ] },
+          {
+            "u_message": "[away lab] Trouble on the road for <global_val:pf_rdl_name>'s band: kind <global_val:pf_hs_a> (1 scare, 2 hurt, 3 lost).",
+            "type": "info"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_AWL_road_kind",
+    "//": "Cycles the kind the next 'trouble now' uses: 1 scare, 2 hurt, 3 lost, 0 by chance.",
+    "effect": [
+      { "math": [ "pf_road_kind = (value_or(pf_road_kind, 0) + 1) % 4" ] },
+      { "math": [ "pf_hs_a = pf_road_kind" ] },
+      {
+        "u_message": "[away lab] Next road trouble: kind <global_val:pf_hs_a> (0 by chance, 1 scare, 2 hurt, 3 lost).",
+        "type": "info"
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_AWL_road_stats",
+    "//": "Scares, wounds and losses on the road so far.",
+    "effect": [
+      { "math": [ "pf_hs_a = value_or(pf_road_scares, 0)" ] },
+      { "math": [ "pf_hs_b = value_or(pf_road_hurts, 0)" ] },
+      { "math": [ "pf_hs_c = value_or(pf_road_deaths, 0)" ] },
+      {
+        "u_message": "[away lab] road: scares <global_val:pf_hs_a>, hurt <global_val:pf_hs_b>, lost <global_val:pf_hs_c>.",
+        "type": "info"
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_AWL_raid_kill",
+    "//": "As 'a raid gets through', but outnumbered and fatal: someone grown-up on the roll is killed (it waits for your return: a grave and the grief).",
+    "effect": [
+      { "math": [ "pf_aw_force_death = 1" ] },
+      { "run_eocs": "PF_KL_nb_raid_win" },
+      { "math": [ "pf_aw_force_death = 0" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_AWL_wall",
+    "//": "The wall goes up a side a day from tomorrow, at home or (pass 2) while you're away.",
+    "effect": [
+      { "run_eocs": "PF_KEEP_wall_start" },
+      { "math": [ "pf_hs_a = value_or(pf_wall_state, 0)" ] },
+      { "u_message": "[away lab] wall state <global_val:pf_hs_a> (1 going up, 2 done).", "type": "info" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_AWL_wall_half",
+    "//": "Lab: sets the wall back to 'going up' with the north and east sides done, so the away days raise the rest (where it's open ground).",
+    "effect": [
+      { "math": [ "pf_wall_state = 1" ] },
+      { "math": [ "pf_wall_side = 2" ] },
+      { "u_message": "[away lab] The wall is going up again: south and west to go.", "type": "info" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_AWL_meet_missed",
+    "//": "Lab: marks this week's meeting as missed while you're away (lab days don't move the weekday).  With an NPC chief it's held without you at the homecoming; otherwise it waits for you.",
+    "effect": [
+      { "math": [ "pf_aw_meet_missed = 1" ] },
+      { "math": [ "pf_aw_meet_dshow = floor(time('now') / time('1 d')) + 1" ] },
+      { "math": [ "pf_hs_a = value_or(pf_chief_set, 0)" ] },
+      {
+        "u_message": "[away lab] Meeting missed.  Chief: <global_val:pf_hs_a> (0 none, 1 someone, 2 you).",
+        "type": "info"
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_AWL_chief",
+    "//": "Lab: makes the nearest resident adult the chief (so a missed meeting is held without you).",
+    "effect": [
+      { "math": [ "pf_awl_c = 0" ] },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_AWL_chief_one",
+            "condition": {
+              "and": [
+                { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+                { "math": [ "value_or(u_pf_resident, 0) == 1" ] },
+                { "math": [ "has_var(u_pf_uid)" ] },
+                { "math": [ "pf_awl_c == 0" ] }
+              ]
+            },
+            "effect": [
+              { "math": [ "pf_awl_c = 1" ] },
+              { "math": [ "pf_chief_set = 1" ] },
+              { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_chief_uid" } },
+              { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_chief_name" }, "parse_tags": true },
+              { "math": [ "pf_chief_since = time('now')" ] }
+            ]
+          }
+        ],
+        "local": true,
+        "npc_range": 30
+      },
+      {
+        "if": { "math": [ "pf_awl_c == 1" ] },
+        "then": [ { "u_message": "[away lab] <global_val:pf_chief_name> is chief now.", "type": "info" } ],
+        "else": [ { "u_message": "[away lab] Nobody grown-up who lives here within 30 tiles.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_AWL_due",
+    "//": "Lab: moves every pregnancy within 30 tiles to term without running the birth, so the homecoming's birth step brings the baby.",
+    "effect": [
+      { "math": [ "pf_awl_c = 0" ] },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_AWL_due_one",
+            "condition": { "math": [ "value_or(u_pf_preg, 0) == 1" ] },
+            "effect": [
+              { "math": [ "pf_awl_c += 1" ] },
+              {
+                "math": [
+                  "u_pf_preg_t = time('now') - time('1 d') * (value_or(pf_set_grow, 1) == 0 ? 270 : (value_or(pf_set_grow, 1) == 1 ? 30 : 3)) - time('1 h')"
+                ]
+              }
+            ]
+          }
+        ],
+        "local": true,
+        "npc_range": 30
+      },
+      { "u_message": "[away lab] <global_val:pf_awl_c> pregnancies at term.", "type": "info" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_AWL_loss",
+    "//": "A child within 30 tiles whose mother or father is an NPC here: that parent dies (a real death, with a body).  Then watch: grief, who keeps them, their talk.",
+    "effect": [
+      { "math": [ "pf_awl_k = 0" ] },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_AWL_loss_kid",
+            "condition": { "and": [ { "u_has_trait": "PF_CHILD" }, { "math": [ "pf_awl_k == 0" ] }, { "math": [ "has_var(u_pf_mom)" ] } ] },
+            "effect": [
+              { "copy_var": { "u_val": "pf_mom" }, "target_var": { "global_val": "pf_find_uid" } },
+              { "run_eocs": "PF_FIND_by_uid" },
+              {
+                "if": { "math": [ "pf_find_ok == 0" ] },
+                "then": [
+                  { "copy_var": { "u_val": "pf_dad" }, "target_var": { "global_val": "pf_find_uid" } },
+                  { "run_eocs": "PF_FIND_by_uid" }
+                ]
+              },
+              {
+                "if": { "math": [ "pf_find_ok == 1" ] },
+                "then": [
+                  { "math": [ "pf_awl_k = 1" ] },
+                  { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_awl_kid" }, "parse_tags": true },
+                  { "run_eocs": "PF_AWL_loss_die", "alpha_talker": { "global_val": "pf_find_who" } }
+                ]
+              }
+            ]
+          }
+        ],
+        "local": true,
+        "npc_range": 30
+      },
+      {
+        "if": { "math": [ "pf_awl_k == 0" ] },
+        "then": [ { "u_message": "[away lab] No child nearby with a mother or father here.", "type": "info" } ],
+        "else": [ { "u_message": "[away lab] <global_val:pf_awl_kid> has lost a parent.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_AWL_kid_grief",
+    "//": "Every child nearby who is mourning a parent says their grief line (a kids' day step, forced).",
+    "effect": [
+      { "math": [ "pf_kl = 0" ] },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_AWL_kg",
+            "condition": { "and": [ { "u_has_trait": "PF_CHILD" }, { "math": [ "has_var(u_pf_lost_t)" ] } ] },
+            "effect": [
+              { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+              { "run_eocs": "PF_FAM_kid_grief" }
+            ]
+          }
+        ],
+        "local": true,
+        "npc_range": 30
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_AWL_kid_heal",
+    "//": "Ends the mourning of every grieving child nearby and runs the day it lifts (a first laugh, a bond to whoever stayed).",
+    "effect": [
+      { "math": [ "pf_kl = 0" ] },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_AWL_kh",
+            "condition": { "and": [ { "u_has_trait": "PF_CHILD" }, { "math": [ "has_var(u_pf_lost_t)" ] } ] },
+            "effect": [
+              { "math": [ "u_pf_mourn_until = time('now')" ] },
+              { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+              { "run_eocs": "PF_FAM_kid_heal" }
+            ]
+          }
+        ],
+        "local": true,
+        "npc_range": 30
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_AWL_tense",
+    "//": "The evening the dead won't leave: a line and shared danger with the grown-ups near you (ignores the clock and the threat).",
+    "effect": [
+      { "math": [ "pf_eve_hit_t = 0" ] },
+      { "math": [ "pf_eve_day = floor(time('now') / time('1 d'))" ] },
+      { "run_eocs": "PF_FIRE_tense" },
+      {
+        "if": { "math": [ "pf_ft_n == 0" ] },
+        "then": [ { "u_message": "[away lab] Nobody grown-up near you (15 tiles).", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_AWL_loss_die",
+    "//": "Lab: u = the parent, dies now (a normal death).",
+    "effect": [ "u_die" ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_AWL_road_i",
+    "//": "Lab: roster slot i, if its band is off-screen and on the move.",
+    "effect": [
+      { "set_string_var": "pf_slot_<global_val:pf_rdl_i>", "target_var": { "context_val": "ref" }, "parse_tags": true },
+      {
+        "if": { "not": { "compare_string": [ { "var_val": "ref" }, "none" ] } },
+        "then": [
+          {
+            "u_run_npc_eocs": [
+              {
+                "id": "PF_AWL_road_try",
+                "condition": {
+                  "and": [
+                    { "math": [ "value_or(u_pf_settled, 0) == 0" ] },
+                    { "math": [ "value_or(u_pf_online, 0) == 0" ] },
+                    { "math": [ "value_or(u_pf_visiting, 0) == 0" ] }
+                  ]
+                },
+                "effect": [
+                  { "math": [ "pf_rdl_done = 1" ] },
+                  { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_rdl_name" }, "parse_tags": true },
+                  { "run_eocs": "PF_ROAD_trouble" }
+                ]
+              }
+            ],
+            "unique_ids": [ { "var_val": "ref" } ],
+            "local": false
+          }
+        ]
+      },
+      { "math": [ "pf_rdl_i += 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_AWL_open",
+    "effect": [
+      {
+        "run_eoc_selector": [
+          "PF_AWL_roll",
+          "PF_AWL_leave",
+          "PF_AWL_day",
+          "PF_AWL_raid",
+          "PF_AWL_raid_held",
+          "PF_AWL_back",
+          "PF_AWL_status",
+          "PF_AWL_road",
+          "PF_AWL_road_kind",
+          "PF_AWL_road_stats",
+          "PF_AWL_raid_kill",
+          "PF_AWL_wall",
+          "PF_AWL_wall_half",
+          "PF_AWL_meet_missed",
+          "PF_AWL_chief",
+          "PF_AWL_due",
+          "PF_AWL_loss",
+          "PF_AWL_kid_grief",
+          "PF_AWL_kid_heal",
+          "PF_AWL_tense"
+        ],
+        "names": [
+          "Away: take the household roll now",
+          "Away: leave now (as if you walked 60+ tiles off)",
+          "Away: one day passes at home",
+          "Away: a raid gets through tonight",
+          "Away: a raid is driven off tonight",
+          "Away: come home now",
+          "Away: status",
+          "Road: trouble for a band out there now",
+          "Road: next trouble is a scare / a wound / a loss / by chance",
+          "Road: stats",
+          "Away: a raid gets through badly tonight (someone is killed)",
+          "Away: start building the wall",
+          "Away: the wall is half built again (two sides to go)",
+          "Away: a meeting day was missed",
+          "Away: the nearest grown-up who lives here is chief",
+          "Away: everyone expecting here is at term (no birth yet)",
+          "Loss: the nearest child's mother (or father) dies now",
+          "Loss: a grieving child's day line now",
+          "Loss: a grieving child's mourning ends now",
+          "Evening: the tense evening now"
+        ],
+        "descriptions": [
+          "Who lives here and the animals, as the away days will see them.",
+          "Takes the roll, then you count as away; walk back within 30 tiles (or use 'come home now') for the homecoming.",
+          "Moves the time you left back by a day and runs that away day (the pantry, the field, the meeting day).",
+          "The first settlement raids the place and gets through (needs a neighbor; the stores are topped up to 12).  While you're away it goes into the news, maybe with someone hurt.",
+          "The first settlement raids the place (strength against defense; usually held).",
+          "The homecoming, wherever you are (it expects you to be home: the pantry and the field are placed at home).",
+          "State, days away, news, pantry, roll and totals.",
+          "The first band off-screen (not settled, not visiting) runs into the dead now; kind: scare, hurt or lost by the next entries' setting (default: by chance).",
+          "Cycles the kind the next 'trouble now' uses: 1 scare, 2 hurt, 3 lost, 0 by chance.",
+          "Scares, wounds and losses on the road so far.",
+          "As 'a raid gets through', but outnumbered and fatal: someone grown-up on the roll is killed (it waits for your return: a grave and the grief).",
+          "The wall goes up a side a day from tomorrow, at home or (pass 2) while you're away.",
+          "Lab: sets the wall back to 'going up' with the north and east sides done, so the away days raise the rest (where it's open ground).",
+          "Lab: marks this week's meeting as missed while you're away (lab days don't move the weekday).  With an NPC chief it's held without you at the homecoming; otherwise it waits for you.",
+          "Lab: makes the nearest resident adult the chief (so a missed meeting is held without you).",
+          "Lab: moves every pregnancy within 30 tiles to term without running the birth, so the homecoming's birth step brings the baby.",
+          "A child within 30 tiles whose mother or father is an NPC here: that parent dies (a real death, with a body).  Then watch: grief, who keeps them, their talk.",
+          "Every child nearby who is mourning a parent says their grief line (a kids' day step, forced).",
+          "Ends the mourning of every grieving child nearby and runs the day it lifts (a first laugh, a bond to whoever stayed).",
+          "The evening the dead won't leave: a line and shared danger with the grown-ups near you (ignores the clock and the threat)."
+        ],
+        "keys": [ "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t" ],
+        "title": "Open threads lab (v0.7)",
+        "allow_cancel": true
+      }
+    ]
+  }
+]

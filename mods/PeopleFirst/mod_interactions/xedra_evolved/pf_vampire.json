@@ -1,0 +1,111 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_XE_tick",
+    "//": "Every hour: if you walk the vampire's path (Xedra Evolved), the people close to you may find out.  Each adult within 10 tiles who doesn't know yet has a 1 in 10 chance an hour.",
+    "condition": { "or": [ { "u_has_trait": "VAMPIRE2" }, { "u_has_trait": "VAMPIRE3" } ] },
+    "recurrence": "1 hours",
+    "global": true,
+    "effect": [ { "u_run_npc_eocs": [ "PF_XE_notice" ], "local": true, "npc_range": 10 } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_XE_notice",
+    "//": "u = someone near you who now knows.  Warm and trusting (45 / 35): they keep it to themselves (secret_kept: your trust in them jumps).  Otherwise it frightens them (their warmth and trust drop, tension rises).",
+    "condition": {
+      "and": [
+        { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+        { "math": [ "value_or(u_pf_xe_knows, 0) == 0" ] },
+        { "or": [ { "math": [ "rand(9) == 0" ] }, { "math": [ "value_or(pf_xe_force, 0) == 1" ] } ] }
+      ]
+    },
+    "effect": [
+      { "run_eocs": "PF_ID_ensure" },
+      { "math": [ "u_pf_xe_knows = 1" ] },
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+      { "set_string_var": "AVATAR", "target_var": { "global_val": "pf_m_other" } },
+      { "run_eocs": "PF_VIEW_read" },
+      {
+        "if": { "and": [ { "math": [ "pf_read_w >= 45" ] }, { "math": [ "pf_read_t >= 35" ] } ] },
+        "then": [
+          { "run_eocs": "PF_XE_keep", "alpha_talker": "avatar" },
+          { "math": [ "pf_m_str_in = 70" ] },
+          { "run_eocs": "PF_MK_secret_kept", "beta_talker": "avatar" }
+        ],
+        "else": [
+          { "run_eocs": "PF_XE_fear", "alpha_talker": "avatar" },
+          { "set_string_var": "AVATAR", "target_var": { "global_val": "pf_m_other" } },
+          { "math": [ "pf_mv_role = 1" ] },
+          { "math": [ "pf_m_str_in = 70" ] },
+          { "run_eocs": "PF_MV_frightened" }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_XE_lab",
+    "//": "Home lab (Xedra Evolved loaded): the nearest adult finds out what you are (as if you were a vampire).",
+    "effect": [
+      { "math": [ "pf_mi_d = 99" ] },
+      { "u_location_variable": { "global_val": "pf_mi_av" } },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_MI_near_xe",
+            "condition": { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+            "effect": [
+              { "u_location_variable": { "u_val": "pf_pos" } },
+              {
+                "if": { "math": [ "distance(u_pf_pos, pf_mi_av) < pf_mi_d" ] },
+                "then": [ { "math": [ "pf_mi_d = distance(u_pf_pos, pf_mi_av)" ] }, { "u_set_talker": { "global_val": "pf_mi_who" } } ]
+              }
+            ]
+          }
+        ],
+        "local": true,
+        "npc_range": 15
+      },
+      {
+        "if": { "math": [ "pf_mi_d < 99" ] },
+        "then": [
+          { "math": [ "pf_xe_force = 1" ] },
+          {
+            "run_eocs": { "id": "PF_XE_lab_one", "effect": [ { "math": [ "u_pf_xe_knows = 0" ] }, { "run_eocs": "PF_XE_notice" } ] },
+            "alpha_talker": { "global_val": "pf_mi_who" }
+          },
+          { "math": [ "pf_xe_force = 0" ] }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_XE_lab_poll",
+    "//": "See PF_MOM_lab_poll.",
+    "condition": { "and": [ { "math": [ "value_or(pf_mi_test, 0) == 1" ] }, { "math": [ "value_or(pf_mi_xe_done, 0) == 0" ] } ] },
+    "recurrence": "1 minutes",
+    "global": true,
+    "effect": [ { "run_eocs": "PF_XE_lab" }, { "math": [ "pf_mi_xe_done = 1" ] } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_XE_keep",
+    "effect": [
+      {
+        "u_message": "<global_val:pf_say_a> has noticed you never eat, and never stand in the sun.  They don't say anything.  They just start drawing the curtains before you wake.",
+        "type": "good"
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_XE_fear",
+    "effect": [
+      {
+        "u_message": "<global_val:pf_say_a> has noticed you never eat, and never stand in the sun.  Now they keep a hand near their knife when you're around.",
+        "type": "bad"
+      }
+    ]
+  }
+]

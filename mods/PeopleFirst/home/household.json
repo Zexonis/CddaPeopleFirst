@@ -1,0 +1,1141 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOME_role_pick",
+    "//": "u = an adult who just moved in.  The job that fits their skills (and quirks): cook, guard, forager, tinkerer, carer, or (v0.5) herder when there are animals at home and farmer when there's a field.  Ties go in that order.",
+    "condition": { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+    "effect": [
+      { "math": [ "_c = u_skill('cooking') * 2" ] },
+      { "if": { "u_has_trait": "PF_Q_MOTHER_HEN" }, "then": [ { "math": [ "_c += 2" ] } ] },
+      { "math": [ "_g = u_skill('melee') + u_skill('gun')" ] },
+      { "if": { "u_has_trait": "PF_Q_PROUD" }, "then": [ { "math": [ "_g += 2" ] } ] },
+      { "math": [ "_f = u_skill('survival') * 2" ] },
+      { "if": { "u_has_trait": "PF_T_LONER" }, "then": [ { "math": [ "_f += 2" ] } ] },
+      { "math": [ "_t = u_skill('fabrication') + u_skill('mechanics')" ] },
+      { "math": [ "_r = u_skill('firstaid') * 2" ] },
+      { "if": { "u_has_trait": "PF_Q_MOTHER_HEN" }, "then": [ { "math": [ "_r += 3" ] } ] },
+      {
+        "math": [
+          "_h = (monsters_nearby('mon_cow', 'mon_goat', 'mon_chicken', 'radius': 25, 'location': pf_home_loc, 'attitude': 'friendly') > 0) * (u_skill('survival') + 1 + (u_has_trait('PF_Q_MOTHER_HEN') ? 2 : 0))"
+        ]
+      },
+      {
+        "math": [
+          "_a = (value_or(pf_field_state, 0) > 0) * (u_skill('survival') + u_skill('cooking') + (u_has_trait('PF_Q_HATES_WASTE') ? 2 : 0))"
+        ]
+      },
+      { "math": [ "_s = u_skill('fabrication') * 2 + u_skill('mechanics') - 1" ] },
+      { "math": [ "_e = u_skill('firstaid') * 3 - 3" ] },
+      { "math": [ "pf_rp_kids = 0" ] },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_HOME_rp_kid",
+            "condition": { "and": [ { "u_has_trait": "PF_CHILD" }, { "math": [ "value_or(u_pf_resident, 0) == 1" ] } ] },
+            "effect": [ { "math": [ "pf_rp_kids += 1" ] } ]
+          }
+        ],
+        "local": true,
+        "npc_range": 60
+      },
+      { "math": [ "_k = (pf_rp_kids > 0) * (u_val('intelligence') - 8 + u_skill('speech'))" ] },
+      { "math": [ "_b = max(max(max(_c, _g), max(_f, _t)), max(max(_r, max(_h, _a)), max(_s, max(_e, _k))))" ] },
+      {
+        "math": [
+          "u_pf_role = _b == _c ? 1 : (_b == _g ? 2 : (_b == _f ? 3 : (_b == _t ? 4 : (_b == _r ? 5 : (_b == _h ? 6 : (_b == _a ? 7 : (_b == _s ? 8 : (_b == _e ? 9 : 10))))))))"
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOME_role_next",
+    "//": "u = you, npc = someone who lives with you (People menu: Ask them to take a different job).  Cycles cook, guard, forager, tinkerer, carer, herder, farmer, smith, healer, teacher.",
+    "effect": [
+      { "math": [ "n_pf_role = value_or(n_pf_role, 0) % 10 + 1" ] },
+      {
+        "run_eocs": {
+          "id": "PF_HOME_role_said",
+          "effect": [
+            { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+            {
+              "if": { "math": [ "value_or(u_pf_role, 0) == 0" ] },
+              "then": [ { "set_string_var": "no particular job", "target_var": { "global_val": "pf_say_b" } } ]
+            },
+            {
+              "if": { "math": [ "value_or(u_pf_role, 0) == 1" ] },
+              "then": [ { "set_string_var": "cook", "target_var": { "global_val": "pf_say_b" } } ]
+            },
+            {
+              "if": { "math": [ "value_or(u_pf_role, 0) == 2" ] },
+              "then": [ { "set_string_var": "guard", "target_var": { "global_val": "pf_say_b" } } ]
+            },
+            {
+              "if": { "math": [ "value_or(u_pf_role, 0) == 3" ] },
+              "then": [ { "set_string_var": "forager", "target_var": { "global_val": "pf_say_b" } } ]
+            },
+            {
+              "if": { "math": [ "value_or(u_pf_role, 0) == 4" ] },
+              "then": [ { "set_string_var": "tinkerer", "target_var": { "global_val": "pf_say_b" } } ]
+            },
+            {
+              "if": { "math": [ "value_or(u_pf_role, 0) == 5" ] },
+              "then": [ { "set_string_var": "carer", "target_var": { "global_val": "pf_say_b" } } ]
+            },
+            {
+              "if": { "math": [ "value_or(u_pf_role, 0) == 6" ] },
+              "then": [ { "set_string_var": "herder", "target_var": { "global_val": "pf_say_b" } } ]
+            },
+            {
+              "if": { "math": [ "value_or(u_pf_role, 0) == 7" ] },
+              "then": [ { "set_string_var": "farmer", "target_var": { "global_val": "pf_say_b" } } ]
+            },
+            {
+              "if": { "math": [ "value_or(u_pf_role, 0) == 8" ] },
+              "then": [ { "set_string_var": "smith", "target_var": { "global_val": "pf_say_b" } } ]
+            },
+            {
+              "if": { "math": [ "value_or(u_pf_role, 0) == 9" ] },
+              "then": [ { "set_string_var": "healer", "target_var": { "global_val": "pf_say_b" } } ]
+            },
+            {
+              "if": { "math": [ "value_or(u_pf_role, 0) == 10" ] },
+              "then": [ { "set_string_var": "teacher", "target_var": { "global_val": "pf_say_b" } } ]
+            }
+          ]
+        },
+        "alpha_talker": "npc"
+      },
+      { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "role_change" } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOME_roster",
+    "//": "u = you (Home: Who does what).  One line per person who lives with you and is nearby.",
+    "effect": [
+      { "math": [ "pf_ro_n = 0" ] },
+      { "u_run_npc_eocs": [ "PF_HOME_roster_one" ], "local": true, "npc_range": 60 },
+      {
+        "if": { "math": [ "pf_ro_n == 0" ] },
+        "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "roster_none" } } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOME_roster_one",
+    "condition": {
+      "and": [
+        { "math": [ "value_or(u_pf_resident, 0) == 1" ] },
+        { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] }
+      ]
+    },
+    "effect": [
+      { "math": [ "pf_ro_n += 1" ] },
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+      {
+        "if": { "math": [ "value_or(u_pf_role, 0) == 0" ] },
+        "then": [ { "set_string_var": "no particular job", "target_var": { "global_val": "pf_say_b" } } ]
+      },
+      {
+        "if": { "math": [ "value_or(u_pf_role, 0) == 1" ] },
+        "then": [ { "set_string_var": "cook", "target_var": { "global_val": "pf_say_b" } } ]
+      },
+      {
+        "if": { "math": [ "value_or(u_pf_role, 0) == 2" ] },
+        "then": [ { "set_string_var": "guard", "target_var": { "global_val": "pf_say_b" } } ]
+      },
+      {
+        "if": { "math": [ "value_or(u_pf_role, 0) == 3" ] },
+        "then": [ { "set_string_var": "forager", "target_var": { "global_val": "pf_say_b" } } ]
+      },
+      {
+        "if": { "math": [ "value_or(u_pf_role, 0) == 4" ] },
+        "then": [ { "set_string_var": "tinkerer", "target_var": { "global_val": "pf_say_b" } } ]
+      },
+      {
+        "if": { "math": [ "value_or(u_pf_role, 0) == 5" ] },
+        "then": [ { "set_string_var": "carer", "target_var": { "global_val": "pf_say_b" } } ]
+      },
+      {
+        "if": { "math": [ "value_or(u_pf_role, 0) == 6" ] },
+        "then": [ { "set_string_var": "herder", "target_var": { "global_val": "pf_say_b" } } ]
+      },
+      {
+        "if": { "math": [ "value_or(u_pf_role, 0) == 7" ] },
+        "then": [ { "set_string_var": "farmer", "target_var": { "global_val": "pf_say_b" } } ]
+      },
+      {
+        "if": { "math": [ "value_or(u_pf_role, 0) == 8" ] },
+        "then": [ { "set_string_var": "smith", "target_var": { "global_val": "pf_say_b" } } ]
+      },
+      {
+        "if": { "math": [ "value_or(u_pf_role, 0) == 9" ] },
+        "then": [ { "set_string_var": "healer", "target_var": { "global_val": "pf_say_b" } } ]
+      },
+      {
+        "if": { "math": [ "value_or(u_pf_role, 0) == 10" ] },
+        "then": [ { "set_string_var": "teacher", "target_var": { "global_val": "pf_say_b" } } ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "value_or(pf_chief_set, 0) == 1" ] },
+            { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_chief_uid" } ] }
+          ]
+        },
+        "then": [
+          { "set_string_var": "<global_val:pf_say_b>, and chief", "target_var": { "global_val": "pf_say_b" }, "parse_tags": true }
+        ],
+        "else": [
+          {
+            "if": { "math": [ "(value_or(pf_cn_n, 0) > 0) * (value_or(u_pf_cn_term, -1) == value_or(pf_cn_term, -2))" ] },
+            "then": [
+              {
+                "set_string_var": "<global_val:pf_say_b>, and on the council",
+                "target_var": { "global_val": "pf_say_b" },
+                "parse_tags": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "u_has_effect": "sleep" },
+        "then": [
+          { "set_string_var": "<global_val:pf_say_b> (asleep)", "target_var": { "global_val": "pf_say_b" }, "parse_tags": true }
+        ]
+      },
+      { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "roster" } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOME_supply_tick",
+    "//": "Every hour, 06:00-21:00: the first cook found at home keeps the stores (a candle by them each week, a jug of water a day, a pot every 8 hours).  If nobody who lives here is the cook (once a day), someone takes it on.",
+    "condition": {
+      "and": [
+        { "math": [ "value_or(pf_home_set, 0) == 1" ] },
+        { "math": [ "time_since('midnight', 'unit': 'hours') >= 6" ] },
+        { "math": [ "time_since('midnight', 'unit': 'hours') < 21" ] }
+      ]
+    },
+    "recurrence": "1 hours",
+    "global": true,
+    "effect": [
+      { "math": [ "pf_sup_done = 0" ] },
+      { "u_run_npc_eocs": [ "PF_HOME_supply_one" ], "local": true, "npc_range": 60 },
+      {
+        "if": {
+          "and": [ { "math": [ "pf_sup_done == 0" ] }, { "math": [ "value_or(pf_ck_day, -1) != floor(time('now') / time('1 d'))" ] } ]
+        },
+        "then": [ { "math": [ "pf_ck_day = floor(time('now') / time('1 d'))" ] }, { "run_eocs": "PF_HOME_cook_fill" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOME_supply_one",
+    "//": "u = someone who lives with you.  The first cook near home keeps the stores.",
+    "condition": {
+      "and": [
+        { "math": [ "pf_sup_done == 0" ] },
+        { "math": [ "value_or(u_pf_resident, 0) == 1" ] },
+        { "math": [ "value_or(u_pf_role, 0) == 1" ] },
+        { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+        { "not": { "u_has_effect": "sleep" } }
+      ]
+    },
+    "effect": [
+      { "copy_var": { "global_val": "pf_home_loc" }, "target_var": { "u_val": "pf_anchor" } },
+      {
+        "if": { "math": [ "has_var(u_pf_house)" ] },
+        "then": [ { "copy_var": { "u_val": "pf_house" }, "target_var": { "u_val": "pf_anchor" } } ]
+      },
+      { "u_location_variable": { "u_val": "pf_pos" } },
+      {
+        "if": { "math": [ "distance(u_pf_pos, u_pf_anchor) <= 25" ] },
+        "then": [
+          { "math": [ "pf_sup_done = 1" ] },
+          { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+          {
+            "if": { "math": [ "time('now') - value_or(pf_lamp_t, 0) >= time('7 d')" ] },
+            "then": [
+              { "math": [ "pf_lamp_t = time('now')" ] },
+              { "math": [ "pf_lamp_n = 0" ] },
+              {
+                "u_map_run_item_eocs": "all",
+                "loc": { "global_val": "pf_stores_loc" },
+                "min_radius": 0,
+                "max_radius": 2,
+                "search_data": [ { "id": "candle_lit" } ],
+                "true_eocs": [ { "id": "PF_HOME_lamp_count", "effect": [ { "math": [ "pf_lamp_n += 1" ] } ] } ]
+              },
+              {
+                "if": { "math": [ "pf_lamp_n == 0" ] },
+                "then": [
+                  { "map_spawn_item": "candle_lit", "loc": { "global_val": "pf_stores_loc" } },
+                  { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "chore_lamp" } }
+                ]
+              }
+            ]
+          },
+          { "run_eocs": "PF_STORES_ensure" },
+          { "math": [ "pf_ck_bowls = 0" ] },
+          { "math": [ "pf_ck_jugs = 0" ] },
+          { "run_eocs": "PF_ENGINE_caps" },
+          {
+            "u_map_run_item_eocs": "all",
+            "loc": { "global_val": "pf_stores_loc" },
+            "min_radius": 0,
+            "max_radius": 2,
+            "search_data": [
+              {
+                "id": "ceramic_bowl",
+                "condition": {
+                  "and": [
+                    { "math": [ "n_weight() >= 405000" ] },
+                    {
+                      "or": [ { "math": [ "value_or(pf_eng_level, 0) < 16" ] }, { "not": { "npc_has_flag": "PF_ROTTEN" } } ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "true_eocs": [ { "id": "PF_HOME_ck_bowl", "effect": [ { "math": [ "pf_ck_bowls += 1" ] } ] } ]
+          },
+          {
+            "u_map_run_item_eocs": "all",
+            "loc": { "global_val": "pf_stores_loc" },
+            "min_radius": 0,
+            "max_radius": 2,
+            "search_data": [ { "id": "jug_plastic", "condition": { "math": [ "n_weight() >= 1000000" ] } } ],
+            "true_eocs": [ { "id": "PF_HOME_ck_jug", "effect": [ { "math": [ "pf_ck_jugs += 1" ] } ] } ]
+          },
+          {
+            "if": { "math": [ "(time('now') - value_or(pf_water_last, 0) >= time('1 d')) * (pf_ck_jugs < 3)" ] },
+            "then": [
+              { "math": [ "pf_water_last = time('now')" ] },
+              {
+                "map_spawn_item": "water_clean",
+                "loc": { "global_val": "pf_stores_loc" },
+                "container": "jug_plastic",
+                "count": 8
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "(time('now') - value_or(pf_pot_last, 0) >= time('8 h')) * (pf_ck_bowls < 4)" ] },
+            "then": [
+              { "math": [ "pf_pot_last = time('now')" ] },
+              { "math": [ "_s = rand(2)" ] },
+              {
+                "if": { "math": [ "_s == 0" ] },
+                "then": [
+                  {
+                    "map_spawn_item": "soup_three_sisters",
+                    "loc": { "global_val": "pf_stores_loc" },
+                    "container": "ceramic_bowl",
+                    "count": 1
+                  },
+                  {
+                    "map_spawn_item": "soup_three_sisters",
+                    "loc": { "global_val": "pf_stores_loc" },
+                    "container": "ceramic_bowl",
+                    "count": 1
+                  },
+                  {
+                    "map_spawn_item": "soup_three_sisters",
+                    "loc": { "global_val": "pf_stores_loc" },
+                    "container": "ceramic_bowl",
+                    "count": 1
+                  }
+                ]
+              },
+              {
+                "if": { "math": [ "_s == 1" ] },
+                "then": [
+                  { "map_spawn_item": "soup_meat", "loc": { "global_val": "pf_stores_loc" }, "container": "ceramic_bowl", "count": 1 },
+                  {
+                    "map_spawn_item": "soup_meat",
+                    "loc": { "global_val": "pf_stores_loc" },
+                    "container": "ceramic_bowl",
+                    "count": 1
+                  },
+                  {
+                    "map_spawn_item": "soup_meat",
+                    "loc": { "global_val": "pf_stores_loc" },
+                    "container": "ceramic_bowl",
+                    "count": 1
+                  }
+                ]
+              },
+              {
+                "if": { "math": [ "_s == 2" ] },
+                "then": [
+                  {
+                    "map_spawn_item": "soup_woods_egg",
+                    "loc": { "global_val": "pf_stores_loc" },
+                    "container": "ceramic_bowl",
+                    "count": 1
+                  },
+                  {
+                    "map_spawn_item": "soup_woods_egg",
+                    "loc": { "global_val": "pf_stores_loc" },
+                    "container": "ceramic_bowl",
+                    "count": 1
+                  },
+                  {
+                    "map_spawn_item": "soup_woods_egg",
+                    "loc": { "global_val": "pf_stores_loc" },
+                    "container": "ceramic_bowl",
+                    "count": 1
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOME_cook_fill",
+    "//": "u = you, at home.  Nobody who lives here is the cook: whoever cooks best (or a mother hen) takes the pot over, and says so.",
+    "effect": [
+      { "math": [ "pf_ck_n = 0" ] },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_HOME_ck_count",
+            "condition": {
+              "and": [
+                { "math": [ "value_or(u_pf_resident, 0) == 1" ] },
+                { "math": [ "value_or(u_pf_role, 0) == 1" ] },
+                { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] }
+              ]
+            },
+            "effect": [ { "math": [ "pf_ck_n += 1" ] } ]
+          }
+        ],
+        "local": true,
+        "npc_range": 60
+      },
+      {
+        "if": { "math": [ "pf_ck_n == 0" ] },
+        "then": [
+          { "math": [ "pf_ck_best = -1" ] },
+          {
+            "u_run_npc_eocs": [
+              {
+                "id": "PF_HOME_ck_cand",
+                "condition": {
+                  "and": [
+                    { "math": [ "value_or(u_pf_resident, 0) == 1" ] },
+                    { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] }
+                  ]
+                },
+                "effect": [
+                  { "math": [ "_s = u_skill('cooking') * 2 + rand(2)" ] },
+                  { "if": { "u_has_trait": "PF_Q_MOTHER_HEN" }, "then": [ { "math": [ "_s += 2" ] } ] },
+                  {
+                    "if": { "math": [ "_s > pf_ck_best" ] },
+                    "then": [ { "math": [ "pf_ck_best = _s" ] }, { "u_set_talker": { "global_val": "pf_ck_who" } } ]
+                  }
+                ]
+              }
+            ],
+            "local": true,
+            "npc_range": 60
+          },
+          {
+            "if": { "math": [ "pf_ck_best >= 0" ] },
+            "then": [
+              {
+                "run_eocs": {
+                  "id": "PF_HOME_ck_take",
+                  "effect": [
+                    { "math": [ "u_pf_role = 1" ] },
+                    { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true }
+                  ]
+                },
+                "alpha_talker": { "global_val": "pf_ck_who" }
+              },
+              { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "cook_fill" } }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOME_chore_tick",
+    "//": "Every 3 hours, 08:00-18:00, when it's calm: everyone who lives with you and is within 25 tiles of home does their job.  The cook leaves soup at home, the forager brings back berries or mushrooms, the guard walks the edge of the place, the tinkerer fixes things, the carer looks after the children.  At most three lines each time, and only if you're home.",
+    "condition": {
+      "and": [
+        { "math": [ "value_or(pf_home_set, 0) == 1" ] },
+        { "math": [ "time_since('midnight', 'unit': 'hours') >= 8" ] },
+        { "math": [ "time_since('midnight', 'unit': 'hours') < 18" ] },
+        { "math": [ "(value_or(pf_law_rest, 0) == 1) * (floor(time('now') / time('1 d')) % 7 == 2) == 0" ] }
+      ]
+    },
+    "recurrence": "3 hours",
+    "global": true,
+    "effect": [
+      { "math": [ "pf_ch_l = 0" ] },
+      { "math": [ "pf_ch_said_1 = 0" ] },
+      { "math": [ "pf_ch_said_2 = 0" ] },
+      { "math": [ "pf_ch_said_3 = 0" ] },
+      { "math": [ "pf_ch_said_4 = 0" ] },
+      { "math": [ "pf_ch_said_5 = 0" ] },
+      { "u_location_variable": { "global_val": "pf_hm_av" } },
+      { "math": [ "pf_ch_av = distance(pf_hm_av, pf_home_loc) <= 30" ] },
+      { "run_eocs": "PF_THREAT_scan" },
+      {
+        "if": { "math": [ "pf_threat == 0" ] },
+        "then": [ { "u_run_npc_eocs": [ "PF_HOME_chore_one" ], "local": true, "npc_range": 60 } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOME_chore_one",
+    "//": "u = someone who lives with you.  Mourners still do their job, quietly (no line).  Residents from before v0.4 pass 2 have no job yet; they get one here (playtest 2).",
+    "condition": {
+      "and": [
+        { "math": [ "value_or(u_pf_resident, 0) == 1" ] },
+        { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] }
+      ]
+    },
+    "effect": [
+      { "copy_var": { "global_val": "pf_home_loc" }, "target_var": { "u_val": "pf_anchor" } },
+      {
+        "if": { "math": [ "has_var(u_pf_house)" ] },
+        "then": [ { "copy_var": { "u_val": "pf_house" }, "target_var": { "u_val": "pf_anchor" } } ]
+      },
+      { "u_location_variable": { "u_val": "pf_pos" } },
+      { "if": { "math": [ "value_or(u_pf_role, 0) == 0" ] }, "then": [ { "run_eocs": "PF_HOME_role_pick" } ] },
+      {
+        "if": { "math": [ "distance(u_pf_pos, u_pf_anchor) <= 25" ] },
+        "then": [
+          { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+          {
+            "math": [
+              "pf_ch_say = pf_ch_av * (pf_ch_l < 3) * (value_or(pf_set_chatter, 1) == 1) * (time('now') >= value_or(u_pf_mourn_until, 0))"
+            ]
+          },
+          {
+            "if": { "math": [ "u_pf_role == 1" ] },
+            "then": [
+              {
+                "if": { "and": [ { "math": [ "rand(5) == 0" ] }, { "math": [ "time('now') - value_or(pf_burnt_last, 0) >= time('3 d')" ] } ] },
+                "then": [ { "run_eocs": "PF_HOME_burnt" } ],
+                "else": [
+                  {
+                    "if": { "math": [ "rand(1) == 0" ] },
+                    "then": [
+                      {
+                        "if": { "math": [ "pf_ch_say * (pf_ch_said_1 == 0)" ] },
+                        "then": [
+                          { "math": [ "pf_ch_l += 1" ] },
+                          { "math": [ "pf_ch_said_1 = 1" ] },
+                          { "math": [ "_v = rand(3)" ] },
+                          {
+                            "if": { "math": [ "_v == value_or(pf_chl_chore_cook, -1)" ] },
+                            "then": [ { "math": [ "_v = (_v + 1) % 4" ] } ]
+                          },
+                          { "math": [ "pf_chl_chore_cook = _v" ] },
+                          {
+                            "if": { "math": [ "_v == 0" ] },
+                            "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "chore_cook" } } ]
+                          },
+                          {
+                            "if": { "math": [ "_v == 1" ] },
+                            "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "chore_cook_1" } } ]
+                          },
+                          {
+                            "if": { "math": [ "_v == 2" ] },
+                            "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "chore_cook_2" } } ]
+                          },
+                          {
+                            "if": { "math": [ "_v == 3" ] },
+                            "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "chore_cook_3" } } ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "u_pf_role == 2" ] },
+            "then": [
+              { "copy_var": { "global_val": "pf_home_loc" }, "target_var": { "u_val": "pf_walk_to" } },
+              {
+                "location_variable_adjust": { "u_val": "pf_walk_to" },
+                "x_adjust": { "math": [ "(rand(1) * 2 - 1) * 12" ] },
+                "y_adjust": { "math": [ "rand(24) - 12" ] }
+              },
+              { "u_set_guard_pos": { "u_val": "pf_walk_to" } },
+              {
+                "if": { "math": [ "rand(2) == 0" ] },
+                "then": [
+                  {
+                    "if": { "math": [ "pf_ch_say * (pf_ch_said_2 == 0)" ] },
+                    "then": [
+                      { "math": [ "pf_ch_l += 1" ] },
+                      { "math": [ "pf_ch_said_2 = 1" ] },
+                      { "math": [ "_v = rand(2)" ] },
+                      {
+                        "if": { "math": [ "_v == value_or(pf_chl_chore_guard, -1)" ] },
+                        "then": [ { "math": [ "_v = (_v + 1) % 3" ] } ]
+                      },
+                      { "math": [ "pf_chl_chore_guard = _v" ] },
+                      {
+                        "if": { "math": [ "_v == 0" ] },
+                        "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "chore_guard" } } ]
+                      },
+                      {
+                        "if": { "math": [ "_v == 1" ] },
+                        "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "chore_guard_1" } } ]
+                      },
+                      {
+                        "if": { "math": [ "_v == 2" ] },
+                        "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "chore_guard_2" } } ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "u_pf_role == 3" ] },
+            "then": [
+              { "math": [ "_k = rand(3)" ] },
+              {
+                "if": { "math": [ "_k == 0" ] },
+                "then": [
+                  { "map_spawn_item": "blueberries", "loc": { "global_val": "pf_stores_loc" }, "count": 4 },
+                  { "set_string_var": "an armful of blueberries", "target_var": { "global_val": "pf_say_b" } }
+                ]
+              },
+              {
+                "if": { "math": [ "_k == 1" ] },
+                "then": [
+                  { "map_spawn_item": "raspberries", "loc": { "global_val": "pf_stores_loc" }, "count": 4 },
+                  { "set_string_var": "a hat full of raspberries", "target_var": { "global_val": "pf_say_b" } }
+                ]
+              },
+              {
+                "if": { "math": [ "_k == 2" ] },
+                "then": [
+                  { "map_spawn_item": "mushroom", "loc": { "global_val": "pf_stores_loc" }, "count": 3 },
+                  {
+                    "set_string_var": "a bag of mushrooms (they swear they're the good kind)",
+                    "target_var": { "global_val": "pf_say_b" }
+                  }
+                ]
+              },
+              {
+                "if": { "math": [ "_k == 3" ] },
+                "then": [
+                  { "map_spawn_item": "acorns", "loc": { "global_val": "pf_stores_loc" }, "count": 6 },
+                  { "set_string_var": "a pocketful of acorns", "target_var": { "global_val": "pf_say_b" } }
+                ]
+              },
+              {
+                "if": { "math": [ "rand(1) == 0" ] },
+                "then": [
+                  {
+                    "if": { "math": [ "pf_ch_say * (pf_ch_said_3 == 0)" ] },
+                    "then": [
+                      { "math": [ "pf_ch_l += 1" ] },
+                      { "math": [ "pf_ch_said_3 = 1" ] },
+                      { "math": [ "_v = rand(2)" ] },
+                      {
+                        "if": { "math": [ "_v == value_or(pf_chl_chore_forage, -1)" ] },
+                        "then": [ { "math": [ "_v = (_v + 1) % 3" ] } ]
+                      },
+                      { "math": [ "pf_chl_chore_forage = _v" ] },
+                      {
+                        "if": { "math": [ "_v == 0" ] },
+                        "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "chore_forage" } } ]
+                      },
+                      {
+                        "if": { "math": [ "_v == 1" ] },
+                        "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "chore_forage_1" } } ]
+                      },
+                      {
+                        "if": { "math": [ "_v == 2" ] },
+                        "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "chore_forage_2" } } ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "if": { "and": [ { "math": [ "u_pf_role == 4" ] }, { "math": [ "rand(1) == 0" ] } ] },
+            "then": [
+              {
+                "if": { "math": [ "pf_ch_say * (pf_ch_said_4 == 0)" ] },
+                "then": [
+                  { "math": [ "pf_ch_l += 1" ] },
+                  { "math": [ "pf_ch_said_4 = 1" ] },
+                  { "math": [ "_v = rand(2)" ] },
+                  {
+                    "if": { "math": [ "_v == value_or(pf_chl_chore_tinker, -1)" ] },
+                    "then": [ { "math": [ "_v = (_v + 1) % 3" ] } ]
+                  },
+                  { "math": [ "pf_chl_chore_tinker = _v" ] },
+                  {
+                    "if": { "math": [ "_v == 0" ] },
+                    "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "chore_tinker" } } ]
+                  },
+                  {
+                    "if": { "math": [ "_v == 1" ] },
+                    "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "chore_tinker_1" } } ]
+                  },
+                  {
+                    "if": { "math": [ "_v == 2" ] },
+                    "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "chore_tinker_2" } } ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "u_pf_role == 5" ] },
+            "then": [
+              { "math": [ "pf_ch_kid = 0" ] },
+              {
+                "u_run_npc_eocs": [
+                  {
+                    "id": "PF_HOME_carer_kid",
+                    "condition": { "and": [ { "u_has_trait": "PF_CHILD" }, { "math": [ "pf_ch_kid == 0" ] } ] },
+                    "effect": [
+                      { "math": [ "pf_ch_kid = 1" ] },
+                      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_b" }, "parse_tags": true },
+                      { "u_set_talker": { "global_val": "pf_ch_kidwho" } }
+                    ]
+                  }
+                ],
+                "local": true,
+                "npc_range": 15
+              },
+              {
+                "if": { "math": [ "pf_ch_kid == 1" ] },
+                "then": [
+                  { "math": [ "pf_m_str_in = 30" ] },
+                  { "run_eocs": "PF_MK_parenting", "beta_talker": { "global_val": "pf_ch_kidwho" } },
+                  {
+                    "if": { "math": [ "pf_ch_say" ] },
+                    "then": [
+                      { "math": [ "pf_ch_l += 1" ] },
+                      { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "chore_carer" } }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "if": {
+              "and": [
+                { "math": [ "u_pf_role == 6" ] },
+                { "math": [ "pf_ch_say" ] },
+                { "math": [ "rand(1) == 0" ] },
+                {
+                  "math": [
+                    "monsters_nearby('mon_cow', 'mon_goat', 'mon_chicken', 'radius': 25, 'location': pf_home_loc, 'attitude': 'friendly') > 0"
+                  ]
+                }
+              ]
+            },
+            "then": [
+              { "math": [ "pf_ch_l += 1" ] },
+              { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "chore_herder" } }
+            ]
+          },
+          {
+            "if": {
+              "and": [
+                { "math": [ "u_pf_role == 7" ] },
+                { "math": [ "pf_ch_say" ] },
+                { "math": [ "rand(1) == 0" ] },
+                { "math": [ "value_or(pf_field_state, 0) == 2" ] }
+              ]
+            },
+            "then": [
+              { "math": [ "pf_ch_l += 1" ] },
+              { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "chore_farmer" } }
+            ]
+          },
+          { "if": { "math": [ "rand(7) == 0" ] }, "then": [ { "run_eocs": "PF_HOME_practice" } ] },
+          { "math": [ "pf_chores_total = value_or(pf_chores_total, 0) + 1" ] },
+          { "if": { "math": [ "value_or(pf_law_tithe, 0) == 1" ] }, "then": [ { "run_eocs": "PF_KEEP_tithe_one" } ] }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOME_bed_tick",
+    "//": "Every 30 minutes from 22:00 to 05:00: everyone who lives with you goes to bed.  Each claims a free bed within 20 tiles (no two in one bed), or makes do on the floor near home, and falls asleep once there.",
+    "condition": {
+      "and": [
+        { "math": [ "value_or(pf_home_set, 0) == 1" ] },
+        {
+          "or": [
+            { "math": [ "time_since('midnight', 'unit': 'hours') >= 22" ] },
+            { "math": [ "time_since('midnight', 'unit': 'hours') < 5" ] }
+          ]
+        }
+      ]
+    },
+    "recurrence": "30 minutes",
+    "global": true,
+    "effect": [
+      { "math": [ "pf_night = floor((time('now') - time('12 h')) / time('1 d'))" ] },
+      {
+        "if": { "math": [ "value_or(pf_bed_night, -1) != pf_night" ] },
+        "then": [
+          { "math": [ "pf_bed_night = pf_night" ] },
+          { "math": [ "pf_bed_n = 0" ] },
+          { "u_location_variable": { "global_val": "pf_hm_av" } },
+          {
+            "if": {
+              "and": [ { "math": [ "distance(pf_hm_av, pf_home_loc) <= 30" ] }, { "math": [ "value_or(pf_set_chatter, 1) == 1" ] } ]
+            },
+            "then": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "bedtime" } } ]
+          }
+        ]
+      },
+      { "u_run_npc_eocs": [ "PF_HOME_bed_one" ], "local": true, "npc_range": 60 }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOME_bed_one",
+    "//": "u = someone who lives with you (adults and grown children; small children follow their family).  A family that joined the town sleeps in its own house.  Whoever is on the town watch stays up.",
+    "condition": {
+      "and": [
+        { "math": [ "value_or(u_pf_resident, 0) == 1" ] },
+        { "math": [ "value_or(u_pf_follow, 0) == 0" ] },
+        {
+          "not": {
+            "and": [
+              { "math": [ "value_or(u_pf_on_watch, 0) == 1" ] },
+              { "math": [ "value_or(u_pf_watch_night, -1) == floor((time('now') - time('12 h')) / time('1 d'))" ] }
+            ]
+          }
+        }
+      ]
+    },
+    "effect": [
+      { "u_location_variable": { "u_val": "pf_pos" } },
+      {
+        "if": { "math": [ "value_or(u_pf_bed_night, -1) != pf_night" ] },
+        "then": [
+          { "math": [ "u_pf_bed_night = pf_night" ] },
+          { "run_eocs": "PF_HOUSE_corner_assign" },
+          { "copy_var": { "u_val": "pf_corner" }, "target_var": { "u_val": "pf_bed" } },
+          { "copy_var": { "u_val": "pf_bed" }, "target_var": { "u_val": "pf_walk_to" } },
+          { "u_set_guard_pos": { "u_val": "pf_walk_to" } }
+        ],
+        "else": [
+          {
+            "if": { "and": [ { "math": [ "distance(u_pf_pos, u_pf_bed) <= 1" ] }, { "not": { "u_has_effect": "sleep" } } ] },
+            "then": [ { "u_add_effect": "sleep", "duration": "6 hours" } ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOME_unpack",
+    "//": "u = someone who just arrived home for the first time.  A baby has nothing to unpack.",
+    "effect": [
+      { "math": [ "u_pf_pack = 0" ] },
+      {
+        "if": { "u_has_effect": "PF_infant" },
+        "then": [ { "run_eocs": "PF_HOME_unpack_none" } ],
+        "else": [ { "run_eocs": "PF_HOME_unpack_do" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOME_unpack_none",
+    "//": "A baby arriving: nothing to unpack.",
+    "effect": [  ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOME_unpack_do",
+    "//": "u = someone who just arrived home for the first time.  They unpack what they carried: canned beans and jerky, plus a blanket and matches or bandages and aspirin (children: candy and marbles).  Concrete items, because an item group via use_item_group raises 'Missing item definition' in 0.I.  Waits until they're home, so nothing spawns on an unloaded map.",
+    "effect": [
+      { "run_eocs": "PF_STORES_ensure" },
+      {
+        "if": { "u_has_trait": "PF_CHILD" },
+        "then": [
+          { "map_spawn_item": "candy", "loc": { "global_val": "pf_stores_loc" }, "count": 2 },
+          { "map_spawn_item": "marble", "loc": { "global_val": "pf_home_loc" }, "count": 3 }
+        ],
+        "else": [
+          { "map_spawn_item": "can_beans", "loc": { "global_val": "pf_stores_loc" }, "count": 2 },
+          { "map_spawn_item": "jerky", "loc": { "global_val": "pf_stores_loc" }, "count": 2 },
+          { "run_eocs": "PF_HOUSE_corner_assign" },
+          {
+            "if": { "math": [ "rand(1) == 0" ] },
+            "then": [
+              { "map_spawn_item": "blanket", "loc": { "u_val": "pf_corner" } },
+              { "map_spawn_item": "matches", "loc": { "u_val": "pf_corner" } }
+            ],
+            "else": [
+              { "map_spawn_item": "bandages", "loc": { "u_val": "pf_corner" }, "count": 3 },
+              { "map_spawn_item": "aspirin", "loc": { "u_val": "pf_corner" } }
+            ]
+          }
+        ]
+      },
+      {
+        "if": {
+          "and": [
+            {
+              "or": [ { "math": [ "time_since(pf_unpack_line) < 0" ] }, { "math": [ "time_since(pf_unpack_line) > time('10 m')" ] } ]
+            },
+            { "math": [ "value_or(pf_set_chatter, 1) == 1" ] }
+          ]
+        },
+        "then": [
+          { "math": [ "pf_unpack_line = time('now')" ] },
+          { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+          { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "unpack" } }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOME_practice",
+    "//": "u = someone who just did their job.  About one chore in eight, they get a little better at it (the job's skill +1, up to 6): cooking, melee, survival, fabrication or first aid.",
+    "effect": [
+      { "math": [ "pf_pr_up = 0" ] },
+      {
+        "if": { "and": [ { "math": [ "u_pf_role == 1" ] }, { "math": [ "u_skill('cooking') < 6" ] } ] },
+        "then": [ { "math": [ "u_skill('cooking') += 1" ] }, { "math": [ "pf_pr_up = 1" ] } ]
+      },
+      {
+        "if": { "and": [ { "math": [ "u_pf_role == 2" ] }, { "math": [ "u_skill('melee') < 6" ] } ] },
+        "then": [ { "math": [ "u_skill('melee') += 1" ] }, { "math": [ "pf_pr_up = 1" ] } ]
+      },
+      {
+        "if": { "and": [ { "math": [ "u_pf_role == 3" ] }, { "math": [ "u_skill('survival') < 6" ] } ] },
+        "then": [ { "math": [ "u_skill('survival') += 1" ] }, { "math": [ "pf_pr_up = 1" ] } ]
+      },
+      {
+        "if": { "and": [ { "math": [ "u_pf_role == 4" ] }, { "math": [ "u_skill('fabrication') < 6" ] } ] },
+        "then": [ { "math": [ "u_skill('fabrication') += 1" ] }, { "math": [ "pf_pr_up = 1" ] } ]
+      },
+      {
+        "if": { "and": [ { "math": [ "u_pf_role == 5" ] }, { "math": [ "u_skill('firstaid') < 6" ] } ] },
+        "then": [ { "math": [ "u_skill('firstaid') += 1" ] }, { "math": [ "pf_pr_up = 1" ] } ]
+      },
+      {
+        "if": { "and": [ { "math": [ "pf_pr_up == 1" ] }, { "math": [ "pf_ch_say" ] } ] },
+        "then": [
+          { "math": [ "pf_ch_l += 1" ] },
+          { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "practice" } }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOME_burnt",
+    "//": "u = the cook.  The soup burned.  Whoever minds most (hates waste +40, proud +15, plus tension with the cook) says something, and it turns into an argument (concept \u00a72 pillar 5: 'those two argue every single time someone burns the food').",
+    "effect": [
+      { "math": [ "pf_burnt_last = time('now')" ] },
+      { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_bt_cook" } },
+      { "math": [ "pf_bt_best = -1" ] },
+      { "u_run_npc_eocs": [ "PF_HOME_critic" ], "local": true, "npc_range": 20 },
+      {
+        "if": { "math": [ "pf_bt_best >= 0" ] },
+        "then": [ { "run_eocs": "PF_HOME_burnt_row", "alpha_talker": { "global_val": "pf_bt_who" }, "beta_talker": "u" } ],
+        "else": [
+          {
+            "if": { "math": [ "pf_ch_say" ] },
+            "then": [
+              { "math": [ "pf_ch_l += 1" ] },
+              { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "burnt_alone" } }
+            ]
+          }
+        ]
+      },
+      { "math": [ "pf_burnt_total = value_or(pf_burnt_total, 0) + 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOME_critic",
+    "condition": {
+      "and": [
+        { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+        { "math": [ "value_or(u_pf_resident, 0) == 1" ] },
+        { "not": { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_bt_cook" } ] } }
+      ]
+    },
+    "effect": [
+      { "copy_var": { "global_val": "pf_bt_cook" }, "target_var": { "global_val": "pf_m_other" } },
+      { "run_eocs": "PF_VIEW_read" },
+      { "math": [ "_s = pf_read_x" ] },
+      { "if": { "u_has_trait": "PF_Q_HATES_WASTE" }, "then": [ { "math": [ "_s += 40" ] } ] },
+      { "if": { "u_has_trait": "PF_Q_PROUD" }, "then": [ { "math": [ "_s += 15" ] } ] },
+      {
+        "if": { "and": [ { "math": [ "_s >= 15" ] }, { "math": [ "_s > pf_bt_best" ] } ] },
+        "then": [ { "math": [ "pf_bt_best = _s" ] }, { "u_set_talker": { "global_val": "pf_bt_who" } } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOME_burnt_row",
+    "//": "Alpha = the critic, beta = the cook.",
+    "effect": [
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+      { "set_string_var": "<npc_name>", "target_var": { "global_val": "pf_say_b" }, "parse_tags": true },
+      {
+        "if": { "math": [ "pf_ch_say" ] },
+        "then": [
+          { "math": [ "pf_ch_l += 1" ] },
+          { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "burnt_row" } }
+        ]
+      },
+      { "math": [ "pf_m_str_in = 40" ] },
+      { "run_eocs": "PF_MK_argument" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOME_stay_tick",
+    "//": "Once a day: anyone who lives with you and has soured on you (tension 60+, or warmth below 10 with no partner, children or household of their own here) packs up and goes.  If they're an A-Life person they start a band of their own out there; otherwise they just walk away.",
+    "condition": { "math": [ "value_or(pf_home_set, 0) == 1" ] },
+    "recurrence": "1 days",
+    "global": true,
+    "effect": [ { "u_run_npc_eocs": [ "PF_HOME_stay_check" ], "local": true, "npc_range": 60 } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOME_stay_check",
+    "condition": {
+      "and": [
+        { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+        { "math": [ "value_or(u_pf_resident, 0) == 1" ] },
+        { "math": [ "time_since(value_or(u_pf_resident_since, 0)) >= time('2 d')" ] }
+      ]
+    },
+    "effect": [
+      { "set_string_var": "AVATAR", "target_var": { "global_val": "pf_m_other" } },
+      { "run_eocs": "PF_VIEW_read" },
+      {
+        "if": { "or": [ { "math": [ "pf_read_w < 10" ] }, { "math": [ "pf_read_x >= 60" ] } ] },
+        "then": [
+          { "math": [ "pf_st_x = pf_read_x" ] },
+          { "math": [ "pf_st_ties = 0" ] },
+          { "u_set_talker": { "global_val": "pf_st_who" } },
+          { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_st_uid" } },
+          { "set_string_var": "none", "target_var": { "global_val": "pf_st_sweet" } },
+          {
+            "if": { "math": [ "value_or(u_pf_has_sweet, 0) == 1" ] },
+            "then": [ { "copy_var": { "u_val": "pf_sweet" }, "target_var": { "global_val": "pf_st_sweet" } } ]
+          },
+          { "math": [ "pf_st_hh = value_or(u_pf_household, 0)" ] },
+          {
+            "u_run_npc_eocs": [
+              {
+                "id": "PF_HOME_stay_tie",
+                "condition": {
+                  "and": [
+                    { "math": [ "value_or(u_pf_resident, 0) == 1" ] },
+                    { "not": { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_st_uid" } ] } }
+                  ]
+                },
+                "effect": [
+                  {
+                    "if": { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_st_sweet" } ] },
+                    "then": [ { "math": [ "pf_st_ties += 1" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "(pf_st_hh > 0) * (value_or(u_pf_household, 0) == pf_st_hh)" ] },
+                    "then": [ { "math": [ "pf_st_ties += 1" ] } ]
+                  },
+                  {
+                    "if": {
+                      "or": [
+                        { "compare_string": [ { "u_val": "pf_mom" }, { "global_val": "pf_st_uid" } ] },
+                        { "compare_string": [ { "u_val": "pf_dad" }, { "global_val": "pf_st_uid" } ] },
+                        { "compare_string": [ { "u_val": "pf_guardian" }, { "global_val": "pf_st_uid" } ] }
+                      ]
+                    },
+                    "then": [ { "math": [ "pf_st_ties += 1" ] } ]
+                  }
+                ]
+              }
+            ],
+            "local": true,
+            "npc_range": 60
+          },
+          {
+            "if": { "or": [ { "math": [ "pf_st_x >= 60" ] }, { "math": [ "pf_st_ties == 0" ] } ] },
+            "then": [ { "run_eocs": "PF_HOME_leave", "alpha_talker": { "global_val": "pf_st_who" } } ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOME_leave",
+    "//": "u = someone leaving home.  It lands like a breakup (one-sided, their side).  An A-Life person becomes the leader of a new one-person band (back in the roster, walking off to hunt); anyone else walks away.",
+    "effect": [
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+      { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "leaves" } },
+      { "math": [ "u_pf_resident = 0" ] },
+      { "math": [ "u_pf_role = 0" ] },
+      { "math": [ "pf_residents_n = max(value_or(pf_residents_n, 1) - 1, 0)" ] },
+      { "set_string_var": "AVATAR", "target_var": { "global_val": "pf_m_other" } },
+      { "math": [ "pf_mv_role = 2" ] },
+      { "math": [ "pf_m_str_in = 60" ] },
+      { "run_eocs": "PF_MV_breakup" },
+      {
+        "if": { "u_has_trait": "PF_AGENT" },
+        "then": [
+          { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_band_new_leader" } },
+          { "run_eocs": "PF_ALIFE_register_band" },
+          { "math": [ "pf_ws_task = 1" ] },
+          { "math": [ "pf_ws_kind = 0" ] },
+          { "run_eocs": "PF_WORLD_init_leader" },
+          { "math": [ "pf_residents_left_total = value_or(pf_residents_left_total, 0) + 1" ] }
+        ],
+        "else": [
+          { "u_location_variable": { "u_val": "pf_walk_to" } },
+          {
+            "location_variable_adjust": { "u_val": "pf_walk_to" },
+            "x_adjust": { "math": [ "(rand(1) * 2 - 1) * 50" ] },
+            "y_adjust": { "math": [ "rand(40) - 20" ] }
+          },
+          { "u_set_guard_pos": { "u_val": "pf_walk_to" } }
+        ]
+      }
+    ]
+  }
+]

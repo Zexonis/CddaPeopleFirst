@@ -1,0 +1,526 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TOWN_appeal",
+    "//": "How much the place draws people: a name, animals, a harvest, a school, a healer, a market, the people who live here (2 each, up to 20) and a watch; a fight in the last 3 days takes 10 off.",
+    "effect": [
+      {
+        "math": [
+          "pf_town_appeal = 10 * value_or(pf_town_named, 0) + 10 * (value_or(pf_animals_total, 0) > 0) + 10 * (value_or(pf_harvests_total, 0) > 0) + 10 * (value_or(pf_school_total, 0) > 0) + 5 * (value_or(pf_healed_total, 0) > 0) + 10 * (value_or(pf_markets_total, 0) > 0) + min(value_or(pf_residents_n, 0) * 2, 20) + 10 * (value_or(pf_wt_nights_total, 0) > 0) + 10 * (value_or(pf_wall_state, 0) == 2) + 10 * (value_or(pf_sieges_held, 0) > 0) + 5 * (value_or(pf_st_pacts, 0) > 0) - 10 * (time('now') - value_or(pf_horn_t, -999999) < time('3 d'))"
+        ]
+      },
+      { "math": [ "pf_town_appeal = max(pf_town_appeal, 0)" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TOWN_join_tick",
+    "//": "Checked hourly, decided once a day between 13:00 and 14:00, one day in four: a settled family that knows you (2+ visits or meals at their place) decides to move to your place if their leader's warmth toward you plus half the place's draw comes to 50 or more.  The best such family packs up and walks over (A-Life waypoints); one family at a time, at most every 3 days, up to 8 households.",
+    "recurrence": "1 hours",
+    "global": true,
+    "condition": {
+      "and": [
+        { "math": [ "value_or(pf_home_set, 0) == 1" ] },
+        { "math": [ "value_or(pf_alife_on, 1) == 1" ] },
+        { "math": [ "time_since('midnight', 'unit': 'hours') >= 13" ] },
+        { "math": [ "time_since('midnight', 'unit': 'hours') < 14" ] },
+        { "math": [ "value_or(pf_tj_day, -1) != floor(time('now') / time('1 d'))" ] },
+        { "math": [ "value_or(pf_tj_active, 0) == 0" ] },
+        { "math": [ "value_or(pf_households_n, 0) < 8" ] },
+        { "math": [ "time('now') - value_or(pf_tj_last, -999999) >= time('3 d')" ] },
+        { "math": [ "rand(3) == 0" ] }
+      ]
+    },
+    "effect": [
+      { "math": [ "pf_tj_day = floor(time('now') / time('1 d'))" ] },
+      { "run_eocs": "PF_TOWN_appeal" },
+      { "math": [ "pf_tj_best = -1" ] },
+      { "math": [ "pf_wi = 0" ] },
+      {
+        "run_eocs": "PF_TOWN_join_i",
+        "condition": { "math": [ "pf_wi < value_or(pf_band_n, 0)" ] },
+        "iterations": 1000
+      },
+      {
+        "if": { "math": [ "pf_tj_best >= 0" ] },
+        "then": [ { "u_run_npc_eocs": [ "PF_TOWN_join_go" ], "unique_ids": [ { "global_val": "pf_tj_lead" } ], "local": false } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TOWN_join_i",
+    "effect": [
+      { "set_string_var": "pf_slot_<global_val:pf_wi>", "target_var": { "context_val": "ref" }, "parse_tags": true },
+      {
+        "if": { "not": { "compare_string": [ { "var_val": "ref" }, "none" ] } },
+        "then": [ { "u_run_npc_eocs": [ "PF_TOWN_join_cand" ], "unique_ids": [ { "var_val": "ref" } ], "local": false } ]
+      },
+      { "math": [ "pf_wi += 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TOWN_join_cand",
+    "//": "u = a band's leader (by unique id).  Only settled families who know you; their own view of you decides.",
+    "condition": {
+      "and": [
+        { "math": [ "value_or(u_pf_settled, 0) == 1" ] },
+        { "math": [ "value_or(u_pf_visiting, 0) == 0" ] },
+        { "math": [ "value_or(u_pf_joining, 0) == 0" ] },
+        { "math": [ "has_var(u_pf_home)" ] },
+        { "math": [ "distance(u_pf_vpos, pf_home_loc) <= 1000" ] },
+        {
+          "or": [
+            { "math": [ "value_or(pf_tj_force, 0) == 1" ] },
+            { "math": [ "value_or(u_pf_visits_n, 0) + value_or(u_pf_hosted_n, 0) >= 2" ] }
+          ]
+        }
+      ]
+    },
+    "effect": [
+      { "set_string_var": "AVATAR", "target_var": { "global_val": "pf_m_other" } },
+      { "run_eocs": "PF_VIEW_read" },
+      { "math": [ "_s = pf_read_w + pf_town_appeal / 2" ] },
+      {
+        "if": { "math": [ "value_or(pf_tj_force, 0) == 1" ] },
+        "then": [ { "math": [ "_s = 10000 - distance(u_pf_vpos, pf_home_loc)" ] } ]
+      },
+      {
+        "if": { "and": [ { "math": [ "_s >= 50" ] }, { "math": [ "_s > pf_tj_best" ] } ] },
+        "then": [
+          { "math": [ "pf_tj_best = _s" ] },
+          { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_tj_lead" } }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TOWN_join_go",
+    "//": "u = a settled family's leader: they pack up everything and head for your place.",
+    "effect": [
+      { "math": [ "u_pf_joining = 1" ] },
+      { "math": [ "pf_tj_active = 1" ] },
+      { "math": [ "pf_tj_since = time('now')" ] },
+      { "copy_var": { "global_val": "pf_home_loc" }, "target_var": { "u_val": "pf_wp_a" } },
+      { "location_variable_adjust": { "u_val": "pf_wp_a" }, "x_adjust": 5, "y_adjust": 5 },
+      { "copy_var": { "u_val": "pf_wp_a" }, "target_var": { "u_val": "pf_wp_b" } },
+      { "copy_var": { "u_val": "pf_wp_a" }, "target_var": { "u_val": "pf_goal" } },
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_tj_name" }, "parse_tags": true },
+      {
+        "if": { "math": [ "value_or(pf_set_chatter, 1) == 1" ] },
+        "then": [ { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "join_word" } } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TOWN_arrive_tick",
+    "//": "Every 10 minutes while a family is on its way: once they reach your place (within 25 tiles of home) and you're home and it's calm, they ask.  If they haven't arrived in 4 days they give up and go home.",
+    "recurrence": "10 minutes",
+    "global": true,
+    "condition": { "and": [ { "math": [ "value_or(pf_tj_active, 0) == 1" ] }, { "math": [ "value_or(pf_home_set, 0) == 1" ] } ] },
+    "effect": [
+      {
+        "if": { "math": [ "time('now') - pf_tj_since > time('4 d')" ] },
+        "then": [
+          { "u_run_npc_eocs": [ "PF_TOWN_join_back" ], "unique_ids": [ { "global_val": "pf_tj_lead" } ], "local": false },
+          { "math": [ "pf_tj_active = 0" ] }
+        ],
+        "else": [
+          { "u_location_variable": { "global_val": "pf_tj_av" } },
+          {
+            "if": { "math": [ "distance(pf_tj_av, pf_home_loc) <= 30" ] },
+            "then": [
+              { "run_eocs": "PF_THREAT_scan" },
+              { "math": [ "pf_tj_here = 0" ] },
+              {
+                "if": { "math": [ "pf_threat == 0" ] },
+                "then": [ { "u_run_npc_eocs": [ "PF_TOWN_arrive_check" ], "unique_ids": [ { "global_val": "pf_tj_lead" } ], "local": false } ]
+              },
+              {
+                "if": { "math": [ "pf_tj_here == 1" ] },
+                "then": [
+                  {
+                    "if": {
+                      "and": [
+                        { "math": [ "value_or(pf_law_dark, 0) == 1" ] },
+                        {
+                          "or": [
+                            { "math": [ "time_since('midnight', 'unit': 'hours') >= 19" ] },
+                            { "math": [ "time_since('midnight', 'unit': 'hours') < 7" ] }
+                          ]
+                        }
+                      ]
+                    },
+                    "then": [
+                      {
+                        "if": { "math": [ "value_or(pf_tj_dark_night, -1) != floor((time('now') - time('12 h')) / time('1 d'))" ] },
+                        "then": [
+                          { "math": [ "pf_tj_dark_night = floor((time('now') - time('12 h')) / time('1 d'))" ] },
+                          {
+                            "run_eocs": "PF_SAY_keep",
+                            "alpha_talker": "avatar",
+                            "variables": { "line": "join_dark" }
+                          }
+                        ]
+                      }
+                    ],
+                    "else": [ { "run_eocs": "PF_TOWN_ask" } ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TOWN_arrive_check",
+    "//": "u = the joining family's leader, only when on-screen (online): reading the position of someone off-screen would load the map around them.",
+    "condition": { "math": [ "value_or(u_pf_online, 0) == 1" ] },
+    "effect": [
+      { "u_location_variable": { "u_val": "pf_pos" } },
+      {
+        "if": { "math": [ "distance(u_pf_pos, pf_home_loc) <= 25" ] },
+        "then": [
+          { "math": [ "pf_tj_here = 1" ] },
+          { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_tj_name" }, "parse_tags": true }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TOWN_ask",
+    "//": "u = avatar.  (v0.6 Keep pass 2: with the door law, the whole meeting votes.)  A yes/no popup: taking a whole family in is your call (v0.6 The Keep: unless someone else is chief, then it's theirs).",
+    "effect": [
+      {
+        "if": { "math": [ "value_or(pf_town_named, 0) == 1" ] },
+        "then": [
+          {
+            "set_string_var": "<global_val:pf_tj_name> and their family are here, with everything they own on a handcart.  They want to make their home in <global_val:pf_town_name>.  Will you take them in?",
+            "target_var": { "global_val": "pf_tj_q" },
+            "parse_tags": true
+          }
+        ],
+        "else": [
+          {
+            "set_string_var": "<global_val:pf_tj_name> and their family are here, with everything they own on a handcart.  They want to make their home here, with you.  Will you take them in?",
+            "target_var": { "global_val": "pf_tj_q" },
+            "parse_tags": true
+          }
+        ]
+      },
+      { "math": [ "pf_tj_active = 0" ] },
+      {
+        "if": { "math": [ "value_or(pf_law_door, 0) == 1" ] },
+        "then": [ { "run_eocs": "PF_KEEP_door_vote" } ],
+        "else": [
+          {
+            "if": { "math": [ "(value_or(pf_law_council, 0) == 1) * (value_or(pf_cn_n, 0) >= 2)" ] },
+            "then": [ { "run_eocs": "PF_KEEP_council_door" } ],
+            "else": [
+              {
+                "if": { "math": [ "value_or(pf_chief_set, 0) == 1" ] },
+                "then": [ { "run_eocs": "PF_KEEP_door" } ],
+                "else": [
+                  {
+                    "if": { "u_query": { "global_val": "pf_tj_q" }, "default": true },
+                    "then": [ { "run_eocs": "PF_TOWN_join_yes" } ],
+                    "else": [ { "run_eocs": "PF_TOWN_join_no" } ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TOWN_join_yes",
+    "//": "u = avatar.  They get a house of their own: an empty bed 12-60 tiles from home that no other household has (else a tent at the edge of the place).  The whole family moves in: residents with jobs, defended and defending, but sleeping under their own roof.",
+    "effect": [
+      { "math": [ "pf_tj_found = 0" ] },
+      { "run_eocs": "PF_TOWN_house_try", "condition": { "math": [ "pf_tj_found == 0" ] }, "iterations": 8 },
+      {
+        "if": { "math": [ "pf_tj_found == 0" ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_home_loc" }, "target_var": { "global_val": "pf_tj_house" } },
+          {
+            "location_variable_adjust": { "global_val": "pf_tj_house" },
+            "x_adjust": { "math": [ "(rand(1) * 2 - 1) * (10 + rand(4))" ] },
+            "y_adjust": { "math": [ "rand(16) - 8" ] }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_households_n == 0" ] },
+        "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_0" } } ]
+      },
+      {
+        "if": { "math": [ "pf_households_n == 1" ] },
+        "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_1" } } ]
+      },
+      {
+        "if": { "math": [ "pf_households_n == 2" ] },
+        "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_2" } } ]
+      },
+      {
+        "if": { "math": [ "pf_households_n == 3" ] },
+        "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_3" } } ]
+      },
+      {
+        "if": { "math": [ "pf_households_n == 4" ] },
+        "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_4" } } ]
+      },
+      {
+        "if": { "math": [ "pf_households_n == 5" ] },
+        "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_5" } } ]
+      },
+      {
+        "if": { "math": [ "pf_households_n == 6" ] },
+        "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_6" } } ]
+      },
+      {
+        "if": { "math": [ "pf_households_n == 7" ] },
+        "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_7" } } ]
+      },
+      { "math": [ "pf_households_n = value_or(pf_households_n, 0) + 1" ] },
+      { "math": [ "pf_tj_hh = pf_households_n" ] },
+      { "copy_var": { "global_val": "pf_tj_lead" }, "target_var": { "global_val": "pf_inv_lead" } },
+      { "math": [ "pf_hm_i = 0" ] },
+      { "run_eocs": "PF_HOME_unroster_i", "condition": { "math": [ "pf_hm_i < pf_band_n" ] }, "iterations": 1000 },
+      { "u_run_npc_eocs": [ "PF_TOWN_join_band" ], "unique_ids": [ { "global_val": "pf_tj_lead" } ], "local": false },
+      { "math": [ "pf_town_joins_total = value_or(pf_town_joins_total, 0) + 1" ] },
+      { "math": [ "pf_tj_last = time('now')" ] },
+      {
+        "if": { "math": [ "pf_tj_found == 1" ] },
+        "then": [
+          {
+            "if": { "math": [ "value_or(pf_town_named, 0) == 1" ] },
+            "then": [ { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "join_house_named" } } ],
+            "else": [ { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "join_house" } } ]
+          }
+        ],
+        "else": [ { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "join_tent" } } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TOWN_house_try",
+    "//": "u = avatar (home is within 30 tiles).  One look for an empty house: a bed 10-50 tiles away, 12-60 from home, and not within 8 tiles of another household's.",
+    "effect": [
+      {
+        "u_location_variable": { "global_val": "pf_tj_try" },
+        "furniture": "f_bed",
+        "target_min_radius": 10,
+        "target_max_radius": 50,
+        "true_eocs": [
+          {
+            "id": "PF_TOWN_house_check",
+            "effect": [
+              { "math": [ "pf_tj_ok = (distance(pf_tj_try, pf_home_loc) >= 12) * (distance(pf_tj_try, pf_home_loc) <= 60)" ] },
+              {
+                "if": { "math": [ "value_or(pf_households_n, 0) > 0" ] },
+                "then": [ { "if": { "math": [ "distance(pf_tj_try, pf_house_0) < 8" ] }, "then": [ { "math": [ "pf_tj_ok = 0" ] } ] } ]
+              },
+              {
+                "if": { "math": [ "value_or(pf_households_n, 0) > 1" ] },
+                "then": [ { "if": { "math": [ "distance(pf_tj_try, pf_house_1) < 8" ] }, "then": [ { "math": [ "pf_tj_ok = 0" ] } ] } ]
+              },
+              {
+                "if": { "math": [ "value_or(pf_households_n, 0) > 2" ] },
+                "then": [ { "if": { "math": [ "distance(pf_tj_try, pf_house_2) < 8" ] }, "then": [ { "math": [ "pf_tj_ok = 0" ] } ] } ]
+              },
+              {
+                "if": { "math": [ "value_or(pf_households_n, 0) > 3" ] },
+                "then": [ { "if": { "math": [ "distance(pf_tj_try, pf_house_3) < 8" ] }, "then": [ { "math": [ "pf_tj_ok = 0" ] } ] } ]
+              },
+              {
+                "if": { "math": [ "value_or(pf_households_n, 0) > 4" ] },
+                "then": [ { "if": { "math": [ "distance(pf_tj_try, pf_house_4) < 8" ] }, "then": [ { "math": [ "pf_tj_ok = 0" ] } ] } ]
+              },
+              {
+                "if": { "math": [ "value_or(pf_households_n, 0) > 5" ] },
+                "then": [ { "if": { "math": [ "distance(pf_tj_try, pf_house_5) < 8" ] }, "then": [ { "math": [ "pf_tj_ok = 0" ] } ] } ]
+              },
+              {
+                "if": { "math": [ "value_or(pf_households_n, 0) > 6" ] },
+                "then": [ { "if": { "math": [ "distance(pf_tj_try, pf_house_6) < 8" ] }, "then": [ { "math": [ "pf_tj_ok = 0" ] } ] } ]
+              },
+              {
+                "if": { "math": [ "value_or(pf_households_n, 0) > 7" ] },
+                "then": [ { "if": { "math": [ "distance(pf_tj_try, pf_house_7) < 8" ] }, "then": [ { "math": [ "pf_tj_ok = 0" ] } ] } ]
+              },
+              {
+                "if": { "math": [ "pf_tj_ok == 1" ] },
+                "then": [
+                  { "math": [ "pf_tj_found = 1" ] },
+                  { "copy_var": { "global_val": "pf_tj_try" }, "target_var": { "global_val": "pf_tj_house" } }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TOWN_join_band",
+    "//": "u = the family's leader (by unique id).  Everyone moves in.  If the family was out of range (A-Life keeps it as data then, its bodies parked wherever they were), they're placed at their new house: nothing would ever walk them there.",
+    "effect": [
+      { "math": [ "pf_tj_off = value_or(u_pf_online, 0) == 0" ] },
+      {
+        "if": { "not": { "compare_string": [ { "u_val": "pf_member_0" }, "none" ] } },
+        "then": [
+          {
+            "u_run_npc_eocs": [ "PF_TOWN_settle_one", "PF_HOME_join_one" ],
+            "unique_ids": [ { "u_val": "pf_member_0" } ],
+            "local": false
+          }
+        ]
+      },
+      {
+        "if": { "not": { "compare_string": [ { "u_val": "pf_member_1" }, "none" ] } },
+        "then": [
+          {
+            "u_run_npc_eocs": [ "PF_TOWN_settle_one", "PF_HOME_join_one" ],
+            "unique_ids": [ { "u_val": "pf_member_1" } ],
+            "local": false
+          }
+        ]
+      },
+      {
+        "if": { "not": { "compare_string": [ { "u_val": "pf_member_2" }, "none" ] } },
+        "then": [
+          {
+            "u_run_npc_eocs": [ "PF_TOWN_settle_one", "PF_HOME_join_one" ],
+            "unique_ids": [ { "u_val": "pf_member_2" } ],
+            "local": false
+          }
+        ]
+      },
+      {
+        "if": { "not": { "compare_string": [ { "u_val": "pf_member_3" }, "none" ] } },
+        "then": [
+          {
+            "u_run_npc_eocs": [ "PF_TOWN_settle_one", "PF_HOME_join_one" ],
+            "unique_ids": [ { "u_val": "pf_member_3" } ],
+            "local": false
+          }
+        ]
+      },
+      {
+        "if": { "not": { "compare_string": [ { "u_val": "pf_member_4" }, "none" ] } },
+        "then": [
+          {
+            "u_run_npc_eocs": [ "PF_TOWN_settle_one", "PF_HOME_join_one" ],
+            "unique_ids": [ { "u_val": "pf_member_4" } ],
+            "local": false
+          }
+        ]
+      },
+      { "run_eocs": [ "PF_TOWN_settle_one", "PF_HOME_join_one" ] },
+      { "math": [ "pf_m_str_in = 70" ] },
+      { "run_eocs": "PF_MK_welcomed", "alpha_talker": "avatar", "beta_talker": "u" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TOWN_settle_one",
+    "//": "u = someone moving to the town: their own house (before PF_HOME_join_one, whose walk home then goes there).",
+    "effect": [
+      { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "u_val": "pf_house" } },
+      { "math": [ "u_pf_household = pf_tj_hh" ] },
+      { "math": [ "u_pf_joining = 0" ] },
+      { "math": [ "u_pf_visiting = 0" ] },
+      { "math": [ "u_pf_town = 1" ] },
+      {
+        "if": { "math": [ "pf_tj_off == 1" ] },
+        "then": [
+          { "copy_var": { "u_val": "pf_house" }, "target_var": { "u_val": "pf_tp" } },
+          {
+            "location_variable_adjust": { "u_val": "pf_tp" },
+            "x_adjust": { "math": [ "rand(4) - 2" ] },
+            "y_adjust": { "math": [ "rand(4) - 2" ] }
+          },
+          { "u_teleport": { "u_val": "pf_tp" }, "force_safe": true }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TOWN_bring_band",
+    "//": "u = a household's leader (by unique id): everyone is placed at their house (repair, Town lab).",
+    "effect": [
+      {
+        "if": { "not": { "compare_string": [ { "u_val": "pf_member_0" }, "none" ] } },
+        "then": [ { "u_run_npc_eocs": [ "PF_TOWN_bring_one" ], "unique_ids": [ { "u_val": "pf_member_0" } ], "local": false } ]
+      },
+      {
+        "if": { "not": { "compare_string": [ { "u_val": "pf_member_1" }, "none" ] } },
+        "then": [ { "u_run_npc_eocs": [ "PF_TOWN_bring_one" ], "unique_ids": [ { "u_val": "pf_member_1" } ], "local": false } ]
+      },
+      {
+        "if": { "not": { "compare_string": [ { "u_val": "pf_member_2" }, "none" ] } },
+        "then": [ { "u_run_npc_eocs": [ "PF_TOWN_bring_one" ], "unique_ids": [ { "u_val": "pf_member_2" } ], "local": false } ]
+      },
+      {
+        "if": { "not": { "compare_string": [ { "u_val": "pf_member_3" }, "none" ] } },
+        "then": [ { "u_run_npc_eocs": [ "PF_TOWN_bring_one" ], "unique_ids": [ { "u_val": "pf_member_3" } ], "local": false } ]
+      },
+      {
+        "if": { "not": { "compare_string": [ { "u_val": "pf_member_4" }, "none" ] } },
+        "then": [ { "u_run_npc_eocs": [ "PF_TOWN_bring_one" ], "unique_ids": [ { "u_val": "pf_member_4" } ], "local": false } ]
+      },
+      { "run_eocs": "PF_TOWN_bring_one" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TOWN_bring_one",
+    "effect": [
+      {
+        "if": { "math": [ "has_var(u_pf_house)" ] },
+        "then": [
+          { "copy_var": { "u_val": "pf_house" }, "target_var": { "u_val": "pf_tp" } },
+          {
+            "location_variable_adjust": { "u_val": "pf_tp" },
+            "x_adjust": { "math": [ "rand(4) - 2" ] },
+            "y_adjust": { "math": [ "rand(4) - 2" ] }
+          },
+          { "u_teleport": { "u_val": "pf_tp" }, "force_safe": true }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TOWN_join_no",
+    "//": "u = avatar.  You said no: they go back home.",
+    "effect": [
+      { "u_run_npc_eocs": [ "PF_TOWN_join_back" ], "unique_ids": [ { "global_val": "pf_tj_lead" } ], "local": false },
+      { "run_eocs": "PF_SAY_town", "alpha_talker": "avatar", "variables": { "line": "join_no" } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TOWN_join_back",
+    "//": "u = the family's leader: back to their own place.",
+    "effect": [
+      { "math": [ "u_pf_joining = 0" ] },
+      { "copy_var": { "u_val": "pf_home" }, "target_var": { "u_val": "pf_wp_a" } },
+      { "copy_var": { "u_val": "pf_home" }, "target_var": { "u_val": "pf_wp_b" } },
+      { "copy_var": { "u_val": "pf_home" }, "target_var": { "u_val": "pf_goal" } }
+    ]
+  }
+]

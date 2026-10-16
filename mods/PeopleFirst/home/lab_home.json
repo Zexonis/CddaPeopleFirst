@@ -1,0 +1,2133 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_eve",
+    "//": "First press: resets tonight's evening and people head for the hearth (fire, or at home the table/couch).  Second press: the evening happens (wait a few minutes in between so they arrive).",
+    "effect": [
+      {
+        "if": { "math": [ "value_or(pf_eve_state, 0) == 1" ] },
+        "then": [ { "math": [ "pf_eve_seat_t = time('now') - time('30 m')" ] }, { "run_eocs": "PF_FIRE_look" } ],
+        "else": [
+          { "math": [ "pf_eve_day = -1" ] },
+          { "math": [ "pf_eve_done_day = -1" ] },
+          { "run_eocs": "PF_FIRE_look" },
+          {
+            "if": { "math": [ "value_or(pf_eve_state, 0) == 1" ] },
+            "then": [ { "u_message": "[home lab] People are coming.  Wait a few minutes, then press again.", "type": "info" } ],
+            "else": [
+              {
+                "u_message": "[home lab] Nobody gathered: no fire within 15 tiles, and no table, couch or armchair near home (or no home).",
+                "type": "info"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_furnish",
+    "//": "Places them 2-3 tiles around you on empty floor (or ground), so you can test an evening at home anywhere.",
+    "effect": [
+      { "u_location_variable": { "global_val": "pf_hl_f" } },
+      { "copy_var": { "global_val": "pf_hl_f" }, "target_var": { "global_val": "pf_hl_fx" } },
+      { "location_variable_adjust": { "global_val": "pf_hl_fx" }, "x_adjust": 2, "y_adjust": 0 },
+      { "u_transform_radius": 0, "ter_furn_transform": "PF_HML_t_table", "target_var": { "global_val": "pf_hl_fx" } },
+      { "copy_var": { "global_val": "pf_hl_f" }, "target_var": { "global_val": "pf_hl_fx" } },
+      { "location_variable_adjust": { "global_val": "pf_hl_fx" }, "x_adjust": -2, "y_adjust": 0 },
+      { "u_transform_radius": 0, "ter_furn_transform": "PF_HML_t_sofa", "target_var": { "global_val": "pf_hl_fx" } },
+      { "copy_var": { "global_val": "pf_hl_f" }, "target_var": { "global_val": "pf_hl_fx" } },
+      { "location_variable_adjust": { "global_val": "pf_hl_fx" }, "x_adjust": 0, "y_adjust": -3 },
+      { "u_transform_radius": 0, "ter_furn_transform": "PF_HML_t_book", "target_var": { "global_val": "pf_hl_fx" } },
+      { "copy_var": { "global_val": "pf_hl_f" }, "target_var": { "global_val": "pf_hl_fx" } },
+      { "location_variable_adjust": { "global_val": "pf_hl_fx" }, "x_adjust": 0, "y_adjust": 3 },
+      { "u_transform_radius": 0, "ter_furn_transform": "PF_HML_t_piano", "target_var": { "global_val": "pf_hl_fx" } },
+      { "u_message": "[home lab] A table, a couch, a bookcase and a piano.", "type": "info" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_props",
+    "//": "The second press of the entry above, but everyone's activity is a prop (reading, piano, cards) if the furniture is there, mourning or not.",
+    "effect": [
+      { "math": [ "pf_prop_force = 1" ] },
+      {
+        "if": { "math": [ "value_or(pf_eve_state, 0) == 1" ] },
+        "then": [ { "math": [ "pf_eve_seat_t = time('now') - time('30 m')" ] }, { "run_eocs": "PF_FIRE_look" } ],
+        "else": [
+          {
+            "u_message": "[home lab] Gather people first (the entry above), wait for them to sit down, then use this instead of the second press.",
+            "type": "info"
+          }
+        ]
+      },
+      { "math": [ "pf_prop_force = 0" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_residents",
+    "//": "Runs the 30-minute resident step, ignoring the clock.",
+    "effect": [
+      { "u_run_npc_eocs": [ "PF_HOME_resident_one" ], "local": true, "npc_range": 60 },
+      { "u_message": "[home lab] Residents more than 20 tiles from home head back.", "type": "info" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_mods",
+    "//": "Needs those mods.  Telepathy: you are a telepath for a moment while the nearest adult (if they're yours or you care a lot) is badly hurt.  Xedra: the nearest adult finds out what you are, whether you are or not.",
+    "effect": [
+      { "math": [ "pf_mi_test = 1" ] },
+      { "math": [ "pf_mi_mom_done = 0" ] },
+      { "math": [ "pf_mi_xe_done = 0" ] },
+      {
+        "u_message": "[home lab] Mod tests armed: within a minute, if Mind Over Matter or Xedra Evolved is loaded, their test runs (wait a turn or two).",
+        "type": "info"
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_chores",
+    "//": "Gives a job to anyone who lives with you and has none, shows who does what, then runs the 3-hourly chores (ignoring the clock).",
+    "effect": [
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_HML_role_one",
+            "condition": { "and": [ { "math": [ "value_or(u_pf_resident, 0) == 1" ] }, { "math": [ "value_or(u_pf_role, 0) == 0" ] } ] },
+            "effect": [ { "run_eocs": "PF_HOME_role_pick" } ]
+          }
+        ],
+        "local": true,
+        "npc_range": 60
+      },
+      { "run_eocs": "PF_HOME_roster" },
+      { "math": [ "pf_ch_l = 0" ] },
+      { "u_location_variable": { "global_val": "pf_hm_av" } },
+      { "math": [ "pf_ch_av = distance(pf_hm_av, pf_home_loc) <= 30" ] },
+      { "u_run_npc_eocs": [ "PF_HOME_chore_one" ], "local": true, "npc_range": 60 }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_bed",
+    "//": "Runs the night step ignoring the clock.  Press once, wait a few minutes for people to reach their beds, press again.",
+    "effect": [
+      { "math": [ "pf_night = floor((time('now') - time('12 h')) / time('1 d'))" ] },
+      {
+        "if": { "math": [ "value_or(pf_bed_night, -1) != pf_night" ] },
+        "then": [
+          { "math": [ "pf_bed_night = pf_night" ] },
+          { "math": [ "pf_bed_n = 0" ] },
+          { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "bedtime" } }
+        ]
+      },
+      { "u_run_npc_eocs": [ "PF_HOME_bed_one" ], "local": true, "npc_range": 60 }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_rumor",
+    "//": "Use instead of the second press of the first entry (gather first): the evening happens, and the rumor always comes up.  It runs inside the evening, right after the roll call, so it never uses a stale character id.",
+    "effect": [
+      { "math": [ "pf_rm_force = 1" ] },
+      { "math": [ "pf_rm_none = 0" ] },
+      {
+        "if": { "math": [ "value_or(pf_eve_state, 0) == 1" ] },
+        "then": [
+          { "math": [ "pf_eve_seat_t = time('now') - time('30 m')" ] },
+          { "run_eocs": "PF_FIRE_look" },
+          {
+            "if": { "math": [ "pf_rm_none == 1" ] },
+            "then": [ { "u_message": "[home lab] No living band is 80+ tiles away right now.", "type": "info" } ]
+          }
+        ],
+        "else": [
+          {
+            "u_message": "[home lab] Gather people first (the first entry), wait for them to sit down, then use this.",
+            "type": "info"
+          }
+        ]
+      },
+      { "math": [ "pf_rm_force = 0" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_drift",
+    "//": "Runs the daily drift five times now.",
+    "effect": [
+      { "run_eocs": "PF_WORLD_drift_tick" },
+      { "run_eocs": "PF_WORLD_drift_tick" },
+      { "run_eocs": "PF_WORLD_drift_tick" },
+      { "run_eocs": "PF_WORLD_drift_tick" },
+      { "run_eocs": "PF_WORLD_drift_tick" },
+      { "math": [ "pf_hd_a = value_or(pf_world_settled_total, 0)" ] },
+      { "math": [ "pf_hd_b = value_or(pf_world_moved_total, 0)" ] },
+      {
+        "u_message": "[home lab] Settled so far: <global_val:pf_hd_a>, hunters moved on: <global_val:pf_hd_b>.",
+        "type": "info"
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_burnt",
+    "//": "The nearest cook who lives with you burns it; whoever minds most picks a fight.",
+    "effect": [
+      { "math": [ "pf_ch_l = 0" ] },
+      { "math": [ "pf_ch_av = 1" ] },
+      { "math": [ "pf_ch_say = 1" ] },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_HML_burn_one",
+            "condition": {
+              "and": [
+                { "math": [ "value_or(u_pf_resident, 0) == 1" ] },
+                { "math": [ "value_or(u_pf_role, 0) == 1" ] },
+                { "math": [ "pf_ch_l == 0" ] }
+              ]
+            },
+            "effect": [ { "math": [ "pf_ch_l = 1" ] }, { "run_eocs": "PF_HOME_burnt" } ]
+          }
+        ],
+        "local": true,
+        "npc_range": 40
+      },
+      {
+        "if": { "math": [ "pf_ch_l == 0" ] },
+        "then": [ { "u_message": "[home lab] Nobody who lives with you is a cook (change someone's job first).", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_visit",
+    "//": "Runs the afternoon visit step ignoring the chance and the 5-day wait.  They walk in like any band (on-screen if close).",
+    "effect": [
+      { "math": [ "pf_vi_best = 999999" ] },
+      { "math": [ "pf_wi = 0" ] },
+      { "math": [ "pf_vi_force = 1" ] },
+      {
+        "run_eocs": "PF_WORLD_visit_i",
+        "condition": { "math": [ "pf_wi < value_or(pf_band_n, 0)" ] },
+        "iterations": 1000
+      },
+      { "math": [ "pf_vi_force = 0" ] },
+      {
+        "if": { "math": [ "pf_vi_best < 999999" ] },
+        "then": [
+          { "u_run_npc_eocs": [ "PF_WORLD_visit_go" ], "unique_ids": [ { "global_val": "pf_vi_lead" } ], "local": false },
+          { "math": [ "pf_vi_tiles = round(pf_vi_best)" ] },
+          { "u_message": "[home lab] A family <global_val:pf_vi_tiles> tiles away is on its way.", "type": "info" }
+        ],
+        "else": [
+          {
+            "u_message": "[home lab] No settled family within 1000 tiles (run 'World: a day of drift' or spawn a settled family).",
+            "type": "info"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_settled",
+    "//": "Finds a bed 30-60 tiles away and settles a family there, so you can test visits.",
+    "effect": [
+      {
+        "u_location_variable": { "global_val": "pf_ws_at" },
+        "furniture": "f_bed",
+        "target_min_radius": 30,
+        "target_max_radius": 60,
+        "true_eocs": [
+          {
+            "id": "PF_HML_settle_here",
+            "effect": [
+              { "math": [ "pf_ws_kind = 2" ] },
+              { "run_eocs": "PF_WORLD_spawn_family" },
+              { "u_message": "[home lab] A family has made a home in a house nearby.", "type": "info" }
+            ]
+          }
+        ],
+        "false_eocs": [
+          {
+            "id": "PF_HML_settle_camp",
+            "effect": [
+              { "u_location_variable": { "global_val": "pf_ws_at" } },
+              { "location_variable_adjust": { "global_val": "pf_ws_at" }, "x_adjust": 45 },
+              { "math": [ "pf_ws_kind = 2" ] },
+              { "run_eocs": "PF_WORLD_spawn_family" },
+              {
+                "u_message": "[home lab] No bed 30-60 tiles away: a family has made camp 45 tiles east instead.",
+                "type": "info"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_horn",
+    "//": "Spawns one zombie beside the nearest child within 30 tiles, so you can watch the adults rally and the child run.",
+    "effect": [
+      { "math": [ "pf_hl_d = 99" ] },
+      { "u_location_variable": { "global_val": "pf_hl_av" } },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_HML_kid_near",
+            "condition": { "and": [ { "u_has_trait": "PF_CHILD" }, { "not": { "u_has_effect": "PF_infant" } } ] },
+            "effect": [
+              { "u_location_variable": { "u_val": "pf_pos" } },
+              {
+                "if": { "math": [ "distance(u_pf_pos, pf_hl_av) < pf_hl_d" ] },
+                "then": [
+                  { "math": [ "pf_hl_d = distance(u_pf_pos, pf_hl_av)" ] },
+                  { "u_location_variable": { "global_val": "pf_hl_kidpos" } }
+                ]
+              }
+            ]
+          }
+        ],
+        "local": true,
+        "npc_range": 30
+      },
+      {
+        "if": { "math": [ "pf_hl_d < 99" ] },
+        "then": [
+          {
+            "u_spawn_monster": "mon_zombie",
+            "real_count": 1,
+            "target_var": { "global_val": "pf_hl_kidpos" },
+            "min_radius": 1,
+            "max_radius": 2
+          },
+          { "u_message": "[home lab] A zombie lurches out next to a child.", "type": "info" }
+        ],
+        "else": [ { "u_message": "[home lab] No walking child within 30 tiles.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_alarm",
+    "//": "Spawns two zombies 12 tiles east of you and runs the alarm scan now: watch who raises the alarm, who runs at them, who takes the children away, and the all-clear (wait a few minutes after they're dead).",
+    "effect": [
+      { "u_location_variable": { "global_val": "pf_hl_z" } },
+      { "location_variable_adjust": { "global_val": "pf_hl_z" }, "x_adjust": 12 },
+      {
+        "u_spawn_monster": "mon_zombie",
+        "real_count": 2,
+        "target_var": { "global_val": "pf_hl_z" },
+        "min_radius": 0,
+        "max_radius": 2
+      },
+      { "math": [ "pf_horn_active = 0" ] },
+      { "run_eocs": "PF_HORN_tick" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_defend_kid",
+    "//": "Turns the Horn off for 10 minutes, makes the awake adult nearest to the nearest walking child care about them (warmth 60) and spawns one zombie beside the child.  With the engine build that adult steps in on their own; on the official game they don't.",
+    "effect": [
+      {
+        "if": { "math": [ "value_or(pf_horn_on, 1) == 1" ] },
+        "then": [ { "math": [ "pf_horn_on = 0" ] }, { "run_eocs": "PF_HML_horn_back", "time_in_future": "10 minutes" } ]
+      },
+      { "math": [ "pf_horn_active = 0" ] },
+      { "u_message": "[home lab] The Horn is off for 10 minutes.", "type": "info" },
+      { "math": [ "pf_hl_d = 99" ] },
+      { "u_location_variable": { "global_val": "pf_hl_av" } },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_HML_kid_near3",
+            "condition": {
+              "and": [ { "u_has_trait": "PF_CHILD" }, { "not": { "u_has_effect": "PF_infant" } }, { "math": [ "has_var(u_pf_uid)" ] } ]
+            },
+            "effect": [
+              { "u_location_variable": { "u_val": "pf_pos" } },
+              {
+                "if": { "math": [ "distance(u_pf_pos, pf_hl_av) < pf_hl_d" ] },
+                "then": [
+                  { "math": [ "pf_hl_d = distance(u_pf_pos, pf_hl_av)" ] },
+                  { "u_location_variable": { "global_val": "pf_hl_kidpos" } },
+                  { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_dg_t" } },
+                  { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_dg_tname" }, "parse_tags": true }
+                ]
+              }
+            ]
+          }
+        ],
+        "local": true,
+        "npc_range": 30
+      },
+      {
+        "if": { "math": [ "pf_hl_d < 99" ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_hl_kidpos" }, "target_var": { "global_val": "pf_dg_pos" } },
+          { "run_eocs": "PF_HML_protector" },
+          {
+            "u_spawn_monster": "mon_zombie",
+            "real_count": 1,
+            "target_var": { "global_val": "pf_hl_kidpos" },
+            "min_radius": 1,
+            "max_radius": 1
+          },
+          { "u_message": "[home lab] A zombie lurches out next to <global_val:pf_dg_tname>.", "type": "info" }
+        ],
+        "else": [ { "u_message": "[home lab] No walking child within 30 tiles.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_defend_you",
+    "//": "Turns the Horn off for 10 minutes, makes the awake adult nearest to you care about you (warmth 60) and spawns one zombie 2 tiles from you.  With the engine build they step in; everyone else who already cares enough about you should too (see the next entry).",
+    "effect": [
+      {
+        "if": { "math": [ "value_or(pf_horn_on, 1) == 1" ] },
+        "then": [ { "math": [ "pf_horn_on = 0" ] }, { "run_eocs": "PF_HML_horn_back", "time_in_future": "10 minutes" } ]
+      },
+      { "math": [ "pf_horn_active = 0" ] },
+      { "u_message": "[home lab] The Horn is off for 10 minutes.", "type": "info" },
+      { "set_string_var": "AVATAR", "target_var": { "global_val": "pf_dg_t" } },
+      { "set_string_var": "you", "target_var": { "global_val": "pf_dg_tname" } },
+      { "u_location_variable": { "global_val": "pf_hl_av" } },
+      { "copy_var": { "global_val": "pf_hl_av" }, "target_var": { "global_val": "pf_dg_pos" } },
+      { "run_eocs": "PF_HML_protector" },
+      { "u_spawn_monster": "mon_zombie", "real_count": 1, "min_radius": 2, "max_radius": 2 },
+      { "u_message": "[home lab] A zombie lurches out right next to you.", "type": "info" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_defend_who",
+    "//": "Lists everyone within 30 tiles who counts as bonded to you under the engine's rules: kin, partner, household, or warmth 40+ (pf_defend_w).",
+    "effect": [
+      { "set_string_var": "AVATAR", "target_var": { "global_val": "pf_dg_t" } },
+      { "math": [ "pf_dg_n = 0" ] },
+      { "u_run_npc_eocs": [ "PF_HML_who_one" ], "local": true, "npc_range": 30 },
+      { "u_message": "[home lab] <global_val:pf_dg_n> people would stand up for you.", "type": "info" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_defend_range",
+    "//": "One-press version of the engine defense test: turns the trace on and the Horn off, moves you about 20 tiles south-west of where you stand (away from the camp) and spawns a zombie next to you.  Bonded people should come; others shouldn't.  Read config/debug.log ('PF defend').",
+    "effect": [
+      {
+        "if": { "math": [ "value_or(pf_horn_on, 1) == 1" ] },
+        "then": [ { "math": [ "pf_horn_on = 0" ] }, { "run_eocs": "PF_HML_horn_back", "time_in_future": "10 minutes" } ]
+      },
+      { "math": [ "pf_horn_active = 0" ] },
+      { "u_message": "[home lab] The Horn is off for 10 minutes.", "type": "info" },
+      { "math": [ "pf_debug_defend = 1" ] },
+      { "u_location_variable": { "global_val": "pf_hl_far" } },
+      { "location_variable_adjust": { "global_val": "pf_hl_far" }, "x_adjust": -14, "y_adjust": 14 },
+      { "u_teleport": { "global_val": "pf_hl_far" }, "force_safe": true },
+      { "u_spawn_monster": "mon_zombie", "real_count": 1, "min_radius": 2, "max_radius": 2 },
+      {
+        "u_message": "[home lab] Trace on.  You're out in the open, and a zombie lurches out next to you.",
+        "type": "info"
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_defend_trace",
+    "//": "Toggles the engine's decision trace: every turn, each of our people's friends, hostiles, target and action are written to config/debug.log (lines starting 'PF defend').  For testing only.",
+    "effect": [
+      { "math": [ "pf_debug_defend = 1 - value_or(pf_debug_defend, 0)" ] },
+      {
+        "if": { "math": [ "pf_debug_defend == 1" ] },
+        "then": [ { "u_message": "[home lab] Defense trace on (config/debug.log, 'PF defend').", "type": "info" } ],
+        "else": [ { "u_message": "[home lab] Defense trace off.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_t22",
+    "//": "Stand in open ground.  Digs a strip of deep water 2 wide and 17 long 3 tiles east of you, puts the nearest grown-up who lives here 1 tile east of you and orders them to a spot 7 tiles east (across the strip).  With patch 22 they walk round the end; read config/debug.log ('PF path': deep_water=0).  Ruins the ground: use a copy of the world.",
+    "effect": [
+      {
+        "if": { "math": [ "value_or(pf_horn_on, 1) == 1" ] },
+        "then": [ { "math": [ "pf_horn_on = 0" ] }, { "run_eocs": "PF_HML_horn_back", "time_in_future": "10 minutes" } ]
+      },
+      { "math": [ "pf_horn_active = 0" ] },
+      { "u_message": "[home lab] The Horn is off for 10 minutes.", "type": "info" },
+      { "math": [ "pf_debug_defend = 1" ] },
+      { "math": [ "pf_t22_ok = 0" ] },
+      { "u_location_variable": { "global_val": "pf_t22_av" } },
+      { "copy_var": { "global_val": "pf_t22_av" }, "target_var": { "global_val": "pf_t22_w" } },
+      { "location_variable_adjust": { "global_val": "pf_t22_w" }, "x_adjust": 3, "y_adjust": -8 },
+      {
+        "u_transform_radius": 0,
+        "ter_furn_transform": "PF_LAB_t_deepwater",
+        "target_var": { "global_val": "pf_t22_w" }
+      },
+      { "copy_var": { "global_val": "pf_t22_av" }, "target_var": { "global_val": "pf_t22_w" } },
+      { "location_variable_adjust": { "global_val": "pf_t22_w" }, "x_adjust": 3, "y_adjust": -7 },
+      {
+        "u_transform_radius": 0,
+        "ter_furn_transform": "PF_LAB_t_deepwater",
+        "target_var": { "global_val": "pf_t22_w" }
+      },
+      { "copy_var": { "global_val": "pf_t22_av" }, "target_var": { "global_val": "pf_t22_w" } },
+      { "location_variable_adjust": { "global_val": "pf_t22_w" }, "x_adjust": 3, "y_adjust": -6 },
+      {
+        "u_transform_radius": 0,
+        "ter_furn_transform": "PF_LAB_t_deepwater",
+        "target_var": { "global_val": "pf_t22_w" }
+      },
+      { "copy_var": { "global_val": "pf_t22_av" }, "target_var": { "global_val": "pf_t22_w" } },
+      { "location_variable_adjust": { "global_val": "pf_t22_w" }, "x_adjust": 3, "y_adjust": -5 },
+      {
+        "u_transform_radius": 0,
+        "ter_furn_transform": "PF_LAB_t_deepwater",
+        "target_var": { "global_val": "pf_t22_w" }
+      },
+      { "copy_var": { "global_val": "pf_t22_av" }, "target_var": { "global_val": "pf_t22_w" } },
+      { "location_variable_adjust": { "global_val": "pf_t22_w" }, "x_adjust": 3, "y_adjust": -4 },
+      {
+        "u_transform_radius": 0,
+        "ter_furn_transform": "PF_LAB_t_deepwater",
+        "target_var": { "global_val": "pf_t22_w" }
+      },
+      { "copy_var": { "global_val": "pf_t22_av" }, "target_var": { "global_val": "pf_t22_w" } },
+      { "location_variable_adjust": { "global_val": "pf_t22_w" }, "x_adjust": 3, "y_adjust": -3 },
+      {
+        "u_transform_radius": 0,
+        "ter_furn_transform": "PF_LAB_t_deepwater",
+        "target_var": { "global_val": "pf_t22_w" }
+      },
+      { "copy_var": { "global_val": "pf_t22_av" }, "target_var": { "global_val": "pf_t22_w" } },
+      { "location_variable_adjust": { "global_val": "pf_t22_w" }, "x_adjust": 3, "y_adjust": -2 },
+      {
+        "u_transform_radius": 0,
+        "ter_furn_transform": "PF_LAB_t_deepwater",
+        "target_var": { "global_val": "pf_t22_w" }
+      },
+      { "copy_var": { "global_val": "pf_t22_av" }, "target_var": { "global_val": "pf_t22_w" } },
+      { "location_variable_adjust": { "global_val": "pf_t22_w" }, "x_adjust": 3, "y_adjust": -1 },
+      {
+        "u_transform_radius": 0,
+        "ter_furn_transform": "PF_LAB_t_deepwater",
+        "target_var": { "global_val": "pf_t22_w" }
+      },
+      { "copy_var": { "global_val": "pf_t22_av" }, "target_var": { "global_val": "pf_t22_w" } },
+      { "location_variable_adjust": { "global_val": "pf_t22_w" }, "x_adjust": 3, "y_adjust": 0 },
+      {
+        "u_transform_radius": 0,
+        "ter_furn_transform": "PF_LAB_t_deepwater",
+        "target_var": { "global_val": "pf_t22_w" }
+      },
+      { "copy_var": { "global_val": "pf_t22_av" }, "target_var": { "global_val": "pf_t22_w" } },
+      { "location_variable_adjust": { "global_val": "pf_t22_w" }, "x_adjust": 3, "y_adjust": 1 },
+      {
+        "u_transform_radius": 0,
+        "ter_furn_transform": "PF_LAB_t_deepwater",
+        "target_var": { "global_val": "pf_t22_w" }
+      },
+      { "copy_var": { "global_val": "pf_t22_av" }, "target_var": { "global_val": "pf_t22_w" } },
+      { "location_variable_adjust": { "global_val": "pf_t22_w" }, "x_adjust": 3, "y_adjust": 2 },
+      {
+        "u_transform_radius": 0,
+        "ter_furn_transform": "PF_LAB_t_deepwater",
+        "target_var": { "global_val": "pf_t22_w" }
+      },
+      { "copy_var": { "global_val": "pf_t22_av" }, "target_var": { "global_val": "pf_t22_w" } },
+      { "location_variable_adjust": { "global_val": "pf_t22_w" }, "x_adjust": 3, "y_adjust": 3 },
+      {
+        "u_transform_radius": 0,
+        "ter_furn_transform": "PF_LAB_t_deepwater",
+        "target_var": { "global_val": "pf_t22_w" }
+      },
+      { "copy_var": { "global_val": "pf_t22_av" }, "target_var": { "global_val": "pf_t22_w" } },
+      { "location_variable_adjust": { "global_val": "pf_t22_w" }, "x_adjust": 3, "y_adjust": 4 },
+      {
+        "u_transform_radius": 0,
+        "ter_furn_transform": "PF_LAB_t_deepwater",
+        "target_var": { "global_val": "pf_t22_w" }
+      },
+      { "copy_var": { "global_val": "pf_t22_av" }, "target_var": { "global_val": "pf_t22_w" } },
+      { "location_variable_adjust": { "global_val": "pf_t22_w" }, "x_adjust": 3, "y_adjust": 5 },
+      {
+        "u_transform_radius": 0,
+        "ter_furn_transform": "PF_LAB_t_deepwater",
+        "target_var": { "global_val": "pf_t22_w" }
+      },
+      { "copy_var": { "global_val": "pf_t22_av" }, "target_var": { "global_val": "pf_t22_w" } },
+      { "location_variable_adjust": { "global_val": "pf_t22_w" }, "x_adjust": 3, "y_adjust": 6 },
+      {
+        "u_transform_radius": 0,
+        "ter_furn_transform": "PF_LAB_t_deepwater",
+        "target_var": { "global_val": "pf_t22_w" }
+      },
+      { "copy_var": { "global_val": "pf_t22_av" }, "target_var": { "global_val": "pf_t22_w" } },
+      { "location_variable_adjust": { "global_val": "pf_t22_w" }, "x_adjust": 3, "y_adjust": 7 },
+      {
+        "u_transform_radius": 0,
+        "ter_furn_transform": "PF_LAB_t_deepwater",
+        "target_var": { "global_val": "pf_t22_w" }
+      },
+      { "copy_var": { "global_val": "pf_t22_av" }, "target_var": { "global_val": "pf_t22_w" } },
+      { "location_variable_adjust": { "global_val": "pf_t22_w" }, "x_adjust": 3, "y_adjust": 8 },
+      {
+        "u_transform_radius": 0,
+        "ter_furn_transform": "PF_LAB_t_deepwater",
+        "target_var": { "global_val": "pf_t22_w" }
+      },
+      { "copy_var": { "global_val": "pf_t22_av" }, "target_var": { "global_val": "pf_t22_w" } },
+      { "location_variable_adjust": { "global_val": "pf_t22_w" }, "x_adjust": 4, "y_adjust": -8 },
+      {
+        "u_transform_radius": 0,
+        "ter_furn_transform": "PF_LAB_t_deepwater",
+        "target_var": { "global_val": "pf_t22_w" }
+      },
+      { "copy_var": { "global_val": "pf_t22_av" }, "target_var": { "global_val": "pf_t22_w" } },
+      { "location_variable_adjust": { "global_val": "pf_t22_w" }, "x_adjust": 4, "y_adjust": -7 },
+      {
+        "u_transform_radius": 0,
+        "ter_furn_transform": "PF_LAB_t_deepwater",
+        "target_var": { "global_val": "pf_t22_w" }
+      },
+      { "copy_var": { "global_val": "pf_t22_av" }, "target_var": { "global_val": "pf_t22_w" } },
+      { "location_variable_adjust": { "global_val": "pf_t22_w" }, "x_adjust": 4, "y_adjust": -6 },
+      {
+        "u_transform_radius": 0,
+        "ter_furn_transform": "PF_LAB_t_deepwater",
+        "target_var": { "global_val": "pf_t22_w" }
+      },
+      { "copy_var": { "global_val": "pf_t22_av" }, "target_var": { "global_val": "pf_t22_w" } },
+      { "location_variable_adjust": { "global_val": "pf_t22_w" }, "x_adjust": 4, "y_adjust": -5 },
+      {
+        "u_transform_radius": 0,
+        "ter_furn_transform": "PF_LAB_t_deepwater",
+        "target_var": { "global_val": "pf_t22_w" }
+      },
+      { "copy_var": { "global_val": "pf_t22_av" }, "target_var": { "global_val": "pf_t22_w" } },
+      { "location_variable_adjust": { "global_val": "pf_t22_w" }, "x_adjust": 4, "y_adjust": -4 },
+      {
+        "u_transform_radius": 0,
+        "ter_furn_transform": "PF_LAB_t_deepwater",
+        "target_var": { "global_val": "pf_t22_w" }
+      },
+      { "copy_var": { "global_val": "pf_t22_av" }, "target_var": { "global_val": "pf_t22_w" } },
+      { "location_variable_adjust": { "global_val": "pf_t22_w" }, "x_adjust": 4, "y_adjust": -3 },
+      {
+        "u_transform_radius": 0,
+        "ter_furn_transform": "PF_LAB_t_deepwater",
+        "target_var": { "global_val": "pf_t22_w" }
+      },
+      { "copy_var": { "global_val": "pf_t22_av" }, "target_var": { "global_val": "pf_t22_w" } },
+      { "location_variable_adjust": { "global_val": "pf_t22_w" }, "x_adjust": 4, "y_adjust": -2 },
+      {
+        "u_transform_radius": 0,
+        "ter_furn_transform": "PF_LAB_t_deepwater",
+        "target_var": { "global_val": "pf_t22_w" }
+      },
+      { "copy_var": { "global_val": "pf_t22_av" }, "target_var": { "global_val": "pf_t22_w" } },
+      { "location_variable_adjust": { "global_val": "pf_t22_w" }, "x_adjust": 4, "y_adjust": -1 },
+      {
+        "u_transform_radius": 0,
+        "ter_furn_transform": "PF_LAB_t_deepwater",
+        "target_var": { "global_val": "pf_t22_w" }
+      },
+      { "copy_var": { "global_val": "pf_t22_av" }, "target_var": { "global_val": "pf_t22_w" } },
+      { "location_variable_adjust": { "global_val": "pf_t22_w" }, "x_adjust": 4, "y_adjust": 0 },
+      {
+        "u_transform_radius": 0,
+        "ter_furn_transform": "PF_LAB_t_deepwater",
+        "target_var": { "global_val": "pf_t22_w" }
+      },
+      { "copy_var": { "global_val": "pf_t22_av" }, "target_var": { "global_val": "pf_t22_w" } },
+      { "location_variable_adjust": { "global_val": "pf_t22_w" }, "x_adjust": 4, "y_adjust": 1 },
+      {
+        "u_transform_radius": 0,
+        "ter_furn_transform": "PF_LAB_t_deepwater",
+        "target_var": { "global_val": "pf_t22_w" }
+      },
+      { "copy_var": { "global_val": "pf_t22_av" }, "target_var": { "global_val": "pf_t22_w" } },
+      { "location_variable_adjust": { "global_val": "pf_t22_w" }, "x_adjust": 4, "y_adjust": 2 },
+      {
+        "u_transform_radius": 0,
+        "ter_furn_transform": "PF_LAB_t_deepwater",
+        "target_var": { "global_val": "pf_t22_w" }
+      },
+      { "copy_var": { "global_val": "pf_t22_av" }, "target_var": { "global_val": "pf_t22_w" } },
+      { "location_variable_adjust": { "global_val": "pf_t22_w" }, "x_adjust": 4, "y_adjust": 3 },
+      {
+        "u_transform_radius": 0,
+        "ter_furn_transform": "PF_LAB_t_deepwater",
+        "target_var": { "global_val": "pf_t22_w" }
+      },
+      { "copy_var": { "global_val": "pf_t22_av" }, "target_var": { "global_val": "pf_t22_w" } },
+      { "location_variable_adjust": { "global_val": "pf_t22_w" }, "x_adjust": 4, "y_adjust": 4 },
+      {
+        "u_transform_radius": 0,
+        "ter_furn_transform": "PF_LAB_t_deepwater",
+        "target_var": { "global_val": "pf_t22_w" }
+      },
+      { "copy_var": { "global_val": "pf_t22_av" }, "target_var": { "global_val": "pf_t22_w" } },
+      { "location_variable_adjust": { "global_val": "pf_t22_w" }, "x_adjust": 4, "y_adjust": 5 },
+      {
+        "u_transform_radius": 0,
+        "ter_furn_transform": "PF_LAB_t_deepwater",
+        "target_var": { "global_val": "pf_t22_w" }
+      },
+      { "copy_var": { "global_val": "pf_t22_av" }, "target_var": { "global_val": "pf_t22_w" } },
+      { "location_variable_adjust": { "global_val": "pf_t22_w" }, "x_adjust": 4, "y_adjust": 6 },
+      {
+        "u_transform_radius": 0,
+        "ter_furn_transform": "PF_LAB_t_deepwater",
+        "target_var": { "global_val": "pf_t22_w" }
+      },
+      { "copy_var": { "global_val": "pf_t22_av" }, "target_var": { "global_val": "pf_t22_w" } },
+      { "location_variable_adjust": { "global_val": "pf_t22_w" }, "x_adjust": 4, "y_adjust": 7 },
+      {
+        "u_transform_radius": 0,
+        "ter_furn_transform": "PF_LAB_t_deepwater",
+        "target_var": { "global_val": "pf_t22_w" }
+      },
+      { "copy_var": { "global_val": "pf_t22_av" }, "target_var": { "global_val": "pf_t22_w" } },
+      { "location_variable_adjust": { "global_val": "pf_t22_w" }, "x_adjust": 4, "y_adjust": 8 },
+      {
+        "u_transform_radius": 0,
+        "ter_furn_transform": "PF_LAB_t_deepwater",
+        "target_var": { "global_val": "pf_t22_w" }
+      },
+      { "copy_var": { "global_val": "pf_t22_av" }, "target_var": { "global_val": "pf_t22_from" } },
+      { "location_variable_adjust": { "global_val": "pf_t22_from" }, "x_adjust": 1 },
+      { "copy_var": { "global_val": "pf_t22_av" }, "target_var": { "global_val": "pf_t22_to" } },
+      { "location_variable_adjust": { "global_val": "pf_t22_to" }, "x_adjust": 7 },
+      { "math": [ "pf_t22_d = 99" ] },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_HML_t22_pick",
+            "condition": {
+              "and": [
+                { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+                { "math": [ "value_or(u_pf_resident, 0) == 1" ] },
+                { "not": { "u_has_effect": "sleep" } }
+              ]
+            },
+            "effect": [
+              { "u_location_variable": { "u_val": "pf_pos" } },
+              {
+                "if": { "math": [ "distance(u_pf_pos, pf_t22_av) < pf_t22_d" ] },
+                "then": [ { "math": [ "pf_t22_d = distance(u_pf_pos, pf_t22_av)" ] }, { "u_set_talker": { "global_val": "pf_t22_who" } } ]
+              }
+            ]
+          }
+        ],
+        "local": true,
+        "npc_range": 30
+      },
+      {
+        "if": { "math": [ "pf_t22_d < 99" ] },
+        "then": [
+          {
+            "run_eocs": {
+              "id": "PF_HML_t22_go",
+              "effect": [
+                { "u_teleport": { "global_val": "pf_t22_from" }, "force_safe": true },
+                { "copy_var": { "global_val": "pf_t22_to" }, "target_var": { "u_val": "pf_walk_to" } },
+                { "u_set_guard_pos": { "u_val": "pf_walk_to" } },
+                { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_t22_name" }, "parse_tags": true }
+              ]
+            },
+            "alpha_talker": { "global_val": "pf_t22_who" }
+          },
+          {
+            "u_message": "[home lab] Deep water dug.  <global_val:pf_t22_name> is beside you, told to walk to the far side.  Wait a minute and watch.",
+            "type": "info"
+          }
+        ],
+        "else": [ { "u_message": "[home lab] Nobody who lives here is within 30 tiles.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_t18",
+    "//": "Go 3 map squares from home first (a child only panics with no grown-up in sight).  Brings the first of your walking children (by unique id, from anywhere) 8 tiles east of you and spawns four zombies 3 tiles north of them.  Vanilla flight would go south; with patch 18 the child runs west to you.  Read config/debug.log ('PF flee').  Use a copy of the world.",
+    "effect": [
+      {
+        "if": { "math": [ "value_or(pf_horn_on, 1) == 1" ] },
+        "then": [ { "math": [ "pf_horn_on = 0" ] }, { "run_eocs": "PF_HML_horn_back", "time_in_future": "10 minutes" } ]
+      },
+      { "math": [ "pf_horn_active = 0" ] },
+      { "u_message": "[home lab] The Horn is off for 10 minutes.", "type": "info" },
+      { "math": [ "pf_debug_defend = 1" ] },
+      { "math": [ "pf_t18_found = 0" ] },
+      { "math": [ "pf_t18_k = 0" ] },
+      { "u_location_variable": { "global_val": "pf_hl_av" } },
+      { "copy_var": { "global_val": "pf_hl_av" }, "target_var": { "global_val": "pf_t18_at" } },
+      { "location_variable_adjust": { "global_val": "pf_t18_at" }, "x_adjust": 8 },
+      {
+        "run_eocs": {
+          "id": "PF_HML_t18_k",
+          "effect": [
+            { "set_string_var": "pf_kid_<global_val:pf_t18_k>", "target_var": { "context_val": "kr" }, "parse_tags": true },
+            { "copy_var": { "var_val": "kr" }, "target_var": { "global_val": "pf_t18_uid" } },
+            {
+              "set_string_var": "pf_reg_<global_val:pf_t18_uid>_dead",
+              "target_var": { "context_val": "kd" },
+              "parse_tags": true
+            },
+            {
+              "if": {
+                "and": [
+                  { "math": [ "value_or(v_kd, 0) == 0" ] },
+                  { "math": [ "has_var(v_kr)" ] },
+                  { "not": { "compare_string": [ { "global_val": "pf_t18_uid" }, "none" ] } }
+                ]
+              },
+              "then": [
+                {
+                  "u_run_npc_eocs": [
+                    {
+                      "id": "PF_HML_t18_go",
+                      "condition": {
+                        "and": [ { "u_has_trait": "PF_CHILD" }, { "not": { "u_has_effect": "PF_infant" } }, { "math": [ "pf_t18_found == 0" ] } ]
+                      },
+                      "effect": [
+                        { "math": [ "pf_t18_found = 1" ] },
+                        { "u_teleport": { "global_val": "pf_t18_at" }, "force_safe": true },
+                        {
+                          "set_string_var": "<u_name>",
+                          "target_var": { "global_val": "pf_dg_tname" },
+                          "parse_tags": true
+                        }
+                      ]
+                    }
+                  ],
+                  "unique_ids": [ { "global_val": "pf_t18_uid" } ],
+                  "local": false
+                }
+              ]
+            },
+            { "math": [ "pf_t18_k += 1" ] }
+          ]
+        },
+        "condition": { "math": [ "(pf_t18_k < 30) * (pf_t18_found == 0)" ] },
+        "iterations": 30
+      },
+      {
+        "if": { "math": [ "pf_t18_found == 1" ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_t18_at" }, "target_var": { "global_val": "pf_t18_kid" } },
+          { "location_variable_adjust": { "global_val": "pf_t18_kid" }, "y_adjust": -3 },
+          {
+            "u_spawn_monster": "mon_zombie",
+            "real_count": 4,
+            "target_var": { "global_val": "pf_t18_kid" },
+            "min_radius": 0,
+            "max_radius": 1
+          },
+          {
+            "u_message": "[home lab] <global_val:pf_dg_tname> is 8 tiles east of you, four zombies just north of them.",
+            "type": "info"
+          }
+        ],
+        "else": [ { "u_message": "[home lab] None of your children can walk yet.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_day",
+    "//": "Runs the daytime pass now, whatever the hour: two adults within 25 tiles each do something small, alone or with someone.",
+    "effect": [
+      { "math": [ "pf_day_n = 0" ] },
+      { "math": [ "pf_day_force = 1" ] },
+      { "u_run_npc_eocs": [ "PF_DAY_one" ], "local": true, "npc_range": 25 },
+      { "math": [ "pf_day_force = 0" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_bedroll",
+    "//": "Runs the night's bedroll pass now, whatever the hour: our people without a bed at home (not the watcher) sleep about five hours where they are.",
+    "effect": [
+      { "math": [ "pf_bedroll_night = -1" ] },
+      { "run_eocs": "PF_NIGHT_bedroll" },
+      {
+        "if": { "math": [ "pf_threat > 0" ] },
+        "then": [ { "u_message": "[home lab] Something hostile is in sight, so nobody lies down.", "type": "info" } ],
+        "else": [ { "u_message": "[home lab] <global_val:pf_bedroll_n> people lie down to sleep.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_rk_tend",
+    "//": "Runs the tending pass now instead of waiting for the 3-minute tick: if nothing hostile is around, up to three wounded people are cleaned up and wrapped by a carer or the nearest adult.",
+    "effect": [ { "math": [ "pf_rk_need = 1" ] }, { "run_eocs": "PF_RK_tick" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_rk_retell",
+    "//": "Runs the fire's retelling of today's rescue or storm now (once per day normally).",
+    "effect": [
+      {
+        "if": {
+          "or": [
+            { "math": [ "value_or(pf_rk_day, -1) == floor(time('now') / time('1 d'))" ] },
+            { "math": [ "value_or(pf_rk_storm_day, -1) == floor(time('now') / time('1 d'))" ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_rk_told_day = -1" ] }, { "run_eocs": "PF_RK_retell" } ],
+        "else": [
+          { "u_message": "[home lab] Nobody was saved and no storm passed today, so there's nothing to retell.", "type": "info" }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_rk_nightmare",
+    "//": "Runs tonight's nightmare check now, whatever the hour, and makes it happen if anyone near you was frightened in the last day or is mourning.",
+    "effect": [
+      { "math": [ "pf_nm_force = 1" ] },
+      { "math": [ "pf_nm_night = -1" ] },
+      { "run_eocs": "PF_RK_nm_try" },
+      { "math": [ "pf_nm_force = 0" ] },
+      {
+        "if": { "math": [ "pf_nm_best < 0" ] },
+        "then": [ { "u_message": "[home lab] Nobody near you was frightened in the last day or is mourning.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_rk_nightmare_adult",
+    "//": "As above, but only grown-ups can have it (children always win the draw): the adult comforter's line, or crying it out alone.",
+    "effect": [
+      { "math": [ "pf_nm_force = 1" ] },
+      { "math": [ "pf_nm_adult_only = 1" ] },
+      { "math": [ "pf_nm_night = -1" ] },
+      { "run_eocs": "PF_RK_nm_try" },
+      { "math": [ "pf_nm_force = 0" ] },
+      { "math": [ "pf_nm_adult_only = 0" ] },
+      {
+        "if": { "math": [ "pf_nm_best < 0" ] },
+        "then": [ { "u_message": "[home lab] No grown-up near you was frightened in the last day or is mourning.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_rk_storm",
+    "//": "Runs the storm's start, then its end, as if a portal storm had just passed over (real storms are noticed every 5 minutes).",
+    "effect": [ { "run_eocs": "PF_RK_storm_start" }, { "run_eocs": "PF_RK_storm_end" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_rk_stats",
+    "//": "Rescues and tending so far.",
+    "effect": [
+      { "math": [ "pf_hs_a = value_or(pf_rescues_total, 0)" ] },
+      { "math": [ "pf_hs_b = value_or(pf_tended_total, 0)" ] },
+      { "math": [ "pf_hs_c = value_or(pf_ran_total, 0)" ] },
+      { "math": [ "pf_hs_d = value_or(pf_nightmares_total, 0)" ] },
+      { "math": [ "pf_hs_e = value_or(pf_storms_total, 0)" ] },
+      {
+        "u_message": "[home lab] rescues <global_val:pf_hs_a>, wounded tended <global_val:pf_hs_b>, people who ran <global_val:pf_hs_c>, nightmares <global_val:pf_hs_d>, storms lived through <global_val:pf_hs_e>.",
+        "type": "info"
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_rk_pack",
+    "//": "Turns the Horn off for 10 minutes and spawns six zombies 8 tiles east of you.  Big enough that some people should panic and run; with the engine build that is recorded (pf_fled_t) and judged once it's calm.  Expect casualties; kill the game without saving afterwards.",
+    "effect": [
+      {
+        "if": { "math": [ "value_or(pf_horn_on, 1) == 1" ] },
+        "then": [ { "math": [ "pf_horn_on = 0" ] }, { "run_eocs": "PF_HML_horn_back", "time_in_future": "10 minutes" } ]
+      },
+      { "math": [ "pf_horn_active = 0" ] },
+      { "u_message": "[home lab] The Horn is off for 10 minutes.", "type": "info" },
+      { "u_location_variable": { "global_val": "pf_hl_z" } },
+      { "location_variable_adjust": { "global_val": "pf_hl_z" }, "x_adjust": 8 },
+      {
+        "u_spawn_monster": "mon_zombie",
+        "real_count": 6,
+        "target_var": { "global_val": "pf_hl_z" },
+        "min_radius": 0,
+        "max_radius": 2
+      },
+      { "u_message": "[home lab] Six zombies shamble in from the east.", "type": "info" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_rk_ran",
+    "//": "Marks the awake adult nearest to you as having broken and run a minute ago (what the engine build records when someone flees), then runs the calm-time pass.  If you or someone near was hurt in the last 15 minutes, they're judged for it.",
+    "effect": [
+      { "math": [ "pf_hl_d = 99" ] },
+      { "u_location_variable": { "global_val": "pf_hl_av" } },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_HML_ran_near",
+            "condition": {
+              "and": [
+                { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+                { "math": [ "has_var(u_pf_uid)" ] },
+                { "not": { "u_has_flag": "CANNOT_ATTACK" } }
+              ]
+            },
+            "effect": [
+              { "u_location_variable": { "u_val": "pf_pos" } },
+              {
+                "if": { "math": [ "distance(u_pf_pos, pf_hl_av) < pf_hl_d" ] },
+                "then": [ { "math": [ "pf_hl_d = distance(u_pf_pos, pf_hl_av)" ] }, { "u_set_talker": { "global_val": "pf_hl_ran" } } ]
+              }
+            ]
+          }
+        ],
+        "local": true,
+        "npc_range": 20
+      },
+      {
+        "if": { "math": [ "pf_hl_d < 99" ] },
+        "then": [
+          {
+            "run_eocs": [
+              {
+                "id": "PF_HML_ran_mark",
+                "effect": [ { "math": [ "u_pf_fled_t = time('now') - time('1 m')" ] }, { "math": [ "u_pf_hurt_t = -1" ] } ]
+              }
+            ],
+            "alpha_talker": { "global_val": "pf_hl_ran" }
+          },
+          { "math": [ "pf_rk_need = 1" ] },
+          { "run_eocs": "PF_RK_tick" }
+        ],
+        "else": [ { "u_message": "[home lab] No adult within 20 tiles.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_tl_animals",
+    "//": "Hens, a goat or a cow arrive at home (friendly, permanent).  Needs a home.",
+    "effect": [ { "run_eocs": "PF_TL_animals" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_tl_morning",
+    "//": "The herder brings in the milk and eggs; a fallow field in season is planted, a grown one harvested.",
+    "effect": [ { "run_eocs": "PF_TL_morning" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_tl_grow",
+    "//": "Moves the planted field's clock on, so the next morning step harvests it.",
+    "effect": [ { "run_eocs": "PF_TL_grow" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_tl_feast",
+    "//": "The harvest feast (normally the evening of a harvest day).",
+    "effect": [ { "run_eocs": "PF_TL_feast" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_tl_job",
+    "//": "Cycles the job of the resident nearest you (cook, guard, forager, tinkerer, carer, herder, farmer, smith, healer, teacher) and says which.",
+    "effect": [
+      { "math": [ "pf_hl_d = 99" ] },
+      { "u_location_variable": { "global_val": "pf_hl_av" } },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_HML_job_near",
+            "condition": {
+              "and": [
+                { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+                { "math": [ "value_or(u_pf_resident, 0) == 1" ] }
+              ]
+            },
+            "effect": [
+              { "u_location_variable": { "u_val": "pf_pos" } },
+              {
+                "if": { "math": [ "distance(u_pf_pos, pf_hl_av) < pf_hl_d" ] },
+                "then": [ { "math": [ "pf_hl_d = distance(u_pf_pos, pf_hl_av)" ] }, { "u_set_talker": { "global_val": "pf_hl_res" } } ]
+              }
+            ]
+          }
+        ],
+        "local": true,
+        "npc_range": 40
+      },
+      {
+        "if": { "math": [ "pf_hl_d < 99" ] },
+        "then": [ { "run_eocs": "PF_HOME_role_next", "beta_talker": { "global_val": "pf_hl_res" } } ],
+        "else": [ { "u_message": "[home lab] Nobody who lives with you is near.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_tl_workday",
+    "//": "Runs the working day now: the teacher's school, the healer's round and the smith's work (needs people with those jobs).",
+    "effect": [ { "run_eocs": "PF_TL_workday" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_tl_market",
+    "//": "Adds 30 stores and holds market day: up to 3 goods at home.",
+    "effect": [ { "run_eocs": "PF_TL_market" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_tl_stats2",
+    "//": "School days, people treated, smithy work, markets and stores.",
+    "effect": [ { "run_eocs": "PF_TL_stats2" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_tl_join",
+    "//": "Picks the nearest settled family (ignoring visits and draw) and sends it to your place.  They ask (a yes/no popup) once they're within 25 tiles of home and it's calm.",
+    "effect": [ { "run_eocs": "PF_TL_join" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_tl_join_ask",
+    "//": "Skips the walk: the family on its way asks right away, wherever they are.",
+    "effect": [ { "run_eocs": "PF_TL_join_ask" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_tl_watch",
+    "//": "Picks tonight's rota and sends the first shift to their posts (needs 3+ grown-ups who live here, within 60 tiles).",
+    "effect": [ { "run_eocs": "PF_TL_watch" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_tl_watch_change",
+    "//": "The first shift goes to bed, the second is woken and goes out.",
+    "effect": [ { "run_eocs": "PF_TL_watch_change" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_tl_watch_dawn",
+    "//": "Dawn: the watch comes in (shared moments, the morning line).",
+    "effect": [ { "run_eocs": "PF_TL_watch_dawn" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_tl_watch_spot",
+    "//": "Spawns a zombie 7 tiles east of a watcher on a post: they should see it and raise the Horn by name.",
+    "effect": [ { "run_eocs": "PF_TL_watch_spot" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_tl_bring",
+    "//": "Places the family that joined last at its house (for a family that joined out of range).",
+    "effect": [ { "run_eocs": "PF_TL_bring" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_tl_stats3",
+    "//": "Households, families joined, nights watched, sightings, the place's draw and tonight's watch phase.",
+    "effect": [ { "run_eocs": "PF_TL_stats3" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_kl_meet",
+    "//": "The weekly meeting, now: a vote if there's no chief (or the town has turned on them), else the worst quarrel for the chief to settle.  Skips the call and the 4-adult rule (needs 2).",
+    "effect": [ { "run_eocs": "PF_KL_meet" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_kl_fallout",
+    "//": "Two arguments at full strength between the two residents nearest you (within 30 tiles, not the chief): a quarrel for the next meeting.",
+    "effect": [ { "run_eocs": "PF_KL_fallout" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_kl_dissent",
+    "//": "Everyone who lives here feels betrayed by the chief: the next meeting holds a vote of confidence.",
+    "effect": [ { "run_eocs": "PF_KL_dissent" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_kl_vacant",
+    "//": "No chief; a meeting is due the next evening.",
+    "effect": [ { "run_eocs": "PF_KL_vacant" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_kl_law",
+    "//": "A random law (not in force; or one in force, to do away with) is proposed by someone it suits and voted on now, you included.",
+    "effect": [ { "run_eocs": "PF_KL_law" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_kl_shirk",
+    "//": "Makes the tithe law, adds 4 to this week's tithe, and has the resident nearest you keep their share back: it comes up at the next meeting.",
+    "effect": [ { "run_eocs": "PF_KL_shirk" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_kl_rest",
+    "//": "Morale and a quiet time with everyone who lives here (as on the rest day).",
+    "effect": [ { "run_eocs": "PF_KL_rest" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_kl_laws",
+    "//": "Which laws are in force, and how the votes went.",
+    "effect": [ { "run_eocs": "PF_KL_laws" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_kl_lord",
+    "//": "Puts the lord law in force (needs a chief): no more elections while they live, their word over the meeting's, a coup only at two-thirds, and an heir after them.",
+    "effect": [ { "run_eocs": "PF_KL_lord" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_kl_succeed",
+    "//": "The lord (if here) names an heir, then the heir takes the chair as if the lord had died (nobody dies).",
+    "effect": [ { "run_eocs": "PF_KL_succeed" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_kl_outcast",
+    "//": "Everyone who lives here feels betrayed by the resident nearest you (not the chief): the next meeting votes on putting them out.",
+    "effect": [ { "run_eocs": "PF_KL_outcast" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_kl_rule",
+    "//": "The lord law, the heir, successions, coups and exiles.",
+    "effect": [ { "run_eocs": "PF_KL_rule" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_kl_wall",
+    "//": "Starts the wall if there isn't one, and builds the next side now (north, east, south, west; a gate in each).",
+    "effect": [ { "run_eocs": "PF_KL_wall_side" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_kl_wall_redo",
+    "//": "The nearest side goes up again (where it's open ground); anyone standing on the line steps off first: stand on a gate to test it.",
+    "effect": [ { "run_eocs": "PF_KL_wall_redo" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_kl_siege_warn",
+    "//": "Word comes now, and the siege is tonight (from 21:00; three waves 40 minutes apart while you're home).",
+    "effect": [ { "run_eocs": "PF_KL_siege_warn" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_kl_siege_wave",
+    "//": "Spawns the next wave of the coming siege now (35 tiles out in the warned direction).",
+    "effect": [ { "run_eocs": "PF_KL_siege_wave" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_kl_siege_end",
+    "//": "The tally, the morale and the bond, now.",
+    "effect": [ { "run_eocs": "PF_KL_siege_end" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_kl_walls",
+    "//": "The wall and the siege state.",
+    "effect": [ { "run_eocs": "PF_KL_walls" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_kl_nb_contact",
+    "//": "A keep, the eyeglasses or the woodlanders (in turn), up to three.",
+    "effect": [ { "run_eocs": "PF_KL_nb_contact" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_kl_nb_envoy",
+    "//": "The next settlement in turn sends an envoy (an offer, a demand, or a courtesy visit, by how things stand).",
+    "effect": [ { "run_eocs": "PF_KL_nb_envoy" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_kl_nb_week",
+    "//": "Deliveries, tribute, and hostile ones start arming.",
+    "effect": [ { "run_eocs": "PF_KL_nb_week" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_kl_nb_raid",
+    "//": "Strength against defense (wall, watch, people, an ally).",
+    "effect": [ { "run_eocs": "PF_KL_nb_raid" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_kl_nb_raid_win",
+    "//": "The losing raid: they take stores (topped up to 12 first) and, with you home, a resident outside is hurt.",
+    "effect": [ { "run_eocs": "PF_KL_nb_raid_win" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_kl_nb_sour",
+    "//": "Relation -40: they arm at the next week's upkeep.",
+    "effect": [ { "run_eocs": "PF_KL_nb_sour" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_kl_nb_warm",
+    "//": "Relation 50: their next envoy proposes a pact.",
+    "effect": [ { "run_eocs": "PF_KL_nb_warm" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_kl_stats",
+    "//": "Meetings, elections, quarrels, confidence votes and the chief.",
+    "effect": [ { "run_eocs": "PF_KL_stats" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_kl_council",
+    "//": "No lord any more; the next meeting (or the next row) chooses the council.",
+    "effect": [ { "run_eocs": "PF_KL_council" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_kl_cn_elect",
+    "//": "You're asked whether you stand; everyone votes; the three with the most hands sit, and the first speaks for it.",
+    "effect": [ { "run_eocs": "PF_KL_cn_elect" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_kl_cn_door",
+    "//": "Each councillor here says yes or no (you too, if you hold a seat); nobody actually moves in.",
+    "effect": [ { "run_eocs": "PF_KL_cn_door" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_kl_cn_stats",
+    "//": "The seats, who speaks for it, who is here, and how often it has ruled.",
+    "effect": [ { "run_eocs": "PF_KL_cn_stats" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_kl_nb_match",
+    "//": "Makes it close and agreed with you; the next envoy (t) offers one of theirs to marry a single grown-up here.",
+    "effect": [ { "run_eocs": "PF_KL_nb_match" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_kl_nb_agree",
+    "//": "Skips the envoy and the offer: the nearest grown-up without a partner who lives here is promised to the first settlement's match.",
+    "effect": [ { "run_eocs": "PF_KL_nb_agree" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_kl_nb_wed",
+    "//": "If a match is agreed: they walk in, move in, and are engaged (the wedding is at the evening fire).",
+    "effect": [ { "run_eocs": "PF_KL_nb_wed" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_kl_nv_door",
+    "//": "Skips the walk: the envoy steps to the door and speaks within the minute.",
+    "effect": [ { "run_eocs": "PF_KL_nv_door" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_kl_acquaint",
+    "//": "Shared danger between every pair of grown-ups who live here, and with you, so votes have someone to go to.",
+    "effect": [ { "run_eocs": "PF_KL_acquaint" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_tl_stats",
+    "//": "Milk, eggs, plantings, harvests and animal gifts so far.",
+    "effect": [ { "run_eocs": "PF_TL_stats" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_name_kid",
+    "//": "Runs the adoption naming prompt on the nearest walking child within 10 tiles.  Needs the People First engine build and the People First: Engine mod (on a stock build nothing happens).",
+    "effect": [
+      { "math": [ "pf_hl_d = 99" ] },
+      { "u_location_variable": { "global_val": "pf_hl_av" } },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_HML_kid_near2",
+            "condition": { "and": [ { "u_has_trait": "PF_CHILD" }, { "not": { "u_has_effect": "PF_infant" } } ] },
+            "effect": [
+              { "u_location_variable": { "u_val": "pf_pos" } },
+              {
+                "if": { "math": [ "distance(u_pf_pos, pf_hl_av) < pf_hl_d" ] },
+                "then": [ { "math": [ "pf_hl_d = distance(u_pf_pos, pf_hl_av)" ] }, { "u_set_talker": { "global_val": "pf_hl_kid" } } ]
+              }
+            ]
+          }
+        ],
+        "local": true,
+        "npc_range": 10
+      },
+      {
+        "if": { "math": [ "pf_hl_d < 99" ] },
+        "then": [ { "run_eocs": "PF_ENGINE_name_adoptee", "beta_talker": { "global_val": "pf_hl_kid" } } ],
+        "else": [ { "u_message": "[home lab] No walking child within 10 tiles.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_name_baby",
+    "//": "Runs the newborn naming prompt on the nearest baby within 10 tiles, as if you were its mother.  Needs the engine build.",
+    "effect": [
+      { "math": [ "pf_hl_d = 99" ] },
+      { "u_location_variable": { "global_val": "pf_hl_av" } },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_HML_baby_near",
+            "condition": { "u_has_effect": "PF_infant" },
+            "effect": [
+              { "u_location_variable": { "u_val": "pf_pos" } },
+              {
+                "if": { "math": [ "distance(u_pf_pos, pf_hl_av) < pf_hl_d" ] },
+                "then": [ { "math": [ "pf_hl_d = distance(u_pf_pos, pf_hl_av)" ] }, { "u_set_talker": { "global_val": "pf_hl_kid" } } ]
+              }
+            ]
+          }
+        ],
+        "local": true,
+        "npc_range": 10
+      },
+      {
+        "if": { "math": [ "pf_hl_d < 99" ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_fm_mom" }, "target_var": { "global_val": "pf_hl_mom_was" } },
+          { "set_string_var": "AVATAR", "target_var": { "global_val": "pf_fm_mom" } },
+          { "run_eocs": "PF_ENGINE_name_baby", "alpha_talker": { "global_val": "pf_hl_kid" } },
+          { "copy_var": { "global_val": "pf_hl_mom_was" }, "target_var": { "global_val": "pf_fm_mom" } }
+        ],
+        "else": [ { "u_message": "[home lab] No baby within 10 tiles.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_wake",
+    "//": "Runs the wake-up signal as if you just woke at home (it still needs someone who cares, and a home within 30 tiles).",
+    "effect": [ { "math": [ "pf_bk_day = -1" ] }, { "run_eocs": "PF_HOME_wake_lab" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_trust",
+    "//": "So you can ask them to come live with you.",
+    "effect": [
+      { "math": [ "pf_hl_d = 99" ] },
+      { "u_location_variable": { "global_val": "pf_hl_av" } },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_HML_near",
+            "condition": {
+              "and": [
+                { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+                { "math": [ "value_or(u_pf_is_leader, -1) >= 0" ] }
+              ]
+            },
+            "effect": [
+              { "u_location_variable": { "u_val": "pf_pos" } },
+              {
+                "if": { "math": [ "distance(u_pf_pos, pf_hl_av) < pf_hl_d" ] },
+                "then": [ { "math": [ "pf_hl_d = distance(u_pf_pos, pf_hl_av)" ] }, { "u_set_talker": { "global_val": "pf_hl_who" } } ]
+              }
+            ]
+          }
+        ],
+        "local": true,
+        "npc_range": 30
+      },
+      {
+        "if": { "math": [ "pf_hl_d < 99" ] },
+        "then": [
+          { "run_eocs": "PF_HML_warm", "alpha_talker": { "global_val": "pf_hl_who" } },
+          { "u_message": "[home lab] <global_val:pf_say_a> likes you now.", "type": "info" }
+        ],
+        "else": [ { "u_message": "[home lab] No band member within 30 tiles.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_spawn",
+    "//": "Runs the natural spawn once, ignoring the population cap.  Kinds: 0 hunters, 1 family on the move, 2 settled family.",
+    "effect": [
+      { "run_eocs": "PF_WORLD_spawn" },
+      { "u_message": "[home lab] Spawned kind <global_val:pf_ws_kind> at the edge of the bubble.", "type": "info" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_family_here",
+    "//": "A family on the move, a few tiles away, so you can watch them.",
+    "effect": [
+      { "u_location_variable": { "global_val": "pf_ws_at" } },
+      { "location_variable_adjust": { "global_val": "pf_ws_at" }, "x_adjust": 6 },
+      { "math": [ "pf_ws_kind = 1" ] },
+      { "run_eocs": "PF_WORLD_spawn_family" },
+      { "u_message": "[home lab] A family walks up.", "type": "info" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_stats",
+    "//": "Home evenings, people living with you, bands that joined you, bands alive, natural spawns.",
+    "effect": [
+      { "math": [ "pf_wl = 0" ] },
+      { "math": [ "pf_wi = 0" ] },
+      {
+        "run_eocs": "PF_WORLD_count_i",
+        "condition": { "math": [ "pf_wi < value_or(pf_band_n, 0)" ] },
+        "iterations": 1000
+      },
+      { "math": [ "pf_hs_a = value_or(pf_home_evenings_total, 0)" ] },
+      { "math": [ "pf_hs_b = value_or(pf_residents_n, 0)" ] },
+      { "math": [ "pf_hs_c = value_or(pf_bands_joined_total, 0)" ] },
+      { "math": [ "pf_hs_d = value_or(pf_world_spawned_total, 0)" ] },
+      { "math": [ "pf_hs_e = value_or(pf_set_bands, 8)" ] },
+      { "math": [ "pf_hs_f = value_or(pf_chores_total, 0)" ] },
+      { "math": [ "pf_hs_g = value_or(pf_burnt_total, 0)" ] },
+      { "math": [ "pf_hs_h = value_or(pf_visits_total, 0)" ] },
+      { "math": [ "pf_hs_i = value_or(pf_residents_left_total, 0)" ] },
+      {
+        "u_message": "[home] evenings at home <global_val:pf_hs_a>, residents <global_val:pf_hs_b>, bands joined <global_val:pf_hs_c> | world: bands alive <global_val:pf_wl> of <global_val:pf_hs_e>, natural spawns <global_val:pf_hs_d> | chores <global_val:pf_hs_f>, burnt soups <global_val:pf_hs_g>, visits <global_val:pf_hs_h>, residents who left <global_val:pf_hs_i>.",
+        "type": "info"
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_warm",
+    "//": "u = the band member.  Their view of you (u_pf_v_AVATAR_*) jumps to warmth 50, trust 40 (peaks too, so lazy decay doesn't undo it).",
+    "effect": [
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+      { "run_eocs": "PF_ID_ensure" },
+      { "math": [ "u_pf_v_AVATAR_w = max(value_or(u_pf_v_AVATAR_w, 0), 50)" ] },
+      { "math": [ "u_pf_v_AVATAR_t = max(value_or(u_pf_v_AVATAR_t, 0), 40)" ] },
+      { "math": [ "u_pf_v_AVATAR_pw = max(value_or(u_pf_v_AVATAR_pw, 0), 50)" ] },
+      { "math": [ "u_pf_v_AVATAR_pt = max(value_or(u_pf_v_AVATAR_pt, 0), 40)" ] },
+      { "math": [ "u_pf_v_AVATAR_l = time('now')" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_horn_back",
+    "effect": [ { "math": [ "pf_horn_on = 1" ] }, { "u_message": "[home lab] The Horn is back on.", "type": "info" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_protector",
+    "//": "u = avatar.  pf_dg_t = the uid to protect (AVATAR for you), pf_dg_pos = where they are.  The awake adult nearest to them gets warmth 60 toward them (a bond under the engine's rules).",
+    "effect": [
+      { "math": [ "pf_dg_best = 99" ] },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_HML_prot_cand",
+            "condition": {
+              "and": [
+                { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+                { "math": [ "has_var(u_pf_uid)" ] },
+                { "not": { "u_has_effect": "sleep" } },
+                { "not": { "u_has_flag": "CANNOT_ATTACK" } },
+                { "not": { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_dg_t" } ] } }
+              ]
+            },
+            "effect": [
+              { "u_location_variable": { "u_val": "pf_pos" } },
+              {
+                "if": { "math": [ "distance(u_pf_pos, pf_dg_pos) < pf_dg_best" ] },
+                "then": [ { "math": [ "pf_dg_best = distance(u_pf_pos, pf_dg_pos)" ] }, { "u_set_talker": { "global_val": "pf_dg_prot" } } ]
+              }
+            ]
+          }
+        ],
+        "local": true,
+        "npc_range": 40
+      },
+      {
+        "if": { "math": [ "pf_dg_best <= 20" ] },
+        "then": [
+          {
+            "run_eocs": [
+              {
+                "id": "PF_HML_prot_set",
+                "effect": [
+                  { "set_string_var": "u_pf_v_<global_val:pf_dg_t>_w", "target_var": { "context_val": "rw" }, "parse_tags": true },
+                  {
+                    "set_string_var": "u_pf_v_<global_val:pf_dg_t>_pw",
+                    "target_var": { "context_val": "rpw" },
+                    "parse_tags": true
+                  },
+                  { "math": [ "v_rw = max(value_or(v_rw, 0), 60)" ] },
+                  { "math": [ "v_rpw = max(value_or(v_rpw, 0), 60)" ] },
+                  { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_dg_pname" }, "parse_tags": true }
+                ]
+              }
+            ],
+            "alpha_talker": { "global_val": "pf_dg_prot" }
+          },
+          {
+            "u_message": "[home lab] <global_val:pf_dg_pname> cares about <global_val:pf_dg_tname> now (warmth 60), <global_val:pf_dg_best> tiles away.",
+            "type": "info"
+          }
+        ],
+        "else": [ { "u_message": "[home lab] No awake adult within 20 tiles to care about <global_val:pf_dg_tname>.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_who_one",
+    "//": "u = an NPC.  Says whether they count as bonded to pf_dg_t under the engine's rules (pf_protects in engine/apply_patches.py; band membership isn't checked for you).",
+    "condition": { "and": [ { "math": [ "has_var(u_pf_uid)" ] }, { "not": { "u_has_flag": "CANNOT_ATTACK" } } ] },
+    "effect": [
+      { "set_string_var": "u_pf_v_<global_val:pf_dg_t>_w", "target_var": { "context_val": "rw" }, "parse_tags": true },
+      { "set_string_var": "", "target_var": { "global_val": "pf_dg_why" } },
+      {
+        "if": {
+          "or": [
+            { "compare_string": [ { "u_val": "pf_mom" }, { "global_val": "pf_dg_t" } ] },
+            { "compare_string": [ { "u_val": "pf_dad" }, { "global_val": "pf_dg_t" } ] },
+            { "compare_string": [ { "u_val": "pf_guardian" }, { "global_val": "pf_dg_t" } ] }
+          ]
+        },
+        "then": [ { "set_string_var": "family", "target_var": { "global_val": "pf_dg_why" } } ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "value_or(u_pf_has_sweet, 0) == 1" ] },
+            { "compare_string": [ { "u_val": "pf_sweet" }, { "global_val": "pf_dg_t" } ] }
+          ]
+        },
+        "then": [ { "set_string_var": "partner", "target_var": { "global_val": "pf_dg_why" } } ]
+      },
+      {
+        "if": { "math": [ "value_or(u_pf_resident, 0) == 1" ] },
+        "then": [ { "set_string_var": "lives with you", "target_var": { "global_val": "pf_dg_why" } } ]
+      },
+      {
+        "if": { "math": [ "value_or(v_rw, 0) >= value_or(pf_defend_w, 40)" ] },
+        "then": [
+          { "math": [ "pf_dg_w = value_or(v_rw, 0)" ] },
+          {
+            "set_string_var": "warmth <global_val:pf_dg_w>",
+            "target_var": { "global_val": "pf_dg_why" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "not": { "compare_string": [ { "global_val": "pf_dg_why" }, "" ] } },
+        "then": [
+          { "math": [ "pf_dg_n += 1" ] },
+          { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_dg_pname" }, "parse_tags": true },
+          {
+            "if": { "u_has_effect": "sleep" },
+            "then": [
+              { "set_string_var": "<global_val:pf_dg_why> (asleep)", "target_var": { "global_val": "pf_dg_why" }, "parse_tags": true }
+            ]
+          },
+          {
+            "run_eocs": [
+              {
+                "id": "PF_HML_say_1",
+                "effect": [ { "u_message": "[home lab] <global_val:pf_dg_pname>: <global_val:pf_dg_why>", "type": "info" } ]
+              }
+            ],
+            "alpha_talker": "avatar"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HOME_wake_lab",
+    "effect": [
+      { "u_location_variable": { "global_val": "pf_hm_av" } },
+      {
+        "if": { "and": [ { "math": [ "value_or(pf_home_set, 0) == 1" ] }, { "math": [ "distance(pf_hm_av, pf_home_loc) <= 30" ] } ] },
+        "then": [
+          { "math": [ "pf_bk_day = floor(time('now') / time('1 d'))" ] },
+          { "math": [ "pf_hm_best = -1" ] },
+          { "u_run_npc_eocs": [ "PF_HOME_cook_cand" ], "local": true, "npc_range": 20 },
+          {
+            "if": { "math": [ "pf_hm_best >= 0" ] },
+            "then": [ { "run_eocs": "PF_HOME_cook", "alpha_talker": { "global_val": "pf_hm_cook" }, "beta_talker": "avatar" } ],
+            "else": [ { "u_message": "[home lab] Nobody here cares enough to cook for you (warmth 20+).", "type": "info" } ]
+          }
+        ],
+        "else": [ { "u_message": "[home lab] You're not home (set one in Home, and be within 30 tiles).", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_keep_lab",
+    "effect": [ { "run_eocs": "PF_HML_keep_open" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_away_lab",
+    "effect": [ { "run_eocs": "PF_AWL_open" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_keep_open",
+    "effect": [
+      {
+        "run_eoc_selector": [
+          "PF_HML_kl_meet",
+          "PF_HML_kl_fallout",
+          "PF_HML_kl_dissent",
+          "PF_HML_kl_vacant",
+          "PF_HML_kl_law",
+          "PF_HML_kl_shirk",
+          "PF_HML_kl_rest",
+          "PF_HML_kl_laws",
+          "PF_HML_kl_lord",
+          "PF_HML_kl_succeed",
+          "PF_HML_kl_outcast",
+          "PF_HML_kl_rule",
+          "PF_HML_kl_wall",
+          "PF_HML_kl_wall_redo",
+          "PF_HML_kl_siege_warn",
+          "PF_HML_kl_siege_wave",
+          "PF_HML_kl_siege_end",
+          "PF_HML_kl_walls",
+          "PF_HML_kl_nb_contact",
+          "PF_HML_kl_nb_envoy",
+          "PF_HML_kl_nb_week",
+          "PF_HML_kl_nb_raid",
+          "PF_HML_kl_nb_raid_win",
+          "PF_HML_kl_nb_sour",
+          "PF_HML_kl_nb_warm",
+          "PF_HML_kl_stats",
+          "PF_HML_kl_council",
+          "PF_HML_kl_cn_elect",
+          "PF_HML_kl_cn_door",
+          "PF_HML_kl_cn_stats",
+          "PF_HML_kl_nb_match",
+          "PF_HML_kl_nb_agree",
+          "PF_HML_kl_nb_wed",
+          "PF_HML_kl_nv_door",
+          "PF_HML_kl_acquaint"
+        ],
+        "names": [
+          "Keep: the meeting sits now",
+          "Keep: the two nearest grown-ups have a row",
+          "Keep: everyone turns on the chief",
+          "Keep: the chair is empty",
+          "Keep: somebody puts a law to the vote now",
+          "Keep: the tithe, and the nearest resident keeps theirs back",
+          "Keep: the rest day's morning now",
+          "Keep: the laws (stats)",
+          "Keep: the chief becomes lord for life",
+          "Keep: the lord names an heir and hands over",
+          "Keep: everyone turns on the nearest resident",
+          "Keep: who rules (stats)",
+          "Keep: the next side of the wall goes up now",
+          "Keep: rebuild the side of the wall nearest you",
+          "Keep: a horde is coming tonight",
+          "Keep: the next wave now",
+          "Keep: the siege is over (tally now)",
+          "Keep: walls and sieges (stats)",
+          "Neighbors: a new settlement takes notice now",
+          "Neighbors: the next envoy now",
+          "Neighbors: a week of agreements now",
+          "Neighbors: the first settlement raids now",
+          "Neighbors: the first settlement raids and gets through",
+          "Neighbors: the first settlement turns hostile",
+          "Neighbors: the first settlement turns friendly",
+          "Keep: stats",
+          "Council: a council of three becomes law",
+          "Council: the council is chosen now",
+          "Council: a family at the door, for the council (dry run)",
+          "Council: who sits (stats)",
+          "Neighbors: the first settlement will offer a match",
+          "Neighbors: a match is agreed now (the nearest free resident)",
+          "Neighbors: the one from the other place arrives now",
+          "Neighbors: the walking envoy is at the door now",
+          "Keep: everyone who lives here gets to know each other"
+        ],
+        "descriptions": [
+          "The weekly meeting, now: a vote if there's no chief (or the town has turned on them), else the worst quarrel for the chief to settle.  Skips the call and the 4-adult rule (needs 2).",
+          "Two arguments at full strength between the two residents nearest you (within 30 tiles, not the chief): a quarrel for the next meeting.",
+          "Everyone who lives here feels betrayed by the chief: the next meeting holds a vote of confidence.",
+          "No chief; a meeting is due the next evening.",
+          "A random law (not in force; or one in force, to do away with) is proposed by someone it suits and voted on now, you included.",
+          "Makes the tithe law, adds 4 to this week's tithe, and has the resident nearest you keep their share back: it comes up at the next meeting.",
+          "Morale and a quiet time with everyone who lives here (as on the rest day).",
+          "Which laws are in force, and how the votes went.",
+          "Puts the lord law in force (needs a chief): no more elections while they live, their word over the meeting's, a coup only at two-thirds, and an heir after them.",
+          "The lord (if here) names an heir, then the heir takes the chair as if the lord had died (nobody dies).",
+          "Everyone who lives here feels betrayed by the resident nearest you (not the chief): the next meeting votes on putting them out.",
+          "The lord law, the heir, successions, coups and exiles.",
+          "Starts the wall if there isn't one, and builds the next side now (north, east, south, west; a gate in each).",
+          "The nearest side goes up again (where it's open ground); anyone standing on the line steps off first: stand on a gate to test it.",
+          "Word comes now, and the siege is tonight (from 21:00; three waves 40 minutes apart while you're home).",
+          "Spawns the next wave of the coming siege now (35 tiles out in the warned direction).",
+          "The tally, the morale and the bond, now.",
+          "The wall and the siege state.",
+          "A keep, the eyeglasses or the woodlanders (in turn), up to three.",
+          "The next settlement in turn sends an envoy (an offer, a demand, or a courtesy visit, by how things stand).",
+          "Deliveries, tribute, and hostile ones start arming.",
+          "Strength against defense (wall, watch, people, an ally).",
+          "The losing raid: they take stores (topped up to 12 first) and, with you home, a resident outside is hurt.",
+          "Relation -40: they arm at the next week's upkeep.",
+          "Relation 50: their next envoy proposes a pact.",
+          "Meetings, elections, quarrels, confidence votes and the chief.",
+          "No lord any more; the next meeting (or the next row) chooses the council.",
+          "You're asked whether you stand; everyone votes; the three with the most hands sit, and the first speaks for it.",
+          "Each councillor here says yes or no (you too, if you hold a seat); nobody actually moves in.",
+          "The seats, who speaks for it, who is here, and how often it has ruled.",
+          "Makes it close and agreed with you; the next envoy (t) offers one of theirs to marry a single grown-up here.",
+          "Skips the envoy and the offer: the nearest grown-up without a partner who lives here is promised to the first settlement's match.",
+          "If a match is agreed: they walk in, move in, and are engaged (the wedding is at the evening fire).",
+          "Skips the walk: the envoy steps to the door and speaks within the minute.",
+          "Shared danger between every pair of grown-ups who live here, and with you, so votes have someone to go to."
+        ],
+        "keys": [
+          "a",
+          "b",
+          "c",
+          "d",
+          "e",
+          "f",
+          "g",
+          "h",
+          "i",
+          "j",
+          "k",
+          "l",
+          "m",
+          "n",
+          "o",
+          "p",
+          "q",
+          "r",
+          "s",
+          "t",
+          "u",
+          "v",
+          "w",
+          "x",
+          "y",
+          "z",
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F",
+          "G",
+          "H",
+          "I"
+        ],
+        "title": "Keep lab (v0.6)",
+        "allow_cancel": true
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_HML_open",
+    "effect": [
+      {
+        "run_eoc_selector": [
+          "PF_HML_eve",
+          "PF_HML_furnish",
+          "PF_HML_props",
+          "PF_HML_residents",
+          "PF_HML_mods",
+          "PF_HML_chores",
+          "PF_HML_bed",
+          "PF_HML_rumor",
+          "PF_HML_drift",
+          "PF_HML_burnt",
+          "PF_HML_visit",
+          "PF_HML_settled",
+          "PF_HML_horn",
+          "PF_HML_alarm",
+          "PF_HML_defend_kid",
+          "PF_HML_defend_you",
+          "PF_HML_defend_who",
+          "PF_HML_defend_range",
+          "PF_HML_defend_trace",
+          "PF_HML_t22",
+          "PF_HML_t18",
+          "PF_HML_day",
+          "PF_HML_bedroll",
+          "PF_HML_rk_tend",
+          "PF_HML_rk_retell",
+          "PF_HML_rk_nightmare",
+          "PF_HML_rk_nightmare_adult",
+          "PF_HML_rk_storm",
+          "PF_HML_rk_stats",
+          "PF_HML_rk_pack",
+          "PF_HML_rk_ran",
+          "PF_HML_tl_animals",
+          "PF_HML_tl_morning",
+          "PF_HML_tl_grow",
+          "PF_HML_tl_feast",
+          "PF_HML_tl_job",
+          "PF_HML_tl_workday",
+          "PF_HML_tl_market",
+          "PF_HML_tl_stats2",
+          "PF_HML_tl_join",
+          "PF_HML_tl_join_ask",
+          "PF_HML_tl_watch",
+          "PF_HML_tl_watch_change",
+          "PF_HML_tl_watch_dawn",
+          "PF_HML_tl_watch_spot",
+          "PF_HML_tl_bring",
+          "PF_HML_tl_stats3",
+          "PF_HML_tl_stats",
+          "PF_HML_name_kid",
+          "PF_HML_name_baby",
+          "PF_HML_wake",
+          "PF_HML_trust",
+          "PF_HML_spawn",
+          "PF_HML_family_here",
+          "PF_HML_stats",
+          "PF_HML_keep_lab",
+          "PF_HML_away_lab"
+        ],
+        "names": [
+          "Evening: gather now; press again once they've sat down",
+          "Furnish: a table, a couch, a bookcase and a piano around you",
+          "Evening: tonight everyone uses the props (needs furniture near)",
+          "Residents: everyone who lives with you walks home now",
+          "Mods: Mind Over Matter telepathy and Xedra discovery, on the nearest adult",
+          "Household: jobs for everyone, then the chores now",
+          "Household: bedtime now (twice: claim beds, then sleep once there)",
+          "Rumor: tonight's evening, and someone tells you about a band out there",
+          "World: a day of drift for every band (settle or move on)",
+          "Friction: the cook burns the soup (now)",
+          "Neighbors: the nearest settled family comes over now",
+          "World: a family settles in a house nearby (30-60 tiles)",
+          "Danger: a zombie appears next to the nearest child (defense test)",
+          "Danger: two zombies at the edge of camp (alarm test)",
+          "Danger: a zombie next to the nearest child, Horn off (engine defense test)",
+          "Danger: a zombie next to you, Horn off (engine defense test)",
+          "Defense: who would stand up for you (engine rules)",
+          "Defense: range test (trace on, Horn off, you 20 tiles out, zombie next to you)",
+          "Defense: trace combat decisions to debug.log (on/off, engine build)",
+          "Test: patch 22, a resident walks to you across deep water (trace on, Horn off)",
+          "Test: patch 18, one of your children alone 8 tiles east of you, zombies to the north (trace on, Horn off)",
+          "Daytime: two people near you do something now (variety pass)",
+          "Night: people without a bed lie down to sleep now",
+          "Reckoning: tend the wounded now",
+          "Reckoning: tonight's retelling now",
+          "Reckoning: a nightmare now (someone frightened or mourning)",
+          "Reckoning: a grown-up's nightmare now",
+          "Reckoning: a portal storm begins and ends (simulated)",
+          "Reckoning: stats",
+          "Danger: a pack of six zombies 8 tiles east, Horn off (who breaks and runs?)",
+          "Reckoning: the nearest adult 'ran' from the last fight (engine stamp, for testing)",
+          "Town: the neighbors' animals arrive now",
+          "Town: this morning's milk, eggs and field step now",
+          "Town: the planted field is grown",
+          "Town: tonight's harvest feast, now",
+          "Town: the nearest resident takes the next job",
+          "Town: today's school, healer's round and smithy now",
+          "Town: market day now (+30 stores)",
+          "Town: work stats",
+          "Town: the nearest settled family decides to join now",
+          "Town: the family on its way asks now",
+          "Town: tonight's watch goes up now",
+          "Town: change of watch now",
+          "Town: the watch comes in now",
+          "Town: a zombie near someone on the watch",
+          "Town: the newest household comes to its house (repair)",
+          "Town: town stats (households, watch)",
+          "Town: stats",
+          "Naming: rename the nearest child, as if you took them in (engine build)",
+          "Naming: name the nearest baby as if it were yours (engine build)",
+          "Morning: someone makes you breakfast now",
+          "Bands: the nearest band member warms to you (warmth 50, trust 40)",
+          "World: a band appears now (hunters, family, or settled family)",
+          "World: a family appears right here",
+          "Stats: home and world",
+          "Keep lab (v0.6): meetings, chiefs, laws, who rules",
+          "Open threads lab (v0.7): while you're away, the road, loss, the tense evening"
+        ],
+        "descriptions": [
+          "First press: resets tonight's evening and people head for the hearth (fire, or at home the table/couch).  Second press: the evening happens (wait a few minutes in between so they arrive).",
+          "Places them 2-3 tiles around you on empty floor (or ground), so you can test an evening at home anywhere.",
+          "The second press of the entry above, but everyone's activity is a prop (reading, piano, cards) if the furniture is there, mourning or not.",
+          "Runs the 30-minute resident step, ignoring the clock.",
+          "Needs those mods.  Telepathy: you are a telepath for a moment while the nearest adult (if they're yours or you care a lot) is badly hurt.  Xedra: the nearest adult finds out what you are, whether you are or not.",
+          "Gives a job to anyone who lives with you and has none, shows who does what, then runs the 3-hourly chores (ignoring the clock).",
+          "Runs the night step ignoring the clock.  Press once, wait a few minutes for people to reach their beds, press again.",
+          "Use instead of the second press of the first entry (gather first): the evening happens, and the rumor always comes up.  It runs inside the evening, right after the roll call, so it never uses a stale character id.",
+          "Runs the daily drift five times now.",
+          "The nearest cook who lives with you burns it; whoever minds most picks a fight.",
+          "Runs the afternoon visit step ignoring the chance and the 5-day wait.  They walk in like any band (on-screen if close).",
+          "Finds a bed 30-60 tiles away and settles a family there, so you can test visits.",
+          "Spawns one zombie beside the nearest child within 30 tiles, so you can watch the adults rally and the child run.",
+          "Spawns two zombies 12 tiles east of you and runs the alarm scan now: watch who raises the alarm, who runs at them, who takes the children away, and the all-clear (wait a few minutes after they're dead).",
+          "Turns the Horn off for 10 minutes, makes the awake adult nearest to the nearest walking child care about them (warmth 60) and spawns one zombie beside the child.  With the engine build that adult steps in on their own; on the official game they don't.",
+          "Turns the Horn off for 10 minutes, makes the awake adult nearest to you care about you (warmth 60) and spawns one zombie 2 tiles from you.  With the engine build they step in; everyone else who already cares enough about you should too (see the next entry).",
+          "Lists everyone within 30 tiles who counts as bonded to you under the engine's rules: kin, partner, household, or warmth 40+ (pf_defend_w).",
+          "One-press version of the engine defense test: turns the trace on and the Horn off, moves you about 20 tiles south-west of where you stand (away from the camp) and spawns a zombie next to you.  Bonded people should come; others shouldn't.  Read config/debug.log ('PF defend').",
+          "Toggles the engine's decision trace: every turn, each of our people's friends, hostiles, target and action are written to config/debug.log (lines starting 'PF defend').  For testing only.",
+          "Stand in open ground.  Digs a strip of deep water 2 wide and 17 long 3 tiles east of you, puts the nearest grown-up who lives here 1 tile east of you and orders them to a spot 7 tiles east (across the strip).  With patch 22 they walk round the end; read config/debug.log ('PF path': deep_water=0).  Ruins the ground: use a copy of the world.",
+          "Go 3 map squares from home first (a child only panics with no grown-up in sight).  Brings the first of your walking children (by unique id, from anywhere) 8 tiles east of you and spawns four zombies 3 tiles north of them.  Vanilla flight would go south; with patch 18 the child runs west to you.  Read config/debug.log ('PF flee').  Use a copy of the world.",
+          "Runs the daytime pass now, whatever the hour: two adults within 25 tiles each do something small, alone or with someone.",
+          "Runs the night's bedroll pass now, whatever the hour: our people without a bed at home (not the watcher) sleep about five hours where they are.",
+          "Runs the tending pass now instead of waiting for the 3-minute tick: if nothing hostile is around, up to three wounded people are cleaned up and wrapped by a carer or the nearest adult.",
+          "Runs the fire's retelling of today's rescue or storm now (once per day normally).",
+          "Runs tonight's nightmare check now, whatever the hour, and makes it happen if anyone near you was frightened in the last day or is mourning.",
+          "As above, but only grown-ups can have it (children always win the draw): the adult comforter's line, or crying it out alone.",
+          "Runs the storm's start, then its end, as if a portal storm had just passed over (real storms are noticed every 5 minutes).",
+          "Rescues and tending so far.",
+          "Turns the Horn off for 10 minutes and spawns six zombies 8 tiles east of you.  Big enough that some people should panic and run; with the engine build that is recorded (pf_fled_t) and judged once it's calm.  Expect casualties; kill the game without saving afterwards.",
+          "Marks the awake adult nearest to you as having broken and run a minute ago (what the engine build records when someone flees), then runs the calm-time pass.  If you or someone near was hurt in the last 15 minutes, they're judged for it.",
+          "Hens, a goat or a cow arrive at home (friendly, permanent).  Needs a home.",
+          "The herder brings in the milk and eggs; a fallow field in season is planted, a grown one harvested.",
+          "Moves the planted field's clock on, so the next morning step harvests it.",
+          "The harvest feast (normally the evening of a harvest day).",
+          "Cycles the job of the resident nearest you (cook, guard, forager, tinkerer, carer, herder, farmer, smith, healer, teacher) and says which.",
+          "Runs the working day now: the teacher's school, the healer's round and the smith's work (needs people with those jobs).",
+          "Adds 30 stores and holds market day: up to 3 goods at home.",
+          "School days, people treated, smithy work, markets and stores.",
+          "Picks the nearest settled family (ignoring visits and draw) and sends it to your place.  They ask (a yes/no popup) once they're within 25 tiles of home and it's calm.",
+          "Skips the walk: the family on its way asks right away, wherever they are.",
+          "Picks tonight's rota and sends the first shift to their posts (needs 3+ grown-ups who live here, within 60 tiles).",
+          "The first shift goes to bed, the second is woken and goes out.",
+          "Dawn: the watch comes in (shared moments, the morning line).",
+          "Spawns a zombie 7 tiles east of a watcher on a post: they should see it and raise the Horn by name.",
+          "Places the family that joined last at its house (for a family that joined out of range).",
+          "Households, families joined, nights watched, sightings, the place's draw and tonight's watch phase.",
+          "Milk, eggs, plantings, harvests and animal gifts so far.",
+          "Runs the adoption naming prompt on the nearest walking child within 10 tiles.  Needs the People First engine build and the People First: Engine mod (on a stock build nothing happens).",
+          "Runs the newborn naming prompt on the nearest baby within 10 tiles, as if you were its mother.  Needs the engine build.",
+          "Runs the wake-up signal as if you just woke at home (it still needs someone who cares, and a home within 30 tiles).",
+          "So you can ask them to come live with you.",
+          "Runs the natural spawn once, ignoring the population cap.  Kinds: 0 hunters, 1 family on the move, 2 settled family.",
+          "A family on the move, a few tiles away, so you can watch them.",
+          "Home evenings, people living with you, bands that joined you, bands alive, natural spawns.",
+          "Opens the Keep lab: the meeting now, quarrels, dissent, laws, the tithe, the rest day, a lord and heir, exile, stats.",
+          "Opens the v0.7 lab: the household roll, leaving, days passing at home, raids while you're gone, coming home, trouble for a band on the road, a child losing a parent, the tense evening."
+        ],
+        "keys": [
+          "a",
+          "b",
+          "c",
+          "d",
+          "e",
+          "f",
+          "g",
+          "h",
+          "i",
+          "j",
+          "k",
+          "l",
+          "m",
+          "n",
+          "o",
+          "p",
+          "q",
+          "r",
+          "s",
+          "t",
+          "u",
+          "v",
+          "w",
+          "x",
+          "y",
+          "z",
+          "0",
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F",
+          "G",
+          "H",
+          "I",
+          "J",
+          "K",
+          "L",
+          "M",
+          "N",
+          "O",
+          "P",
+          "Q",
+          "R",
+          "S",
+          "T",
+          "U"
+        ],
+        "title": "Home lab (v0.4-0.6)",
+        "allow_cancel": true
+      }
+    ]
+  },
+  {
+    "type": "ter_furn_transform",
+    "id": "PF_HML_t_table",
+    "furniture": [ { "result": "f_table", "valid_furniture": [ "f_null" ] } ]
+  },
+  {
+    "type": "ter_furn_transform",
+    "id": "PF_HML_t_sofa",
+    "furniture": [ { "result": "f_sofa", "valid_furniture": [ "f_null" ] } ]
+  },
+  {
+    "type": "ter_furn_transform",
+    "id": "PF_HML_t_book",
+    "furniture": [ { "result": "f_bookcase", "valid_furniture": [ "f_null" ] } ]
+  },
+  {
+    "type": "ter_furn_transform",
+    "id": "PF_HML_t_piano",
+    "furniture": [ { "result": "f_piano", "valid_furniture": [ "f_null" ] } ]
+  },
+  {
+    "type": "ter_furn_transform",
+    "id": "PF_LAB_t_deepwater",
+    "terrain": [ { "result": "t_water_dp", "valid_flags": [ "DIGGABLE" ] }, { "result": "t_water_dp", "valid_flags": [ "FLAT" ] } ]
+  }
+]

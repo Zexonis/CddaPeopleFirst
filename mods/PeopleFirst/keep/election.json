@@ -1,0 +1,226 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KEEP_election",
+    "//": "u = avatar.  You're asked whether you'll stand (if you're at the meeting).  Every grown-up who lives here votes, from their own view (trust + warmth / 2 - tension), for the one they'd follow: anyone else who lives here, or you if you stood.  Only people they actually know count (warmth + trust 10+); a stranger, with no grudges against them, would otherwise beat everyone who has lived together long enough to argue.  Knowing nobody, they abstain.  Most votes wins, if it's at least a third of the voters (else nobody is chosen); a tie goes to whoever was counted first, and you have to beat them outright.",
+    "effect": [
+      { "math": [ "pf_ke_you = 0" ] },
+      { "math": [ "pf_ke_total = 0" ] },
+      { "math": [ "pf_kw_best = 0" ] },
+      { "math": [ "pf_kw_sel = 0" ] },
+      {
+        "if": { "math": [ "distance(pf_kp_av, pf_home_loc) <= 30" ] },
+        "then": [
+          {
+            "if": { "u_query": "The meeting is choosing who leads the place.  Will you stand?", "default": false },
+            "then": [ { "math": [ "pf_ke_you = 1" ] } ]
+          }
+        ]
+      },
+      { "math": [ "pf_kv_AVATAR = 0" ] },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_KEEP_tally_reset",
+            "condition": {
+              "and": [
+                { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+                { "math": [ "value_or(u_pf_resident, 0) == 1" ] },
+                { "math": [ "has_var(u_pf_uid)" ] }
+              ]
+            },
+            "effect": [
+              { "set_string_var": "pf_kv_<u_val:pf_uid>", "target_var": { "context_val": "kv" }, "parse_tags": true },
+              { "math": [ "v_kv = 0" ] }
+            ]
+          }
+        ],
+        "local": true,
+        "npc_range": 60
+      },
+      { "u_run_npc_eocs": [ "PF_KEEP_voter" ], "local": true, "npc_range": 60 },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_KEEP_count_votes",
+            "condition": {
+              "and": [
+                { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+                { "math": [ "value_or(u_pf_resident, 0) == 1" ] },
+                { "math": [ "has_var(u_pf_uid)" ] }
+              ]
+            },
+            "effect": [
+              { "set_string_var": "pf_kv_<u_val:pf_uid>", "target_var": { "context_val": "kv" }, "parse_tags": true },
+              {
+                "if": { "math": [ "value_or(v_kv, 0) > pf_kw_best" ] },
+                "then": [
+                  { "math": [ "pf_kw_best = v_kv" ] },
+                  { "math": [ "pf_kw_sel = 1" ] },
+                  { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_kw_uid" } },
+                  { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_kw_name" }, "parse_tags": true }
+                ]
+              }
+            ]
+          }
+        ],
+        "local": true,
+        "npc_range": 60
+      },
+      {
+        "if": { "math": [ "(pf_ke_you == 1) * (pf_kv_AVATAR > pf_kw_best)" ] },
+        "then": [ { "math": [ "pf_kw_best = pf_kv_AVATAR" ] }, { "math": [ "pf_kw_sel = 2" ] } ]
+      },
+      {
+        "if": { "math": [ "(pf_kw_sel > 0) * (pf_kw_best * 3 < pf_ke_total)" ] },
+        "then": [ { "math": [ "pf_kw_sel = 0" ] } ]
+      },
+      {
+        "if": { "math": [ "pf_kw_sel == 0" ] },
+        "then": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "no_chief" } } ],
+        "else": [
+          { "math": [ "pf_kw_again = (pf_kw_sel == value_or(pf_chief_set, 0)) * ((pf_kw_sel == 2) + 0)" ] },
+          {
+            "if": { "math": [ "(pf_kw_sel == 1) * (value_or(pf_chief_set, 0) == 1)" ] },
+            "then": [
+              {
+                "if": { "compare_string": [ { "global_val": "pf_kw_uid" }, { "global_val": "pf_chief_uid" } ] },
+                "then": [ { "math": [ "pf_kw_again = 1" ] } ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kw_sel == 1" ] },
+            "then": [
+              { "math": [ "pf_chief_set = 1" ] },
+              { "copy_var": { "global_val": "pf_kw_uid" }, "target_var": { "global_val": "pf_chief_uid" } },
+              { "copy_var": { "global_val": "pf_kw_name" }, "target_var": { "global_val": "pf_chief_name" } }
+            ],
+            "else": [
+              { "math": [ "pf_chief_set = 2" ] },
+              { "set_string_var": "AVATAR", "target_var": { "global_val": "pf_chief_uid" } },
+              { "set_string_var": "you", "target_var": { "global_val": "pf_chief_name" } }
+            ]
+          },
+          { "math": [ "pf_chief_away = 0" ] },
+          { "math": [ "pf_elections_total = value_or(pf_elections_total, 0) + 1" ] },
+          { "if": { "math": [ "pf_kw_again == 0" ] }, "then": [ { "math": [ "pf_chief_since = time('now')" ] } ] },
+          {
+            "if": { "math": [ "pf_kw_sel == 2" ] },
+            "then": [
+              {
+                "if": { "math": [ "pf_kw_again == 1" ] },
+                "then": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "kept_you" } } ],
+                "else": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "elected_you" } } ]
+              }
+            ],
+            "else": [
+              {
+                "if": { "math": [ "pf_kw_again == 1" ] },
+                "then": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "kept" } } ],
+                "else": [
+                  { "math": [ "_p = rand(1)" ] },
+                  {
+                    "if": { "math": [ "_p == value_or(pf_kl_elected, -1)" ] },
+                    "then": [ { "math": [ "_p = (_p + 1) % 2" ] } ]
+                  },
+                  { "math": [ "pf_kl_elected = _p" ] },
+                  {
+                    "if": { "math": [ "_p == 0" ] },
+                    "then": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "elected_0" } } ]
+                  },
+                  {
+                    "if": { "math": [ "_p == 1" ] },
+                    "then": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "elected_1" } } ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KEEP_voter",
+    "//": "u = a grown-up who lives here: their vote (a voted_for moment with the one they chose).",
+    "condition": {
+      "and": [
+        { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+        { "math": [ "value_or(u_pf_resident, 0) == 1" ] },
+        { "math": [ "has_var(u_pf_uid)" ] }
+      ]
+    },
+    "effect": [
+      { "u_set_talker": { "global_val": "pf_kv_voter" } },
+      { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_kv_vuid" } },
+      { "math": [ "pf_kv_best = -999" ] },
+      { "math": [ "pf_kv_sel = 0" ] },
+      {
+        "if": { "math": [ "pf_ke_you == 1" ] },
+        "then": [
+          { "set_string_var": "AVATAR", "target_var": { "global_val": "pf_m_other" } },
+          { "run_eocs": "PF_VIEW_read" },
+          {
+            "if": { "math": [ "pf_read_t + pf_read_w >= 10" ] },
+            "then": [ { "math": [ "pf_kv_best = pf_read_t + pf_read_w / 2 - pf_read_x" ] }, { "math": [ "pf_kv_sel = 2" ] } ]
+          }
+        ]
+      },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_KEEP_cand",
+            "condition": {
+              "and": [
+                {
+                  "and": [
+                    { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+                    { "math": [ "value_or(u_pf_resident, 0) == 1" ] },
+                    { "math": [ "has_var(u_pf_uid)" ] }
+                  ]
+                },
+                { "not": { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_kv_vuid" } ] } }
+              ]
+            },
+            "effect": [
+              { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_m_other" } },
+              { "run_eocs": "PF_VIEW_read", "alpha_talker": { "global_val": "pf_kv_voter" } },
+              { "math": [ "_s = pf_read_t + pf_read_w / 2 - pf_read_x" ] },
+              {
+                "if": { "math": [ "(_s > pf_kv_best) * (pf_read_t + pf_read_w >= 10)" ] },
+                "then": [
+                  { "math": [ "pf_kv_best = _s" ] },
+                  { "math": [ "pf_kv_sel = 1" ] },
+                  { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_kv_buid" } },
+                  { "u_set_talker": { "global_val": "pf_kv_bt" } }
+                ]
+              }
+            ]
+          }
+        ],
+        "local": true,
+        "npc_range": 60
+      },
+      {
+        "if": { "math": [ "pf_kv_sel == 2" ] },
+        "then": [
+          { "math": [ "pf_kv_AVATAR += 1" ] },
+          { "math": [ "pf_m_str_in = 30" ] },
+          { "run_eocs": "PF_MK_voted_for", "beta_talker": "avatar" }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kv_sel == 1" ] },
+        "then": [
+          { "set_string_var": "pf_kv_<global_val:pf_kv_buid>", "target_var": { "context_val": "kv" }, "parse_tags": true },
+          { "math": [ "v_kv = value_or(v_kv, 0) + 1" ] },
+          { "math": [ "pf_m_str_in = 30" ] },
+          { "run_eocs": "PF_MK_voted_for", "beta_talker": { "global_val": "pf_kv_bt" } }
+        ]
+      },
+      { "math": [ "pf_ke_total += 1" ] }
+    ]
+  }
+]

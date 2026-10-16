@@ -1,0 +1,101 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ENGINE_name_baby",
+    "//": "Overrides People First's stub.  u = a newborn, pf_fm_mom / pf_fm_dad = the parents' uids.  Your baby: you choose the first name, and the family name is yours.  An NPC couple's baby takes its mother's surname (never a random one).",
+    "effect": [
+      {
+        "if": {
+          "or": [
+            { "compare_string": [ { "global_val": "pf_fm_mom" }, "AVATAR" ] },
+            { "compare_string": [ { "global_val": "pf_fm_dad" }, "AVATAR" ] }
+          ]
+        },
+        "then": [
+          {
+            "set_string_var": "",
+            "target_var": { "global_val": "pf_nb_first" },
+            "string_input": {
+              "title": "Your baby",
+              "description": "Your child was born tonight.  What will you call them?  They'll carry your family name.  (Leave it empty to keep the name they have.)",
+              "width": 24,
+              "identifier": "pf_baby_name"
+            }
+          },
+          {
+            "run_eocs": {
+              "id": "PF_ENGINE_nb_you",
+              "effect": [
+                { "u_set_name": { "first": { "global_val": "pf_nb_first" }, "last_from_other": true } },
+                { "run_eocs": "PF_REG_name" }
+              ]
+            },
+            "alpha_talker": "u",
+            "beta_talker": "avatar"
+          },
+          {
+            "run_eocs": { "id": "PF_ENGINE_nb_said", "effect": [ { "u_message": "You call your baby <npc_name>.", "type": "good" } ] },
+            "alpha_talker": "avatar",
+            "beta_talker": "u"
+          }
+        ],
+        "else": [
+          { "copy_var": { "global_val": "pf_fm_mom" }, "target_var": { "global_val": "pf_find_uid" } },
+          { "run_eocs": "PF_FIND_by_uid", "alpha_talker": "avatar" },
+          {
+            "if": { "math": [ "pf_find_ok == 1" ] },
+            "then": [
+              {
+                "run_eocs": { "id": "PF_ENGINE_nb_npc", "effect": [ { "u_set_name": { "last_from_other": true } }, { "run_eocs": "PF_REG_name" } ] },
+                "alpha_talker": "u",
+                "beta_talker": { "global_val": "pf_find_who" }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ENGINE_name_adoptee",
+    "//": "Overrides People First's stub.  u = you, npc = the child you just took in.  You may give them a new name (for example your family name); empty keeps theirs.",
+    "effect": [
+      {
+        "set_string_var": "",
+        "target_var": { "global_val": "pf_ad_name" },
+        "string_input": {
+          "title": "Taking them in",
+          "description": "They're with you now.  Give them a new name?  Type their full name, first and family name.  (Leave it empty to keep their own.)",
+          "width": 30,
+          "identifier": "pf_adoptee_name"
+        }
+      },
+      { "npc_set_name": { "full": { "global_val": "pf_ad_name" } } },
+      { "run_eocs": "PF_REG_name", "alpha_talker": "npc" },
+      { "u_message": "<npc_name> is part of your family now.", "type": "good" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ENGINE_name_family_kid",
+    "//": "Overrides People First's stub.  u = a child just spawned with a family; pf_ws_p1 = a parent's unique id (in the bubble at spawn).  The child takes that parent's surname.",
+    "effect": [
+      { "copy_var": { "global_val": "pf_ws_p1" }, "target_var": { "global_val": "pf_find_uid" } },
+      { "run_eocs": "PF_FIND_by_uid", "alpha_talker": "avatar" },
+      {
+        "if": { "math": [ "pf_find_ok == 1" ] },
+        "then": [
+          {
+            "run_eocs": {
+              "id": "PF_ENGINE_fk_name",
+              "effect": [ { "u_set_name": { "last_from_other": true } }, { "run_eocs": "PF_REG_name" } ]
+            },
+            "alpha_talker": "u",
+            "beta_talker": { "global_val": "pf_find_who" }
+          }
+        ]
+      }
+    ]
+  }
+]

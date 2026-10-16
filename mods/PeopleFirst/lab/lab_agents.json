@@ -1,0 +1,321 @@
+[
+  {
+    "type": "npc",
+    "id": "PF_LAB_HUNTER",
+    "//": "A-Life Lab test agent.  Mission 2 (shelter) turns off vanilla goal-seeking (the 'need_safety' trips to bandit camps), but the NPC still obeys u_set_guard_pos walk orders, still fights, and still flees.",
+    "name_suffix": "hunter",
+    "class": "NC_HUNTER",
+    "attitude": 0,
+    "mission": 2,
+    "chat": "TALK_PF_LAB_HUNTER",
+    "faction": "no_faction"
+  },
+  {
+    "type": "talk_topic",
+    "id": "TALK_PF_LAB_HUNTER",
+    "dynamic_line": "We're on the trail of a deer.  Keep your voice down.\n\n[A-Life debug] id: <npc_val:pf_uid>  leader: <npc_val:pf_is_leader>  band: <npc_val:pf_band>  band size: <npc_val:pf_band_size>  member slot: <npc_val:pf_band_idx>  online: <npc_val:pf_online>  heading to waypoint: <npc_val:pf_goal_is_b>",
+    "responses": [ { "text": "Good hunting.", "topic": "TALK_DONE" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LAB_spawn_person",
+    "//": "Spawns one hunter near the avatar with a fresh unique id (left in pf_person_uid).",
+    "effect": [
+      { "run_eocs": "PF_ALIFE_register_person" },
+      {
+        "u_spawn_npc": "PF_LAB_HUNTER",
+        "unique_id": { "global_val": "pf_person_uid" },
+        "real_count": 1,
+        "traits": [ "PF_AGENT" ],
+        "min_radius": 2,
+        "max_radius": 6
+      },
+      {
+        "u_run_npc_eocs": [ "PF_ALIFE_store_uid" ],
+        "unique_ids": [ { "global_val": "pf_person_uid" } ],
+        "local": false
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LAB_spawn_band_here",
+    "//": "Spawns a band of three near the avatar: a leader and two members.  Leaves its index in pf_band_new_idx and its leader in pf_band_new_leader.",
+    "effect": [
+      { "run_eocs": "PF_LAB_spawn_person" },
+      { "copy_var": { "global_val": "pf_person_uid" }, "target_var": { "global_val": "pf_band_new_leader" } },
+      { "run_eocs": "PF_ALIFE_register_band" },
+      {
+        "u_run_npc_eocs": [ "PF_LAB_init_leader" ],
+        "unique_ids": [ { "global_val": "pf_band_new_leader" } ],
+        "local": false
+      },
+      { "copy_var": { "global_val": "pf_band_new_leader" }, "target_var": { "global_val": "pf_link_leader" } },
+      { "run_eocs": "PF_LAB_spawn_person" },
+      { "copy_var": { "global_val": "pf_person_uid" }, "target_var": { "global_val": "pf_link_member" } },
+      { "run_eocs": "PF_BAND_link" },
+      { "run_eocs": "PF_LAB_spawn_person" },
+      { "copy_var": { "global_val": "pf_person_uid" }, "target_var": { "global_val": "pf_link_member" } },
+      { "run_eocs": "PF_BAND_link" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LAB_init_leader",
+    "effect": [ { "math": [ "u_pf_task = 1" ] }, { "math": [ "u_pf_online = 1" ] }, { "math": [ "u_pf_quarry_spawned = 1" ] } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LAB_refresh",
+    "//": "Looks up the lab band's current leader (it changes on succession) and members into pf_lab_lead_uid and pf_lab_m0..4.",
+    "condition": { "math": [ "value_or(pf_lab_spawned, 0) == 1" ] },
+    "effect": [
+      { "set_string_var": "pf_slot_<global_val:pf_lab_band>", "target_var": { "context_val": "ref" }, "parse_tags": true },
+      { "copy_var": { "var_val": "ref" }, "target_var": { "global_val": "pf_lab_lead_uid" } },
+      { "set_string_var": "none", "target_var": { "global_val": "pf_lab_m0" } },
+      { "set_string_var": "none", "target_var": { "global_val": "pf_lab_m1" } },
+      { "set_string_var": "none", "target_var": { "global_val": "pf_lab_m2" } },
+      { "set_string_var": "none", "target_var": { "global_val": "pf_lab_m3" } },
+      { "set_string_var": "none", "target_var": { "global_val": "pf_lab_m4" } },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_lab_lead_uid" }, "none" ] },
+        "then": [ { "math": [ "pf_lab_spawned = 0" ] } ],
+        "else": [
+          {
+            "u_run_npc_eocs": [ "PF_LAB_capture_members" ],
+            "unique_ids": [ { "global_val": "pf_lab_lead_uid" } ],
+            "local": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LAB_capture_members",
+    "effect": [
+      { "copy_var": { "u_val": "pf_member_0" }, "target_var": { "global_val": "pf_lab_m0" } },
+      { "copy_var": { "u_val": "pf_member_1" }, "target_var": { "global_val": "pf_lab_m1" } },
+      { "copy_var": { "u_val": "pf_member_2" }, "target_var": { "global_val": "pf_lab_m2" } },
+      { "copy_var": { "u_val": "pf_member_3" }, "target_var": { "global_val": "pf_lab_m3" } },
+      { "copy_var": { "u_val": "pf_member_4" }, "target_var": { "global_val": "pf_lab_m4" } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LAB_send_away_leader",
+    "//": "T1: teleport the leader far outside the bubble and set its patrol, then snap the members into formation there.",
+    "effect": [
+      { "copy_var": { "global_val": "pf_lab_wp_a" }, "target_var": { "u_val": "pf_wp_a" } },
+      { "copy_var": { "global_val": "pf_lab_wp_b" }, "target_var": { "u_val": "pf_wp_b" } },
+      { "copy_var": { "global_val": "pf_lab_wp_a" }, "target_var": { "u_val": "pf_goal" } },
+      { "math": [ "u_pf_goal_is_b = 0" ] },
+      { "math": [ "u_pf_online = 0" ] },
+      { "math": [ "u_pf_quarry_spawned = 0" ] },
+      { "math": [ "pf_quarry_last_t = 0" ] },
+      { "u_teleport": { "global_val": "pf_lab_wp_a" }, "force_safe": true },
+      { "u_location_variable": { "u_val": "pf_vpos" } },
+      { "copy_var": { "u_val": "pf_vpos" }, "target_var": { "u_val": "pf_body" } },
+      { "u_location_variable": { "global_val": "pf_band_anchor" } },
+      { "math": [ "pf_band_dx = 0" ] },
+      { "math": [ "pf_band_dy = -1" ] },
+      { "run_eocs": "PF_BAND_heading" },
+      { "run_eocs": "PF_BAND_members_snap" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LAB_recall_leader",
+    "effect": [
+      { "u_teleport": { "global_val": "pf_player_pos" }, "force_safe": true },
+      { "u_location_variable": { "u_val": "pf_vpos" } },
+      { "copy_var": { "u_val": "pf_vpos" }, "target_var": { "u_val": "pf_body" } },
+      { "u_location_variable": { "global_val": "pf_band_anchor" } },
+      { "math": [ "pf_band_dx = 0" ] },
+      { "math": [ "pf_band_dy = -1" ] },
+      { "run_eocs": "PF_BAND_heading" },
+      { "run_eocs": "PF_BAND_members_snap" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LAB_verify_near",
+    "//": "Counts this NPC as arrived if it is within pf_lab_check_r of pf_lab_check_at.",
+    "effect": [
+      { "u_location_variable": { "u_val": "pf_after" } },
+      {
+        "if": { "math": [ "distance(u_pf_after, pf_lab_check_at) <= pf_lab_check_r" ] },
+        "then": [ { "math": [ "pf_lab_ok += 1" ] } ],
+        "else": [ { "math": [ "pf_lab_fail += 1" ] } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LAB_locate_leader",
+    "effect": [
+      { "u_location_variable": { "global_val": "pf_lab_lead_pos" } },
+      {
+        "if": { "and": [ { "math": [ "has_var(u_pf_vpos)" ] }, { "math": [ "value_or(u_pf_online, 0) != 1" ] } ] },
+        "then": [ { "copy_var": { "u_val": "pf_vpos" }, "target_var": { "global_val": "pf_lab_lead_pos" } } ]
+      },
+      { "math": [ "pf_lab_lead_found = 1" ] },
+      { "math": [ "pf_lab_lead_dist = distance(pf_player_pos, pf_lab_lead_pos)" ] },
+      { "math": [ "pf_lab_lead_east = round((pf_lab_lead_pos.x - pf_player_pos.x) / 24)" ] },
+      { "math": [ "pf_lab_lead_south = round((pf_lab_lead_pos.y - pf_player_pos.y) / 24)" ] },
+      { "math": [ "pf_lab_lead_online = value_or(u_pf_online, 0)" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LAB_locate_member",
+    "//": "Run after PF_LAB_locate_leader.  Records each member's distance to the leader (spread).",
+    "effect": [
+      { "u_location_variable": { "u_val": "pf_pos" } },
+      { "math": [ "pf_lab_members_found += 1" ] },
+      { "math": [ "pf_lab_spread = max(pf_lab_spread, distance(u_pf_pos, pf_lab_lead_pos))" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LAB_remove_agent",
+    "effect": [ { "u_die": { "remove_corpse": true, "supress_message": true } } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LAB_kill_band",
+    "//": "u = leader.  Members first, then the leader, so the death hook dissolves the band instead of passing it on.",
+    "effect": [
+      {
+        "u_run_npc_eocs": [ "PF_LAB_remove_agent" ],
+        "unique_ids": [
+          { "u_val": "pf_member_0" },
+          { "u_val": "pf_member_1" },
+          { "u_val": "pf_member_2" },
+          { "u_val": "pf_member_3" },
+          { "u_val": "pf_member_4" }
+        ],
+        "local": false
+      },
+      { "u_die": { "remove_corpse": true, "supress_message": true } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LAB_walk_test_leader",
+    "effect": [
+      { "copy_var": { "global_val": "pf_lab_walk_target" }, "target_var": { "u_val": "pf_walk_to" } },
+      { "u_set_guard_pos": { "u_val": "pf_walk_to" } },
+      { "copy_var": { "global_val": "pf_lab_walk_target" }, "target_var": { "global_val": "pf_band_anchor" } },
+      { "math": [ "pf_band_dx = 0" ] },
+      { "math": [ "pf_band_dy = -1" ] },
+      { "run_eocs": "PF_BAND_heading" },
+      { "run_eocs": "PF_BAND_members_walk" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LAB_perf_place",
+    "//": "u = a perf band's leader.  Parks the bodies at the batch's shared spot (one map load for the whole batch instead of one per NPC), and starts the band's virtual position 5-15 overmap tiles east or west of the avatar, with a random patrol.",
+    "effect": [
+      { "u_location_variable": { "global_val": "pf_player_pos" } },
+      { "copy_var": { "global_val": "pf_player_pos" }, "target_var": { "u_val": "pf_wp_a" } },
+      {
+        "location_variable_adjust": { "u_val": "pf_wp_a" },
+        "overmap_tile": true,
+        "x_adjust": { "math": [ "(rand(1) * 2 - 1) * (5 + rand(10))" ] },
+        "y_adjust": { "math": [ "rand(30) - 15" ] }
+      },
+      { "copy_var": { "u_val": "pf_wp_a" }, "target_var": { "u_val": "pf_wp_b" } },
+      {
+        "location_variable_adjust": { "u_val": "pf_wp_b" },
+        "overmap_tile": true,
+        "x_adjust": { "math": [ "rand(16) - 8" ] },
+        "y_adjust": { "math": [ "rand(16) - 8" ] }
+      },
+      { "copy_var": { "u_val": "pf_wp_b" }, "target_var": { "u_val": "pf_goal" } },
+      { "math": [ "u_pf_goal_is_b = 1" ] },
+      { "math": [ "u_pf_online = 0" ] },
+      { "math": [ "u_pf_quarry_spawned = 0" ] },
+      { "math": [ "pf_quarry_last_t = 0" ] },
+      { "u_teleport": { "global_val": "pf_lab_perf_park" }, "force_safe": true },
+      { "u_location_variable": { "global_val": "pf_band_anchor" } },
+      { "math": [ "pf_band_dx = 0" ] },
+      { "math": [ "pf_band_dy = -1" ] },
+      { "run_eocs": "PF_BAND_heading" },
+      { "run_eocs": "PF_BAND_members_snap" },
+      { "copy_var": { "global_val": "pf_lab_perf_park" }, "target_var": { "u_val": "pf_body" } },
+      { "copy_var": { "u_val": "pf_wp_a" }, "target_var": { "u_val": "pf_vpos" } }
+    ]
+  },
+  {
+    "type": "npc",
+    "id": "PF_LAB_CHILD",
+    "//": "Kid NPC prototype.  Tiny (SMALL2) and PF_CHILD (CANNOT_ATTACK).  Mission 2 like the hunters.",
+    "name_suffix": "child",
+    "class": "NC_NONE",
+    "attitude": 0,
+    "mission": 2,
+    "faction": "no_faction",
+    "chat": "TALK_PF_LAB_CHILD"
+  },
+  {
+    "type": "talk_topic",
+    "id": "TALK_PF_LAB_CHILD",
+    "dynamic_line": {
+      "math": [ "value_or(n_pf_orphaned, 0) == 1" ],
+      "yes": "*hugs their knees and won't look up*  Everyone's gone.  I stayed where they told me.  I stayed right here.  [A-Life debug] id: <npc_val:pf_uid>  (orphaned)",
+      "no": "Are you a friend of my mom's?  [A-Life debug] id: <npc_val:pf_uid>  band: <npc_val:pf_band>  member slot: <npc_val:pf_band_idx>"
+    },
+    "responses": [
+      {
+        "text": "Stay close to your family.",
+        "topic": "TALK_DONE",
+        "condition": { "math": [ "value_or(n_pf_orphaned, 0) != 1" ] }
+      },
+      {
+        "text": "You did good.  You can stay with me.",
+        "topic": "TALK_DONE",
+        "condition": { "math": [ "value_or(n_pf_orphaned, 0) == 1" ] }
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LAB_spawn_child",
+    "effect": [
+      { "run_eocs": "PF_ALIFE_register_person" },
+      {
+        "u_spawn_npc": "PF_LAB_CHILD",
+        "unique_id": { "global_val": "pf_person_uid" },
+        "real_count": 1,
+        "traits": [ "PF_AGENT", "SMALL2", "PF_CHILD" ],
+        "min_radius": 2,
+        "max_radius": 6
+      },
+      {
+        "u_run_npc_eocs": [ "PF_ALIFE_store_uid" ],
+        "unique_ids": [ { "global_val": "pf_person_uid" } ],
+        "local": false
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LAB_family_patrol",
+    "//": "u = the family's parent.  Patrols 2 overmap tiles east and west of where it stands, on-screen, so you can watch the child follow.",
+    "effect": [
+      { "u_location_variable": { "u_val": "pf_wp_a" } },
+      { "location_variable_adjust": { "u_val": "pf_wp_a" }, "x_adjust": 2, "overmap_tile": true },
+      { "u_location_variable": { "u_val": "pf_wp_b" } },
+      { "location_variable_adjust": { "u_val": "pf_wp_b" }, "x_adjust": -2, "overmap_tile": true },
+      { "copy_var": { "u_val": "pf_wp_a" }, "target_var": { "u_val": "pf_goal" } },
+      { "math": [ "u_pf_goal_is_b = 0" ] },
+      { "math": [ "u_pf_task = 0" ] },
+      { "math": [ "u_pf_online = 1" ] },
+      { "math": [ "u_pf_quarry_spawned = 1" ] },
+      { "u_location_variable": { "u_val": "pf_vpos" } },
+      { "copy_var": { "u_val": "pf_vpos" }, "target_var": { "u_val": "pf_body" } }
+    ]
+  }
+]

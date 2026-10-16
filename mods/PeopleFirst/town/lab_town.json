@@ -1,0 +1,254 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TL_animals",
+    "//": "Town lab: the neighbors' animals arrive now (at home).",
+    "effect": [ { "math": [ "pf_animals_due = 1" ] }, { "run_eocs": "PF_TOWN_animals_arrive" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TL_morning",
+    "//": "Town lab: run this morning's milk, eggs and field step now.",
+    "effect": [ { "math": [ "pf_tw_day = -1" ] }, { "run_eocs": "PF_TOWN_produce" }, { "run_eocs": "PF_TOWN_field_tick" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TL_grow",
+    "//": "Town lab: the planted field is ready (next morning step harvests it).",
+    "effect": [
+      {
+        "if": { "math": [ "value_or(pf_field_state, 0) == 2" ] },
+        "then": [
+          { "math": [ "pf_field_t = time('now') - time('120 d')" ] },
+          { "u_message": "[town lab] The field is grown.", "type": "info" }
+        ],
+        "else": [ { "u_message": "[town lab] Nothing is planted.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TL_feast",
+    "//": "Town lab: tonight's harvest feast, now.",
+    "effect": [
+      { "math": [ "pf_harvest_day = floor(time('now') / time('1 d'))" ] },
+      { "math": [ "pf_feast_day = -1" ] },
+      { "run_eocs": "PF_TOWN_feast" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TL_stats",
+    "effect": [
+      { "math": [ "pf_hs_a = value_or(pf_milk_total, 0)" ] },
+      { "math": [ "pf_hs_b = value_or(pf_eggs_total, 0)" ] },
+      { "math": [ "pf_hs_c = value_or(pf_plantings_total, 0)" ] },
+      { "math": [ "pf_hs_d = value_or(pf_harvests_total, 0)" ] },
+      { "math": [ "pf_hs_e = value_or(pf_animals_total, 0)" ] },
+      {
+        "u_message": "[town lab] milk <global_val:pf_hs_a> jugs, eggs <global_val:pf_hs_b>, plantings <global_val:pf_hs_c>, harvests <global_val:pf_hs_d>, animal gifts <global_val:pf_hs_e>.",
+        "type": "info"
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TL_workday",
+    "//": "Town lab: today's school, healer's round and smithy, now.",
+    "effect": [
+      { "math": [ "pf_wd_day = -1" ] },
+      { "math": [ "pf_smith_t = 0" ] },
+      { "run_eocs": "PF_TOWN_school" },
+      { "run_eocs": "PF_TOWN_healer_round" },
+      { "run_eocs": "PF_TOWN_smithy" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TL_market",
+    "//": "Town lab: market day now (with 30 stores added).",
+    "effect": [ { "math": [ "pf_stores = value_or(pf_stores, 0) + 30" ] }, { "run_eocs": "PF_TOWN_market" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TL_stats2",
+    "effect": [
+      { "math": [ "pf_hs_a = value_or(pf_school_total, 0)" ] },
+      { "math": [ "pf_hs_b = value_or(pf_healed_total, 0)" ] },
+      { "math": [ "pf_hs_c = value_or(pf_smith_total, 0)" ] },
+      { "math": [ "pf_hs_d = value_or(pf_markets_total, 0)" ] },
+      { "math": [ "pf_hs_e = value_or(pf_stores, 0)" ] },
+      {
+        "u_message": "[town lab] school days <global_val:pf_hs_a>, treated <global_val:pf_hs_b>, smithy <global_val:pf_hs_c>, markets <global_val:pf_hs_d>, stores now <global_val:pf_hs_e>.",
+        "type": "info"
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TL_join",
+    "//": "Town lab: the nearest settled family decides to join now.",
+    "effect": [
+      { "math": [ "pf_tj_force = 1" ] },
+      { "math": [ "pf_tj_active = 0" ] },
+      { "math": [ "pf_tj_best = -1" ] },
+      { "math": [ "pf_town_appeal = 0" ] },
+      { "math": [ "pf_wi = 0" ] },
+      {
+        "run_eocs": "PF_TOWN_join_i",
+        "condition": { "math": [ "pf_wi < value_or(pf_band_n, 0)" ] },
+        "iterations": 1000
+      },
+      { "math": [ "pf_tj_force = 0" ] },
+      {
+        "if": { "math": [ "pf_tj_best >= 0" ] },
+        "then": [
+          { "u_run_npc_eocs": [ "PF_TOWN_join_go" ], "unique_ids": [ { "global_val": "pf_tj_lead" } ], "local": false },
+          {
+            "u_message": "[town lab] <global_val:pf_tj_name>'s family is on its way (they walk in like any band; they ask once they're within 25 tiles of home).",
+            "type": "info"
+          }
+        ],
+        "else": [
+          { "u_message": "[town lab] No settled family out there (World: a family settles in a house nearby).", "type": "info" }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TL_join_ask",
+    "//": "Town lab: the family on its way asks now, wherever they are.",
+    "effect": [
+      {
+        "if": { "math": [ "value_or(pf_tj_active, 0) == 1" ] },
+        "then": [ { "run_eocs": "PF_TOWN_ask" } ],
+        "else": [ { "u_message": "[town lab] No family is on its way (use the entry above first).", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TL_watch",
+    "//": "Town lab: tonight's watch goes up now (ignores the clock).",
+    "effect": [
+      { "math": [ "pf_wt_night = floor((time('now') - time('12 h')) / time('1 d'))" ] },
+      { "math": [ "pf_wt_phase = 0" ] },
+      { "run_eocs": "PF_TWATCH_post" },
+      {
+        "if": { "math": [ "pf_wt_phase == 9" ] },
+        "then": [
+          {
+            "u_message": "[town lab] Not enough grown-ups (3+) who live here and can stand a watch, within 60 tiles.",
+            "type": "info"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TL_watch_change",
+    "//": "Town lab: change of watch now.",
+    "effect": [
+      {
+        "if": { "math": [ "value_or(pf_wt_phase, 0) == 1" ] },
+        "then": [ { "run_eocs": "PF_TWATCH_change" } ],
+        "else": [ { "u_message": "[town lab] The first watch isn't up.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TL_watch_dawn",
+    "//": "Town lab: the watch comes in now.",
+    "effect": [
+      {
+        "if": { "or": [ { "math": [ "value_or(pf_wt_phase, 0) == 1" ] }, { "math": [ "value_or(pf_wt_phase, 0) == 2" ] } ] },
+        "then": [ { "run_eocs": "PF_TWATCH_dawn" } ],
+        "else": [ { "u_message": "[town lab] No watch is up.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TL_watch_spot",
+    "//": "Town lab: a zombie near someone on the watch.",
+    "effect": [
+      { "math": [ "pf_hl_got = 0" ] },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_TL_watcher_pos",
+            "condition": {
+              "and": [
+                {
+                  "and": [
+                    { "math": [ "value_or(u_pf_on_watch, 0) == 1" ] },
+                    {
+                      "math": [ "value_or(u_pf_watch_night, -1) == floor((time('now') - time('12 h')) / time('1 d'))" ]
+                    }
+                  ]
+                },
+                { "math": [ "pf_hl_got == 0" ] }
+              ]
+            },
+            "effect": [
+              { "math": [ "pf_hl_got = 1" ] },
+              { "u_location_variable": { "global_val": "pf_hl_wpos" } },
+              { "location_variable_adjust": { "global_val": "pf_hl_wpos" }, "x_adjust": 7 }
+            ]
+          }
+        ],
+        "local": true,
+        "npc_range": 60
+      },
+      {
+        "if": { "math": [ "pf_hl_got == 1" ] },
+        "then": [
+          {
+            "u_spawn_monster": "mon_zombie",
+            "real_count": 1,
+            "target_var": { "global_val": "pf_hl_wpos" },
+            "min_radius": 0,
+            "max_radius": 1
+          },
+          { "u_message": "[town lab] A zombie, 7 tiles east of a watcher.", "type": "info" }
+        ],
+        "else": [ { "u_message": "[town lab] Nobody is on a post.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TL_bring",
+    "//": "Town lab: the newest household is placed at its house (repair for a family that joined out of range before the fix).",
+    "effect": [
+      {
+        "if": { "math": [ "value_or(pf_households_n, 0) > 0" ] },
+        "then": [
+          { "u_run_npc_eocs": [ "PF_TOWN_bring_band" ], "unique_ids": [ { "global_val": "pf_tj_lead" } ], "local": false },
+          { "u_message": "[town lab] The newest household is at its house.", "type": "info" }
+        ],
+        "else": [ { "u_message": "[town lab] No family has joined yet.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TL_stats3",
+    "effect": [
+      { "run_eocs": "PF_TOWN_appeal" },
+      { "math": [ "pf_hs_a = 1 + value_or(pf_households_n, 0)" ] },
+      { "math": [ "pf_hs_b = value_or(pf_town_joins_total, 0)" ] },
+      { "math": [ "pf_hs_c = value_or(pf_wt_nights_total, 0)" ] },
+      { "math": [ "pf_hs_d = value_or(pf_wt_sightings_total, 0)" ] },
+      { "math": [ "pf_hs_e = pf_town_appeal" ] },
+      { "math": [ "pf_hs_f = value_or(pf_wt_phase, -1)" ] },
+      {
+        "u_message": "[town lab] households <global_val:pf_hs_a>, families joined <global_val:pf_hs_b>, nights watched <global_val:pf_hs_c>, sightings <global_val:pf_hs_d>, draw <global_val:pf_hs_e>, watch phase <global_val:pf_hs_f>.",
+        "type": "info"
+      }
+    ]
+  }
+]

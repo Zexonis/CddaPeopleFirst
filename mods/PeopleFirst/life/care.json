@@ -1,0 +1,245 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_CARE_on_effect",
+    "//": "Bottom-up signal: the avatar gains wet or cold.  A few minutes later, someone who cares may notice.",
+    "eoc_type": "EVENT",
+    "required_event": "character_gains_effect",
+    "condition": { "and": [ "u_is_avatar", { "compare_string": [ { "context_val": "effect" }, "wet", "cold" ] } ] },
+    "effect": [ { "run_eocs": "PF_CARE_check", "time_in_future": "3 minutes" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_CARE_check",
+    "//": "u = avatar.  Every nearby NPC weighs in from its own view of you; the one who cares most acts.  At most once every 2 hours.",
+    "condition": {
+      "and": [
+        { "or": [ { "u_has_effect": "wet" }, { "u_has_effect": "cold" } ] },
+        {
+          "or": [ { "math": [ "time_since(pf_care_last) < 0" ] }, { "math": [ "time_since(pf_care_last) > time('2 h')" ] } ]
+        }
+      ]
+    },
+    "effect": [
+      { "math": [ "pf_care_best = -1" ] },
+      { "u_run_npc_eocs": [ "PF_CARE_candidate" ], "local": true, "npc_range": 20 },
+      {
+        "if": { "math": [ "pf_care_best >= 0" ] },
+        "then": [
+          { "math": [ "pf_care_last = time('now')" ] },
+          { "u_location_variable": { "global_val": "pf_care_av" } },
+          {
+            "if": { "u_has_effect": "wet" },
+            "then": [ { "set_string_var": "wet", "target_var": { "global_val": "pf_care_why" } } ],
+            "else": [ { "set_string_var": "cold", "target_var": { "global_val": "pf_care_why" } } ]
+          },
+          { "run_eocs": "PF_CARE_give", "alpha_talker": { "global_val": "pf_care_who" } }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_CARE_candidate",
+    "//": "u = a nearby NPC.  Will they help?  Warmth, half of trust, +15 if a mother hen.  Needs 10: strangers don't, unless they're the mothering kind.",
+    "effect": [
+      { "run_eocs": "PF_ID_ensure" },
+      { "set_string_var": "AVATAR", "target_var": { "global_val": "pf_m_other" } },
+      { "run_eocs": "PF_VIEW_read" },
+      { "math": [ "_score = pf_read_w + (pf_read_t / 2)" ] },
+      { "if": { "u_has_trait": "PF_Q_MOTHER_HEN" }, "then": [ { "math": [ "_score += 15" ] } ] },
+      { "if": { "u_has_trait": "PF_T_SOCIABLE" }, "then": [ { "math": [ "_score += 3" ] } ] },
+      {
+        "if": { "and": [ { "math": [ "_score >= 10" ] }, { "math": [ "_score > pf_care_best" ] } ] },
+        "then": [ { "math": [ "pf_care_best = _score" ] }, { "u_set_talker": { "global_val": "pf_care_who" } } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_WOUND_tick",
+    "//": "Every 10 minutes: if you're hurt (torso at 80% or less, bleeding, or bitten) and it's calm (PF_THREAT_scan), the person who cares most comes and tends your wounds (once an hour at most).",
+    "recurrence": "10 minutes",
+    "global": true,
+    "condition": {
+      "and": [
+        {
+          "or": [
+            { "math": [ "u_hp('torso') <= u_hp_max('torso') * 0.8" ] },
+            { "math": [ "u_hp('head') <= u_hp_max('head') * 0.8" ] },
+            { "math": [ "u_hp('arm_l') <= u_hp_max('arm_l') * 0.8" ] },
+            { "math": [ "u_hp('arm_r') <= u_hp_max('arm_r') * 0.8" ] },
+            { "math": [ "u_hp('leg_l') <= u_hp_max('leg_l') * 0.8" ] },
+            { "math": [ "u_hp('leg_r') <= u_hp_max('leg_r') * 0.8" ] },
+            {
+              "or": [
+                { "u_has_effect": "bleed", "bodypart": "torso" },
+                { "u_has_effect": "bleed", "bodypart": "head" },
+                { "u_has_effect": "bleed", "bodypart": "eyes" },
+                { "u_has_effect": "bleed", "bodypart": "mouth" },
+                { "u_has_effect": "bleed", "bodypart": "arm_l" },
+                { "u_has_effect": "bleed", "bodypart": "arm_r" },
+                { "u_has_effect": "bleed", "bodypart": "hand_l" },
+                { "u_has_effect": "bleed", "bodypart": "hand_r" },
+                { "u_has_effect": "bleed", "bodypart": "leg_l" },
+                { "u_has_effect": "bleed", "bodypart": "leg_r" },
+                { "u_has_effect": "bleed", "bodypart": "foot_l" },
+                { "u_has_effect": "bleed", "bodypart": "foot_r" },
+                { "u_has_effect": "bite", "bodypart": "torso" },
+                { "u_has_effect": "bite", "bodypart": "head" },
+                { "u_has_effect": "bite", "bodypart": "eyes" },
+                { "u_has_effect": "bite", "bodypart": "mouth" },
+                { "u_has_effect": "bite", "bodypart": "arm_l" },
+                { "u_has_effect": "bite", "bodypart": "arm_r" },
+                { "u_has_effect": "bite", "bodypart": "hand_l" },
+                { "u_has_effect": "bite", "bodypart": "hand_r" },
+                { "u_has_effect": "bite", "bodypart": "leg_l" },
+                { "u_has_effect": "bite", "bodypart": "leg_r" },
+                { "u_has_effect": "bite", "bodypart": "foot_l" },
+                { "u_has_effect": "bite", "bodypart": "foot_r" },
+                { "u_has_effect": "bleed" },
+                { "u_has_effect": "bite" }
+              ]
+            }
+          ]
+        },
+        {
+          "or": [ { "math": [ "time_since(pf_wound_last) < 0" ] }, { "math": [ "time_since(pf_wound_last) > time('1 h')" ] } ]
+        }
+      ]
+    },
+    "effect": [
+      { "run_eocs": "PF_THREAT_scan", "alpha_talker": "avatar" },
+      {
+        "if": { "math": [ "pf_threat == 0" ] },
+        "then": [
+          { "math": [ "pf_care_best = -1" ] },
+          { "u_run_npc_eocs": [ "PF_CARE_candidate" ], "local": true, "npc_range": 20 },
+          {
+            "if": { "math": [ "pf_care_best >= 0" ] },
+            "then": [
+              { "math": [ "pf_wound_last = time('now')" ] },
+              { "u_location_variable": { "global_val": "pf_care_av" } },
+              { "run_eocs": "PF_WOUND_tend", "alpha_talker": { "global_val": "pf_care_who" } }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_WOUND_tend",
+    "//": "u = the carer.  Cleans and binds your wounds: stops bleeding, cleans bites, and a little healing.  Strength 70, so you both remember it.",
+    "effect": [
+      { "copy_var": { "global_val": "pf_care_av" }, "target_var": { "u_val": "pf_walk_to" } },
+      { "location_variable_adjust": { "u_val": "pf_walk_to" }, "x_adjust": 1 },
+      { "u_set_guard_pos": { "u_val": "pf_walk_to" } },
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+      { "run_eocs": "PF_WOUND_heal", "alpha_talker": "avatar" },
+      { "run_eocs": "PF_SAY", "alpha_talker": "avatar", "variables": { "line": "wounds" } },
+      { "math": [ "pf_m_str_in = 70" ] },
+      { "run_eocs": "PF_MK_care_given", "beta_talker": "avatar" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_DBG_tend",
+    "//": "Debug only (run from the debug menu, u = avatar): why nobody tends your wounds.  Reports each gate of PF_WOUND_tick.",
+    "effect": [
+      { "math": [ "pf_dbg_a = 0" ] },
+      {
+        "if": {
+          "or": [
+            { "math": [ "u_hp('torso') <= u_hp_max('torso') * 0.8" ] },
+            { "math": [ "u_hp('head') <= u_hp_max('head') * 0.8" ] },
+            { "math": [ "u_hp('arm_l') <= u_hp_max('arm_l') * 0.8" ] },
+            { "math": [ "u_hp('arm_r') <= u_hp_max('arm_r') * 0.8" ] },
+            { "math": [ "u_hp('leg_l') <= u_hp_max('leg_l') * 0.8" ] },
+            { "math": [ "u_hp('leg_r') <= u_hp_max('leg_r') * 0.8" ] },
+            {
+              "or": [
+                { "u_has_effect": "bleed", "bodypart": "torso" },
+                { "u_has_effect": "bleed", "bodypart": "head" },
+                { "u_has_effect": "bleed", "bodypart": "eyes" },
+                { "u_has_effect": "bleed", "bodypart": "mouth" },
+                { "u_has_effect": "bleed", "bodypart": "arm_l" },
+                { "u_has_effect": "bleed", "bodypart": "arm_r" },
+                { "u_has_effect": "bleed", "bodypart": "hand_l" },
+                { "u_has_effect": "bleed", "bodypart": "hand_r" },
+                { "u_has_effect": "bleed", "bodypart": "leg_l" },
+                { "u_has_effect": "bleed", "bodypart": "leg_r" },
+                { "u_has_effect": "bleed", "bodypart": "foot_l" },
+                { "u_has_effect": "bleed", "bodypart": "foot_r" },
+                { "u_has_effect": "bite", "bodypart": "torso" },
+                { "u_has_effect": "bite", "bodypart": "head" },
+                { "u_has_effect": "bite", "bodypart": "eyes" },
+                { "u_has_effect": "bite", "bodypart": "mouth" },
+                { "u_has_effect": "bite", "bodypart": "arm_l" },
+                { "u_has_effect": "bite", "bodypart": "arm_r" },
+                { "u_has_effect": "bite", "bodypart": "hand_l" },
+                { "u_has_effect": "bite", "bodypart": "hand_r" },
+                { "u_has_effect": "bite", "bodypart": "leg_l" },
+                { "u_has_effect": "bite", "bodypart": "leg_r" },
+                { "u_has_effect": "bite", "bodypart": "foot_l" },
+                { "u_has_effect": "bite", "bodypart": "foot_r" },
+                { "u_has_effect": "bleed" },
+                { "u_has_effect": "bite" }
+              ]
+            }
+          ]
+        },
+        "then": [ { "math": [ "pf_dbg_a = 1" ] } ]
+      },
+      { "math": [ "pf_dbg_b = time_since(pf_wound_last, 'unit': 'minutes')" ] },
+      { "run_eocs": "PF_THREAT_scan", "alpha_talker": "avatar" },
+      { "math": [ "pf_dbg_c = pf_threat" ] },
+      { "math": [ "pf_dbg_d = u_monsters_nearby('radius': 3)" ] },
+      { "math": [ "pf_dbg_e = u_characters_nearby('radius': 20, 'attitude': 'hostile')" ] },
+      { "math": [ "pf_care_best = -1" ] },
+      { "u_run_npc_eocs": [ "PF_CARE_candidate" ], "local": true, "npc_range": 20 },
+      {
+        "u_message": "[debug] tending: hurt <global_val:pf_dbg_a>, minutes since last <global_val:pf_dbg_b>, threat <global_val:pf_dbg_c> (within 3: <global_val:pf_dbg_d>, hostile people: <global_val:pf_dbg_e>), best carer score <global_val:pf_care_best>.",
+        "type": "info"
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_WOUND_heal",
+    "//": "u = avatar.  Cleaned and bound: bleeding and bites gone, a little back on every main part.",
+    "effect": [
+      { "u_lose_effect": [ "bleed", "bite" ], "target_part": "ALL" },
+      { "math": [ "u_hp('torso') = min(u_hp('torso') + 6, u_hp_max('torso'))" ] },
+      { "math": [ "u_hp('head') = min(u_hp('head') + 4, u_hp_max('head'))" ] },
+      { "math": [ "u_hp('arm_l') = min(u_hp('arm_l') + 4, u_hp_max('arm_l'))" ] },
+      { "math": [ "u_hp('arm_r') = min(u_hp('arm_r') + 4, u_hp_max('arm_r'))" ] },
+      { "math": [ "u_hp('leg_l') = min(u_hp('leg_l') + 4, u_hp_max('leg_l'))" ] },
+      { "math": [ "u_hp('leg_r') = min(u_hp('leg_r') + 4, u_hp_max('leg_r'))" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_CARE_give",
+    "//": "u = the carer.  Comes over, leaves hot tea at your feet, and the moment is reported (care_given: carer -> you).",
+    "effect": [
+      { "copy_var": { "global_val": "pf_care_av" }, "target_var": { "u_val": "pf_walk_to" } },
+      { "location_variable_adjust": { "u_val": "pf_walk_to" }, "x_adjust": 1 },
+      { "u_set_guard_pos": { "u_val": "pf_walk_to" } },
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+      { "run_eocs": "PF_GIVE_tea", "alpha_talker": "avatar" },
+      {
+        "if": { "u_has_trait": "PF_T_LONER" },
+        "then": [ { "run_eocs": "PF_SAY", "alpha_talker": "avatar", "variables": { "line": "care_loner" } } ],
+        "else": [
+          {
+            "if": { "compare_string": [ { "global_val": "pf_care_why" }, "wet" ] },
+            "then": [ { "run_eocs": "PF_SAY", "alpha_talker": "avatar", "variables": { "line": "care" } } ],
+            "else": [ { "run_eocs": "PF_SAY", "alpha_talker": "avatar", "variables": { "line": "care_cold" } } ]
+          }
+        ]
+      },
+      { "run_eocs": "PF_MK_care_given", "beta_talker": "avatar" }
+    ]
+  }
+]

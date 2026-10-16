@@ -1,0 +1,1462 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FIRE_tick",
+    "//": "Every 10 minutes from 19:00 to midnight, while you're awake (playtest 3: the evening went on, and spoke to you, while you slept), until tonight's evening has happened.  The evening is a state machine (pf_eve_state): 0 nothing yet, 1 seated, 2 broken up by trouble, 3 done.",
+    "recurrence": "10 minutes",
+    "global": true,
+    "condition": {
+      "and": [
+        { "math": [ "time_since('midnight', 'unit': 'hours') >= 19" ] },
+        { "math": [ "value_or(pf_eve_done_day, -1) != floor(time('now') / time('1 d'))" ] },
+        { "not": { "u_has_effect": "sleep" } }
+      ]
+    },
+    "effect": [ { "run_eocs": "PF_FIRE_look" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FIRE_look",
+    "//": "u = avatar.  New day: reset the evening.  Then, if a fire burns within 15 tiles, advance the evening.  Once people are seated, the evening goes on around the embers even if the fire has burned down (the natural playtest had them sitting by a dead fire all night).",
+    "effect": [
+      {
+        "if": { "math": [ "value_or(pf_eve_day, -1) != floor(time('now') / time('1 d'))" ] },
+        "then": [
+          { "math": [ "pf_eve_day = floor(time('now') / time('1 d'))" ] },
+          { "math": [ "pf_eve_state = 0" ] },
+          { "math": [ "pf_eve_fought = 0" ] }
+        ]
+      },
+      {
+        "u_location_variable": { "global_val": "pf_fire_loc" },
+        "field": "fd_fire",
+        "target_max_radius": 15,
+        "true_eocs": [ { "id": "PF_FIRE_found", "effect": [ { "math": [ "pf_eve_home = 0" ] }, { "run_eocs": "PF_FIRE_step" } ] } ],
+        "false_eocs": [
+          {
+            "id": "PF_FIRE_nofire",
+            "effect": [
+              {
+                "if": { "math": [ "value_or(pf_eve_state, 0) == 1" ] },
+                "then": [ { "run_eocs": "PF_FIRE_step" } ],
+                "else": [
+                  { "run_eocs": "PF_HOME_hearth" },
+                  {
+                    "if": { "math": [ "value_or(pf_eve_state, 0) == 0" ] },
+                    "then": [ { "run_eocs": "PF_FIRE_camp" } ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FIRE_camp",
+    "//": "u = avatar, an evening with no fire or home furniture near: if a band's leader is within 8 tiles, you spend the evening at their camp (seated around them).",
+    "effect": [
+      { "math": [ "pf_camp_found = 0" ] },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_FIRE_camp_lead",
+            "condition": { "and": [ { "math": [ "value_or(u_pf_is_leader, -1) == 1" ] }, { "math": [ "value_or(u_pf_resident, 0) == 0" ] } ] },
+            "effect": [
+              {
+                "if": { "math": [ "pf_camp_found == 0" ] },
+                "then": [
+                  { "math": [ "pf_camp_found = 1" ] },
+                  { "u_location_variable": { "global_val": "pf_fire_loc" } },
+                  { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_camp_name" }, "parse_tags": true }
+                ]
+              }
+            ]
+          }
+        ],
+        "local": true,
+        "npc_range": 8
+      },
+      {
+        "if": { "math": [ "pf_camp_found == 1" ] },
+        "then": [ { "run_eocs": "PF_FIRE_camp_fire" }, { "math": [ "pf_eve_home = 0" ] }, { "run_eocs": "PF_FIRE_step" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FIRE_camp_fire",
+    "//": "u = avatar.  pf_fire_loc = the band leader.  Lights the camp's fire and moves pf_fire_loc to it.",
+    "effect": [
+      { "math": [ "pf_camp_ok = 0" ] },
+      { "math": [ "pf_camp_new = 0" ] },
+      {
+        "u_location_variable": { "global_val": "pf_camp_ring" },
+        "furniture": "f_firering",
+        "target_max_radius": 10,
+        "true_eocs": [
+          {
+            "id": "PF_FIRE_camp_ring",
+            "effect": [
+              { "math": [ "pf_camp_ok = 2" ] },
+              {
+                "if": { "math": [ "characters_nearby('radius': 0, 'location': pf_camp_ring) == 0" ] },
+                "then": [
+                  { "copy_var": { "global_val": "pf_camp_ring" }, "target_var": { "global_val": "pf_fire_loc" } },
+                  { "math": [ "pf_camp_ok = 1" ] }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_camp_ok == 0" ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_fire_loc" }, "target_var": { "global_val": "pf_camp_try" } },
+          { "location_variable_adjust": { "global_val": "pf_camp_try" }, "x_adjust": 2, "y_adjust": 0 },
+          {
+            "if": {
+              "and": [
+                { "map_terrain_with_flag": "DIGGABLE", "loc": { "global_val": "pf_camp_try" } },
+                { "map_furniture_id": "f_null", "loc": { "global_val": "pf_camp_try" } },
+                { "math": [ "characters_nearby('radius': 1, 'location': pf_camp_try) == 0" ] }
+              ]
+            },
+            "then": [
+              { "u_transform_radius": 1, "ter_furn_transform": "PF_LL_clear_grass", "target_var": { "global_val": "pf_camp_try" } },
+              {
+                "u_transform_radius": 0,
+                "ter_furn_transform": "PF_LL_firering",
+                "target_var": { "global_val": "pf_camp_try" }
+              },
+              { "copy_var": { "global_val": "pf_camp_try" }, "target_var": { "global_val": "pf_fire_loc" } },
+              { "math": [ "pf_camp_ok = 1" ] },
+              { "math": [ "pf_camp_new = 1" ] }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_camp_ok == 0" ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_fire_loc" }, "target_var": { "global_val": "pf_camp_try" } },
+          { "location_variable_adjust": { "global_val": "pf_camp_try" }, "x_adjust": -2, "y_adjust": 0 },
+          {
+            "if": {
+              "and": [
+                { "map_terrain_with_flag": "DIGGABLE", "loc": { "global_val": "pf_camp_try" } },
+                { "map_furniture_id": "f_null", "loc": { "global_val": "pf_camp_try" } },
+                { "math": [ "characters_nearby('radius': 1, 'location': pf_camp_try) == 0" ] }
+              ]
+            },
+            "then": [
+              { "u_transform_radius": 1, "ter_furn_transform": "PF_LL_clear_grass", "target_var": { "global_val": "pf_camp_try" } },
+              {
+                "u_transform_radius": 0,
+                "ter_furn_transform": "PF_LL_firering",
+                "target_var": { "global_val": "pf_camp_try" }
+              },
+              { "copy_var": { "global_val": "pf_camp_try" }, "target_var": { "global_val": "pf_fire_loc" } },
+              { "math": [ "pf_camp_ok = 1" ] },
+              { "math": [ "pf_camp_new = 1" ] }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_camp_ok == 0" ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_fire_loc" }, "target_var": { "global_val": "pf_camp_try" } },
+          { "location_variable_adjust": { "global_val": "pf_camp_try" }, "x_adjust": 0, "y_adjust": 2 },
+          {
+            "if": {
+              "and": [
+                { "map_terrain_with_flag": "DIGGABLE", "loc": { "global_val": "pf_camp_try" } },
+                { "map_furniture_id": "f_null", "loc": { "global_val": "pf_camp_try" } },
+                { "math": [ "characters_nearby('radius': 1, 'location': pf_camp_try) == 0" ] }
+              ]
+            },
+            "then": [
+              { "u_transform_radius": 1, "ter_furn_transform": "PF_LL_clear_grass", "target_var": { "global_val": "pf_camp_try" } },
+              {
+                "u_transform_radius": 0,
+                "ter_furn_transform": "PF_LL_firering",
+                "target_var": { "global_val": "pf_camp_try" }
+              },
+              { "copy_var": { "global_val": "pf_camp_try" }, "target_var": { "global_val": "pf_fire_loc" } },
+              { "math": [ "pf_camp_ok = 1" ] },
+              { "math": [ "pf_camp_new = 1" ] }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_camp_ok == 0" ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_fire_loc" }, "target_var": { "global_val": "pf_camp_try" } },
+          { "location_variable_adjust": { "global_val": "pf_camp_try" }, "x_adjust": 0, "y_adjust": -2 },
+          {
+            "if": {
+              "and": [
+                { "map_terrain_with_flag": "DIGGABLE", "loc": { "global_val": "pf_camp_try" } },
+                { "map_furniture_id": "f_null", "loc": { "global_val": "pf_camp_try" } },
+                { "math": [ "characters_nearby('radius': 1, 'location': pf_camp_try) == 0" ] }
+              ]
+            },
+            "then": [
+              { "u_transform_radius": 1, "ter_furn_transform": "PF_LL_clear_grass", "target_var": { "global_val": "pf_camp_try" } },
+              {
+                "u_transform_radius": 0,
+                "ter_furn_transform": "PF_LL_firering",
+                "target_var": { "global_val": "pf_camp_try" }
+              },
+              { "copy_var": { "global_val": "pf_camp_try" }, "target_var": { "global_val": "pf_fire_loc" } },
+              { "math": [ "pf_camp_ok = 1" ] },
+              { "math": [ "pf_camp_new = 1" ] }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_camp_ok == 0" ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_fire_loc" }, "target_var": { "global_val": "pf_camp_try" } },
+          { "location_variable_adjust": { "global_val": "pf_camp_try" }, "x_adjust": 2, "y_adjust": 2 },
+          {
+            "if": {
+              "and": [
+                { "map_terrain_with_flag": "DIGGABLE", "loc": { "global_val": "pf_camp_try" } },
+                { "map_furniture_id": "f_null", "loc": { "global_val": "pf_camp_try" } },
+                { "math": [ "characters_nearby('radius': 1, 'location': pf_camp_try) == 0" ] }
+              ]
+            },
+            "then": [
+              { "u_transform_radius": 1, "ter_furn_transform": "PF_LL_clear_grass", "target_var": { "global_val": "pf_camp_try" } },
+              {
+                "u_transform_radius": 0,
+                "ter_furn_transform": "PF_LL_firering",
+                "target_var": { "global_val": "pf_camp_try" }
+              },
+              { "copy_var": { "global_val": "pf_camp_try" }, "target_var": { "global_val": "pf_fire_loc" } },
+              { "math": [ "pf_camp_ok = 1" ] },
+              { "math": [ "pf_camp_new = 1" ] }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_camp_ok == 0" ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_fire_loc" }, "target_var": { "global_val": "pf_camp_try" } },
+          { "location_variable_adjust": { "global_val": "pf_camp_try" }, "x_adjust": -2, "y_adjust": -2 },
+          {
+            "if": {
+              "and": [
+                { "map_terrain_with_flag": "DIGGABLE", "loc": { "global_val": "pf_camp_try" } },
+                { "map_furniture_id": "f_null", "loc": { "global_val": "pf_camp_try" } },
+                { "math": [ "characters_nearby('radius': 1, 'location': pf_camp_try) == 0" ] }
+              ]
+            },
+            "then": [
+              { "u_transform_radius": 1, "ter_furn_transform": "PF_LL_clear_grass", "target_var": { "global_val": "pf_camp_try" } },
+              {
+                "u_transform_radius": 0,
+                "ter_furn_transform": "PF_LL_firering",
+                "target_var": { "global_val": "pf_camp_try" }
+              },
+              { "copy_var": { "global_val": "pf_camp_try" }, "target_var": { "global_val": "pf_fire_loc" } },
+              { "math": [ "pf_camp_ok = 1" ] },
+              { "math": [ "pf_camp_new = 1" ] }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_camp_ok == 0" ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_fire_loc" }, "target_var": { "global_val": "pf_camp_try" } },
+          { "location_variable_adjust": { "global_val": "pf_camp_try" }, "x_adjust": 2, "y_adjust": -2 },
+          {
+            "if": {
+              "and": [
+                { "map_terrain_with_flag": "DIGGABLE", "loc": { "global_val": "pf_camp_try" } },
+                { "map_furniture_id": "f_null", "loc": { "global_val": "pf_camp_try" } },
+                { "math": [ "characters_nearby('radius': 1, 'location': pf_camp_try) == 0" ] }
+              ]
+            },
+            "then": [
+              { "u_transform_radius": 1, "ter_furn_transform": "PF_LL_clear_grass", "target_var": { "global_val": "pf_camp_try" } },
+              {
+                "u_transform_radius": 0,
+                "ter_furn_transform": "PF_LL_firering",
+                "target_var": { "global_val": "pf_camp_try" }
+              },
+              { "copy_var": { "global_val": "pf_camp_try" }, "target_var": { "global_val": "pf_fire_loc" } },
+              { "math": [ "pf_camp_ok = 1" ] },
+              { "math": [ "pf_camp_new = 1" ] }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_camp_ok == 0" ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_fire_loc" }, "target_var": { "global_val": "pf_camp_try" } },
+          { "location_variable_adjust": { "global_val": "pf_camp_try" }, "x_adjust": -2, "y_adjust": 2 },
+          {
+            "if": {
+              "and": [
+                { "map_terrain_with_flag": "DIGGABLE", "loc": { "global_val": "pf_camp_try" } },
+                { "map_furniture_id": "f_null", "loc": { "global_val": "pf_camp_try" } },
+                { "math": [ "characters_nearby('radius': 1, 'location': pf_camp_try) == 0" ] }
+              ]
+            },
+            "then": [
+              { "u_transform_radius": 1, "ter_furn_transform": "PF_LL_clear_grass", "target_var": { "global_val": "pf_camp_try" } },
+              {
+                "u_transform_radius": 0,
+                "ter_furn_transform": "PF_LL_firering",
+                "target_var": { "global_val": "pf_camp_try" }
+              },
+              { "copy_var": { "global_val": "pf_camp_try" }, "target_var": { "global_val": "pf_fire_loc" } },
+              { "math": [ "pf_camp_ok = 1" ] },
+              { "math": [ "pf_camp_new = 1" ] }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_camp_ok == 0" ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_fire_loc" }, "target_var": { "global_val": "pf_camp_try" } },
+          { "location_variable_adjust": { "global_val": "pf_camp_try" }, "x_adjust": 3, "y_adjust": 0 },
+          {
+            "if": {
+              "and": [
+                { "map_terrain_with_flag": "DIGGABLE", "loc": { "global_val": "pf_camp_try" } },
+                { "map_furniture_id": "f_null", "loc": { "global_val": "pf_camp_try" } },
+                { "math": [ "characters_nearby('radius': 1, 'location': pf_camp_try) == 0" ] }
+              ]
+            },
+            "then": [
+              { "u_transform_radius": 1, "ter_furn_transform": "PF_LL_clear_grass", "target_var": { "global_val": "pf_camp_try" } },
+              {
+                "u_transform_radius": 0,
+                "ter_furn_transform": "PF_LL_firering",
+                "target_var": { "global_val": "pf_camp_try" }
+              },
+              { "copy_var": { "global_val": "pf_camp_try" }, "target_var": { "global_val": "pf_fire_loc" } },
+              { "math": [ "pf_camp_ok = 1" ] },
+              { "math": [ "pf_camp_new = 1" ] }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_camp_ok == 0" ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_fire_loc" }, "target_var": { "global_val": "pf_camp_try" } },
+          { "location_variable_adjust": { "global_val": "pf_camp_try" }, "x_adjust": -3, "y_adjust": 0 },
+          {
+            "if": {
+              "and": [
+                { "map_terrain_with_flag": "DIGGABLE", "loc": { "global_val": "pf_camp_try" } },
+                { "map_furniture_id": "f_null", "loc": { "global_val": "pf_camp_try" } },
+                { "math": [ "characters_nearby('radius': 1, 'location': pf_camp_try) == 0" ] }
+              ]
+            },
+            "then": [
+              { "u_transform_radius": 1, "ter_furn_transform": "PF_LL_clear_grass", "target_var": { "global_val": "pf_camp_try" } },
+              {
+                "u_transform_radius": 0,
+                "ter_furn_transform": "PF_LL_firering",
+                "target_var": { "global_val": "pf_camp_try" }
+              },
+              { "copy_var": { "global_val": "pf_camp_try" }, "target_var": { "global_val": "pf_fire_loc" } },
+              { "math": [ "pf_camp_ok = 1" ] },
+              { "math": [ "pf_camp_new = 1" ] }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_camp_ok == 0" ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_fire_loc" }, "target_var": { "global_val": "pf_camp_try" } },
+          { "location_variable_adjust": { "global_val": "pf_camp_try" }, "x_adjust": 0, "y_adjust": 3 },
+          {
+            "if": {
+              "and": [
+                { "map_terrain_with_flag": "DIGGABLE", "loc": { "global_val": "pf_camp_try" } },
+                { "map_furniture_id": "f_null", "loc": { "global_val": "pf_camp_try" } },
+                { "math": [ "characters_nearby('radius': 1, 'location': pf_camp_try) == 0" ] }
+              ]
+            },
+            "then": [
+              { "u_transform_radius": 1, "ter_furn_transform": "PF_LL_clear_grass", "target_var": { "global_val": "pf_camp_try" } },
+              {
+                "u_transform_radius": 0,
+                "ter_furn_transform": "PF_LL_firering",
+                "target_var": { "global_val": "pf_camp_try" }
+              },
+              { "copy_var": { "global_val": "pf_camp_try" }, "target_var": { "global_val": "pf_fire_loc" } },
+              { "math": [ "pf_camp_ok = 1" ] },
+              { "math": [ "pf_camp_new = 1" ] }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_camp_ok == 0" ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_fire_loc" }, "target_var": { "global_val": "pf_camp_try" } },
+          { "location_variable_adjust": { "global_val": "pf_camp_try" }, "x_adjust": 0, "y_adjust": -3 },
+          {
+            "if": {
+              "and": [
+                { "map_terrain_with_flag": "DIGGABLE", "loc": { "global_val": "pf_camp_try" } },
+                { "map_furniture_id": "f_null", "loc": { "global_val": "pf_camp_try" } },
+                { "math": [ "characters_nearby('radius': 1, 'location': pf_camp_try) == 0" ] }
+              ]
+            },
+            "then": [
+              { "u_transform_radius": 1, "ter_furn_transform": "PF_LL_clear_grass", "target_var": { "global_val": "pf_camp_try" } },
+              {
+                "u_transform_radius": 0,
+                "ter_furn_transform": "PF_LL_firering",
+                "target_var": { "global_val": "pf_camp_try" }
+              },
+              { "copy_var": { "global_val": "pf_camp_try" }, "target_var": { "global_val": "pf_fire_loc" } },
+              { "math": [ "pf_camp_ok = 1" ] },
+              { "math": [ "pf_camp_new = 1" ] }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_camp_ok == 1" ] },
+        "then": [
+          { "map_spawn_item": "log", "loc": { "global_val": "pf_fire_loc" } },
+          {
+            "u_set_field": "fd_fire",
+            "radius": 0,
+            "intensity": 1,
+            "age": "0 seconds",
+            "hit_player": false,
+            "target_var": { "global_val": "pf_fire_loc" }
+          },
+          {
+            "if": { "math": [ "pf_camp_new == 1" ] },
+            "then": [
+              {
+                "u_message": "<global_val:pf_camp_name> scrapes a ring in the dirt, sets stones around it and gets a fire going.",
+                "type": "info"
+              }
+            ],
+            "else": [ { "u_message": "<global_val:pf_camp_name> gets the fire going again in the old ring.", "type": "info" } ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FIRE_step",
+    "//": "u = avatar.  Trouble: if people are seated, they scatter (fights matter more than seats).  Calm: people sit down (or come back after a fight), and 20-30 minutes after sitting down the evening happens, if anyone is actually at the fire (else they're seated again).  So danger interrupts the evening instead of cancelling it, and a zombie stuck behind a wall doesn't stop it.",
+    "effect": [
+      { "run_eocs": "PF_THREAT_scan", "alpha_talker": "avatar" },
+      {
+        "if": { "math": [ "pf_threat > 0" ] },
+        "then": [
+          {
+            "if": { "math": [ "pf_eve_state == 1" ] },
+            "then": [ { "run_eocs": "PF_FIRE_scatter" } ],
+            "else": [
+              {
+                "if": {
+                  "math": [
+                    "(time_since('midnight', 'unit': 'hours') >= 21) * (pf_eve_state != 3) * (time('now') - value_or(pf_eve_hit_t, 0) >= time('30 m'))"
+                  ]
+                },
+                "then": [ { "run_eocs": "PF_FIRE_tense" } ]
+              }
+            ]
+          }
+        ],
+        "else": [
+          {
+            "if": { "and": [ { "math": [ "pf_eve_state != 1" ] }, { "math": [ "pf_eve_state < 3" ] } ] },
+            "then": [ { "run_eocs": "PF_FIRE_gather" } ],
+            "else": [
+              {
+                "if": { "and": [ { "math": [ "pf_eve_state == 1" ] }, { "math": [ "time_since(pf_eve_seat_t) >= time('20 m')" ] } ] },
+                "then": [
+                  { "math": [ "pf_fc_n = 0" ] },
+                  {
+                    "u_run_npc_eocs": [
+                      {
+                        "id": "PF_FIRE_count_one",
+                        "condition": { "math": [ "value_or(u_pf_fire_seated, -1) == pf_eve_day" ] },
+                        "effect": [
+                          { "u_location_variable": { "u_val": "pf_pos" } },
+                          {
+                            "if": { "math": [ "distance(u_pf_pos, pf_fire_loc) <= 10" ] },
+                            "then": [ { "math": [ "pf_fc_n += 1" ] } ]
+                          }
+                        ]
+                      }
+                    ],
+                    "local": true,
+                    "npc_range": 40
+                  },
+                  {
+                    "if": { "math": [ "pf_fc_n == 0" ] },
+                    "then": [ { "math": [ "pf_eve_state = 0" ] } ],
+                    "else": [ { "run_eocs": "PF_FIRE_beat" }, { "math": [ "pf_eve_state = 3" ] }, { "math": [ "pf_eve_done_day = pf_eve_day" ] } ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FIRE_gather",
+    "//": "u = avatar.  Up to 6 nearby people walk to seats around the fire (loners sit farther out).",
+    "effect": [
+      { "math": [ "pf_fire_n = 0" ] },
+      { "math": [ "pf_fire_recalled = 0" ] },
+      { "math": [ "pf_rc_kids = 0" ] },
+      { "u_run_npc_eocs": [ "PF_FIRE_join" ], "local": true, "npc_range": 30 },
+      { "math": [ "pf_rc_kids = 1" ] },
+      { "u_run_npc_eocs": [ "PF_FIRE_join" ], "local": true, "npc_range": 30 },
+      {
+        "if": { "math": [ "pf_fire_n > 0" ] },
+        "then": [
+          {
+            "if": { "math": [ "pf_eve_state == 2" ] },
+            "then": [
+              {
+                "if": { "math": [ "value_or(pf_eve_back_day, -1) != pf_eve_day" ] },
+                "then": [
+                  { "math": [ "pf_eve_back_day = pf_eve_day" ] },
+                  {
+                    "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+                    "then": [ { "u_message": "With the dead quiet again, people drift back inside.", "type": "info" } ],
+                    "else": [ { "u_message": "With the dead quiet again, people drift back to the fire.", "type": "info" } ]
+                  }
+                ]
+              }
+            ],
+            "else": [
+              {
+                "if": { "math": [ "value_or(pf_eve_drift_day, -1) != pf_eve_day" ] },
+                "then": [
+                  { "math": [ "pf_eve_drift_day = pf_eve_day" ] },
+                  {
+                    "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+                    "then": [ { "u_message": "As evening settles, people drift in and pull up chairs.", "type": "info" } ],
+                    "else": [ { "u_message": "As evening settles, people drift toward the fire.", "type": "info" } ]
+                  }
+                ]
+              }
+            ]
+          },
+          { "math": [ "pf_eve_state = 1" ] },
+          { "math": [ "pf_eve_seat_t = time('now')" ] }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FIRE_tense",
+    "//": "u = avatar.  The evening the dead won't leave (concept 15.4): no seats; a line; shared danger (35) between you and the grown-ups near you; it counts as tonight's evening.",
+    "effect": [
+      { "math": [ "pf_ft_n = 0" ] },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_FIRE_tense_one",
+            "condition": {
+              "and": [
+                { "math": [ "has_var(u_pf_uid)" ] },
+                { "not": { "u_has_trait": "PF_CHILD" } },
+                { "not": { "u_has_effect": "sleep" } }
+              ]
+            },
+            "effect": [
+              { "math": [ "pf_ft_n += 1" ] },
+              { "math": [ "pf_m_str_in = 35" ] },
+              { "run_eocs": "PF_MK_shared_danger", "beta_talker": "avatar" }
+            ]
+          }
+        ],
+        "local": true,
+        "npc_range": 15
+      },
+      {
+        "if": { "math": [ "pf_ft_n > 0" ] },
+        "then": [
+          { "math": [ "_t = rand(2)" ] },
+          { "if": { "math": [ "_t == value_or(pf_ft_last, -1)" ] }, "then": [ { "math": [ "_t = (_t + 1) % 3" ] } ] },
+          { "math": [ "pf_ft_last = _t" ] },
+          {
+            "if": { "math": [ "value_or(pf_set_chatter, 1) == 1" ] },
+            "then": [
+              {
+                "if": { "math": [ "_t == 0" ] },
+                "then": [
+                  {
+                    "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+                    "then": [
+                      {
+                        "u_message": "Nobody sits down properly tonight.  People eat standing up, away from the windows, talking in whispers, and somebody tells a joke anyway.",
+                        "type": "info"
+                      }
+                    ],
+                    "else": [
+                      {
+                        "u_message": "Nobody sits down properly tonight.  People eat standing up, backs to the fire, talking in whispers, and somebody tells a joke anyway.",
+                        "type": "info"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "if": { "math": [ "_t == 1" ] },
+                "then": [
+                  {
+                    "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+                    "then": [
+                      {
+                        "u_message": "The lamp is kept low and the door stays barred.  It's not much of an evening.  It's still an evening.",
+                        "type": "info"
+                      }
+                    ],
+                    "else": [
+                      {
+                        "u_message": "The fire is kept low, and nobody strays out of its light.  It's not much of an evening.  It's still an evening.",
+                        "type": "info"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "if": { "math": [ "_t == 2" ] },
+                "then": [
+                  {
+                    "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+                    "then": [
+                      {
+                        "u_message": "Out there the dead keep at it.  In here, someone hums, someone else picks it up, and for a while that's louder.",
+                        "type": "info"
+                      }
+                    ],
+                    "else": [
+                      {
+                        "u_message": "Out there the dead keep at it.  Here, someone hums, someone else picks it up, and for a while that's louder.",
+                        "type": "info"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          { "math": [ "pf_eve_state = 3" ] },
+          { "math": [ "pf_eve_done_day = pf_eve_day" ] },
+          { "math": [ "pf_eve_tense_total = value_or(pf_eve_tense_total, 0) + 1" ] }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FIRE_hit_mark",
+    "//": "Someone of ours (or you) was hit: the tense evening waits half an hour after the last blow.",
+    "eoc_type": "EVENT",
+    "required_event": "character_takes_damage",
+    "condition": {
+      "and": [
+        "has_beta",
+        { "or": [ "u_is_avatar", { "math": [ "has_var(u_pf_uid)" ] } ] },
+        { "math": [ "time_since('midnight', 'unit': 'hours') >= 19" ] }
+      ]
+    },
+    "effect": [ { "math": [ "pf_eve_hit_t = time('now')" ] } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FIRE_scatter",
+    "//": "u = avatar.  Cancels everyone's walk order to their seat so they fight instead.  The evening resumes once it's calm (state 2).",
+    "effect": [
+      { "math": [ "pf_eve_state = 2" ] },
+      { "math": [ "pf_eve_fought = 1" ] },
+      { "u_run_npc_eocs": [ "PF_FIRE_unseat" ], "local": true, "npc_range": 40 },
+      {
+        "if": { "math": [ "value_or(pf_eve_sc_day, -1) != value_or(pf_eve_day, -2)" ] },
+        "then": [
+          { "math": [ "pf_eve_sc_day = value_or(pf_eve_day, -2)" ] },
+          {
+            "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+            "then": [ { "u_message": "Trouble.  Chairs scrape back as people reach for their weapons.", "type": "bad" } ],
+            "else": [ { "u_message": "Trouble.  The fire is forgotten as people reach for their weapons.", "type": "bad" } ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FIRE_unseat",
+    "//": "u = someone who was walking to a seat.  A walk order to where they already stand is dropped at once.",
+    "condition": { "math": [ "value_or(u_pf_fire_seated, -1) == pf_eve_day" ] },
+    "effect": [ { "u_location_variable": { "u_val": "pf_pos" } }, { "u_set_guard_pos": { "u_val": "pf_pos" } } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FIRE_hit",
+    "//": "Fast path: someone is hit by an attacker while people are walking to their seats.  Don't wait for the 10-minute tick.",
+    "eoc_type": "EVENT",
+    "required_event": "character_takes_damage",
+    "condition": { "and": [ { "math": [ "value_or(pf_eve_state, 0) == 1" ] }, "has_beta", { "or": [ "u_is_avatar", "u_is_npc" ] } ] },
+    "effect": [ { "run_eocs": "PF_FIRE_scatter", "alpha_talker": "avatar" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FIRE_beat",
+    "//": "u = avatar, 20-30 minutes after people sat down.  Everyone at the fire shares a fire_evening moment with everyone else (or bickers, if tension is high); up to three of them do something that fits their temperament; if you're at the fire you share the evening too, and someone may bring up a memory.  After a fight, it opens with the bottle line.  It starts with a fresh roll call (never trust a character id from earlier: running an EOC on someone who has since left the bubble crashes the game).",
+    "effect": [
+      { "run_eocs": "PF_ID_ensure" },
+      { "math": [ "pf_beat_id = value_or(pf_beat_id, 0) + 1" ] },
+      { "math": [ "pf_fire_n = 0" ] },
+      { "math": [ "pf_fire_recalled = 0" ] },
+      { "math": [ "pf_rc_kids = 0" ] },
+      { "u_run_npc_eocs": [ "PF_FIRE_rollcall" ], "local": true, "npc_range": 40 },
+      { "math": [ "pf_rc_kids = 1" ] },
+      { "u_run_npc_eocs": [ "PF_FIRE_rollcall" ], "local": true, "npc_range": 40 },
+      { "u_location_variable": { "global_val": "pf_fire_av" } },
+      { "math": [ "pf_fire_service = 0" ] },
+      { "math": [ "pf_fire_wedding = 0" ] },
+      { "run_eocs": "PF_HEART_service" },
+      { "run_eocs": "PF_HEART_wedding_try" },
+      { "math": [ "pf_fire_av_here = distance(pf_fire_av, pf_fire_loc) <= 8" ] },
+      {
+        "if": { "and": [ { "math": [ "pf_fire_n > 0" ] }, { "math": [ "value_or(pf_eve_fought, 0) == 1" ] } ] },
+        "then": [
+          {
+            "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+            "then": [
+              {
+                "u_message": "Nobody talks much about the fight.  A bottle goes around instead, and the room feels warmer for it.",
+                "type": "good"
+              }
+            ],
+            "else": [
+              {
+                "u_message": "Nobody talks much about the fight.  A bottle goes around instead, and the fire feels warmer for it.",
+                "type": "good"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_fire_n > 0" ] },
+            { "math": [ "pf_fire_av_here" ] },
+            { "math": [ "value_or(pf_eve_fought, 0) == 0" ] },
+            { "math": [ "pf_fire_service == 0" ] }
+          ]
+        },
+        "then": [ { "run_eocs": "PF_RK_retell" } ]
+      },
+      {
+        "if": { "and": [ { "math": [ "pf_fire_n > 0" ] }, { "math": [ "pf_fire_av_here" ] } ] },
+        "then": [ { "run_eocs": "PF_TOWN_feast" } ]
+      },
+      { "math": [ "pf_eve_fought = 0" ] },
+      { "math": [ "pf_fi = 0" ] },
+      { "run_eocs": "PF_FIRE_pairs_from_i", "condition": { "math": [ "pf_fi < pf_fire_n" ] }, "iterations": 10 },
+      { "math": [ "pf_fi = 0" ] },
+      { "math": [ "pf_fire_acts = (pf_fire_service + pf_fire_wedding > 0) * 3" ] },
+      { "math": [ "pf_fire_off = pf_fire_n > 1 ? rand(pf_fire_n - 1) : 0" ] },
+      {
+        "run_eocs": "PF_FIRE_activity_i",
+        "condition": { "and": [ { "math": [ "pf_fi < pf_fire_n" ] }, { "math": [ "pf_fire_acts < 3" ] } ] },
+        "iterations": 10
+      },
+      { "math": [ "pf_fi = 0" ] },
+      { "math": [ "pf_rom_done = 0" ] },
+      {
+        "if": { "and": [ { "math": [ "value_or(pf_set_romance, 2) >= 1" ] }, { "math": [ "pf_fire_service == 0" ] } ] },
+        "then": [
+          { "run_eocs": "PF_HEART_fire" },
+          { "math": [ "pf_fi = 0" ] },
+          {
+            "run_eocs": "PF_ROM_fire_i",
+            "condition": { "and": [ { "math": [ "pf_fi < pf_fire_n" ] }, { "math": [ "pf_rom_done < 2" ] } ] },
+            "iterations": 10
+          }
+        ]
+      },
+      { "run_eocs": "PF_HEART_anniv" },
+      { "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] }, "then": [ { "run_eocs": "PF_HOME_beat_extra" } ] },
+      { "math": [ "pf_fi = 0" ] },
+      { "math": [ "pf_fire_mourned = 0" ] },
+      {
+        "run_eocs": "PF_GRIEF_recall_i",
+        "condition": { "and": [ { "math": [ "pf_fi < pf_fire_n" ] }, { "math": [ "pf_fire_mourned == 0" ] } ] },
+        "iterations": 10
+      },
+      {
+        "if": { "math": [ "pf_fire_av_here" ] },
+        "then": [
+          { "math": [ "pf_fi = 0" ] },
+          { "run_eocs": "PF_FIRE_with_avatar_i", "condition": { "math": [ "pf_fi < pf_fire_n" ] }, "iterations": 10 },
+          { "math": [ "pf_fi = 0" ] },
+          {
+            "run_eocs": "PF_FIRE_recall_i",
+            "condition": { "and": [ { "math": [ "pf_fi < pf_fire_n" ] }, { "math": [ "pf_fire_recalled == 0" ] } ] },
+            "iterations": 10
+          },
+          { "run_eocs": "PF_HOME_rumor_try" }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FIRE_rollcall",
+    "//": "u = a loaded NPC who sat down tonight.  Counts only if still within 10 tiles of the fire.",
+    "condition": {
+      "and": [
+        { "math": [ "pf_fire_n < 6" ] },
+        { "math": [ "value_or(u_pf_fire_seated, -1) == pf_eve_day" ] },
+        { "not": { "u_has_effect": "PF_infant" } },
+        { "math": [ "u_has_trait('PF_CHILD') == value_or(pf_rc_kids, 0)" ] }
+      ]
+    },
+    "effect": [
+      { "u_location_variable": { "u_val": "pf_pos" } },
+      {
+        "if": { "math": [ "distance(u_pf_pos, pf_fire_loc) <= 10" ] },
+        "then": [
+          { "run_eocs": "PF_ID_ensure" },
+          {
+            "set_string_var": "pf_fire_u_<global_val:pf_fire_n>",
+            "target_var": { "context_val": "uref" },
+            "parse_tags": true
+          },
+          { "copy_var": { "u_val": "pf_uid" }, "target_var": { "var_val": "uref" } },
+          {
+            "set_string_var": "pf_fire_c_<global_val:pf_fire_n>",
+            "target_var": { "context_val": "ref" },
+            "parse_tags": true
+          },
+          { "u_set_talker": { "var_val": "ref" } },
+          { "math": [ "pf_fire_n += 1" ] }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FIRE_activity_i",
+    "effect": [
+      { "math": [ "pf_fa_k = (pf_fi + value_or(pf_fire_off, 0)) % pf_fire_n" ] },
+      {
+        "set_string_var": "pf_fire_c_<global_val:pf_fa_k>",
+        "target_var": { "context_val": "ri" },
+        "parse_tags": true
+      },
+      { "run_eocs": "PF_FIRE_activity_do", "alpha_talker": { "var_val": "ri" } },
+      { "math": [ "pf_fi += 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FIRE_activity_do",
+    "//": "u = someone at the fire.  Parallel play (story 3): what they do comes from who they are.",
+    "effect": [
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+      { "set_string_var": "act_quiet", "target_var": { "global_val": "pf_act" } },
+      {
+        "if": { "u_has_trait": "PF_Q_PROUD" },
+        "then": [ { "set_string_var": "act_proud", "target_var": { "global_val": "pf_act" } } ]
+      },
+      {
+        "if": { "u_has_trait": "PF_Q_GALLOWS" },
+        "then": [ { "set_string_var": "act_joke", "target_var": { "global_val": "pf_act" } } ]
+      },
+      {
+        "if": { "u_has_trait": "PF_Q_MOTHER_HEN" },
+        "then": [ { "set_string_var": "act_cook", "target_var": { "global_val": "pf_act" } } ]
+      },
+      {
+        "if": { "u_has_trait": "PF_T_LONER" },
+        "then": [ { "set_string_var": "act_whittle", "target_var": { "global_val": "pf_act" } } ]
+      },
+      {
+        "if": { "u_has_trait": "PF_T_SOCIABLE" },
+        "then": [ { "set_string_var": "act_story", "target_var": { "global_val": "pf_act" } } ]
+      },
+      {
+        "if": { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "rand(2) == 0" ] } ] },
+        "then": [
+          { "math": [ "_v = rand(4)" ] },
+          {
+            "if": { "math": [ "_v == 0" ] },
+            "then": [ { "set_string_var": "act_quiet", "target_var": { "global_val": "pf_act" } } ]
+          },
+          {
+            "if": { "math": [ "_v == 1" ] },
+            "then": [ { "set_string_var": "act_story", "target_var": { "global_val": "pf_act" } } ]
+          },
+          {
+            "if": { "math": [ "_v == 2" ] },
+            "then": [ { "set_string_var": "act_joke", "target_var": { "global_val": "pf_act" } } ]
+          },
+          {
+            "if": { "math": [ "_v == 3" ] },
+            "then": [ { "set_string_var": "act_whittle", "target_var": { "global_val": "pf_act" } } ]
+          },
+          {
+            "if": { "math": [ "_v == 4" ] },
+            "then": [ { "set_string_var": "act_cook", "target_var": { "global_val": "pf_act" } } ]
+          }
+        ]
+      },
+      {
+        "if": { "u_has_trait": "PF_CHILD" },
+        "then": [ { "set_string_var": "act_child", "target_var": { "global_val": "pf_act" } } ]
+      },
+      {
+        "if": { "math": [ "value_or(pf_keep_force, 0) == 1" ] },
+        "then": [ { "set_string_var": "act_whittle", "target_var": { "global_val": "pf_act" } } ]
+      },
+      { "run_eocs": "PF_HOME_prop_act" },
+      {
+        "if": {
+          "and": [ { "math": [ "time('now') < value_or(u_pf_mourn_until, 0)" ] }, { "math": [ "value_or(pf_prop_force, 0) == 0" ] } ]
+        },
+        "then": [ { "set_string_var": "act_mourn", "target_var": { "global_val": "pf_act" } } ]
+      },
+      {
+        "if": { "math": [ "value_or(pf_set_chatter, 1) == 1" ] },
+        "then": [ { "run_eocs": "PF_SAY_act", "alpha_talker": "avatar" } ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_act" }, "act_whittle" ] },
+        "then": [ { "run_eocs": "PF_KEEPSAKE_try" } ]
+      },
+      { "math": [ "pf_fire_acts += 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KEEPSAKE_try",
+    "//": "u = someone whittling at the fire.  About one evening in three, if they're warm toward you (15+) and you're at the fire, the carving is for you: a keepsake at your feet, and a gift moment strong enough to remember.",
+    "effect": [
+      { "run_eocs": "PF_ID_ensure" },
+      { "set_string_var": "AVATAR", "target_var": { "global_val": "pf_m_other" } },
+      { "run_eocs": "PF_VIEW_read" },
+      {
+        "if": {
+          "or": [
+            { "math": [ "value_or(pf_keep_force, 0) == 1" ] },
+            {
+              "and": [
+                { "math": [ "pf_fire_av_here" ] },
+                { "math": [ "pf_read_w >= 15" ] },
+                { "math": [ "rand(2) == 0" ] },
+                { "math": [ "time('now') - value_or(pf_keep_last_t, -999999) >= time('5 d')" ] }
+              ]
+            }
+          ]
+        },
+        "then": [
+          { "math": [ "pf_keep_force = 0" ] },
+          { "math": [ "pf_keep_last_t = time('now')" ] },
+          { "run_eocs": "PF_GIVE_keepsake", "alpha_talker": "avatar" },
+          { "math": [ "_k = rand(2)" ] },
+          {
+            "if": { "math": [ "_k == value_or(pf_keep_line_last, -1)" ] },
+            "then": [ { "math": [ "_k = (_k + 1) % 3" ] } ]
+          },
+          { "math": [ "pf_keep_line_last = _k" ] },
+          {
+            "if": { "math": [ "_k == 0" ] },
+            "then": [ { "run_eocs": "PF_SAY", "alpha_talker": "avatar", "variables": { "line": "keepsake" } } ]
+          },
+          {
+            "if": { "math": [ "_k == 1" ] },
+            "then": [ { "run_eocs": "PF_SAY", "alpha_talker": "avatar", "variables": { "line": "keepsake_1" } } ]
+          },
+          {
+            "if": { "math": [ "_k == 2" ] },
+            "then": [ { "run_eocs": "PF_SAY", "alpha_talker": "avatar", "variables": { "line": "keepsake_2" } } ]
+          },
+          { "math": [ "pf_m_str_in = 55" ] },
+          { "run_eocs": "PF_MK_gift", "beta_talker": "avatar" }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FIRE_join",
+    "//": "u = a nearby NPC.  Takes a seat (u_set_guard_pos is a walk order) and records its character id in pf_fire_c_<n>.  Grown-ups are seated first (pass pf_rc_kids = 0), then children.",
+    "condition": { "and": [ { "math": [ "pf_fire_n < 6" ] }, { "math": [ "u_has_trait('PF_CHILD') == value_or(pf_rc_kids, 0)" ] } ] },
+    "effect": [
+      { "run_eocs": "PF_ID_ensure" },
+      {
+        "set_string_var": "pf_fire_c_<global_val:pf_fire_n>",
+        "target_var": { "context_val": "ref" },
+        "parse_tags": true
+      },
+      { "u_set_talker": { "var_val": "ref" } },
+      {
+        "math": [
+          "_sx = (pf_fire_n == 0) * -2 + (pf_fire_n == 1) * 2 + (pf_fire_n == 2) * 0 + (pf_fire_n == 3) * -2 + (pf_fire_n == 4) * 2 + (pf_fire_n == 5) * 0"
+        ]
+      },
+      {
+        "math": [
+          "_sy = (pf_fire_n == 0) * 0 + (pf_fire_n == 1) * 0 + (pf_fire_n == 2) * 2 + (pf_fire_n == 3) * 2 + (pf_fire_n == 4) * 2 + (pf_fire_n == 5) * -2"
+        ]
+      },
+      {
+        "if": { "and": [ { "u_has_trait": "PF_T_LONER" }, { "math": [ "value_or(pf_eve_home, 0) == 0" ] } ] },
+        "then": [ { "math": [ "_sx *= 2" ] }, { "math": [ "_sy *= 2" ] }, { "math": [ "_sy += 1" ] } ]
+      },
+      { "copy_var": { "global_val": "pf_fire_loc" }, "target_var": { "u_val": "pf_walk_to" } },
+      {
+        "location_variable_adjust": { "u_val": "pf_walk_to" },
+        "x_adjust": { "math": [ "_sx" ] },
+        "y_adjust": { "math": [ "_sy" ] }
+      },
+      { "u_set_guard_pos": { "u_val": "pf_walk_to" } },
+      { "math": [ "u_pf_fire_seated = pf_eve_day" ] },
+      { "math": [ "pf_fire_n += 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FIRE_pairs_from_i",
+    "effect": [
+      { "math": [ "pf_fj = pf_fi + 1" ] },
+      { "run_eocs": "PF_FIRE_pair_ij", "condition": { "math": [ "pf_fj < pf_fire_n" ] }, "iterations": 10 },
+      { "math": [ "pf_fi += 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FIRE_pair_ij",
+    "effect": [
+      { "set_string_var": "pf_fire_c_<global_val:pf_fi>", "target_var": { "context_val": "ri" }, "parse_tags": true },
+      { "set_string_var": "pf_fire_c_<global_val:pf_fj>", "target_var": { "context_val": "rj" }, "parse_tags": true },
+      { "run_eocs": "PF_FIRE_pair_do", "alpha_talker": { "var_val": "ri" }, "beta_talker": { "var_val": "rj" } },
+      { "math": [ "pf_fj += 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FIRE_pair_do",
+    "//": "Alpha and beta = two people at the fire.  Friction reads tension: past 25 they bicker (which keeps tension alive) instead of warming to each other.",
+    "effect": [
+      { "run_eocs": "PF_ID_ensure" },
+      { "run_eocs": "PF_ID_ensure", "alpha_talker": "npc" },
+      { "copy_var": { "npc_val": "pf_uid" }, "target_var": { "global_val": "pf_m_other" } },
+      { "run_eocs": "PF_VIEW_read" },
+      {
+        "if": { "math": [ "pf_read_x >= 25" ] },
+        "then": [
+          { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+          { "set_string_var": "<npc_name>", "target_var": { "global_val": "pf_say_b" }, "parse_tags": true },
+          { "run_eocs": "PF_SAY", "alpha_talker": "avatar", "variables": { "line": "bicker" } },
+          { "run_eocs": "PF_MK_bicker" }
+        ],
+        "else": [
+          {
+            "if": { "math": [ "pf_fire_service == 1" ] },
+            "then": [ { "run_eocs": "PF_MK_funeral" } ],
+            "else": [ { "run_eocs": "PF_MK_fire_evening" } ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FIRE_with_avatar_i",
+    "effect": [
+      { "set_string_var": "pf_fire_c_<global_val:pf_fi>", "target_var": { "context_val": "ri" }, "parse_tags": true },
+      {
+        "if": { "math": [ "pf_fire_service == 1" ] },
+        "then": [ { "run_eocs": "PF_MK_funeral", "alpha_talker": { "var_val": "ri" }, "beta_talker": "avatar" } ],
+        "else": [ { "run_eocs": "PF_MK_fire_evening", "alpha_talker": { "var_val": "ri" }, "beta_talker": "avatar" } ]
+      },
+      { "math": [ "pf_fi += 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_FIRE_recall_i",
+    "effect": [
+      { "set_string_var": "pf_fire_c_<global_val:pf_fi>", "target_var": { "context_val": "ri" }, "parse_tags": true },
+      { "run_eocs": "PF_RECALL_try", "alpha_talker": { "var_val": "ri" } },
+      { "math": [ "pf_fi += 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_RECALL_try",
+    "//": "u = someone at the fire.  The witness system: they bring up their strongest memory about you (strength 50+) that they haven't told yet.  Good memories warm both of you; sore ones reopen tension.",
+    "effect": [
+      {
+        "if": { "or": [ { "u_has_effect": "PF_infant" }, { "math": [ "u_val('age') < 5" ] } ] },
+        "then": [ { "math": [ "pf_rbest_skip = 1" ] } ],
+        "else": [ { "math": [ "pf_rbest_skip = 0" ] } ]
+      },
+      { "math": [ "pf_ri = 0" ] },
+      { "math": [ "pf_rbest = -1" ] },
+      { "math": [ "pf_rbest_str = 49 + pf_rbest_skip * 1000" ] },
+      { "run_eocs": "PF_RECALL_scan_i", "condition": { "math": [ "pf_ri < 8" ] }, "iterations": 9 },
+      {
+        "if": { "math": [ "pf_rbest >= 0" ] },
+        "then": [
+          { "set_string_var": "u_pf_mem_<global_val:pf_rbest>_kind", "target_var": { "context_val": "mk" }, "parse_tags": true },
+          {
+            "set_string_var": "u_pf_mem_<global_val:pf_rbest>_rc",
+            "target_var": { "context_val": "mr" },
+            "parse_tags": true
+          },
+          {
+            "set_string_var": "u_pf_mem_<global_val:pf_rbest>_role",
+            "target_var": { "context_val": "mo" },
+            "parse_tags": true
+          },
+          { "math": [ "pf_say_role = value_or(v_mo, 1)" ] },
+          { "math": [ "v_mr = 1" ] },
+          { "math": [ "pf_fire_recalled = 1" ] },
+          { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_say_a" }, "parse_tags": true },
+          { "copy_var": { "var_val": "mk" }, "target_var": { "global_val": "pf_say_kind" } },
+          { "run_eocs": "PF_SAY_recall", "alpha_talker": "avatar" },
+          {
+            "if": { "compare_string": [ { "global_val": "pf_say_kind" }, "insult", "betrayal", "argument" ] },
+            "then": [ { "run_eocs": "PF_MK_bicker", "beta_talker": "avatar" } ],
+            "else": [ { "run_eocs": "PF_MK_memory_recalled", "beta_talker": "avatar" } ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_RECALL_scan_i",
+    "effect": [
+      { "set_string_var": "u_pf_mem_<global_val:pf_ri>_with", "target_var": { "context_val": "mw" }, "parse_tags": true },
+      {
+        "set_string_var": "u_pf_mem_<global_val:pf_ri>_str",
+        "target_var": { "context_val": "ms" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "u_pf_mem_<global_val:pf_ri>_rc",
+        "target_var": { "context_val": "mr" },
+        "parse_tags": true
+      },
+      {
+        "if": {
+          "and": [
+            { "compare_string": [ { "var_val": "mw" }, "AVATAR" ] },
+            { "math": [ "value_or(v_ms, 0) > pf_rbest_str" ] },
+            { "math": [ "value_or(v_mr, 0) == 0" ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_rbest = pf_ri" ] }, { "math": [ "pf_rbest_str = v_ms" ] } ]
+      },
+      { "math": [ "pf_ri += 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_SAY_recall",
+    "effect": [
+      {
+        "if": {
+          "and": [ { "compare_string": [ { "global_val": "pf_say_kind" }, "saved_life" ] }, { "math": [ "pf_say_role == 2" ] } ]
+        },
+        "then": [
+          {
+            "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+            "then": [
+              {
+                "u_message": "<global_val:pf_say_a> turns their cup in their hands.  \"I keep thinking about the day I nearly lost you.  Don't make me do that again.\"",
+                "type": "good"
+              }
+            ],
+            "else": [
+              {
+                "u_message": "<global_val:pf_say_a> stares into the fire.  \"I keep thinking about the day I nearly lost you.  Don't make me do that again.\"",
+                "type": "good"
+              }
+            ]
+          }
+        ],
+        "else": [
+          {
+            "if": { "compare_string": [ { "global_val": "pf_say_kind" }, "saved_life" ] },
+            "then": [
+              {
+                "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+                "then": [
+                  {
+                    "u_message": "<global_val:pf_say_a> turns their cup in their hands.  \"I keep thinking about the day you pulled me out of that.  I owe you.\"",
+                    "type": "good"
+                  }
+                ],
+                "else": [
+                  {
+                    "u_message": "<global_val:pf_say_a> stares into the fire.  \"I keep thinking about the day you pulled me out of that.  I owe you.\"",
+                    "type": "good"
+                  }
+                ]
+              }
+            ],
+            "else": [
+              {
+                "if": { "compare_string": [ { "global_val": "pf_say_kind" }, "near_death" ] },
+                "then": [
+                  {
+                    "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+                    "then": [
+                      {
+                        "u_message": "<global_val:pf_say_a> taps the table.  \"That thing nearly had you today.  Don't do that to me again.\"",
+                        "type": "good"
+                      }
+                    ],
+                    "else": [
+                      {
+                        "u_message": "<global_val:pf_say_a> pokes at the embers.  \"That thing nearly had you today.  Don't do that to me again.\"",
+                        "type": "good"
+                      }
+                    ]
+                  }
+                ],
+                "else": [
+                  {
+                    "if": { "compare_string": [ { "global_val": "pf_say_kind" }, "insult", "argument" ] },
+                    "then": [ { "u_message": "<global_val:pf_say_a> doesn't look at you.  \"I haven't forgotten what you said.\"", "type": "bad" } ],
+                    "else": [
+                      {
+                        "if": { "compare_string": [ { "global_val": "pf_say_kind" }, "betrayal" ] },
+                        "then": [ { "u_message": "<global_val:pf_say_a>, quietly: \"I trusted you.\"", "type": "bad" } ],
+                        "else": [ { "run_eocs": "PF_SAY_recall_kind", "alpha_talker": "avatar" } ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_SAY_recall_kind",
+    "//": "u = avatar.  The good memory someone brings up at the fire, in words that fit what it was.",
+    "effect": [
+      { "math": [ "pf_rk_said = 0" ] },
+      {
+        "if": {
+          "and": [
+            { "compare_string": [ { "global_val": "pf_say_kind" }, "meal_shared" ] },
+            { "math": [ "(pf_say_role == 1) + (pf_say_role == 2) > 0" ] }
+          ]
+        },
+        "then": [
+          { "math": [ "pf_rk_said = 1" ] },
+          { "math": [ "_q = rand(2)" ] },
+          {
+            "if": { "math": [ "_q == 0" ] },
+            "then": [
+              {
+                "u_message": "<global_val:pf_say_a> brings up the day your paths first crossed.  \"You looked like you'd been living out of cans for a week.\"",
+                "type": "good"
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "_q == 1" ] },
+            "then": [
+              {
+                "u_message": "<global_val:pf_say_a> laughs about the time you two split a can of something neither of you could name.",
+                "type": "good"
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "_q == 2" ] },
+            "then": [
+              {
+                "u_message": "<global_val:pf_say_a> says food tastes better when somebody else opened the can.  They mean you.",
+                "type": "good"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_rk_said == 0" ] },
+            { "math": [ "pf_say_role == 1" ] },
+            { "compare_string": [ { "global_val": "pf_say_kind" }, "care_given" ] }
+          ]
+        },
+        "then": [
+          { "math": [ "pf_rk_said = 1" ] },
+          { "math": [ "_q = rand(2)" ] },
+          {
+            "if": { "math": [ "_q == 0" ] },
+            "then": [
+              {
+                "u_message": "<global_val:pf_say_a> brings up a day you looked out for them.  \"Didn't say thanks then.  Saying it now.\"",
+                "type": "good"
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "_q == 1" ] },
+            "then": [
+              {
+                "u_message": "<global_val:pf_say_a> remembers, out loud, a time you went out of your way for them, and doesn't make a speech of it.",
+                "type": "good"
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "_q == 2" ] },
+            "then": [
+              {
+                "u_message": "<global_val:pf_say_a>: \"You didn't have to do that, back then.  I keep thinking about it.\"",
+                "type": "good"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_rk_said == 0" ] },
+            { "math": [ "(pf_say_role == 1) + (pf_say_role == 2) * 1 > 0" ] },
+            { "compare_string": [ { "global_val": "pf_say_kind" }, "shared_danger" ] }
+          ]
+        },
+        "then": [
+          { "math": [ "pf_rk_said = 1" ] },
+          {
+            "u_message": "<global_val:pf_say_a> brings up the fight the other day.  \"You didn't run.  I noticed.\"",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_rk_said == 0" ] },
+            { "math": [ "(pf_say_role == 1) + (pf_say_role == 2) * 0 > 0" ] },
+            { "compare_string": [ { "global_val": "pf_say_kind" }, "gift" ] }
+          ]
+        },
+        "then": [
+          { "math": [ "pf_rk_said = 1" ] },
+          {
+            "u_message": "<global_val:pf_say_a> turns over the thing you gave them, and puts it away again carefully.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_rk_said == 0" ] },
+            { "math": [ "(pf_say_role == 1) + (pf_say_role == 2) * 0 > 0" ] },
+            { "compare_string": [ { "global_val": "pf_say_kind" }, "watch_covered" ] }
+          ]
+        },
+        "then": [
+          { "math": [ "pf_rk_said = 1" ] },
+          {
+            "u_message": "<global_val:pf_say_a>: \"You took my watch that night.  I slept like the dead.  Well.  You know what I mean.\"",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_rk_said == 0" ] },
+            { "math": [ "(pf_say_role == 1) + (pf_say_role == 2) * 0 > 0" ] },
+            { "compare_string": [ { "global_val": "pf_say_kind" }, "welcomed" ] }
+          ]
+        },
+        "then": [
+          { "math": [ "pf_rk_said = 1" ] },
+          {
+            "u_message": "<global_val:pf_say_a> looks around at the walls.  \"Never thought I'd have a place again.\"",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_rk_said == 0" ] },
+            { "math": [ "(pf_say_role == 1) + (pf_say_role == 2) * 1 > 0" ] },
+            { "compare_string": [ { "global_val": "pf_say_kind" }, "taught" ] }
+          ]
+        },
+        "then": [
+          { "math": [ "pf_rk_said = 1" ] },
+          {
+            "u_message": "<global_val:pf_say_a> shows you they still remember what you taught them, and waits to be told it's right.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_rk_said == 0" ] },
+            { "math": [ "(pf_say_role == 1) + (pf_say_role == 2) * 0 > 0" ] },
+            { "compare_string": [ { "global_val": "pf_say_kind" }, "adopted" ] }
+          ]
+        },
+        "then": [
+          { "math": [ "pf_rk_said = 1" ] },
+          {
+            "u_message": "<global_val:pf_say_a> leans against you without saying anything, and stays there.",
+            "type": "good"
+          }
+        ]
+      },
+      { "if": { "math": [ "pf_rk_said == 0" ] }, "then": [ { "run_eocs": "PF_LINE_retell" } ] }
+    ]
+  }
+]

@@ -1,0 +1,2882 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_open",
+    "//": "Nearby screen.  Every NPC within 30 tiles writes itself into array slots pf_pm_*_<k> (names built at runtime, read back through the selector's variable-object names).  Works for vanilla NPCs too: they are addressed later by character id (u_set_talker), not by unique id.",
+    "effect": [
+      { "math": [ "pf_pm_n = 0" ] },
+      { "u_location_variable": { "global_val": "pf_pm_center" } },
+      { "u_run_npc_eocs": [ "PF_PM_scan_one" ], "local": true, "npc_range": 60 },
+      {
+        "if": { "math": [ "pf_pm_n == 0" ] },
+        "then": [ { "u_message": "No one is close enough to see.", "type": "info" } ],
+        "else": [
+          {
+            "run_eoc_selector": [
+              "PF_PM_pick_0",
+              "PF_PM_pick_1",
+              "PF_PM_pick_2",
+              "PF_PM_pick_3",
+              "PF_PM_pick_4",
+              "PF_PM_pick_5",
+              "PF_PM_pick_6",
+              "PF_PM_pick_7",
+              "PF_PM_pick_8",
+              "PF_PM_pick_9",
+              "PF_PM_pick_10",
+              "PF_PM_pick_11",
+              "PF_PM_pick_12",
+              "PF_PM_pick_13",
+              "PF_PM_pick_14",
+              "PF_PM_pick_15",
+              "PF_PM_pick_16",
+              "PF_PM_pick_17",
+              "PF_PM_pick_18",
+              "PF_PM_pick_19"
+            ],
+            "names": [
+              { "global_val": "pf_pm_label_0" },
+              { "global_val": "pf_pm_label_1" },
+              { "global_val": "pf_pm_label_2" },
+              { "global_val": "pf_pm_label_3" },
+              { "global_val": "pf_pm_label_4" },
+              { "global_val": "pf_pm_label_5" },
+              { "global_val": "pf_pm_label_6" },
+              { "global_val": "pf_pm_label_7" },
+              { "global_val": "pf_pm_label_8" },
+              { "global_val": "pf_pm_label_9" },
+              { "global_val": "pf_pm_label_10" },
+              { "global_val": "pf_pm_label_11" },
+              { "global_val": "pf_pm_label_12" },
+              { "global_val": "pf_pm_label_13" },
+              { "global_val": "pf_pm_label_14" },
+              { "global_val": "pf_pm_label_15" },
+              { "global_val": "pf_pm_label_16" },
+              { "global_val": "pf_pm_label_17" },
+              { "global_val": "pf_pm_label_18" },
+              { "global_val": "pf_pm_label_19" }
+            ],
+            "descriptions": [
+              { "global_val": "pf_pm_desc_0" },
+              { "global_val": "pf_pm_desc_1" },
+              { "global_val": "pf_pm_desc_2" },
+              { "global_val": "pf_pm_desc_3" },
+              { "global_val": "pf_pm_desc_4" },
+              { "global_val": "pf_pm_desc_5" },
+              { "global_val": "pf_pm_desc_6" },
+              { "global_val": "pf_pm_desc_7" },
+              { "global_val": "pf_pm_desc_8" },
+              { "global_val": "pf_pm_desc_9" },
+              { "global_val": "pf_pm_desc_10" },
+              { "global_val": "pf_pm_desc_11" },
+              { "global_val": "pf_pm_desc_12" },
+              { "global_val": "pf_pm_desc_13" },
+              { "global_val": "pf_pm_desc_14" },
+              { "global_val": "pf_pm_desc_15" },
+              { "global_val": "pf_pm_desc_16" },
+              { "global_val": "pf_pm_desc_17" },
+              { "global_val": "pf_pm_desc_18" },
+              { "global_val": "pf_pm_desc_19" }
+            ],
+            "keys": [ "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t" ],
+            "title": "People nearby (<global_val:pf_pm_n>)",
+            "hide_failing": true,
+            "allow_cancel": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_scan_one",
+    "//": "u = one nearby NPC.  Takes the next free slot.",
+    "condition": { "math": [ "pf_pm_n < 20" ] },
+    "effect": [
+      { "set_string_var": "pf_pm_id_<global_val:pf_pm_n>", "target_var": { "context_val": "ref" }, "parse_tags": true },
+      { "u_set_talker": { "var_val": "ref" } },
+      { "u_location_variable": { "u_val": "pf_pm_here" } },
+      { "math": [ "pf_pm_tmp_dist = round(distance(pf_pm_center, u_pf_pm_here))" ] },
+      {
+        "if": { "math": [ "value_or(u_pf_is_leader, -1) == 1" ] },
+        "then": [ { "set_string_var": "leads a band", "target_var": { "global_val": "pf_pm_tmp_role" } } ],
+        "else": [
+          {
+            "if": { "math": [ "value_or(u_pf_is_leader, -1) == 0" ] },
+            "then": [ { "set_string_var": "travels with a band", "target_var": { "global_val": "pf_pm_tmp_role" } } ],
+            "else": [ { "set_string_var": "a stranger", "target_var": { "global_val": "pf_pm_tmp_role" } } ]
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_pm_tmp_role" }, "a stranger" ] },
+        "then": [
+          { "run_eocs": "PF_ID_ensure" },
+          { "set_string_var": "AVATAR", "target_var": { "global_val": "pf_m_other" } },
+          { "run_eocs": "PF_VIEW_read" },
+          {
+            "set_string_var": "<global_val:pf_read_tier_name>",
+            "target_var": { "global_val": "pf_pm_tmp_role" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": { "u_has_trait": "PF_CHILD" },
+        "then": [ { "set_string_var": "a child", "target_var": { "global_val": "pf_pm_tmp_role" } } ]
+      },
+      {
+        "if": { "math": [ "value_or(u_pf_orphaned, 0) == 1" ] },
+        "then": [ { "set_string_var": "a child, alone, hiding", "target_var": { "global_val": "pf_pm_tmp_role" } } ]
+      },
+      {
+        "if": {
+          "and": [
+            { "u_has_trait": "PF_CHILD" },
+            {
+              "or": [
+                { "compare_string": [ { "u_val": "pf_guardian" }, "AVATAR" ] },
+                { "compare_string": [ { "u_val": "pf_mom" }, "AVATAR" ] },
+                { "compare_string": [ { "u_val": "pf_dad" }, "AVATAR" ] }
+              ]
+            }
+          ]
+        },
+        "then": [ { "set_string_var": "your child", "target_var": { "global_val": "pf_pm_tmp_role" } } ]
+      },
+      {
+        "if": { "and": [ { "math": [ "value_or(u_pf_resident, 0) == 1" ] }, { "not": { "u_has_trait": "PF_CHILD" } } ] },
+        "then": [ { "set_string_var": "lives with you", "target_var": { "global_val": "pf_pm_tmp_role" } } ]
+      },
+      {
+        "if": {
+          "and": [
+            { "not": { "u_has_trait": "PF_CHILD" } },
+            {
+              "or": [
+                { "compare_string": [ { "u_val": "pf_guardian" }, "AVATAR" ] },
+                { "compare_string": [ { "u_val": "pf_mom" }, "AVATAR" ] },
+                { "compare_string": [ { "u_val": "pf_dad" }, "AVATAR" ] }
+              ]
+            }
+          ]
+        },
+        "then": [ { "set_string_var": "your child, grown", "target_var": { "global_val": "pf_pm_tmp_role" } } ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "value_or(u_pf_has_sweet, 0) == 1" ] },
+            { "not": { "compare_string": [ { "u_val": "pf_sweet" }, "AVATAR" ] } },
+            { "not": { "u_has_trait": "PF_CHILD" } }
+          ]
+        },
+        "then": [
+          { "set_string_var": "pf_name_<u_val:pf_sweet>", "target_var": { "context_val": "csn" }, "parse_tags": true },
+          { "copy_var": { "var_val": "csn" }, "target_var": { "global_val": "pf_pm_tmp_sw" } },
+          { "set_string_var": "with", "target_var": { "global_val": "pf_pm_tmp_swr" } },
+          {
+            "if": { "math": [ "value_or(u_pf_rel_stage, 1) >= 3" ] },
+            "then": [ { "set_string_var": "married to", "target_var": { "global_val": "pf_pm_tmp_swr" } } ]
+          },
+          {
+            "set_string_var": "<global_val:pf_pm_tmp_role>, <global_val:pf_pm_tmp_swr> <global_val:pf_pm_tmp_sw>",
+            "target_var": { "global_val": "pf_pm_tmp_role" },
+            "parse_tags": true
+          }
+        ]
+      },
+      {
+        "if": {
+          "and": [ { "math": [ "value_or(u_pf_has_sweet, 0) == 1" ] }, { "compare_string": [ { "u_val": "pf_sweet" }, "AVATAR" ] } ]
+        },
+        "then": [
+          { "set_string_var": "your sweetheart", "target_var": { "global_val": "pf_pm_tmp_role" } },
+          {
+            "if": { "math": [ "value_or(u_pf_rel_stage, 1) == 2" ] },
+            "then": [ { "set_string_var": "your partner", "target_var": { "global_val": "pf_pm_tmp_role" } } ]
+          },
+          {
+            "if": { "and": [ { "math": [ "value_or(u_pf_rel_stage, 1) == 2" ] }, { "math": [ "value_or(u_pf_engaged, 0) == 1" ] } ] },
+            "then": [ { "set_string_var": "engaged to you", "target_var": { "global_val": "pf_pm_tmp_role" } } ]
+          },
+          {
+            "if": { "math": [ "value_or(u_pf_rel_stage, 1) >= 3" ] },
+            "then": [ { "set_string_var": "married to you", "target_var": { "global_val": "pf_pm_tmp_role" } } ]
+          }
+        ]
+      },
+      {
+        "if": {
+          "and": [
+            { "u_has_effect": "PF_toddler" },
+            { "math": [ "value_or(u_pf_follow, 0) == 2" ] },
+            { "compare_string": [ { "u_val": "pf_carrier" }, "AVATAR" ] }
+          ]
+        },
+        "then": [ { "set_string_var": "a toddler, holding your hand", "target_var": { "global_val": "pf_pm_tmp_role" } } ]
+      },
+      {
+        "if": { "u_has_effect": "PF_infant" },
+        "then": [
+          { "set_string_var": "a baby", "target_var": { "global_val": "pf_pm_tmp_role" } },
+          {
+            "if": {
+              "and": [ { "math": [ "value_or(u_pf_follow, 0) == 2" ] }, { "compare_string": [ { "u_val": "pf_carrier" }, "AVATAR" ] } ]
+            },
+            "then": [ { "set_string_var": "a baby, in your arms", "target_var": { "global_val": "pf_pm_tmp_role" } } ]
+          }
+        ]
+      },
+      { "run_eocs": "PF_REG_name" },
+      {
+        "set_string_var": "pf_pm_label_<global_val:pf_pm_n>",
+        "target_var": { "context_val": "ref" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "<u_name>  (<global_val:pf_pm_tmp_dist> tiles, <global_val:pf_pm_tmp_role>)",
+        "target_var": { "var_val": "ref" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "pf_pm_desc_<global_val:pf_pm_n>",
+        "target_var": { "context_val": "ref" },
+        "parse_tags": true
+      },
+      {
+        "set_string_var": "<u_name>.  What you can tell from here: <global_val:pf_pm_tmp_role>.",
+        "target_var": { "var_val": "ref" },
+        "parse_tags": true
+      },
+      { "math": [ "pf_pm_n += 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_pick_0",
+    "condition": { "math": [ "pf_pm_n > 0" ] },
+    "effect": [
+      { "copy_var": { "global_val": "pf_pm_id_0" }, "target_var": { "global_val": "pf_pm_sel_id" } },
+      { "copy_var": { "global_val": "pf_pm_label_0" }, "target_var": { "global_val": "pf_pm_sel_label" } },
+      { "run_eocs": "PF_PM_person" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_pick_1",
+    "condition": { "math": [ "pf_pm_n > 1" ] },
+    "effect": [
+      { "copy_var": { "global_val": "pf_pm_id_1" }, "target_var": { "global_val": "pf_pm_sel_id" } },
+      { "copy_var": { "global_val": "pf_pm_label_1" }, "target_var": { "global_val": "pf_pm_sel_label" } },
+      { "run_eocs": "PF_PM_person" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_pick_2",
+    "condition": { "math": [ "pf_pm_n > 2" ] },
+    "effect": [
+      { "copy_var": { "global_val": "pf_pm_id_2" }, "target_var": { "global_val": "pf_pm_sel_id" } },
+      { "copy_var": { "global_val": "pf_pm_label_2" }, "target_var": { "global_val": "pf_pm_sel_label" } },
+      { "run_eocs": "PF_PM_person" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_pick_3",
+    "condition": { "math": [ "pf_pm_n > 3" ] },
+    "effect": [
+      { "copy_var": { "global_val": "pf_pm_id_3" }, "target_var": { "global_val": "pf_pm_sel_id" } },
+      { "copy_var": { "global_val": "pf_pm_label_3" }, "target_var": { "global_val": "pf_pm_sel_label" } },
+      { "run_eocs": "PF_PM_person" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_pick_4",
+    "condition": { "math": [ "pf_pm_n > 4" ] },
+    "effect": [
+      { "copy_var": { "global_val": "pf_pm_id_4" }, "target_var": { "global_val": "pf_pm_sel_id" } },
+      { "copy_var": { "global_val": "pf_pm_label_4" }, "target_var": { "global_val": "pf_pm_sel_label" } },
+      { "run_eocs": "PF_PM_person" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_pick_5",
+    "condition": { "math": [ "pf_pm_n > 5" ] },
+    "effect": [
+      { "copy_var": { "global_val": "pf_pm_id_5" }, "target_var": { "global_val": "pf_pm_sel_id" } },
+      { "copy_var": { "global_val": "pf_pm_label_5" }, "target_var": { "global_val": "pf_pm_sel_label" } },
+      { "run_eocs": "PF_PM_person" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_pick_6",
+    "condition": { "math": [ "pf_pm_n > 6" ] },
+    "effect": [
+      { "copy_var": { "global_val": "pf_pm_id_6" }, "target_var": { "global_val": "pf_pm_sel_id" } },
+      { "copy_var": { "global_val": "pf_pm_label_6" }, "target_var": { "global_val": "pf_pm_sel_label" } },
+      { "run_eocs": "PF_PM_person" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_pick_7",
+    "condition": { "math": [ "pf_pm_n > 7" ] },
+    "effect": [
+      { "copy_var": { "global_val": "pf_pm_id_7" }, "target_var": { "global_val": "pf_pm_sel_id" } },
+      { "copy_var": { "global_val": "pf_pm_label_7" }, "target_var": { "global_val": "pf_pm_sel_label" } },
+      { "run_eocs": "PF_PM_person" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_pick_8",
+    "condition": { "math": [ "pf_pm_n > 8" ] },
+    "effect": [
+      { "copy_var": { "global_val": "pf_pm_id_8" }, "target_var": { "global_val": "pf_pm_sel_id" } },
+      { "copy_var": { "global_val": "pf_pm_label_8" }, "target_var": { "global_val": "pf_pm_sel_label" } },
+      { "run_eocs": "PF_PM_person" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_pick_9",
+    "condition": { "math": [ "pf_pm_n > 9" ] },
+    "effect": [
+      { "copy_var": { "global_val": "pf_pm_id_9" }, "target_var": { "global_val": "pf_pm_sel_id" } },
+      { "copy_var": { "global_val": "pf_pm_label_9" }, "target_var": { "global_val": "pf_pm_sel_label" } },
+      { "run_eocs": "PF_PM_person" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_pick_10",
+    "condition": { "math": [ "pf_pm_n > 10" ] },
+    "effect": [
+      { "copy_var": { "global_val": "pf_pm_id_10" }, "target_var": { "global_val": "pf_pm_sel_id" } },
+      { "copy_var": { "global_val": "pf_pm_label_10" }, "target_var": { "global_val": "pf_pm_sel_label" } },
+      { "run_eocs": "PF_PM_person" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_pick_11",
+    "condition": { "math": [ "pf_pm_n > 11" ] },
+    "effect": [
+      { "copy_var": { "global_val": "pf_pm_id_11" }, "target_var": { "global_val": "pf_pm_sel_id" } },
+      { "copy_var": { "global_val": "pf_pm_label_11" }, "target_var": { "global_val": "pf_pm_sel_label" } },
+      { "run_eocs": "PF_PM_person" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_pick_12",
+    "condition": { "math": [ "pf_pm_n > 12" ] },
+    "effect": [
+      { "copy_var": { "global_val": "pf_pm_id_12" }, "target_var": { "global_val": "pf_pm_sel_id" } },
+      { "copy_var": { "global_val": "pf_pm_label_12" }, "target_var": { "global_val": "pf_pm_sel_label" } },
+      { "run_eocs": "PF_PM_person" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_pick_13",
+    "condition": { "math": [ "pf_pm_n > 13" ] },
+    "effect": [
+      { "copy_var": { "global_val": "pf_pm_id_13" }, "target_var": { "global_val": "pf_pm_sel_id" } },
+      { "copy_var": { "global_val": "pf_pm_label_13" }, "target_var": { "global_val": "pf_pm_sel_label" } },
+      { "run_eocs": "PF_PM_person" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_pick_14",
+    "condition": { "math": [ "pf_pm_n > 14" ] },
+    "effect": [
+      { "copy_var": { "global_val": "pf_pm_id_14" }, "target_var": { "global_val": "pf_pm_sel_id" } },
+      { "copy_var": { "global_val": "pf_pm_label_14" }, "target_var": { "global_val": "pf_pm_sel_label" } },
+      { "run_eocs": "PF_PM_person" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_pick_15",
+    "condition": { "math": [ "pf_pm_n > 15" ] },
+    "effect": [
+      { "copy_var": { "global_val": "pf_pm_id_15" }, "target_var": { "global_val": "pf_pm_sel_id" } },
+      { "copy_var": { "global_val": "pf_pm_label_15" }, "target_var": { "global_val": "pf_pm_sel_label" } },
+      { "run_eocs": "PF_PM_person" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_pick_16",
+    "condition": { "math": [ "pf_pm_n > 16" ] },
+    "effect": [
+      { "copy_var": { "global_val": "pf_pm_id_16" }, "target_var": { "global_val": "pf_pm_sel_id" } },
+      { "copy_var": { "global_val": "pf_pm_label_16" }, "target_var": { "global_val": "pf_pm_sel_label" } },
+      { "run_eocs": "PF_PM_person" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_pick_17",
+    "condition": { "math": [ "pf_pm_n > 17" ] },
+    "effect": [
+      { "copy_var": { "global_val": "pf_pm_id_17" }, "target_var": { "global_val": "pf_pm_sel_id" } },
+      { "copy_var": { "global_val": "pf_pm_label_17" }, "target_var": { "global_val": "pf_pm_sel_label" } },
+      { "run_eocs": "PF_PM_person" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_pick_18",
+    "condition": { "math": [ "pf_pm_n > 18" ] },
+    "effect": [
+      { "copy_var": { "global_val": "pf_pm_id_18" }, "target_var": { "global_val": "pf_pm_sel_id" } },
+      { "copy_var": { "global_val": "pf_pm_label_18" }, "target_var": { "global_val": "pf_pm_sel_label" } },
+      { "run_eocs": "PF_PM_person" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_pick_19",
+    "condition": { "math": [ "pf_pm_n > 19" ] },
+    "effect": [
+      { "copy_var": { "global_val": "pf_pm_id_19" }, "target_var": { "global_val": "pf_pm_sel_id" } },
+      { "copy_var": { "global_val": "pf_pm_label_19" }, "target_var": { "global_val": "pf_pm_sel_label" } },
+      { "run_eocs": "PF_PM_person" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_person",
+    "//": "Person screen for the NPC whose character id is in pf_pm_sel_id.  Romance actions only exist for adults (never children; checked again inside).",
+    "effect": [
+      { "math": [ "pf_pm_sel_adult = 0" ] },
+      { "run_eocs": "PF_PM_sel_flags", "beta_talker": { "global_val": "pf_pm_sel_id" } },
+      {
+        "run_eoc_selector": [
+          "PF_PM_act_talk",
+          "PF_PM_act_tend",
+          "PF_PM_act_meal",
+          "PF_PM_act_call",
+          "PF_PM_act_fire",
+          "PF_PM_act_supply",
+          "PF_PM_act_flirt",
+          "PF_PM_act_confess",
+          "PF_PM_act_marry",
+          "PF_PM_act_end",
+          "PF_PM_act_takein",
+          "PF_PM_act_stepadopt",
+          "PF_PM_act_pickup",
+          "PF_PM_act_setdown",
+          "PF_PM_act_hand",
+          "PF_PM_act_letgo",
+          "PF_PM_act_teach",
+          "PF_PM_act_invite",
+          "PF_PM_act_role",
+          "PF_PM_act_info",
+          "PF_PM_moments_shown"
+        ],
+        "names": [
+          "Talk",
+          "Tend their wounds",
+          "Share a meal with them",
+          "Call them over",
+          "Ask them to sit by the fire",
+          "Bring their people supplies",
+          "Flirt",
+          "Tell them how you feel",
+          "Ask them to marry you",
+          "End it",
+          "Take them in",
+          "Raise them as your own",
+          "Pick them up",
+          "Set them down",
+          "Take their hand",
+          "Let go of their hand",
+          "Teach them something",
+          "Ask them to come live with you",
+          "Ask them to take a different job",
+          "What do I know about them?",
+          "Moments (lab)"
+        ],
+        "descriptions": [
+          "Start a conversation.",
+          "Kneel beside them with a rag and some clean water: stop the bleeding, clean the bites, wrap what's torn.  They come over if they can walk (a baby you go to), and nothing hostile can be close.",
+          "Sit down together and eat (you need some food on you).  Once a day with each person: the surest way to get to know someone.",
+          "Wave them over.  They walk to your side.",
+          "They walk to the nearest fire within 40 tiles and settle there.",
+          "Six things to eat for their band: from the stores near home, or a sack you packed (Home: Pack a sack of supplies).  Every few days.  Generosity is remembered.",
+          "See if it lands.  That depends on them: who they're drawn to, and how they already feel about you.",
+          "Say it.  They'll answer from their own heart.",
+          "You've been together a while.  Ask.",
+          "Tell them it's over.",
+          "They have nobody.  They can stay with you.",
+          "Your partner's child.  Make them yours too: one family, one name.",
+          "Carry them with you.  Wherever you go, they go (4 kg of your carry weight).",
+          "Hand them back to their mother, or set them down here.",
+          "Little legs.  They stay at your side until you let go.",
+          "They go back to following their family.",
+          "Show them something you know better than they do.  Once a day.",
+          "Home has room.  They'll answer from their own heart; if they travel with a band, the whole band comes.",
+          "Cook, guard, forager, tinkerer, carer: the next one in line.",
+          "How they seem to see you, how you see them, and what you've picked up about them.",
+          "[lab] Make something happen between you and them, and watch the bond spine react."
+        ],
+        "keys": [ "t", "n", "a", "c", "f", "y", "r", "l", "p", "e", "h", "w", "u", "d", "o", "g", "s", "v", "b", "i", "m" ],
+        "title": "<global_val:pf_pm_sel_label>",
+        "hide_failing": true,
+        "allow_cancel": true
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_sel_flags",
+    "//": "u = you, npc = the selected person.",
+    "effect": [
+      { "math": [ "pf_pm_sel_adult = n_val('age') >= 18" ] },
+      { "if": { "npc_has_trait": "PF_CHILD" }, "then": [ { "math": [ "pf_pm_sel_adult = 0" ] } ] },
+      { "math": [ "pf_pm_sel_mine = 0" ] },
+      { "math": [ "pf_pm_sel_stage = value_or(n_pf_rel_stage, 0)" ] },
+      { "math": [ "pf_pm_sel_orphan = 0" ] },
+      { "math": [ "pf_pm_sel_warm = (value_or(n_pf_v_AVATAR_w, 0) + value_or(n_pf_v_AVATAR_t, 0)) / 2 >= 10" ] },
+      { "math": [ "pf_pm_sel_baby = 0" ] },
+      { "math": [ "pf_pm_sel_held = 0" ] },
+      { "math": [ "pf_pm_sel_tod = 0" ] },
+      { "math": [ "pf_pm_sel_kid = 0" ] },
+      { "math": [ "pf_pm_sel_res = value_or(n_pf_resident, 0)" ] },
+      { "math": [ "pf_pm_sel_band = value_or(n_pf_band, 0) > 0" ] },
+      { "math": [ "pf_pm_sel_bandid = value_or(n_pf_band, 0)" ] },
+      { "math": [ "pf_pm_sel_supd = value_or(n_pf_supplied_day, -99)" ] },
+      { "math": [ "pf_pm_sel_hurt = 0" ] },
+      {
+        "if": {
+          "or": [
+            { "math": [ "n_hp('torso') <= n_hp_max('torso') * 0.8" ] },
+            { "math": [ "n_hp('head') <= n_hp_max('head') * 0.8" ] },
+            { "math": [ "n_hp('arm_l') <= n_hp_max('arm_l') * 0.8" ] },
+            { "math": [ "n_hp('arm_r') <= n_hp_max('arm_r') * 0.8" ] },
+            { "math": [ "n_hp('leg_l') <= n_hp_max('leg_l') * 0.8" ] },
+            { "math": [ "n_hp('leg_r') <= n_hp_max('leg_r') * 0.8" ] },
+            { "npc_has_effect": "bleed", "bodypart": "torso" },
+            { "npc_has_effect": "bleed", "bodypart": "head" },
+            { "npc_has_effect": "bleed", "bodypart": "eyes" },
+            { "npc_has_effect": "bleed", "bodypart": "mouth" },
+            { "npc_has_effect": "bleed", "bodypart": "arm_l" },
+            { "npc_has_effect": "bleed", "bodypart": "arm_r" },
+            { "npc_has_effect": "bleed", "bodypart": "hand_l" },
+            { "npc_has_effect": "bleed", "bodypart": "hand_r" },
+            { "npc_has_effect": "bleed", "bodypart": "leg_l" },
+            { "npc_has_effect": "bleed", "bodypart": "leg_r" },
+            { "npc_has_effect": "bleed", "bodypart": "foot_l" },
+            { "npc_has_effect": "bleed", "bodypart": "foot_r" },
+            { "npc_has_effect": "bite", "bodypart": "torso" },
+            { "npc_has_effect": "bite", "bodypart": "head" },
+            { "npc_has_effect": "bite", "bodypart": "eyes" },
+            { "npc_has_effect": "bite", "bodypart": "mouth" },
+            { "npc_has_effect": "bite", "bodypart": "arm_l" },
+            { "npc_has_effect": "bite", "bodypart": "arm_r" },
+            { "npc_has_effect": "bite", "bodypart": "hand_l" },
+            { "npc_has_effect": "bite", "bodypart": "hand_r" },
+            { "npc_has_effect": "bite", "bodypart": "leg_l" },
+            { "npc_has_effect": "bite", "bodypart": "leg_r" },
+            { "npc_has_effect": "bite", "bodypart": "foot_l" },
+            { "npc_has_effect": "bite", "bodypart": "foot_r" },
+            { "npc_has_effect": "bleed" },
+            { "npc_has_effect": "bite" }
+          ]
+        },
+        "then": [ { "math": [ "pf_pm_sel_hurt = 1" ] } ]
+      },
+      { "set_string_var": "<npc_name>", "target_var": { "global_val": "pf_pm_sel_name" }, "parse_tags": true },
+      { "npc_location_variable": { "global_val": "pf_pm_sel_pos" } },
+      { "u_location_variable": { "global_val": "pf_pm_av_pos" } },
+      { "math": [ "pf_pm_sel_dist = distance(pf_pm_sel_pos, pf_pm_av_pos)" ] },
+      {
+        "if": { "and": [ { "npc_has_trait": "PF_CHILD" }, { "not": { "npc_has_effect": "PF_infant" } } ] },
+        "then": [ { "math": [ "pf_pm_sel_kid = 1" ] } ]
+      },
+      {
+        "if": { "npc_has_effect": "PF_toddler" },
+        "then": [
+          { "math": [ "pf_pm_sel_tod = 1" ] },
+          {
+            "if": {
+              "and": [ { "math": [ "value_or(n_pf_follow, 0) == 2" ] }, { "compare_string": [ { "npc_val": "pf_carrier" }, "AVATAR" ] } ]
+            },
+            "then": [ { "math": [ "pf_pm_sel_held = 1" ] } ]
+          }
+        ]
+      },
+      {
+        "if": { "npc_has_effect": "PF_infant" },
+        "then": [
+          { "math": [ "pf_pm_sel_baby = 1" ] },
+          {
+            "if": {
+              "and": [ { "math": [ "value_or(n_pf_follow, 0) == 2" ] }, { "compare_string": [ { "npc_val": "pf_carrier" }, "AVATAR" ] } ]
+            },
+            "then": [ { "math": [ "pf_pm_sel_held = 1" ] } ]
+          }
+        ]
+      },
+      {
+        "if": {
+          "and": [
+            { "npc_has_trait": "PF_CHILD" },
+            {
+              "or": [ { "math": [ "value_or(n_pf_needs_home, 0) == 1" ] }, { "math": [ "value_or(n_pf_orphaned, 0) == 1" ] } ]
+            },
+            {
+              "or": [ { "math": [ "has_var(n_pf_guardian) == 0" ] }, { "compare_string": [ { "npc_val": "pf_guardian" }, "none" ] } ]
+            }
+          ]
+        },
+        "then": [ { "math": [ "pf_pm_sel_orphan = 1" ] } ]
+      },
+      {
+        "if": {
+          "and": [ { "math": [ "value_or(n_pf_has_sweet, 0) == 1" ] }, { "compare_string": [ { "npc_val": "pf_sweet" }, "AVATAR" ] } ]
+        },
+        "then": [ { "math": [ "pf_pm_sel_mine = 1" ] } ]
+      },
+      { "math": [ "pf_pm_sel_step = 0" ] },
+      {
+        "if": {
+          "and": [
+            { "npc_has_trait": "PF_CHILD" },
+            { "math": [ "value_or(u_pf_has_sweet, 0) == 1" ] },
+            { "math": [ "value_or(u_pf_rel_stage, 0) >= 2" ] },
+            { "not": { "compare_string": [ { "npc_val": "pf_guardian" }, "AVATAR" ] } },
+            {
+              "or": [
+                { "compare_string": [ { "npc_val": "pf_guardian" }, { "u_val": "pf_sweet" } ] },
+                { "compare_string": [ { "npc_val": "pf_mom" }, { "u_val": "pf_sweet" } ] },
+                { "compare_string": [ { "npc_val": "pf_dad" }, { "u_val": "pf_sweet" } ] }
+              ]
+            }
+          ]
+        },
+        "then": [ { "math": [ "pf_pm_sel_step = 1" ] } ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "has_var(u_pf_late_sweet) == 0" ] },
+            { "math": [ "value_or(u_pf_has_sweet, 0) == 0" ] },
+            { "npc_has_trait": "PF_CHILD" }
+          ]
+        },
+        "then": [
+          { "set_string_var": "pf_name_<npc_val:pf_mom>", "target_var": { "context_val": "lsn" }, "parse_tags": true },
+          {
+            "set_string_var": "pf_reg_<npc_val:pf_mom>_dead",
+            "target_var": { "context_val": "lsd" },
+            "parse_tags": true
+          },
+          { "set_string_var": "-", "target_var": { "global_val": "pf_pm_ls_nm" } },
+          { "copy_var": { "var_val": "lsn" }, "target_var": { "global_val": "pf_pm_ls_nm" } },
+          {
+            "if": { "math": [ "value_or(v_lsd, 0) == 1" ] },
+            "then": [
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_0_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_0_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_0_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_mom" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_1_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_1_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_1_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_mom" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_2_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_2_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_2_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_mom" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_3_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_3_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_3_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_mom" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_4_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_4_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_4_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_mom" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_5_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_5_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_5_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_mom" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_6_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_6_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_6_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_mom" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_7_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_7_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_7_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_mom" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_8_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_8_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_8_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_mom" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_9_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_9_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_9_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_mom" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_10_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_10_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_10_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_mom" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_11_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_11_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_11_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_mom" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_12_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_12_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_12_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_mom" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_13_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_13_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_13_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_mom" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_14_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_14_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_14_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_mom" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_15_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_15_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_15_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_mom" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_16_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_16_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_16_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_mom" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_17_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_17_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_17_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_mom" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_18_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_18_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_18_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_mom" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_19_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_19_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_19_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_mom" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "has_var(u_pf_late_sweet) == 0" ] },
+            { "math": [ "value_or(u_pf_has_sweet, 0) == 0" ] },
+            { "npc_has_trait": "PF_CHILD" }
+          ]
+        },
+        "then": [
+          { "set_string_var": "pf_name_<npc_val:pf_dad>", "target_var": { "context_val": "lsn" }, "parse_tags": true },
+          {
+            "set_string_var": "pf_reg_<npc_val:pf_dad>_dead",
+            "target_var": { "context_val": "lsd" },
+            "parse_tags": true
+          },
+          { "set_string_var": "-", "target_var": { "global_val": "pf_pm_ls_nm" } },
+          { "copy_var": { "var_val": "lsn" }, "target_var": { "global_val": "pf_pm_ls_nm" } },
+          {
+            "if": { "math": [ "value_or(v_lsd, 0) == 1" ] },
+            "then": [
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_0_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_0_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_0_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_dad" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_1_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_1_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_1_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_dad" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_2_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_2_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_2_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_dad" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_3_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_3_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_3_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_dad" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_4_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_4_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_4_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_dad" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_5_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_5_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_5_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_dad" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_6_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_6_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_6_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_dad" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_7_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_7_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_7_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_dad" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_8_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_8_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_8_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_dad" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_9_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_9_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_9_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_dad" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_10_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_10_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_10_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_dad" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_11_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_11_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_11_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_dad" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_12_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_12_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_12_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_dad" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_13_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_13_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_13_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_dad" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_14_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_14_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_14_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_dad" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_15_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_15_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_15_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_dad" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_16_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_16_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_16_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_dad" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_17_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_17_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_17_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_dad" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_18_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_18_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_18_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_dad" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_19_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_19_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_19_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_dad" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "has_var(u_pf_late_sweet) == 0" ] },
+            { "math": [ "value_or(u_pf_has_sweet, 0) == 0" ] },
+            { "npc_has_trait": "PF_CHILD" }
+          ]
+        },
+        "then": [
+          { "set_string_var": "pf_name_<npc_val:pf_guardian>", "target_var": { "context_val": "lsn" }, "parse_tags": true },
+          {
+            "set_string_var": "pf_reg_<npc_val:pf_guardian>_dead",
+            "target_var": { "context_val": "lsd" },
+            "parse_tags": true
+          },
+          { "set_string_var": "-", "target_var": { "global_val": "pf_pm_ls_nm" } },
+          { "copy_var": { "var_val": "lsn" }, "target_var": { "global_val": "pf_pm_ls_nm" } },
+          {
+            "if": { "math": [ "value_or(v_lsd, 0) == 1" ] },
+            "then": [
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_0_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_0_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_0_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_guardian" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_1_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_1_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_1_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_guardian" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_2_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_2_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_2_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_guardian" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_3_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_3_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_3_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_guardian" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_4_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_4_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_4_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_guardian" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_5_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_5_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_5_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_guardian" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_6_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_6_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_6_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_guardian" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_7_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_7_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_7_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_guardian" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_8_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_8_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_8_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_guardian" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_9_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_9_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_9_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_guardian" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_10_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_10_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_10_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_guardian" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_11_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_11_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_11_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_guardian" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_12_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_12_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_12_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_guardian" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_13_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_13_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_13_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_guardian" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_14_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_14_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_14_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_guardian" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_15_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_15_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_15_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_guardian" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_16_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_16_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_16_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_guardian" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_17_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_17_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_17_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_guardian" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_18_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_18_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_18_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_guardian" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "value_or(pf_ev_19_you, 0) == 1" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_19_kind" }, "wed" ] },
+                    { "compare_string": [ { "global_val": "pf_ev_19_youname" }, { "global_val": "pf_pm_ls_nm" } ] }
+                  ]
+                },
+                "then": [ { "copy_var": { "npc_val": "pf_guardian" }, "target_var": { "u_val": "pf_late_sweet" } } ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": {
+          "and": [
+            { "npc_has_trait": "PF_CHILD" },
+            { "math": [ "has_var(u_pf_late_sweet)" ] },
+            { "not": { "compare_string": [ { "npc_val": "pf_guardian" }, "AVATAR" ] } },
+            {
+              "or": [
+                { "compare_string": [ { "npc_val": "pf_guardian" }, { "u_val": "pf_late_sweet" } ] },
+                { "compare_string": [ { "npc_val": "pf_mom" }, { "u_val": "pf_late_sweet" } ] },
+                { "compare_string": [ { "npc_val": "pf_dad" }, { "u_val": "pf_late_sweet" } ] }
+              ]
+            }
+          ]
+        },
+        "then": [ { "math": [ "pf_pm_sel_step = 1" ] } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_act_flirt",
+    "condition": {
+      "and": [
+        { "math": [ "pf_pm_sel_adult == 1" ] },
+        { "math": [ "value_or(pf_set_romance, 2) == 2" ] },
+        { "math": [ "pf_pm_sel_warm + pf_pm_sel_mine > 0" ] }
+      ]
+    },
+    "effect": [
+      {
+        "run_eocs": "PF_ROM_flirt",
+        "beta_talker": { "global_val": "pf_pm_sel_id" },
+        "false_eocs": [
+          {
+            "id": "PF_PM_flirt_no",
+            "effect": [ { "u_message": "Give it a little while before you try again.", "type": "info" } ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_act_confess",
+    "condition": {
+      "and": [
+        { "math": [ "pf_pm_sel_adult == 1" ] },
+        { "math": [ "value_or(pf_set_romance, 2) == 2" ] },
+        { "math": [ "pf_pm_sel_mine == 0" ] },
+        { "math": [ "pf_pm_sel_warm == 1" ] }
+      ]
+    },
+    "effect": [ { "run_eocs": "PF_ROM_confess_you", "beta_talker": { "global_val": "pf_pm_sel_id" } } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_act_marry",
+    "condition": { "and": [ { "math": [ "pf_pm_sel_mine == 1" ] }, { "math": [ "pf_pm_sel_stage == 2" ] } ] },
+    "effect": [ { "run_eocs": "PF_HEART_you_propose", "beta_talker": { "global_val": "pf_pm_sel_id" } } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_act_takein",
+    "condition": { "math": [ "pf_pm_sel_orphan == 1" ] },
+    "effect": [ { "run_eocs": "PF_FAM_you_take_in", "beta_talker": { "global_val": "pf_pm_sel_id" } } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_act_stepadopt",
+    "condition": { "math": [ "value_or(pf_pm_sel_step, 0) == 1" ] },
+    "effect": [ { "run_eocs": "PF_FAM_you_take_in", "beta_talker": { "global_val": "pf_pm_sel_id" } } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_act_pickup",
+    "condition": { "and": [ { "math": [ "pf_pm_sel_baby == 1" ] }, { "math": [ "pf_pm_sel_held == 0" ] } ] },
+    "effect": [ { "run_eocs": "PF_FAM_you_pick_up", "beta_talker": { "global_val": "pf_pm_sel_id" } } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_act_setdown",
+    "condition": { "math": [ "pf_pm_sel_held == 1" ] },
+    "effect": [ { "run_eocs": "PF_FAM_you_set_down", "beta_talker": { "global_val": "pf_pm_sel_id" } } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_act_hand",
+    "condition": { "and": [ { "math": [ "pf_pm_sel_tod == 1" ] }, { "math": [ "pf_pm_sel_held == 0" ] } ] },
+    "effect": [ { "run_eocs": "PF_FAM_you_take_hand", "beta_talker": { "global_val": "pf_pm_sel_id" } } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_act_letgo",
+    "condition": { "and": [ { "math": [ "pf_pm_sel_tod == 1" ] }, { "math": [ "pf_pm_sel_held == 1" ] } ] },
+    "effect": [ { "run_eocs": "PF_FAM_you_let_go", "beta_talker": { "global_val": "pf_pm_sel_id" } } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_act_teach",
+    "condition": { "math": [ "pf_pm_sel_kid == 1" ] },
+    "effect": [ { "run_eocs": "PF_FAM_you_teach", "beta_talker": { "global_val": "pf_pm_sel_id" } } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_act_invite",
+    "condition": {
+      "and": [
+        { "math": [ "pf_pm_sel_adult == 1" ] },
+        { "math": [ "pf_pm_sel_res == 0" ] },
+        { "math": [ "value_or(pf_home_set, 0) == 1" ] }
+      ]
+    },
+    "effect": [ { "run_eocs": "PF_HOME_invite", "beta_talker": { "global_val": "pf_pm_sel_id" } } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_act_role",
+    "condition": { "and": [ { "math": [ "pf_pm_sel_adult == 1" ] }, { "math": [ "pf_pm_sel_res == 1" ] } ] },
+    "effect": [ { "run_eocs": "PF_HOME_role_next", "beta_talker": { "global_val": "pf_pm_sel_id" } } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_act_end",
+    "condition": { "math": [ "pf_pm_sel_mine == 1" ] },
+    "effect": [ { "run_eocs": "PF_HEART_you_end", "beta_talker": { "global_val": "pf_pm_sel_id" } } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_act_meal",
+    "condition": {
+      "and": [
+        { "math": [ "value_or(pf_pm_sel_baby, 0) == 0" ] },
+        {
+          "or": [
+            { "u_has_item_category": "food" },
+            {
+              "math": [ "(value_or(pf_home_set, 0) == 1) * (distance(pf_pm_center, pf_home_loc) <= 30) * (value_or(pf_residents_n, 0) > 0)" ]
+            }
+          ]
+        }
+      ]
+    },
+    "effect": [
+      {
+        "run_eocs": "PF_PM_do_meal",
+        "beta_talker": { "global_val": "pf_pm_sel_id" },
+        "false_eocs": [ { "id": "PF_PM_gone_meal", "effect": [ { "u_message": "They're not here anymore.", "type": "info" } ] } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_do_meal",
+    "//": "Alpha = you, beta = the person.  Once a day with each person: a meal_shared moment between you (both views).  It uses one thing to eat (yours, else the stores at home) and you get half of it.",
+    "effect": [
+      {
+        "if": { "math": [ "value_or(n_pf_meal_you_day, -1) == floor(time('now') / time('1 d'))" ] },
+        "then": [ { "u_message": "You've already eaten with <npc_name> today.", "type": "info" } ],
+        "else": [
+          { "math": [ "pf_ml_ok = 0" ] },
+          { "run_eocs": "PF_ENGINE_caps" },
+          {
+            "if": {
+              "math": [
+                "(pf_ml_ok == 0) * (value_or(pf_home_set, 0) == 1) * (distance(pf_pm_center, pf_home_loc) <= 30) * has_var(pf_stores_loc)"
+              ]
+            },
+            "then": [
+              {
+                "u_map_run_item_eocs": "random",
+                "loc": { "global_val": "pf_stores_loc" },
+                "min_radius": 0,
+                "max_radius": 2,
+                "search_data": [
+                  {
+                    "category": "food",
+                    "condition": {
+                      "and": [
+                        {
+                          "and": [
+                            { "math": [ "n_calories() > 0" ] },
+                            { "math": [ "n_val('count') == 1" ] },
+                            {
+                              "or": [ { "math": [ "value_or(pf_eng_level, 0) < 16" ] }, { "not": { "npc_has_flag": "PF_ROTTEN" } } ]
+                            }
+                          ]
+                        },
+                        { "not": { "npc_has_flag": "RAW" } }
+                      ]
+                    }
+                  }
+                ],
+                "true_eocs": [ "PF_PM_meal_take" ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_ml_ok == 0" ] },
+            "then": [
+              {
+                "u_run_inv_eocs": "random",
+                "search_data": [
+                  {
+                    "category": "food",
+                    "condition": {
+                      "and": [
+                        {
+                          "and": [
+                            { "math": [ "n_calories() > 0" ] },
+                            { "math": [ "n_val('count') == 1" ] },
+                            {
+                              "or": [ { "math": [ "value_or(pf_eng_level, 0) < 16" ] }, { "not": { "npc_has_flag": "PF_ROTTEN" } } ]
+                            }
+                          ]
+                        },
+                        { "not": { "npc_has_flag": "RAW" } }
+                      ]
+                    }
+                  }
+                ],
+                "true_eocs": [ "PF_PM_meal_take" ]
+              }
+            ]
+          },
+          {
+            "if": {
+              "math": [
+                "(pf_ml_ok == 0) * (value_or(pf_home_set, 0) == 1) * (distance(pf_pm_center, pf_home_loc) <= 30) * has_var(pf_stores_loc)"
+              ]
+            },
+            "then": [
+              {
+                "u_map_run_item_eocs": "random",
+                "loc": { "global_val": "pf_stores_loc" },
+                "min_radius": 0,
+                "max_radius": 2,
+                "search_data": [
+                  {
+                    "category": "food",
+                    "condition": {
+                      "and": [
+                        { "math": [ "n_calories() > 0" ] },
+                        { "math": [ "n_val('count') == 1" ] },
+                        {
+                          "or": [ { "math": [ "value_or(pf_eng_level, 0) < 16" ] }, { "not": { "npc_has_flag": "PF_ROTTEN" } } ]
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "true_eocs": [ "PF_PM_meal_take" ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_ml_ok == 0" ] },
+            "then": [
+              {
+                "u_run_inv_eocs": "random",
+                "search_data": [
+                  {
+                    "category": "food",
+                    "condition": {
+                      "and": [
+                        { "math": [ "n_calories() > 0" ] },
+                        { "math": [ "n_val('count') == 1" ] },
+                        {
+                          "or": [ { "math": [ "value_or(pf_eng_level, 0) < 16" ] }, { "not": { "npc_has_flag": "PF_ROTTEN" } } ]
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "true_eocs": [ "PF_PM_meal_take" ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_ml_ok == 0" ] },
+            "then": [ { "u_message": "You've nothing to eat to share with <npc_name>.", "type": "info" } ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_ml_ok == 1" ] },
+        "then": [
+          { "math": [ "n_pf_meal_you_day = floor(time('now') / time('1 d'))" ] },
+          { "run_eocs": "PF_PM_walk_to_center", "alpha_talker": "npc" },
+          {
+            "if": { "math": [ "distance(pf_pm_center, 'npc') > 6" ] },
+            "then": [ { "u_message": "You hold up the food, and <npc_name> comes over to share it.", "type": "info" } ]
+          },
+          {
+            "if": { "npc_has_trait": "PF_CHILD" },
+            "then": [
+              {
+                "if": { "math": [ "value_or(pf_kmeal_used, 0) >= 15" ] },
+                "then": [ { "math": [ "pf_kmeal_used = 2 ^ value_or(pf_kmeal_used_last, 0)" ] } ]
+              },
+              { "math": [ "_p = rand(3)" ] },
+              {
+                "if": { "math": [ "floor(value_or(pf_kmeal_used, 0) / (2 ^ _p)) % 2 == 1" ] },
+                "then": [ { "math": [ "_p = (_p + 1) % 4" ] } ]
+              },
+              {
+                "if": { "math": [ "floor(value_or(pf_kmeal_used, 0) / (2 ^ _p)) % 2 == 1" ] },
+                "then": [ { "math": [ "_p = (_p + 1) % 4" ] } ]
+              },
+              {
+                "if": { "math": [ "floor(value_or(pf_kmeal_used, 0) / (2 ^ _p)) % 2 == 1" ] },
+                "then": [ { "math": [ "_p = (_p + 1) % 4" ] } ]
+              },
+              { "math": [ "pf_kmeal_used = value_or(pf_kmeal_used, 0) + 2 ^ _p" ] },
+              { "math": [ "pf_kmeal_used_last = _p" ] },
+              {
+                "if": { "math": [ "_p == 0" ] },
+                "then": [ { "u_message": "<npc_name> eats fast, watching you over the food like you might take it back.", "type": "info" } ]
+              },
+              {
+                "if": { "math": [ "_p == 1" ] },
+                "then": [
+                  {
+                    "u_message": "You split your food with <npc_name>.  They save the last bite for later, just in case.",
+                    "type": "info"
+                  }
+                ]
+              },
+              {
+                "if": { "math": [ "_p == 2" ] },
+                "then": [
+                  {
+                    "u_message": "<npc_name> eats beside you and, halfway through, starts telling you about a dog they used to have.",
+                    "type": "info"
+                  }
+                ]
+              },
+              {
+                "if": { "math": [ "_p == 3" ] },
+                "then": [ { "u_message": "<npc_name> takes the food with both hands and says thank you twice.", "type": "info" } ]
+              }
+            ],
+            "else": [
+              {
+                "if": { "math": [ "value_or(pf_meal_used, 0) >= 127" ] },
+                "then": [ { "math": [ "pf_meal_used = 2 ^ value_or(pf_meal_used_last, 0)" ] } ]
+              },
+              { "math": [ "_p = rand(6)" ] },
+              {
+                "if": { "math": [ "floor(value_or(pf_meal_used, 0) / (2 ^ _p)) % 2 == 1" ] },
+                "then": [ { "math": [ "_p = (_p + 1) % 7" ] } ]
+              },
+              {
+                "if": { "math": [ "floor(value_or(pf_meal_used, 0) / (2 ^ _p)) % 2 == 1" ] },
+                "then": [ { "math": [ "_p = (_p + 1) % 7" ] } ]
+              },
+              {
+                "if": { "math": [ "floor(value_or(pf_meal_used, 0) / (2 ^ _p)) % 2 == 1" ] },
+                "then": [ { "math": [ "_p = (_p + 1) % 7" ] } ]
+              },
+              {
+                "if": { "math": [ "floor(value_or(pf_meal_used, 0) / (2 ^ _p)) % 2 == 1" ] },
+                "then": [ { "math": [ "_p = (_p + 1) % 7" ] } ]
+              },
+              {
+                "if": { "math": [ "floor(value_or(pf_meal_used, 0) / (2 ^ _p)) % 2 == 1" ] },
+                "then": [ { "math": [ "_p = (_p + 1) % 7" ] } ]
+              },
+              {
+                "if": { "math": [ "floor(value_or(pf_meal_used, 0) / (2 ^ _p)) % 2 == 1" ] },
+                "then": [ { "math": [ "_p = (_p + 1) % 7" ] } ]
+              },
+              { "math": [ "pf_meal_used = value_or(pf_meal_used, 0) + 2 ^ _p" ] },
+              { "math": [ "pf_meal_used_last = _p" ] },
+              {
+                "if": { "math": [ "_p == 0" ] },
+                "then": [
+                  {
+                    "u_message": "You sit down with <npc_name> and split what you've got.  Neither of you says much, and that's fine.",
+                    "type": "info"
+                  }
+                ]
+              },
+              {
+                "if": { "math": [ "_p == 1" ] },
+                "then": [
+                  {
+                    "u_message": "You eat with <npc_name>.  Somewhere in the middle of it they tell you where they were when it started.",
+                    "type": "info"
+                  }
+                ]
+              },
+              {
+                "if": { "math": [ "_p == 2" ] },
+                "then": [
+                  { "u_message": "You and <npc_name> share what you have, passing it back and forth until it's gone.", "type": "info" }
+                ]
+              },
+              {
+                "if": { "math": [ "_p == 3" ] },
+                "then": [
+                  {
+                    "u_message": "<npc_name> eats with you, slowly, like someone who has learned not to waste a mouthful.",
+                    "type": "info"
+                  }
+                ]
+              },
+              {
+                "if": { "math": [ "_p == 4" ] },
+                "then": [
+                  {
+                    "u_message": "You eat with <npc_name>.  They ask what you did before, and actually listen to the answer.",
+                    "type": "info"
+                  }
+                ]
+              },
+              {
+                "if": { "math": [ "_p == 5" ] },
+                "then": [ { "u_message": "<npc_name> eats with you and points out which roads are clear and which aren't.", "type": "info" } ]
+              },
+              {
+                "if": { "math": [ "_p == 6" ] },
+                "then": [
+                  {
+                    "u_message": "You and <npc_name> eat without talking, both of you watching the road.  It's still company.",
+                    "type": "info"
+                  }
+                ]
+              }
+            ]
+          },
+          { "math": [ "pf_m_str_in = 45" ] },
+          { "run_eocs": "PF_MK_meal_shared", "beta_talker": "npc" },
+          { "math": [ "pf_meals_you_total = value_or(pf_meals_you_total, 0) + 1" ] },
+          { "math": [ "pf_court_say = 0" ] },
+          { "run_eocs": "PF_PM_court_read", "alpha_talker": "npc" },
+          {
+            "if": { "math": [ "pf_court_say == 1" ] },
+            "then": [
+              {
+                "u_message": "<npc_name> has started keeping a place for you when you sit down.  They're warming to you.",
+                "type": "good"
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_court_say == 2" ] },
+            "then": [
+              {
+                "u_message": "<npc_name> lingers after the meal and asks, as if it doesn't matter, how many people live at your place.  Ask them now and they might say yes.",
+                "type": "good"
+              }
+            ]
+          },
+          { "u_message": "One <global_val:pf_ml_food>, split two ways.", "type": "info" }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_meal_take",
+    "//": "u = you, npc = one thing to eat (one portion: a solid food item, or a liquid of one serving).  Half of it is yours; the item is used up.",
+    "effect": [
+      { "set_string_var": "<npc_name>", "target_var": { "global_val": "pf_ml_food" }, "parse_tags": true },
+      { "run_eocs": "PF_ENGINE_eat_share" },
+      { "math": [ "pf_ml_ok = 1" ] },
+      "npc_die"
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ENGINE_eat_share",
+    "//": "Stock build: u = the eater, npc = the food.  Half its calories and vitamins straight into the body.",
+    "effect": [
+      { "math": [ "u_calories() = u_calories() + n_calories() / 2" ] },
+      { "math": [ "u_vitamin('calcium') = u_vitamin('calcium') + n_vitamin('calcium') / 2" ] },
+      { "math": [ "u_vitamin('iron') = u_vitamin('iron') + n_vitamin('iron') / 2" ] },
+      { "math": [ "u_vitamin('vitC') = u_vitamin('vitC') + n_vitamin('vitC') / 2" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_court_read",
+    "//": "u = someone you just ate with (not living with you, not a child).  pf_court_say = the courting step they just reached (1 warming, 2 ready to say yes), or 0.",
+    "condition": { "and": [ { "math": [ "value_or(u_pf_resident, 0) == 0" ] }, { "not": { "u_has_trait": "PF_CHILD" } } ] },
+    "effect": [
+      { "run_eocs": "PF_ID_ensure" },
+      { "set_string_var": "AVATAR", "target_var": { "global_val": "pf_m_other" } },
+      { "run_eocs": "PF_VIEW_read" },
+      {
+        "math": [ "_cs = (pf_read_w >= 20) + ((pf_read_w >= 35) * (pf_read_t >= 25) + (pf_read_w >= 50) * (pf_read_t >= 15) > 0)" ]
+      },
+      {
+        "if": { "math": [ "_cs > value_or(u_pf_court_stage, 0)" ] },
+        "then": [ { "math": [ "u_pf_court_stage = _cs" ] }, { "math": [ "pf_court_say = _cs" ] } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_act_tend",
+    "condition": { "math": [ "value_or(pf_pm_sel_hurt, 0) == 1" ] },
+    "effect": [
+      { "math": [ "pf_pm_sel_near = (pf_pm_sel_dist <= 3) + (pf_pm_sel_dist <= 20) * (pf_pm_sel_baby == 0) > 0" ] },
+      { "run_eocs": "PF_THREAT_scan" },
+      { "math": [ "pf_pm_sel_calm = pf_threat == 0" ] },
+      {
+        "if": { "math": [ "pf_pm_sel_near == 0" ] },
+        "then": [ { "u_message": "You'd need to be right beside them.", "type": "info" } ],
+        "else": [
+          {
+            "if": { "math": [ "pf_pm_sel_calm == 0" ] },
+            "then": [ { "u_message": "Not with the dead this close.  Deal with them first.", "type": "bad" } ],
+            "else": [
+              {
+                "if": { "math": [ "pf_pm_sel_dist > 3" ] },
+                "then": [
+                  { "run_eocs": "PF_PM_walk_to_center", "alpha_talker": { "global_val": "pf_pm_sel_id" } },
+                  { "u_message": "You wave <global_val:pf_pm_sel_name> over and sit them down.", "type": "info" }
+                ]
+              },
+              {
+                "run_eocs": "PF_PM_do_tend",
+                "beta_talker": { "global_val": "pf_pm_sel_id" },
+                "false_eocs": [ { "id": "PF_PM_gone_tend", "effect": [ { "u_message": "They're not here anymore.", "type": "info" } ] } ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_do_tend",
+    "//": "Alpha = you, beta = the wounded person.  Same as a carer's tending (PF_RK_tend_do): a little hp back on every main part, bleeding stopped, bites cleaned; care from you (60).",
+    "effect": [
+      { "math": [ "n_hp('torso') = min(n_hp('torso') + 8, n_hp_max('torso'))" ] },
+      { "math": [ "n_hp('head') = min(n_hp('head') + 8, n_hp_max('head'))" ] },
+      { "math": [ "n_hp('arm_l') = min(n_hp('arm_l') + 8, n_hp_max('arm_l'))" ] },
+      { "math": [ "n_hp('arm_r') = min(n_hp('arm_r') + 8, n_hp_max('arm_r'))" ] },
+      { "math": [ "n_hp('leg_l') = min(n_hp('leg_l') + 8, n_hp_max('leg_l'))" ] },
+      { "math": [ "n_hp('leg_r') = min(n_hp('leg_r') + 8, n_hp_max('leg_r'))" ] },
+      { "npc_lose_effect": "bleed", "target_part": "ALL" },
+      { "npc_lose_effect": "bite", "target_part": "ALL" },
+      { "math": [ "n_pf_tended_t = time('now')" ] },
+      {
+        "if": { "npc_has_effect": "PF_infant" },
+        "then": [
+          {
+            "u_message": "You clean <npc_name>'s cuts and wrap them tight.  They scream the whole time, which is a good sign.",
+            "type": "good"
+          }
+        ],
+        "else": [
+          {
+            "if": { "npc_has_trait": "PF_CHILD" },
+            "then": [
+              {
+                "u_message": "You kneel beside <npc_name> with a rag and some clean water.  \"Hold still.\"  They hold still, mostly.",
+                "type": "good"
+              }
+            ],
+            "else": [
+              {
+                "u_message": "You kneel beside <npc_name> with a rag and some clean water, clean the wounds and wrap what's torn.",
+                "type": "good"
+              }
+            ]
+          }
+        ]
+      },
+      { "math": [ "pf_m_str_in = 60" ] },
+      { "run_eocs": "PF_MK_care_given" },
+      { "math": [ "pf_tended_total = value_or(pf_tended_total, 0) + 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_act_talk",
+    "effect": [
+      {
+        "run_eocs": "PF_PM_do_talk",
+        "beta_talker": { "global_val": "pf_pm_sel_id" },
+        "false_eocs": [ { "id": "PF_PM_gone_talk", "effect": [ { "u_message": "They're not here anymore.", "type": "info" } ] } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_do_talk",
+    "//": "An empty topic makes open_dialogue talk to the beta talker; a non-object value is never read and counts as a JSON error.",
+    "effect": [ { "open_dialogue": { "topic": "" } } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_act_call",
+    "condition": { "math": [ "value_or(pf_pm_sel_baby, 0) == 0" ] },
+    "effect": [
+      { "u_location_variable": { "global_val": "pf_pm_center" } },
+      { "math": [ "pf_cl_ok = 1" ] },
+      {
+        "run_eocs": "PF_PM_call_check",
+        "alpha_talker": { "global_val": "pf_pm_sel_id" },
+        "false_eocs": [
+          {
+            "id": "PF_PM_gone_call",
+            "effect": [ { "math": [ "pf_cl_ok = 0" ] }, { "u_message": "They're not here anymore.", "type": "info" } ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_cl_ok == 2" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_cl_name> is too far off to hear you, and you won't call a child across open ground alone.  Go and get them.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_cl_ok == 3" ] },
+        "then": [
+          {
+            "u_message": "The dead are too close to <global_val:pf_cl_name>.  If you call, they'll come running straight past them.  Go and get them.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_cl_ok == 1" ] },
+        "then": [ { "run_eocs": "PF_PM_walk_to_center", "alpha_talker": { "global_val": "pf_pm_sel_id" } } ]
+      },
+      {
+        "if": { "math": [ "pf_cl_ok == 1" ] },
+        "then": [
+          {
+            "if": { "and": [ { "math": [ "pf_pm_sel_band == 1" ] }, { "math": [ "value_or(pf_pm_sel_res, 0) == 0" ] } ] },
+            "then": [ { "u_message": "You wave them over.  They wave back and come over for a bit.", "type": "info" } ],
+            "else": [ { "u_message": "You wave them over.", "type": "info" } ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_call_check",
+    "//": "u = the person you'd call.  For a child: pf_cl_ok 2 if farther than 30 tiles, 3 if anything hostile is within 10 of them.",
+    "condition": { "u_has_trait": "PF_CHILD" },
+    "effect": [
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_cl_name" }, "parse_tags": true },
+      { "u_location_variable": { "u_val": "pf_pos" } },
+      {
+        "if": { "math": [ "distance(u_pf_pos, pf_pm_center) > 30" ] },
+        "then": [ { "math": [ "pf_cl_ok = 2" ] } ],
+        "else": [
+          {
+            "if": { "math": [ "u_monsters_nearby('radius': 10, 'attitude': 'hostile') > 0" ] },
+            "then": [ { "math": [ "pf_cl_ok = 3" ] } ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_walk_to_center",
+    "effect": [
+      { "math": [ "u_pf_wave_until = time('now') + time('30 m')" ] },
+      { "copy_var": { "global_val": "pf_pm_center" }, "target_var": { "u_val": "pf_walk_to" } },
+      { "location_variable_adjust": { "u_val": "pf_walk_to" }, "x_adjust": 1 },
+      { "u_set_guard_pos": { "u_val": "pf_walk_to" } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_act_fire",
+    "condition": { "math": [ "value_or(pf_pm_sel_baby, 0) == 0" ] },
+    "effect": [
+      { "math": [ "pf_pm_fire_band = (pf_pm_sel_band == 1) * (value_or(pf_pm_sel_res, 0) == 0)" ] },
+      {
+        "u_location_variable": { "global_val": "pf_pm_fire" },
+        "field": "fd_fire",
+        "target_max_radius": 40,
+        "true_eocs": [
+          {
+            "id": "PF_PM_fire_found",
+            "effect": [
+              { "run_eocs": "PF_PM_walk_to_fire", "alpha_talker": { "global_val": "pf_pm_sel_id" } },
+              {
+                "if": { "math": [ "pf_pm_fire_band == 1" ] },
+                "then": [ { "u_message": "You point them to the fire.  They nod, but they stay with their people.", "type": "info" } ],
+                "else": [ { "u_message": "They head for the fire.", "type": "info" } ]
+              }
+            ]
+          }
+        ],
+        "false_eocs": [
+          {
+            "id": "PF_PM_fire_none",
+            "effect": [
+              { "u_location_variable": { "global_val": "pf_pm_center" } },
+              {
+                "if": {
+                  "and": [ { "math": [ "value_or(pf_home_set, 0) == 1" ] }, { "math": [ "distance(pf_pm_center, pf_home_loc) <= 40" ] } ]
+                },
+                "then": [
+                  { "copy_var": { "global_val": "pf_home_loc" }, "target_var": { "global_val": "pf_pm_fire" } },
+                  { "run_eocs": "PF_PM_walk_to_fire", "alpha_talker": { "global_val": "pf_pm_sel_id" } },
+                  {
+                    "if": { "math": [ "pf_pm_fire_band == 1" ] },
+                    "then": [
+                      {
+                        "u_message": "No fire is lit, so you ask them to come and sit with your people at home.  They nod, but they stay with their own.",
+                        "type": "info"
+                      }
+                    ],
+                    "else": [
+                      {
+                        "u_message": "No fire is lit, so you ask them to come and sit with your people at home.  They head over.",
+                        "type": "info"
+                      }
+                    ]
+                  }
+                ],
+                "else": [ { "u_message": "There's no fire burning within 40 tiles.", "type": "info" } ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_walk_to_fire",
+    "//": "Sits them one tile south of the fire (plus or minus one east-west), not in it.",
+    "effect": [
+      { "copy_var": { "global_val": "pf_pm_fire" }, "target_var": { "u_val": "pf_walk_to" } },
+      {
+        "location_variable_adjust": { "u_val": "pf_walk_to" },
+        "x_adjust": { "math": [ "rand(2) - 1" ] },
+        "y_adjust": 1
+      },
+      { "u_set_guard_pos": { "u_val": "pf_walk_to" } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_act_supply",
+    "condition": {
+      "and": [
+        { "math": [ "value_or(pf_pm_sel_baby, 0) == 0" ] },
+        { "math": [ "pf_pm_sel_band == 1" ] },
+        { "math": [ "value_or(pf_pm_sel_res, 0) == 0" ] },
+        { "math": [ "value_or(pf_pm_sel_adult, 0) == 1" ] }
+      ]
+    },
+    "effect": [
+      {
+        "if": { "math": [ "floor(time('now') / time('1 d')) - pf_pm_sel_supd < 3" ] },
+        "then": [ { "u_message": "You brought them supplies only a day or two ago.  Give it a few days.", "type": "info" } ],
+        "else": [
+          { "run_eocs": "PF_STORES_count" },
+          { "math": [ "pf_sp_src = 0" ] },
+          {
+            "if": { "math": [ "pf_dr_real >= 12" ] },
+            "then": [ { "math": [ "pf_sp_src = 1" ] } ],
+            "else": [ { "if": { "u_has_items": { "item": "PF_supply_sack", "count": 1 } }, "then": [ { "math": [ "pf_sp_src = 2" ] } ] } ]
+          },
+          {
+            "if": { "math": [ "pf_sp_src == 0" ] },
+            "then": [
+              {
+                "u_message": "You've nothing to bring them.  Near home the stores do (a dozen things to eat there); away from home, pack a sack first (Home: Pack a sack of supplies).",
+                "type": "info"
+              }
+            ],
+            "else": [
+              {
+                "if": { "math": [ "pf_sp_src == 1" ] },
+                "then": [
+                  { "math": [ "pf_sp_took = 0" ] },
+                  {
+                    "u_map_run_item_eocs": "all",
+                    "loc": { "global_val": "pf_stores_loc" },
+                    "min_radius": 0,
+                    "max_radius": 2,
+                    "search_data": [ { "category": [ "food" ] } ],
+                    "true_eocs": [
+                      {
+                        "id": "PF_PM_supply_take",
+                        "effect": [ { "if": { "math": [ "pf_sp_took < 6" ] }, "then": [ { "math": [ "pf_sp_took += 1" ] }, "npc_die" ] } ]
+                      }
+                    ]
+                  }
+                ],
+                "else": [ { "u_consume_item": "PF_supply_sack", "count": 1 } ]
+              },
+              {
+                "run_eocs": {
+                  "id": "PF_PM_supply_name",
+                  "effect": [ { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_sp_who" }, "parse_tags": true } ]
+                },
+                "alpha_talker": { "global_val": "pf_pm_sel_id" }
+              },
+              { "math": [ "pf_sp_n = 0" ] },
+              {
+                "u_run_npc_eocs": [
+                  {
+                    "id": "PF_PM_supply_one",
+                    "condition": {
+                      "and": [ { "math": [ "value_or(u_pf_band, 0) == pf_pm_sel_bandid" ] }, { "math": [ "value_or(u_pf_resident, 0) == 0" ] } ]
+                    },
+                    "effect": [
+                      { "math": [ "u_pf_supplied_day = floor(time('now') / time('1 d'))" ] },
+                      { "math": [ "pf_sp_n += 1" ] },
+                      { "u_set_talker": { "global_val": "pf_sp_t" } },
+                      { "math": [ "pf_m_str_in = 60" ] },
+                      {
+                        "run_eocs": "PF_MK_care_given",
+                        "alpha_talker": "avatar",
+                        "beta_talker": { "global_val": "pf_sp_t" }
+                      }
+                    ]
+                  }
+                ],
+                "local": true,
+                "npc_range": 60
+              },
+              {
+                "if": { "math": [ "pf_sp_src == 1" ] },
+                "then": [
+                  {
+                    "u_message": "You fill a sack from the stores and carry it out to <global_val:pf_sp_who>'s people.  <global_val:pf_sp_who> looks at it for a long moment before taking it.",
+                    "type": "info"
+                  }
+                ],
+                "else": [
+                  {
+                    "u_message": "You hand <global_val:pf_sp_who> the sack you've carried all this way.  <global_val:pf_sp_who> opens it, looks at you, and doesn't say anything for a moment.",
+                    "type": "info"
+                  }
+                ]
+              },
+              { "math": [ "pf_supplies_given_total = value_or(pf_supplies_given_total, 0) + 1" ] }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_act_info",
+    "effect": [
+      {
+        "run_eocs": "PF_PM_show_info",
+        "beta_talker": { "global_val": "pf_pm_sel_id" },
+        "false_eocs": [ { "id": "PF_PM_gone_info", "effect": [ { "u_message": "They're not here anymore.", "type": "info" } ] } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_show_info",
+    "//": "Alpha = avatar, beta = the NPC.  What a player sees is in words, from their own point of view; the numbers only with the test labs shown.",
+    "effect": [
+      { "run_eocs": "PF_PM_info_npc_side", "alpha_talker": "npc" },
+      { "copy_var": { "npc_val": "pf_uid" }, "target_var": { "global_val": "pf_m_other" } },
+      { "run_eocs": "PF_VIEW_read" },
+      { "math": [ "pf_show_my_w = round(pf_read_w)" ] },
+      { "math": [ "pf_show_my_t = round(pf_read_t)" ] },
+      { "math": [ "pf_show_my_x = round(pf_read_x)" ] },
+      { "copy_var": { "global_val": "pf_read_tier_name" }, "target_var": { "global_val": "pf_show_my_tier" } },
+      { "math": [ "pf_show_my_tn = pf_read_tier" ] },
+      {
+        "switch": { "math": [ "pf_show_their_tn" ] },
+        "cases": [
+          { "case": 0, "effect": { "set_string_var": "a stranger", "target_var": { "global_val": "pf_show_their_ph" } } },
+          {
+            "case": 1,
+            "effect": { "set_string_var": "someone they know", "target_var": { "global_val": "pf_show_their_ph" } }
+          },
+          {
+            "case": 2,
+            "effect": { "set_string_var": "a companion", "target_var": { "global_val": "pf_show_their_ph" } }
+          },
+          {
+            "case": 3,
+            "effect": { "set_string_var": "someone close", "target_var": { "global_val": "pf_show_their_ph" } }
+          },
+          {
+            "case": 4,
+            "effect": { "set_string_var": "someone they'd die for", "target_var": { "global_val": "pf_show_their_ph" } }
+          }
+        ]
+      },
+      {
+        "switch": { "math": [ "pf_show_my_tn" ] },
+        "cases": [
+          { "case": 0, "effect": { "set_string_var": "a stranger", "target_var": { "global_val": "pf_show_my_ph" } } },
+          {
+            "case": 1,
+            "effect": { "set_string_var": "someone you know", "target_var": { "global_val": "pf_show_my_ph" } }
+          },
+          {
+            "case": 2,
+            "effect": { "set_string_var": "a companion", "target_var": { "global_val": "pf_show_my_ph" } }
+          },
+          {
+            "case": 3,
+            "effect": { "set_string_var": "someone close", "target_var": { "global_val": "pf_show_my_ph" } }
+          },
+          {
+            "case": 4,
+            "effect": { "set_string_var": "someone you'd die for", "target_var": { "global_val": "pf_show_my_ph" } }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "value_or(pf_set_labs, 0) == 0" ] },
+        "then": [
+          {
+            "if": { "math": [ "pf_show_my_w >= 30" ] },
+            "then": [
+              {
+                "u_message": "<npc_name> seems to see you as <global_val:pf_show_their_ph>.  To you, they're <global_val:pf_show_my_ph>.  By now you'd say they're <global_val:pf_show_temper> (<global_val:pf_show_quirk>).",
+                "type": "info"
+              }
+            ],
+            "else": [
+              {
+                "u_message": "<npc_name> seems to see you as <global_val:pf_show_their_ph>.  To you, they're <global_val:pf_show_my_ph>.  You don't know them well enough yet to say what they're like.",
+                "type": "info"
+              }
+            ]
+          }
+        ],
+        "else": [
+          {
+            "u_message": "[debug] <npc_name> (<global_val:pf_show_temper>, <global_val:pf_show_quirk>) sees you as <global_val:pf_show_their_tier>: warmth <global_val:pf_show_their_w>, trust <global_val:pf_show_their_t>, tension <global_val:pf_show_their_x>.  You see them as <global_val:pf_show_my_tier>: warmth <global_val:pf_show_my_w>, trust <global_val:pf_show_my_t>, tension <global_val:pf_show_my_x>.  They hold <global_val:pf_show_mem_n> memories; the latest: <global_val:pf_show_mem_kind>.  Romance: <global_val:pf_show_rom>, <global_val:pf_show_open>; attraction to you <global_val:pf_show_a>; <global_val:pf_show_stage>: <global_val:pf_show_sweet>.",
+            "type": "info"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_moments_shown",
+    "//": "The moments lab, only with Settings: test labs shown.",
+    "condition": { "math": [ "value_or(pf_set_labs, 0) == 1" ] },
+    "effect": [ { "run_eocs": "PF_PM_moments" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_info_npc_side",
+    "//": "u = the NPC.  Reads their view of the avatar and their personality into pf_show_* globals.",
+    "effect": [
+      { "run_eocs": "PF_ID_ensure" },
+      { "set_string_var": "AVATAR", "target_var": { "global_val": "pf_m_other" } },
+      { "run_eocs": "PF_VIEW_read" },
+      { "math": [ "pf_show_their_w = round(pf_read_w)" ] },
+      { "math": [ "pf_show_their_t = round(pf_read_t)" ] },
+      { "math": [ "pf_show_their_x = round(pf_read_x)" ] },
+      { "copy_var": { "global_val": "pf_read_tier_name" }, "target_var": { "global_val": "pf_show_their_tier" } },
+      { "math": [ "pf_show_their_tn = pf_read_tier" ] },
+      { "set_string_var": "even-tempered", "target_var": { "global_val": "pf_show_temper" } },
+      {
+        "if": { "u_has_trait": "PF_T_SOCIABLE" },
+        "then": [ { "set_string_var": "sociable", "target_var": { "global_val": "pf_show_temper" } } ]
+      },
+      {
+        "if": { "u_has_trait": "PF_T_LONER" },
+        "then": [ { "set_string_var": "a loner", "target_var": { "global_val": "pf_show_temper" } } ]
+      },
+      { "set_string_var": "no quirk", "target_var": { "global_val": "pf_show_quirk" } },
+      {
+        "if": { "u_has_trait": "PF_Q_LOYAL" },
+        "then": [ { "set_string_var": "loyal to a fault", "target_var": { "global_val": "pf_show_quirk" } } ]
+      },
+      {
+        "if": { "u_has_trait": "PF_Q_HATES_WASTE" },
+        "then": [ { "set_string_var": "hates waste", "target_var": { "global_val": "pf_show_quirk" } } ]
+      },
+      {
+        "if": { "u_has_trait": "PF_Q_MOTHER_HEN" },
+        "then": [ { "set_string_var": "a mother hen", "target_var": { "global_val": "pf_show_quirk" } } ]
+      },
+      {
+        "if": { "u_has_trait": "PF_Q_GALLOWS" },
+        "then": [ { "set_string_var": "gallows humor", "target_var": { "global_val": "pf_show_quirk" } } ]
+      },
+      {
+        "if": { "u_has_trait": "PF_Q_PROUD" },
+        "then": [ { "set_string_var": "proud", "target_var": { "global_val": "pf_show_quirk" } } ]
+      },
+      { "math": [ "pf_show_a = round(pf_read_a)" ] },
+      { "set_string_var": "not romantic", "target_var": { "global_val": "pf_show_rom" } },
+      {
+        "if": { "math": [ "value_or(u_pf_rom, 0) == 1" ] },
+        "then": [
+          {
+            "switch": { "math": [ "u_pf_orient" ] },
+            "cases": [
+              { "case": 0, "effect": { "set_string_var": "drawn to women", "target_var": { "global_val": "pf_show_rom" } } },
+              {
+                "case": 1,
+                "effect": { "set_string_var": "drawn to men", "target_var": { "global_val": "pf_show_rom" } }
+              },
+              {
+                "case": 2,
+                "effect": { "set_string_var": "drawn to anyone", "target_var": { "global_val": "pf_show_rom" } }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "value_or(u_pf_adult, 0) == 0" ] },
+        "then": [ { "set_string_var": "a child: never part of romance", "target_var": { "global_val": "pf_show_rom" } } ]
+      },
+      { "set_string_var": "set in their feelings", "target_var": { "global_val": "pf_show_open" } },
+      {
+        "if": { "math": [ "value_or(u_pf_open, 0) >= 0.5" ] },
+        "then": [ { "set_string_var": "can warm up", "target_var": { "global_val": "pf_show_open" } } ]
+      },
+      {
+        "if": { "math": [ "value_or(u_pf_open, 0) >= 0.9" ] },
+        "then": [ { "set_string_var": "easily swayed", "target_var": { "global_val": "pf_show_open" } } ]
+      },
+      { "set_string_var": "nobody", "target_var": { "global_val": "pf_show_sweet" } },
+      {
+        "switch": { "math": [ "value_or(u_pf_rel_stage, 0)" ] },
+        "cases": [
+          { "case": 0, "effect": { "set_string_var": "sweetheart", "target_var": { "global_val": "pf_show_stage" } } },
+          { "case": 1, "effect": { "set_string_var": "sweetheart", "target_var": { "global_val": "pf_show_stage" } } },
+          { "case": 2, "effect": { "set_string_var": "partner", "target_var": { "global_val": "pf_show_stage" } } },
+          { "case": 3, "effect": { "set_string_var": "spouse", "target_var": { "global_val": "pf_show_stage" } } }
+        ]
+      },
+      {
+        "if": { "math": [ "value_or(u_pf_has_sweet, 0) == 1" ] },
+        "then": [
+          { "set_string_var": "pf_name_<u_val:pf_sweet>", "target_var": { "context_val": "sn" }, "parse_tags": true },
+          { "copy_var": { "var_val": "sn" }, "target_var": { "global_val": "pf_show_sweet" } },
+          {
+            "if": { "compare_string": [ { "u_val": "pf_sweet" }, "AVATAR" ] },
+            "then": [ { "set_string_var": "you", "target_var": { "global_val": "pf_show_sweet" } } ]
+          }
+        ]
+      },
+      { "math": [ "pf_show_mem_n = value_or(u_pf_mem_count, 0)" ] },
+      { "set_string_var": "none", "target_var": { "global_val": "pf_show_mem_kind" } },
+      {
+        "if": { "math": [ "pf_show_mem_n > 0" ] },
+        "then": [
+          { "math": [ "u_pf_tmp_last = (value_or(u_pf_mem_next, 0) + 7) % 8" ] },
+          {
+            "set_string_var": "u_pf_mem_<u_val:pf_tmp_last>_kind",
+            "target_var": { "context_val": "lk" },
+            "parse_tags": true
+          },
+          { "copy_var": { "var_val": "lk" }, "target_var": { "global_val": "pf_show_mem_kind" } }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_moments",
+    "effect": [
+      {
+        "run_eoc_selector": [
+          "PF_PM_mk_meal_shared",
+          "PF_PM_mk_care_given",
+          "PF_PM_mk_gift",
+          "PF_PM_mk_saved_life",
+          "PF_PM_mk_shared_danger",
+          "PF_PM_mk_watch_covered",
+          "PF_PM_mk_argument",
+          "PF_PM_mk_insult",
+          "PF_PM_mk_wasted_food",
+          "PF_PM_mk_betrayal",
+          "PF_PM_age_60"
+        ],
+        "names": [
+          "Share a meal",
+          "Tend to them (care)",
+          "Give them a gift",
+          "Save their life",
+          "Face danger together",
+          "Cover their watch",
+          "Argue with them",
+          "Insult them",
+          "Waste food in front of them",
+          "Betray them",
+          "[test] 60 days pass without contact"
+        ],
+        "keys": [ "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k" ],
+        "title": "[lab] What happens between you and <global_val:pf_pm_sel_label>?",
+        "allow_cancel": true
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_mk_meal_shared",
+    "effect": [
+      {
+        "run_eocs": "PF_MK_meal_shared",
+        "beta_talker": { "global_val": "pf_pm_sel_id" },
+        "false_eocs": [ { "id": "PF_PM_mk_meal_shared_gone", "effect": [ { "u_message": "They're not here anymore.", "type": "info" } ] } ]
+      },
+      { "run_eocs": "PF_PM_act_info" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_mk_care_given",
+    "effect": [
+      {
+        "run_eocs": "PF_MK_care_given",
+        "beta_talker": { "global_val": "pf_pm_sel_id" },
+        "false_eocs": [ { "id": "PF_PM_mk_care_given_gone", "effect": [ { "u_message": "They're not here anymore.", "type": "info" } ] } ]
+      },
+      { "run_eocs": "PF_PM_act_info" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_mk_gift",
+    "effect": [
+      {
+        "run_eocs": "PF_MK_gift",
+        "beta_talker": { "global_val": "pf_pm_sel_id" },
+        "false_eocs": [ { "id": "PF_PM_mk_gift_gone", "effect": [ { "u_message": "They're not here anymore.", "type": "info" } ] } ]
+      },
+      { "run_eocs": "PF_PM_act_info" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_mk_saved_life",
+    "effect": [
+      {
+        "run_eocs": "PF_MK_saved_life",
+        "beta_talker": { "global_val": "pf_pm_sel_id" },
+        "false_eocs": [ { "id": "PF_PM_mk_saved_life_gone", "effect": [ { "u_message": "They're not here anymore.", "type": "info" } ] } ]
+      },
+      { "run_eocs": "PF_PM_act_info" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_mk_shared_danger",
+    "effect": [
+      {
+        "run_eocs": "PF_MK_shared_danger",
+        "beta_talker": { "global_val": "pf_pm_sel_id" },
+        "false_eocs": [ { "id": "PF_PM_mk_shared_danger_gone", "effect": [ { "u_message": "They're not here anymore.", "type": "info" } ] } ]
+      },
+      { "run_eocs": "PF_PM_act_info" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_mk_watch_covered",
+    "effect": [
+      {
+        "run_eocs": "PF_MK_watch_covered",
+        "beta_talker": { "global_val": "pf_pm_sel_id" },
+        "false_eocs": [ { "id": "PF_PM_mk_watch_covered_gone", "effect": [ { "u_message": "They're not here anymore.", "type": "info" } ] } ]
+      },
+      { "run_eocs": "PF_PM_act_info" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_mk_argument",
+    "effect": [
+      {
+        "run_eocs": "PF_MK_argument",
+        "beta_talker": { "global_val": "pf_pm_sel_id" },
+        "false_eocs": [ { "id": "PF_PM_mk_argument_gone", "effect": [ { "u_message": "They're not here anymore.", "type": "info" } ] } ]
+      },
+      { "run_eocs": "PF_PM_act_info" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_mk_insult",
+    "effect": [
+      {
+        "run_eocs": "PF_MK_insult",
+        "beta_talker": { "global_val": "pf_pm_sel_id" },
+        "false_eocs": [ { "id": "PF_PM_mk_insult_gone", "effect": [ { "u_message": "They're not here anymore.", "type": "info" } ] } ]
+      },
+      { "run_eocs": "PF_PM_act_info" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_mk_wasted_food",
+    "effect": [
+      {
+        "run_eocs": "PF_MK_wasted_food",
+        "beta_talker": { "global_val": "pf_pm_sel_id" },
+        "false_eocs": [ { "id": "PF_PM_mk_wasted_food_gone", "effect": [ { "u_message": "They're not here anymore.", "type": "info" } ] } ]
+      },
+      { "run_eocs": "PF_PM_act_info" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_mk_betrayal",
+    "effect": [
+      {
+        "run_eocs": "PF_MK_betrayal",
+        "beta_talker": { "global_val": "pf_pm_sel_id" },
+        "false_eocs": [ { "id": "PF_PM_mk_betrayal_gone", "effect": [ { "u_message": "They're not here anymore.", "type": "info" } ] } ]
+      },
+      { "run_eocs": "PF_PM_act_info" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_age_60",
+    "//": "[test] Ages the selected person's view of you by 60 days, to check lazy decay and its floor without waiting months.",
+    "effect": [
+      { "run_eocs": "PF_PM_age_60_npc", "beta_talker": { "global_val": "pf_pm_sel_id" } },
+      { "run_eocs": "PF_PM_act_info" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_age_60_npc",
+    "effect": [ { "run_eocs": "PF_PM_age_60_view", "alpha_talker": "npc" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_age_60_view",
+    "effect": [
+      { "set_string_var": "AVATAR", "target_var": { "global_val": "pf_m_other" } },
+      {
+        "set_string_var": "u_pf_v_<global_val:pf_m_other>_l",
+        "target_var": { "context_val": "rl" },
+        "parse_tags": true
+      },
+      { "if": { "math": [ "value_or(v_rl, -1) >= 0" ] }, "then": [ { "math": [ "v_rl = v_rl - time('60 d')" ] } ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_SET_open",
+    "//": "Settings screen.  Each choice cycles a value and reopens the screen.",
+    "effect": [
+      {
+        "switch": { "math": [ "value_or(pf_set_romance, 2)" ] },
+        "cases": [
+          { "case": 0, "effect": { "set_string_var": "Romance: off", "target_var": { "global_val": "pf_set_l_rom" } } },
+          {
+            "case": 1,
+            "effect": { "set_string_var": "Romance: between NPCs only", "target_var": { "global_val": "pf_set_l_rom" } }
+          },
+          {
+            "case": 2,
+            "effect": {
+              "set_string_var": "Romance: on (people may fall for you, and you for them)",
+              "target_var": { "global_val": "pf_set_l_rom" }
+            }
+          }
+        ]
+      },
+      {
+        "switch": { "math": [ "value_or(pf_set_chatter, 1)" ] },
+        "cases": [
+          {
+            "case": 0,
+            "effect": {
+              "set_string_var": "Chatter: quiet (no activity narration or glances at the fire)",
+              "target_var": { "global_val": "pf_set_l_chat" }
+            }
+          },
+          {
+            "case": 1,
+            "effect": { "set_string_var": "Chatter: normal", "target_var": { "global_val": "pf_set_l_chat" } }
+          }
+        ]
+      },
+      {
+        "switch": { "math": [ "value_or(pf_alife_on, 1)" ] },
+        "cases": [
+          {
+            "case": 0,
+            "effect": { "set_string_var": "A-Life simulation: paused", "target_var": { "global_val": "pf_set_l_alife" } }
+          },
+          {
+            "case": 1,
+            "effect": { "set_string_var": "A-Life simulation: running", "target_var": { "global_val": "pf_set_l_alife" } }
+          }
+        ]
+      },
+      {
+        "switch": { "math": [ "value_or(pf_set_bands, 8)" ] },
+        "cases": [
+          {
+            "case": 0,
+            "effect": {
+              "set_string_var": "People in the world: none (only those you meet some other way)",
+              "target_var": { "global_val": "pf_set_l_bands" }
+            }
+          },
+          {
+            "case": 4,
+            "effect": { "set_string_var": "People in the world: few (up to 4 bands)", "target_var": { "global_val": "pf_set_l_bands" } }
+          },
+          {
+            "case": 8,
+            "effect": { "set_string_var": "People in the world: some (up to 8 bands)", "target_var": { "global_val": "pf_set_l_bands" } }
+          },
+          {
+            "case": 16,
+            "effect": { "set_string_var": "People in the world: many (up to 16 bands)", "target_var": { "global_val": "pf_set_l_bands" } }
+          }
+        ]
+      },
+      {
+        "set_string_var": "People each person keeps track of: <global_val:pf_known_cap>",
+        "target_var": { "global_val": "pf_set_l_known" },
+        "parse_tags": true
+      },
+      {
+        "switch": { "math": [ "value_or(pf_set_jealousy, 1)" ] },
+        "cases": [
+          {
+            "case": 0,
+            "effect": { "set_string_var": "Jealousy and breakups: off", "target_var": { "global_val": "pf_set_l_jeal" } }
+          },
+          {
+            "case": 1,
+            "effect": { "set_string_var": "Jealousy and breakups: on", "target_var": { "global_val": "pf_set_l_jeal" } }
+          }
+        ]
+      },
+      {
+        "switch": { "math": [ "value_or(pf_set_preg, 1)" ] },
+        "cases": [
+          { "case": 0, "effect": { "set_string_var": "Pregnancy: off", "target_var": { "global_val": "pf_set_l_preg" } } },
+          {
+            "case": 1,
+            "effect": { "set_string_var": "Pregnancy: on", "target_var": { "global_val": "pf_set_l_preg" } }
+          }
+        ]
+      },
+      {
+        "switch": { "math": [ "value_or(pf_set_grow, 1)" ] },
+        "cases": [
+          {
+            "case": 0,
+            "effect": {
+              "set_string_var": "Growing up: realistic (9-month pregnancy, 18 years to adulthood)",
+              "target_var": { "global_val": "pf_set_l_grow" }
+            }
+          },
+          {
+            "case": 1,
+            "effect": {
+              "set_string_var": "Growing up: accelerated (a month's pregnancy, a year of childhood per month)",
+              "target_var": { "global_val": "pf_set_l_grow" }
+            }
+          },
+          {
+            "case": 2,
+            "effect": { "set_string_var": "Growing up: fast (for testing)", "target_var": { "global_val": "pf_set_l_grow" } }
+          }
+        ]
+      },
+      {
+        "switch": { "math": [ "value_or(pf_horn_on, 1)" ] },
+        "cases": [
+          {
+            "case": 0,
+            "effect": { "set_string_var": "The Horn (camp alarm): off", "target_var": { "global_val": "pf_set_l_horn" } }
+          },
+          {
+            "case": 1,
+            "effect": { "set_string_var": "The Horn (camp alarm): on", "target_var": { "global_val": "pf_set_l_horn" } }
+          }
+        ]
+      },
+      {
+        "switch": { "math": [ "value_or(pf_set_defend, 1)" ] },
+        "cases": [
+          {
+            "case": 0,
+            "effect": { "set_string_var": "Standing up for each other: off", "target_var": { "global_val": "pf_set_l_defend" } }
+          },
+          {
+            "case": 1,
+            "effect": { "set_string_var": "Standing up for each other: on (engine build)", "target_var": { "global_val": "pf_set_l_defend" } }
+          }
+        ]
+      },
+      {
+        "switch": { "math": [ "value_or(pf_set_labs, 0)" ] },
+        "cases": [
+          {
+            "case": 0,
+            "effect": { "set_string_var": "Test labs and debug log: hidden", "target_var": { "global_val": "pf_set_l_labs" } }
+          },
+          {
+            "case": 1,
+            "effect": { "set_string_var": "Test labs and debug log: shown", "target_var": { "global_val": "pf_set_l_labs" } }
+          }
+        ]
+      },
+      {
+        "run_eoc_selector": [
+          "PF_SET_rom",
+          "PF_SET_chat",
+          "PF_SET_alife",
+          "PF_SET_bands",
+          "PF_SET_known",
+          "PF_SET_jeal",
+          "PF_SET_preg",
+          "PF_SET_grow",
+          "PF_SET_horn",
+          "PF_SET_defend",
+          "PF_SET_labs"
+        ],
+        "names": [
+          { "global_val": "pf_set_l_rom" },
+          { "global_val": "pf_set_l_chat" },
+          { "global_val": "pf_set_l_alife" },
+          { "global_val": "pf_set_l_bands" },
+          { "global_val": "pf_set_l_known" },
+          { "global_val": "pf_set_l_jeal" },
+          { "global_val": "pf_set_l_preg" },
+          { "global_val": "pf_set_l_grow" },
+          { "global_val": "pf_set_l_horn" },
+          { "global_val": "pf_set_l_defend" },
+          { "global_val": "pf_set_l_labs" }
+        ],
+        "descriptions": [
+          "Cycles on, between NPCs only, and off.  Off stops new attraction from turning into glances or confessions (bonds keep their values).",
+          "Quiet keeps the evenings' bonds but drops the narration lines about what people are doing.",
+          "The off-screen world: bands traveling, hunting and camping while you're away.",
+          "How many bands live in the world around you.  New ones turn up at the edge of what you can see, every few hours, until there are this many.",
+          "Dunbar's layers: 15 (close circle), 50 (friends), 150 (everyone you know).  More costs save size, not CPU.",
+          "Whether a glance can make someone jealous, and whether couples can fall apart.",
+          "Whether partners (adults, never children) can have children.",
+          "How fast pregnancy and childhood go.  Few runs last 18 game years, so accelerated is the default.",
+          "When something hostile comes close, someone raises the alarm, children are taken away and adults go to meet it.",
+          "People fight for those they're bonded to (family, partner, band, household, close friends, you if they like you enough).  Needs the People First engine build; on the official game it does nothing.",
+          "For testing the mod: shows the lab menus in the People First menu and the A-Life debug line in the message log."
+        ],
+        "keys": [ "r", "c", "a", "b", "k", "j", "p", "g", "h", "d", "t" ],
+        "title": "People First settings",
+        "allow_cancel": true
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_SET_rom",
+    "effect": [ { "math": [ "pf_set_romance = (value_or(pf_set_romance, 2) + 2) % 3" ] }, { "run_eocs": "PF_SET_open" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_SET_chat",
+    "effect": [ { "math": [ "pf_set_chatter = 1 - value_or(pf_set_chatter, 1)" ] }, { "run_eocs": "PF_SET_open" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_SET_alife",
+    "effect": [ { "math": [ "pf_alife_on = 1 - value_or(pf_alife_on, 1)" ] }, { "run_eocs": "PF_SET_open" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_SET_bands",
+    "effect": [
+      {
+        "math": [
+          "pf_set_bands = value_or(pf_set_bands, 8) >= 16 ? 0 : (value_or(pf_set_bands, 8) == 0 ? 4 : value_or(pf_set_bands, 8) * 2)"
+        ]
+      },
+      { "run_eocs": "PF_SET_open" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_SET_jeal",
+    "effect": [ { "math": [ "pf_set_jealousy = 1 - value_or(pf_set_jealousy, 1)" ] }, { "run_eocs": "PF_SET_open" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_SET_preg",
+    "effect": [ { "math": [ "pf_set_preg = 1 - value_or(pf_set_preg, 1)" ] }, { "run_eocs": "PF_SET_open" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_SET_grow",
+    "effect": [
+      { "math": [ "pf_pace_old = (value_or(pf_set_grow, 1) == 0 ? 1 : (value_or(pf_set_grow, 1) == 1 ? 12 : 120))" ] },
+      { "math": [ "pf_term_old = (value_or(pf_set_grow, 1) == 0 ? 270 : (value_or(pf_set_grow, 1) == 1 ? 30 : 3))" ] },
+      { "math": [ "pf_set_grow = (value_or(pf_set_grow, 1) + 1) % 3" ] },
+      { "run_eocs": "PF_FAM_repace" },
+      { "run_eocs": "PF_SET_open" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_SET_horn",
+    "effect": [ { "math": [ "pf_horn_on = 1 - value_or(pf_horn_on, 1)" ] }, { "run_eocs": "PF_SET_open" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_SET_defend",
+    "effect": [ { "math": [ "pf_set_defend = 1 - value_or(pf_set_defend, 1)" ] }, { "run_eocs": "PF_SET_open" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_SET_labs",
+    "effect": [
+      { "math": [ "pf_set_labs = 1 - value_or(pf_set_labs, 0)" ] },
+      { "math": [ "pf_debug = pf_set_labs" ] },
+      { "run_eocs": "PF_SET_open" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_SET_known",
+    "effect": [
+      { "math": [ "pf_known_cap = pf_known_cap < 50 ? 50 : (pf_known_cap < 150 ? 150 : 15)" ] },
+      { "run_eocs": "PF_SET_open" }
+    ]
+  }
+]

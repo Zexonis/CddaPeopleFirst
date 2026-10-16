@@ -1,0 +1,12 @@
+[
+  {
+    "type": "MOD_INFO",
+    "id": "people_first",
+    "name": "People First",
+    "authors": [ "lexator300" ],
+    "description": "Survivors with inner lives, memories, and each other, living in a world that keeps moving when you're not looking.  They bond, fall in love, marry and raise children, keep the watch, and build a home that grows into a town with its own meetings, laws, walls and neighbors.  Open the People menu with the comma key to see it all.  Pair with People First: Engine on the patched build for the full experience.",
+    "category": "content",
+    "version": "0.8",
+    "dependencies": [ "dda" ]
+  }
+]

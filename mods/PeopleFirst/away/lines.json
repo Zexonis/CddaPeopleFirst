@@ -1,0 +1,117 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_SAY_away",
+    "//": "u = avatar.  Every away/homecoming line (variable 'line').",
+    "effect": [
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "welcome_short" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> spots you first.  \"Look who it is.\"  You've been gone <global_val:pf_aw_gone_t>.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "welcome_mid" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> sees you coming and walks the last bit of the way out to meet you.  \"There you are.  Gone <global_val:pf_aw_gone_t>, and not a word.  We were starting to talk about you.\"",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "welcome_long" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> just looks at you for a long moment.  \"We'd started to think you weren't coming back.\"  You've been gone <global_val:pf_aw_gone_t>.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "welcome_none" ] },
+        "then": [ { "u_message": "Nobody makes a fuss.  The place got on without you for <global_val:pf_aw_gone_t>.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "news_head" ] },
+        "then": [ { "u_message": "While you were away:", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "pantry" ] },
+        "then": [
+          { "u_message": "There's food at home: what the place put by while you were gone, set aside for you.", "type": "good" }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "days_warm" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_aw_wm_a> and <global_val:pf_aw_wm_b> spent the evenings together while you were gone.  It shows.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "days_tense" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_aw_tn_a> and <global_val:pf_aw_tn_b> had words more than once while you were gone.  Everyone has an opinion about it.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "days_met" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_aw_mt_a> and <global_val:pf_aw_mt_b> got to know each other a little while you were gone.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "hurt_back" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> has a bandage on one arm and a story about the night the raiders came.  They tell it twice before supper.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "meeting_waited" ] },
+        "then": [ { "u_message": "There's a meeting tonight, now that you're back.  The last one waited for you.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "meeting_held" ] },
+        "then": [
+          {
+            "u_message": "On <global_val:pf_aw_meet_dwhen>, <global_val:pf_chief_name> held the meeting without you.  You hear how it went:",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "grave" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_aw_dead_name>'s grave is behind the place: fresh earth, and a marker with the name scratched in.  Someone has left flowers.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "grave_none" ] },
+        "then": [
+          {
+            "u_message": "They buried <global_val:pf_aw_dead_name> while you were gone.  People keep starting to say the name and stopping.",
+            "type": "bad"
+          }
+        ]
+      }
+    ]
+  }
+]

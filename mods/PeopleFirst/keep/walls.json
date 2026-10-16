@@ -1,0 +1,363 @@
+[
+  {
+    "type": "ter_furn_transform",
+    "id": "PF_KEEP_t_wall",
+    "terrain": [
+      {
+        "result": "t_palisade",
+        "valid_terrain": [
+          "t_grass",
+          "t_grass_long",
+          "t_grass_dead",
+          "t_grass_tall",
+          "t_grass_golf",
+          "t_grass_white",
+          "t_dirt",
+          "t_underbrush",
+          "t_moss",
+          "t_sand"
+        ]
+      }
+    ]
+  },
+  {
+    "type": "ter_furn_transform",
+    "id": "PF_KEEP_t_gate",
+    "terrain": [
+      {
+        "result": "t_privacy_fencegate_o",
+        "valid_terrain": [
+          "t_grass",
+          "t_grass_long",
+          "t_grass_dead",
+          "t_grass_tall",
+          "t_grass_golf",
+          "t_grass_white",
+          "t_dirt",
+          "t_underbrush",
+          "t_moss",
+          "t_sand"
+        ]
+      }
+    ]
+  },
+  {
+    "type": "ter_furn_transform",
+    "id": "PF_KEEP_t_shut",
+    "terrain": [
+      {
+        "result": "t_privacy_fencegate_c",
+        "valid_terrain": [ "t_privacy_fencegate_o", "t_palisade_gate_o", "t_palisade_gate" ]
+      }
+    ]
+  },
+  {
+    "type": "ter_furn_transform",
+    "id": "PF_KEEP_t_open",
+    "terrain": [
+      {
+        "result": "t_privacy_fencegate_o",
+        "valid_terrain": [ "t_privacy_fencegate_c", "t_palisade_gate", "t_palisade_gate_o" ]
+      }
+    ]
+  },
+  {
+    "type": "morale_type",
+    "id": "PF_morale_held",
+    "text": "The place held"
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KEEP_wall_start",
+    "//": "u = avatar.  Home menu: Build a wall around the place.  From the next morning, one side a day (north, east, south, west), a gate in each.",
+    "condition": { "and": [ { "math": [ "value_or(pf_home_set, 0) == 1" ] }, { "math": [ "value_or(pf_wall_state, 0) == 0" ] } ] },
+    "effect": [
+      { "math": [ "pf_wall_state = 1" ] },
+      { "math": [ "pf_wall_side = 0" ] },
+      { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "wall_start" } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KEEP_wall_tick",
+    "//": "Once a day, 08:00-12:00, while the wall is going up and you're home (the map is loaded) with 2+ grown-ups living here: the next side goes up.  Not on the rest day.",
+    "recurrence": "30 minutes",
+    "global": true,
+    "condition": {
+      "and": [
+        { "math": [ "value_or(pf_home_set, 0) == 1" ] },
+        { "math": [ "value_or(pf_wall_state, 0) == 1" ] },
+        { "math": [ "time_since('midnight', 'unit': 'hours') >= 8" ] },
+        { "math": [ "time_since('midnight', 'unit': 'hours') < 12" ] },
+        { "math": [ "value_or(pf_wall_day, -1) != floor(time('now') / time('1 d'))" ] },
+        { "math": [ "(value_or(pf_law_rest, 0) == 1) * (floor(time('now') / time('1 d')) % 7 == 2) == 0" ] }
+      ]
+    },
+    "effect": [
+      { "math": [ "pf_wall_day = floor(time('now') / time('1 d'))" ] },
+      { "u_location_variable": { "global_val": "pf_kp_av" } },
+      {
+        "if": { "math": [ "distance(pf_kp_av, pf_home_loc) <= 30" ] },
+        "then": [
+          { "run_eocs": "PF_KEEP_count" },
+          { "if": { "math": [ "pf_kp_n >= 2" ] }, "then": [ { "run_eocs": "PF_KEEP_wall_side" } ] }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KEEP_wall_side",
+    "//": "u = avatar.  One side of the wall.  First, nobody is walled in: anyone standing on the line (people, you included) steps 2 tiles inward, and any monster on it is pushed 2 tiles outward (an in-bubble teleport, same turn).  Then a palisade over open ground (grass, dirt, brush; never buildings, roads or the field), a gate in the middle.  The tinkerer (or the smith, or whoever's most able) leads the work.",
+    "effect": [
+      { "math": [ "pf_wall_side = value_or(pf_wall_side, 0) + 1" ] },
+      { "math": [ "pf_wl_side = pf_wall_side" ] },
+      {
+        "if": { "math": [ "pf_wl_side == 1" ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_home_loc" }, "target_var": { "global_val": "pf_wl_at" } },
+          { "location_variable_adjust": { "global_val": "pf_wl_at" }, "x_adjust": -12, "y_adjust": -12 },
+          { "math": [ "pf_wl_dx = 1" ] },
+          { "math": [ "pf_wl_dy = 0" ] },
+          { "set_string_var": "north", "target_var": { "global_val": "pf_wl_name" } },
+          { "math": [ "pf_wl_ax = 0" ] },
+          { "math": [ "pf_wl_off = -12" ] },
+          { "math": [ "pf_wl_ix = 0" ] },
+          { "math": [ "pf_wl_iy = 1" ] }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_wl_side == 2" ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_home_loc" }, "target_var": { "global_val": "pf_wl_at" } },
+          { "location_variable_adjust": { "global_val": "pf_wl_at" }, "x_adjust": 12, "y_adjust": -12 },
+          { "math": [ "pf_wl_dx = 0" ] },
+          { "math": [ "pf_wl_dy = 1" ] },
+          { "set_string_var": "east", "target_var": { "global_val": "pf_wl_name" } },
+          { "math": [ "pf_wl_ax = 1" ] },
+          { "math": [ "pf_wl_off = 12" ] },
+          { "math": [ "pf_wl_ix = -1" ] },
+          { "math": [ "pf_wl_iy = 0" ] }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_wl_side == 3" ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_home_loc" }, "target_var": { "global_val": "pf_wl_at" } },
+          { "location_variable_adjust": { "global_val": "pf_wl_at" }, "x_adjust": 12, "y_adjust": 12 },
+          { "math": [ "pf_wl_dx = -1" ] },
+          { "math": [ "pf_wl_dy = 0" ] },
+          { "set_string_var": "south", "target_var": { "global_val": "pf_wl_name" } },
+          { "math": [ "pf_wl_ax = 0" ] },
+          { "math": [ "pf_wl_off = 12" ] },
+          { "math": [ "pf_wl_ix = 0" ] },
+          { "math": [ "pf_wl_iy = -1" ] }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_wl_side == 4" ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_home_loc" }, "target_var": { "global_val": "pf_wl_at" } },
+          { "location_variable_adjust": { "global_val": "pf_wl_at" }, "x_adjust": -12, "y_adjust": 12 },
+          { "math": [ "pf_wl_dx = 0" ] },
+          { "math": [ "pf_wl_dy = -1" ] },
+          { "set_string_var": "west", "target_var": { "global_val": "pf_wl_name" } },
+          { "math": [ "pf_wl_ax = 1" ] },
+          { "math": [ "pf_wl_off = -12" ] },
+          { "math": [ "pf_wl_ix = 1" ] },
+          { "math": [ "pf_wl_iy = 0" ] }
+        ]
+      },
+      { "math": [ "pf_wl_moved = 0" ] },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_KEEP_wall_clear_npc",
+            "effect": [
+              { "u_location_variable": { "u_val": "pf_pos" } },
+              {
+                "if": {
+                  "math": [
+                    "((pf_wl_ax == 0) * (abs(u_pf_pos.y - pf_home_loc.y - pf_wl_off) <= 0) * (abs(u_pf_pos.x - pf_home_loc.x) <= 12) + (pf_wl_ax == 1) * (abs(u_pf_pos.x - pf_home_loc.x - pf_wl_off) <= 0) * (abs(u_pf_pos.y - pf_home_loc.y) <= 12)) > 0"
+                  ]
+                },
+                "then": [
+                  { "copy_var": { "u_val": "pf_pos" }, "target_var": { "u_val": "pf_tp" } },
+                  {
+                    "location_variable_adjust": { "u_val": "pf_tp" },
+                    "x_adjust": { "math": [ "pf_wl_ix * 2 * 1" ] },
+                    "y_adjust": { "math": [ "pf_wl_iy * 2 * 1" ] }
+                  },
+                  { "u_teleport": { "u_val": "pf_tp" }, "force_safe": true },
+                  { "math": [ "pf_wl_moved += 1" ] }
+                ]
+              }
+            ]
+          }
+        ],
+        "local": true,
+        "npc_range": 60
+      },
+      {
+        "run_eocs": {
+          "id": "PF_KEEP_wall_clear_you",
+          "effect": [
+            { "u_location_variable": { "u_val": "pf_pos" } },
+            {
+              "if": {
+                "math": [
+                  "((pf_wl_ax == 0) * (abs(u_pf_pos.y - pf_home_loc.y - pf_wl_off) <= 0) * (abs(u_pf_pos.x - pf_home_loc.x) <= 12) + (pf_wl_ax == 1) * (abs(u_pf_pos.x - pf_home_loc.x - pf_wl_off) <= 0) * (abs(u_pf_pos.y - pf_home_loc.y) <= 12)) > 0"
+                ]
+              },
+              "then": [
+                { "copy_var": { "u_val": "pf_pos" }, "target_var": { "u_val": "pf_tp" } },
+                {
+                  "location_variable_adjust": { "u_val": "pf_tp" },
+                  "x_adjust": { "math": [ "pf_wl_ix * 2 * 1" ] },
+                  "y_adjust": { "math": [ "pf_wl_iy * 2 * 1" ] }
+                },
+                { "u_teleport": { "u_val": "pf_tp" }, "force_safe": true },
+                { "math": [ "pf_wl_moved += 1" ] }
+              ]
+            }
+          ]
+        },
+        "alpha_talker": "avatar"
+      },
+      {
+        "u_run_monster_eocs": [
+          {
+            "id": "PF_KEEP_wall_clear_mon",
+            "effect": [
+              { "u_location_variable": { "u_val": "pf_pos" } },
+              {
+                "if": {
+                  "math": [
+                    "((pf_wl_ax == 0) * (abs(u_pf_pos.y - pf_home_loc.y - pf_wl_off) <= 0) * (abs(u_pf_pos.x - pf_home_loc.x) <= 12) + (pf_wl_ax == 1) * (abs(u_pf_pos.x - pf_home_loc.x - pf_wl_off) <= 0) * (abs(u_pf_pos.y - pf_home_loc.y) <= 12)) > 0"
+                  ]
+                },
+                "then": [
+                  { "copy_var": { "u_val": "pf_pos" }, "target_var": { "u_val": "pf_tp" } },
+                  {
+                    "location_variable_adjust": { "u_val": "pf_tp" },
+                    "x_adjust": { "math": [ "pf_wl_ix * 2 * -1" ] },
+                    "y_adjust": { "math": [ "pf_wl_iy * 2 * -1" ] }
+                  },
+                  { "u_teleport": { "u_val": "pf_tp" }, "force_safe": true },
+                  { "math": [ "pf_wl_moved += 1" ] }
+                ]
+              }
+            ]
+          }
+        ],
+        "monster_range": 60
+      },
+      { "math": [ "pf_wl_i = 0" ] },
+      { "run_eocs": "PF_KEEP_wall_tile", "condition": { "math": [ "pf_wl_i < 24" ] }, "iterations": 26 },
+      { "math": [ "pf_tw_role = 4" ] },
+      { "run_eocs": "PF_TOWN_worker" },
+      {
+        "if": { "math": [ "pf_tw_wbest < 100" ] },
+        "then": [ { "math": [ "pf_tw_role = 8" ] }, { "run_eocs": "PF_TOWN_worker" } ]
+      },
+      {
+        "if": { "math": [ "pf_wall_side >= 4" ] },
+        "then": [
+          { "math": [ "pf_wall_state = 2" ] },
+          { "math": [ "pf_wall_done_t = time('now')" ] },
+          {
+            "u_add_morale": "PF_morale_held",
+            "bonus": 6,
+            "max_bonus": 6,
+            "duration": "1 days",
+            "decay_start": "12 hours"
+          },
+          {
+            "if": { "math": [ "value_or(pf_town_named, 0) == 1" ] },
+            "then": [
+              { "copy_var": { "global_val": "pf_town_name" }, "target_var": { "global_val": "pf_kp_place" } },
+              { "copy_var": { "global_val": "pf_town_name" }, "target_var": { "global_val": "pf_kp_Place" } }
+            ],
+            "else": [
+              { "set_string_var": "the place", "target_var": { "global_val": "pf_kp_place" } },
+              { "set_string_var": "The place", "target_var": { "global_val": "pf_kp_Place" } }
+            ]
+          },
+          { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "wall_done" } }
+        ],
+        "else": [
+          {
+            "if": { "math": [ "value_or(pf_aw_quiet, 0) == 0" ] },
+            "then": [
+              {
+                "if": { "math": [ "pf_tw_wbest >= 0" ] },
+                "then": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "wall_side" } } ],
+                "else": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "wall_side_you" } } ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KEEP_wall_tile",
+    "//": "u = avatar.  One tile of the wall (the middle one is a gate), then a step along the side.",
+    "effect": [
+      {
+        "if": { "math": [ "pf_wl_i == 12" ] },
+        "then": [ { "u_transform_radius": 0, "ter_furn_transform": "PF_KEEP_t_gate", "target_var": { "global_val": "pf_wl_at" } } ],
+        "else": [ { "u_transform_radius": 0, "ter_furn_transform": "PF_KEEP_t_wall", "target_var": { "global_val": "pf_wl_at" } } ]
+      },
+      {
+        "location_variable_adjust": { "global_val": "pf_wl_at" },
+        "x_adjust": { "math": [ "pf_wl_dx" ] },
+        "y_adjust": { "math": [ "pf_wl_dy" ] }
+      },
+      { "math": [ "pf_wl_i += 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KEEP_gates_tick",
+    "//": "Every 30 minutes with a wall: the gates are shut at 22:00 and opened at 06:00 (when you're home, so the map is loaded).  They're wooden privacy gates: anyone can open one to go through.  The first run converts old palisade gates (which need a pulley to open).",
+    "recurrence": "30 minutes",
+    "global": true,
+    "condition": { "and": [ { "math": [ "value_or(pf_home_set, 0) == 1" ] }, { "math": [ "value_or(pf_wall_state, 0) >= 1" ] } ] },
+    "effect": [
+      {
+        "math": [
+          "pf_gt_night = ((time_since('midnight', 'unit': 'hours') >= 22) + (time_since('midnight', 'unit': 'hours') < 6)) > 0"
+        ]
+      },
+      {
+        "if": { "math": [ "value_or(pf_gates_v2, 0) == 0" ] },
+        "then": [ { "math": [ "pf_gates_v2 = 1" ] }, { "math": [ "pf_gates_shut = -1" ] } ]
+      },
+      { "u_location_variable": { "global_val": "pf_kp_av" } },
+      {
+        "if": { "math": [ "(distance(pf_kp_av, pf_home_loc) <= 40) * (pf_gt_night != value_or(pf_gates_shut, 0))" ] },
+        "then": [
+          {
+            "if": { "math": [ "pf_gt_night == 1" ] },
+            "then": [
+              { "u_transform_radius": 13, "ter_furn_transform": "PF_KEEP_t_shut", "target_var": { "global_val": "pf_home_loc" } },
+              { "math": [ "pf_gates_shut = 1" ] },
+              {
+                "if": {
+                  "and": [ { "math": [ "value_or(pf_set_chatter, 1) == 1" ] }, { "math": [ "time_since('midnight', 'unit': 'hours') >= 22" ] } ]
+                },
+                "then": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "gates_shut" } } ]
+              }
+            ],
+            "else": [
+              { "u_transform_radius": 13, "ter_furn_transform": "PF_KEEP_t_open", "target_var": { "global_val": "pf_home_loc" } },
+              { "math": [ "pf_gates_shut = 0" ] }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

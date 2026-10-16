@@ -1,0 +1,143 @@
+[
+  {
+    "type": "mutation",
+    "id": "PF_MENU",
+    "name": { "str": "People First" },
+    "points": 0,
+    "purifiable": false,
+    "valid": false,
+    "description": "Open the People First menu.",
+    "active": true,
+    "activated_eocs": [ "PF_open_menu" ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_on_game_start",
+    "eoc_type": "EVENT",
+    "required_event": "game_start",
+    "effect": [ { "run_eocs": "PF_ensure_setup" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_on_game_load",
+    "eoc_type": "EVENT",
+    "required_event": "game_load",
+    "effect": [ { "run_eocs": "PF_ensure_setup" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_ensure_setup",
+    "//": "Runs on the avatar.  Grants the menu trait and fills in any missing global settings, so old saves pick up new settings too.",
+    "effect": [
+      {
+        "run_eocs": {
+          "id": "PF_ensure_menu_trait",
+          "condition": { "not": { "u_has_trait": "PF_MENU" } },
+          "effect": [ { "u_add_trait": "PF_MENU" } ]
+        }
+      },
+      {
+        "math": [ "pf_alife_on = value_or(pf_alife_on, 1)" ],
+        "//": "v0.4: the world runs by default (it was paused while A-Life was a prototype).  Saves that already have a value keep it."
+      },
+      {
+        "//": "A save from before v3 (test worlds) keeps the labs and the debug log; a new game starts with both hidden.",
+        "run_eocs": {
+          "id": "PF_migrate_settings_v3",
+          "condition": { "math": [ "value_or(pf_settings_v, 0) < 3" ] },
+          "effect": [
+            { "math": [ "pf_set_labs = has_var(pf_settings_v)" ] },
+            { "math": [ "pf_debug = pf_set_labs" ] },
+            { "math": [ "pf_settings_v = 3" ] }
+          ]
+        }
+      },
+      { "math": [ "pf_debug = value_or(pf_debug, 0)" ] },
+      { "math": [ "pf_step = value_or(pf_step, 60)" ] },
+      {
+        "//": "60 keeps the handoff inside the loaded map (the bubble reaches about 66 tiles from the player).",
+        "math": [ "pf_online_range = value_or(pf_online_range, 60)" ]
+      },
+      { "math": [ "pf_arrive_radius = value_or(pf_arrive_radius, 30)" ] },
+      { "math": [ "pf_walk_step = value_or(pf_walk_step, 8)" ] },
+      { "math": [ "pf_people_n = value_or(pf_people_n, 0)" ] },
+      { "math": [ "pf_band_n = value_or(pf_band_n, 0)" ] },
+      { "math": [ "pf_deaths_total = value_or(pf_deaths_total, 0)" ] },
+      { "math": [ "pf_successions_total = value_or(pf_successions_total, 0)" ] },
+      { "math": [ "pf_dissolved_total = value_or(pf_dissolved_total, 0)" ] },
+      { "math": [ "pf_known_cap = value_or(pf_known_cap, 50)" ] },
+      { "math": [ "pf_floor_w = value_or(pf_floor_w, 0.4)" ] },
+      { "math": [ "pf_floor_t = value_or(pf_floor_t, 0.5)" ] },
+      { "math": [ "pf_decay_w = value_or(pf_decay_w, 0.33)" ] },
+      { "math": [ "pf_decay_t = value_or(pf_decay_t, 0.17)" ] },
+      { "math": [ "pf_decay_x = value_or(pf_decay_x, 5)" ] },
+      { "math": [ "pf_mem_min = value_or(pf_mem_min, 40)" ] },
+      { "math": [ "pf_wit_min = value_or(pf_wit_min, 50)" ] },
+      {
+        "//": "Settings migrations for saves made by older builds.",
+        "run_eocs": {
+          "id": "PF_migrate_settings_v2",
+          "condition": { "math": [ "has_var(pf_settings_v) * (value_or(pf_settings_v, 9) < 2)" ] },
+          "effect": [ { "math": [ "pf_online_range = 60" ] }, { "math": [ "pf_settings_v = 2" ] } ]
+        }
+      },
+      { "math": [ "pf_set_bands = value_or(pf_set_bands, 8)" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_open_menu",
+    "effect": [
+      {
+        "run_eoc_selector": [
+          "PF_PM_open",
+          "PF_open_lab_menu_shown",
+          "PF_LL_open_shown",
+          "PF_SET_open",
+          "PF_WEB_open",
+          "PF_JN_open",
+          "PF_KNOWN_open",
+          "PF_HOME_open"
+        ],
+        "names": [
+          "People nearby",
+          "A-Life Lab (prototype tests)",
+          "Life lab (v0.1 tests)",
+          "Settings",
+          "Who is with whom",
+          "Journal",
+          "People you know",
+          "Home"
+        ],
+        "descriptions": [
+          "Who is around you, and what you can do with or for them.",
+          "Debug tools for testing whether people can live and move outside the reality bubble.",
+          "Trigger care, the fire evening, night watch, friction and witness moments on demand.",
+          "Romance, chatter, the A-Life simulation, and how many people each person keeps track of.",
+          "The people around you: who they're with, who they're closest to, who they're at odds with.",
+          "The moments you remember, newest first.",
+          "Everyone you've met: how you see them, how long since anything happened between you, and who is gone.",
+          "Where home is.  Evenings there gather around the table when there's no fire, and the people who live with you come back to it."
+        ],
+        "keys": [ "p", "a", "l", "s", "w", "j", "k", "h" ],
+        "title": "People First",
+        "hide_failing": true,
+        "allow_cancel": true
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_open_lab_menu_shown",
+    "//": "The A-Life Lab, only with Settings: test labs shown.",
+    "condition": { "math": [ "value_or(pf_set_labs, 0) == 1" ] },
+    "effect": [ { "run_eocs": "PF_open_lab_menu" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LL_open_shown",
+    "//": "The Life lab (and the Home and Keep labs inside it), only with Settings: test labs shown.",
+    "condition": { "math": [ "value_or(pf_set_labs, 0) == 1" ] },
+    "effect": [ { "run_eocs": "PF_LL_open" } ]
+  }
+]

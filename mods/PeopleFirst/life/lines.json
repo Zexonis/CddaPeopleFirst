@@ -1,0 +1,1455 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_SAY",
+    "//": "u = avatar.  All spoken lines, picked by the context var 'line'.  Names come from pf_say_a / pf_say_b.",
+    "effect": [
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "care" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> comes over with a steaming mug.  \"Here.  You're soaked through.  Drink this.\"",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "care_cold" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> comes over with a steaming mug.  \"You're shivering.  Here, hold this.\"",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "care_loner" ] },
+        "then": [
+          {
+            "u_message": "When you look up, there's a mug of hot tea by your pack.  <global_val:pf_say_a> is already walking away.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "watch_take" ] },
+        "then": [ { "u_message": "<global_val:pf_say_a>: \"Get some sleep.  I'll take the watch.\"", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "watch_done" ] },
+        "then": [ { "u_message": "<global_val:pf_say_a> kept watch through the night.", "type": "good" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "watch_done_day" ] },
+        "then": [ { "u_message": "<global_val:pf_say_a> kept watch while you slept.", "type": "good" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "watch_short" ] },
+        "then": [ { "u_message": "<global_val:pf_say_a> kept an eye out while you slept.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "bicker" ] },
+        "then": [
+          {
+            "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+            "then": [
+              {
+                "u_message": "<global_val:pf_say_a> and <global_val:pf_say_b> bicker across the table over nothing in particular.",
+                "type": "info"
+              }
+            ],
+            "else": [
+              {
+                "u_message": "<global_val:pf_say_a> and <global_val:pf_say_b> bicker by the fire over nothing in particular.",
+                "type": "info"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "wounds" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> kneels beside you with a rag and some clean water.  \"Hold still.  This is going to sting.\"",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "watch_bandaged" ] },
+        "then": [ { "u_message": "You wake up bandaged.  <global_val:pf_say_a> sat up with you all night.", "type": "good" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "court_you" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> sits with you, shoulder to shoulder, and for a while neither of you says anything.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "court_npc" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> and <global_val:pf_say_b> sit a little apart from the others, talking quietly.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "smitten_you" ] },
+        "then": [ { "u_message": "<global_val:pf_say_a> sits next to you tonight, closer than they need to.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "smitten" ] },
+        "then": [
+          {
+            "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+            "then": [ { "u_message": "<global_val:pf_say_a> keeps glancing at <global_val:pf_say_b> across the room.", "type": "info" } ],
+            "else": [ { "u_message": "<global_val:pf_say_a> keeps glancing at <global_val:pf_say_b> across the fire.", "type": "info" } ]
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "confess_yes" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> says something to <global_val:pf_say_b>, too quietly to hear.  <global_val:pf_say_b> takes their hand.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "confess_no_npc" ] },
+        "then": [
+          {
+            "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+            "then": [
+              {
+                "u_message": "<global_val:pf_say_a> says something to <global_val:pf_say_b>, too quietly to hear.  <global_val:pf_say_b> shakes their head, gently.  <global_val:pf_say_a> goes to bed early.",
+                "type": "bad"
+              }
+            ],
+            "else": [
+              {
+                "u_message": "<global_val:pf_say_a> says something to <global_val:pf_say_b>, too quietly to hear.  <global_val:pf_say_b> shakes their head, gently.  <global_val:pf_say_a> stares into the fire for the rest of the night.",
+                "type": "bad"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "grief" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> stops beside <global_val:pf_dead_name> and doesn't move for a long moment.",
+            "type": "bad"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "mourn" ] },
+        "then": [
+          {
+            "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+            "then": [
+              {
+                "u_message": "<global_val:pf_say_a> looks at the empty chair.  \"<global_val:pf_say_b> would have liked this.\"",
+                "type": "info"
+              }
+            ],
+            "else": [
+              {
+                "u_message": "<global_val:pf_say_a> stares into the fire.  \"<global_val:pf_say_b> would have liked this.\"",
+                "type": "info"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "keepsake" ] },
+        "then": [
+          {
+            "u_message": "On the way past, <global_val:pf_say_a> drops something in your lap: a little carved animal, still rough from the knife.  \"Here.  Made it for you.\"",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "keepsake_1" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> blows the shavings off a little carving, turns it over once, and hands it to you without a word.",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "keepsake_2" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> has been whittling all evening.  At the end of it, they set the little figure on your knee.  \"It's meant to be you.  Don't laugh.\"",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "waste" ] },
+        "then": [
+          { "u_message": "<global_val:pf_say_a> watches the hack job and winces.  \"You're wasting half of it.\"", "type": "bad" }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "context_val": "line" }, "tease" ] },
+        "then": [
+          { "u_message": "<global_val:pf_say_a> grins at <global_val:pf_say_b>.  \"Better out than in, huh?\"", "type": "info" }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_SAY_act",
+    "//": "u = avatar.  Fire activity lines, picked by pf_act.",
+    "effect": [
+      {
+        "if": { "compare_string": [ { "global_val": "pf_act" }, "act_story" ] },
+        "then": [
+          {
+            "if": { "math": [ "value_or(pf_actd_act_story, -1) != floor(time('now') / time('1 d'))" ] },
+            "then": [
+              { "math": [ "pf_actd_act_story = floor(time('now') / time('1 d'))" ] },
+              {
+                "math": [
+                  "pf_actm_act_story = (value_or(pf_actv_act_story, -1) == 0) * 1 + (value_or(pf_actv_act_story, -1) == 1) * 2 + (value_or(pf_actv_act_story, -1) == 2) * 4 + (value_or(pf_actv_act_story, -1) == 3) * 8 + (value_or(pf_actv_act_story, -1) == 4) * 16 + (value_or(pf_actv_act_story, -1) == 5) * 32"
+                ]
+              }
+            ]
+          },
+          { "math": [ "_p = rand(5)" ] },
+          {
+            "if": {
+              "math": [
+                "(_p == 0) * (floor(pf_actm_act_story / 1) % 2) + (_p == 1) * (floor(pf_actm_act_story / 2) % 2) + (_p == 2) * (floor(pf_actm_act_story / 4) % 2) + (_p == 3) * (floor(pf_actm_act_story / 8) % 2) + (_p == 4) * (floor(pf_actm_act_story / 16) % 2) + (_p == 5) * (floor(pf_actm_act_story / 32) % 2) > 0"
+              ]
+            },
+            "then": [ { "math": [ "_p = (_p + 1) % 6" ] } ]
+          },
+          {
+            "if": {
+              "math": [
+                "(_p == 0) * (floor(pf_actm_act_story / 1) % 2) + (_p == 1) * (floor(pf_actm_act_story / 2) % 2) + (_p == 2) * (floor(pf_actm_act_story / 4) % 2) + (_p == 3) * (floor(pf_actm_act_story / 8) % 2) + (_p == 4) * (floor(pf_actm_act_story / 16) % 2) + (_p == 5) * (floor(pf_actm_act_story / 32) % 2) > 0"
+              ]
+            },
+            "then": [ { "math": [ "_p = (_p + 1) % 6" ] } ]
+          },
+          {
+            "if": {
+              "math": [
+                "(_p == 0) * (floor(pf_actm_act_story / 1) % 2) + (_p == 1) * (floor(pf_actm_act_story / 2) % 2) + (_p == 2) * (floor(pf_actm_act_story / 4) % 2) + (_p == 3) * (floor(pf_actm_act_story / 8) % 2) + (_p == 4) * (floor(pf_actm_act_story / 16) % 2) + (_p == 5) * (floor(pf_actm_act_story / 32) % 2) > 0"
+              ]
+            },
+            "then": [ { "math": [ "_p = (_p + 1) % 6" ] } ]
+          },
+          {
+            "if": {
+              "math": [
+                "(_p == 0) * (floor(pf_actm_act_story / 1) % 2) + (_p == 1) * (floor(pf_actm_act_story / 2) % 2) + (_p == 2) * (floor(pf_actm_act_story / 4) % 2) + (_p == 3) * (floor(pf_actm_act_story / 8) % 2) + (_p == 4) * (floor(pf_actm_act_story / 16) % 2) + (_p == 5) * (floor(pf_actm_act_story / 32) % 2) > 0"
+              ]
+            },
+            "then": [ { "math": [ "_p = (_p + 1) % 6" ] } ]
+          },
+          {
+            "if": {
+              "math": [
+                "(_p == 0) * (floor(pf_actm_act_story / 1) % 2) + (_p == 1) * (floor(pf_actm_act_story / 2) % 2) + (_p == 2) * (floor(pf_actm_act_story / 4) % 2) + (_p == 3) * (floor(pf_actm_act_story / 8) % 2) + (_p == 4) * (floor(pf_actm_act_story / 16) % 2) + (_p == 5) * (floor(pf_actm_act_story / 32) % 2) > 0"
+              ]
+            },
+            "then": [ { "math": [ "_p = (_p + 1) % 6" ] } ]
+          },
+          {
+            "if": {
+              "math": [
+                "(_p == 0) * (floor(pf_actm_act_story / 1) % 2) + (_p == 1) * (floor(pf_actm_act_story / 2) % 2) + (_p == 2) * (floor(pf_actm_act_story / 4) % 2) + (_p == 3) * (floor(pf_actm_act_story / 8) % 2) + (_p == 4) * (floor(pf_actm_act_story / 16) % 2) + (_p == 5) * (floor(pf_actm_act_story / 32) % 2) == 0"
+              ]
+            },
+            "then": [
+              {
+                "math": [
+                  "pf_actm_act_story += (_p == 0) * 1 + (_p == 1) * 2 + (_p == 2) * 4 + (_p == 3) * 8 + (_p == 4) * 16 + (_p == 5) * 32"
+                ]
+              }
+            ]
+          },
+          { "math": [ "pf_actv_act_story = _p" ] },
+          {
+            "if": { "math": [ "_p == 0" ] },
+            "then": [
+              {
+                "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+                "then": [
+                  {
+                    "u_message": "<global_val:pf_say_a> tells a long story about a road trip before all this, and gets half the room laughing.",
+                    "type": "info"
+                  }
+                ],
+                "else": [
+                  {
+                    "u_message": "<global_val:pf_say_a> tells a long story about a road trip before all this, and gets half the fire laughing.",
+                    "type": "info"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "_p == 1" ] },
+            "then": [
+              {
+                "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+                "then": [
+                  {
+                    "u_message": "<global_val:pf_say_a> tells the one about the wedding where the cake fell over, and everyone pretends they haven't heard it before.",
+                    "type": "info"
+                  }
+                ],
+                "else": [
+                  {
+                    "u_message": "<global_val:pf_say_a> tells the one about the wedding where the cake fell over, and everyone pretends they haven't heard it before.",
+                    "type": "info"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "_p == 2" ] },
+            "then": [
+              {
+                "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+                "then": [
+                  {
+                    "u_message": "<global_val:pf_say_a> does impressions of people from before: a boss, a neighbor, a TV chef.  The chef gets the biggest laugh.",
+                    "type": "info"
+                  }
+                ],
+                "else": [
+                  {
+                    "u_message": "<global_val:pf_say_a> does impressions of people from before: a boss, a neighbor, a TV chef.  The chef gets the biggest laugh.",
+                    "type": "info"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "_p == 3" ] },
+            "then": [
+              {
+                "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+                "then": [
+                  {
+                    "u_message": "<global_val:pf_say_a> tells about the worst job they ever had, and it turns into a contest.  Nobody beats the one about the septic tank.",
+                    "type": "info"
+                  }
+                ],
+                "else": [
+                  {
+                    "u_message": "<global_val:pf_say_a> tells about the worst job they ever had, and it turns into a contest.  Nobody beats the one about the septic tank.",
+                    "type": "info"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "_p == 4" ] },
+            "then": [
+              {
+                "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+                "then": [
+                  {
+                    "u_message": "<global_val:pf_say_a> describes, course by course, the best meal they ever ate.  By dessert people are groaning.",
+                    "type": "info"
+                  }
+                ],
+                "else": [
+                  {
+                    "u_message": "<global_val:pf_say_a> describes, course by course, the best meal they ever ate.  By dessert people are groaning.",
+                    "type": "info"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "_p == 5" ] },
+            "then": [
+              {
+                "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+                "then": [
+                  {
+                    "u_message": "<global_val:pf_say_a> tells a ghost story.  It's not very good, but the timing is, and someone yelps.",
+                    "type": "info"
+                  }
+                ],
+                "else": [
+                  {
+                    "u_message": "<global_val:pf_say_a> tells a ghost story.  It's not very good, but the timing is, and someone yelps.",
+                    "type": "info"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_act" }, "act_whittle" ] },
+        "then": [
+          {
+            "if": { "math": [ "value_or(pf_actd_act_whittle, -1) != floor(time('now') / time('1 d'))" ] },
+            "then": [
+              { "math": [ "pf_actd_act_whittle = floor(time('now') / time('1 d'))" ] },
+              {
+                "math": [
+                  "pf_actm_act_whittle = (value_or(pf_actv_act_whittle, -1) == 0) * 1 + (value_or(pf_actv_act_whittle, -1) == 1) * 2 + (value_or(pf_actv_act_whittle, -1) == 2) * 4 + (value_or(pf_actv_act_whittle, -1) == 3) * 8 + (value_or(pf_actv_act_whittle, -1) == 4) * 16"
+                ]
+              }
+            ]
+          },
+          { "math": [ "_p = rand(4)" ] },
+          {
+            "if": {
+              "math": [
+                "(_p == 0) * (floor(pf_actm_act_whittle / 1) % 2) + (_p == 1) * (floor(pf_actm_act_whittle / 2) % 2) + (_p == 2) * (floor(pf_actm_act_whittle / 4) % 2) + (_p == 3) * (floor(pf_actm_act_whittle / 8) % 2) + (_p == 4) * (floor(pf_actm_act_whittle / 16) % 2) > 0"
+              ]
+            },
+            "then": [ { "math": [ "_p = (_p + 1) % 5" ] } ]
+          },
+          {
+            "if": {
+              "math": [
+                "(_p == 0) * (floor(pf_actm_act_whittle / 1) % 2) + (_p == 1) * (floor(pf_actm_act_whittle / 2) % 2) + (_p == 2) * (floor(pf_actm_act_whittle / 4) % 2) + (_p == 3) * (floor(pf_actm_act_whittle / 8) % 2) + (_p == 4) * (floor(pf_actm_act_whittle / 16) % 2) > 0"
+              ]
+            },
+            "then": [ { "math": [ "_p = (_p + 1) % 5" ] } ]
+          },
+          {
+            "if": {
+              "math": [
+                "(_p == 0) * (floor(pf_actm_act_whittle / 1) % 2) + (_p == 1) * (floor(pf_actm_act_whittle / 2) % 2) + (_p == 2) * (floor(pf_actm_act_whittle / 4) % 2) + (_p == 3) * (floor(pf_actm_act_whittle / 8) % 2) + (_p == 4) * (floor(pf_actm_act_whittle / 16) % 2) > 0"
+              ]
+            },
+            "then": [ { "math": [ "_p = (_p + 1) % 5" ] } ]
+          },
+          {
+            "if": {
+              "math": [
+                "(_p == 0) * (floor(pf_actm_act_whittle / 1) % 2) + (_p == 1) * (floor(pf_actm_act_whittle / 2) % 2) + (_p == 2) * (floor(pf_actm_act_whittle / 4) % 2) + (_p == 3) * (floor(pf_actm_act_whittle / 8) % 2) + (_p == 4) * (floor(pf_actm_act_whittle / 16) % 2) > 0"
+              ]
+            },
+            "then": [ { "math": [ "_p = (_p + 1) % 5" ] } ]
+          },
+          {
+            "if": {
+              "math": [
+                "(_p == 0) * (floor(pf_actm_act_whittle / 1) % 2) + (_p == 1) * (floor(pf_actm_act_whittle / 2) % 2) + (_p == 2) * (floor(pf_actm_act_whittle / 4) % 2) + (_p == 3) * (floor(pf_actm_act_whittle / 8) % 2) + (_p == 4) * (floor(pf_actm_act_whittle / 16) % 2) == 0"
+              ]
+            },
+            "then": [
+              { "math": [ "pf_actm_act_whittle += (_p == 0) * 1 + (_p == 1) * 2 + (_p == 2) * 4 + (_p == 3) * 8 + (_p == 4) * 16" ] }
+            ]
+          },
+          { "math": [ "pf_actv_act_whittle = _p" ] },
+          {
+            "if": { "math": [ "_p == 0" ] },
+            "then": [
+              {
+                "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+                "then": [ { "u_message": "<global_val:pf_say_a> sits by the window, whittling something small.", "type": "info" } ],
+                "else": [ { "u_message": "<global_val:pf_say_a> sits at the edge of the light, whittling something small.", "type": "info" } ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "_p == 1" ] },
+            "then": [
+              {
+                "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+                "then": [
+                  { "u_message": "<global_val:pf_say_a> works a stick into a spoon at the table, shaving by shaving.", "type": "info" }
+                ],
+                "else": [ { "u_message": "<global_val:pf_say_a> works a stick into a spoon, shaving by shaving.", "type": "info" } ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "_p == 2" ] },
+            "then": [
+              {
+                "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+                "then": [
+                  {
+                    "u_message": "<global_val:pf_say_a> braids a length of cord into something that might be a bracelet.",
+                    "type": "info"
+                  }
+                ],
+                "else": [
+                  {
+                    "u_message": "<global_val:pf_say_a> braids a length of cord into something that might be a bracelet.",
+                    "type": "info"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "_p == 3" ] },
+            "then": [
+              {
+                "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+                "then": [
+                  { "u_message": "<global_val:pf_say_a> sews a patch onto a jacket, biting the thread off at the end.", "type": "info" }
+                ],
+                "else": [
+                  { "u_message": "<global_val:pf_say_a> sews a patch onto a jacket, biting the thread off at the end.", "type": "info" }
+                ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "_p == 4" ] },
+            "then": [
+              {
+                "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+                "then": [
+                  {
+                    "u_message": "<global_val:pf_say_a> takes a broken flashlight apart and puts it back together, and it works.  They look surprised.",
+                    "type": "info"
+                  }
+                ],
+                "else": [
+                  {
+                    "u_message": "<global_val:pf_say_a> takes a broken flashlight apart and puts it back together, and it works.  They look surprised.",
+                    "type": "info"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_act" }, "act_cook" ] },
+        "then": [
+          {
+            "if": { "math": [ "value_or(pf_actd_act_cook, -1) != floor(time('now') / time('1 d'))" ] },
+            "then": [
+              { "math": [ "pf_actd_act_cook = floor(time('now') / time('1 d'))" ] },
+              {
+                "math": [
+                  "pf_actm_act_cook = (value_or(pf_actv_act_cook, -1) == 0) * 1 + (value_or(pf_actv_act_cook, -1) == 1) * 2 + (value_or(pf_actv_act_cook, -1) == 2) * 4 + (value_or(pf_actv_act_cook, -1) == 3) * 8"
+                ]
+              }
+            ]
+          },
+          { "math": [ "_p = rand(3)" ] },
+          {
+            "if": {
+              "math": [
+                "(_p == 0) * (floor(pf_actm_act_cook / 1) % 2) + (_p == 1) * (floor(pf_actm_act_cook / 2) % 2) + (_p == 2) * (floor(pf_actm_act_cook / 4) % 2) + (_p == 3) * (floor(pf_actm_act_cook / 8) % 2) > 0"
+              ]
+            },
+            "then": [ { "math": [ "_p = (_p + 1) % 4" ] } ]
+          },
+          {
+            "if": {
+              "math": [
+                "(_p == 0) * (floor(pf_actm_act_cook / 1) % 2) + (_p == 1) * (floor(pf_actm_act_cook / 2) % 2) + (_p == 2) * (floor(pf_actm_act_cook / 4) % 2) + (_p == 3) * (floor(pf_actm_act_cook / 8) % 2) > 0"
+              ]
+            },
+            "then": [ { "math": [ "_p = (_p + 1) % 4" ] } ]
+          },
+          {
+            "if": {
+              "math": [
+                "(_p == 0) * (floor(pf_actm_act_cook / 1) % 2) + (_p == 1) * (floor(pf_actm_act_cook / 2) % 2) + (_p == 2) * (floor(pf_actm_act_cook / 4) % 2) + (_p == 3) * (floor(pf_actm_act_cook / 8) % 2) > 0"
+              ]
+            },
+            "then": [ { "math": [ "_p = (_p + 1) % 4" ] } ]
+          },
+          {
+            "if": {
+              "math": [
+                "(_p == 0) * (floor(pf_actm_act_cook / 1) % 2) + (_p == 1) * (floor(pf_actm_act_cook / 2) % 2) + (_p == 2) * (floor(pf_actm_act_cook / 4) % 2) + (_p == 3) * (floor(pf_actm_act_cook / 8) % 2) == 0"
+              ]
+            },
+            "then": [ { "math": [ "pf_actm_act_cook += (_p == 0) * 1 + (_p == 1) * 2 + (_p == 2) * 4 + (_p == 3) * 8" ] } ]
+          },
+          { "math": [ "pf_actv_act_cook = _p" ] },
+          {
+            "if": { "math": [ "_p == 0" ] },
+            "then": [
+              {
+                "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+                "then": [ { "u_message": "<global_val:pf_say_a> fusses in the kitchen and makes sure everyone gets a bowl.", "type": "info" } ],
+                "else": [
+                  {
+                    "u_message": "<global_val:pf_say_a> fusses over a pot on the coals and makes sure everyone gets some.",
+                    "type": "info"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "_p == 1" ] },
+            "then": [
+              {
+                "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+                "then": [
+                  {
+                    "u_message": "<global_val:pf_say_a> heats up whatever's left and hands round bowls.  Nobody complains.",
+                    "type": "info"
+                  }
+                ],
+                "else": [
+                  {
+                    "u_message": "<global_val:pf_say_a> roasts something on a stick and hands it round, burnt on one side and raw on the other.  Nobody complains.",
+                    "type": "info"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "_p == 2" ] },
+            "then": [
+              {
+                "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+                "then": [
+                  {
+                    "u_message": "<global_val:pf_say_a> makes tea out of something they found growing by the road.  It's terrible.  Everyone drinks it.",
+                    "type": "info"
+                  }
+                ],
+                "else": [
+                  {
+                    "u_message": "<global_val:pf_say_a> makes tea out of something they found growing by the road.  It's terrible.  Everyone drinks it.",
+                    "type": "info"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "_p == 3" ] },
+            "then": [
+              {
+                "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+                "then": [
+                  {
+                    "u_message": "<global_val:pf_say_a> divides a chocolate bar into exactly equal squares, and won't hear any argument about it.",
+                    "type": "info"
+                  }
+                ],
+                "else": [
+                  {
+                    "u_message": "<global_val:pf_say_a> divides a chocolate bar into exactly equal squares, and won't hear any argument about it.",
+                    "type": "info"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_act" }, "act_joke" ] },
+        "then": [
+          {
+            "if": { "math": [ "value_or(pf_actd_act_joke, -1) != floor(time('now') / time('1 d'))" ] },
+            "then": [
+              { "math": [ "pf_actd_act_joke = floor(time('now') / time('1 d'))" ] },
+              {
+                "math": [
+                  "pf_actm_act_joke = (value_or(pf_actv_act_joke, -1) == 0) * 1 + (value_or(pf_actv_act_joke, -1) == 1) * 2 + (value_or(pf_actv_act_joke, -1) == 2) * 4 + (value_or(pf_actv_act_joke, -1) == 3) * 8 + (value_or(pf_actv_act_joke, -1) == 4) * 16"
+                ]
+              }
+            ]
+          },
+          { "math": [ "_p = rand(4)" ] },
+          {
+            "if": {
+              "math": [
+                "(_p == 0) * (floor(pf_actm_act_joke / 1) % 2) + (_p == 1) * (floor(pf_actm_act_joke / 2) % 2) + (_p == 2) * (floor(pf_actm_act_joke / 4) % 2) + (_p == 3) * (floor(pf_actm_act_joke / 8) % 2) + (_p == 4) * (floor(pf_actm_act_joke / 16) % 2) > 0"
+              ]
+            },
+            "then": [ { "math": [ "_p = (_p + 1) % 5" ] } ]
+          },
+          {
+            "if": {
+              "math": [
+                "(_p == 0) * (floor(pf_actm_act_joke / 1) % 2) + (_p == 1) * (floor(pf_actm_act_joke / 2) % 2) + (_p == 2) * (floor(pf_actm_act_joke / 4) % 2) + (_p == 3) * (floor(pf_actm_act_joke / 8) % 2) + (_p == 4) * (floor(pf_actm_act_joke / 16) % 2) > 0"
+              ]
+            },
+            "then": [ { "math": [ "_p = (_p + 1) % 5" ] } ]
+          },
+          {
+            "if": {
+              "math": [
+                "(_p == 0) * (floor(pf_actm_act_joke / 1) % 2) + (_p == 1) * (floor(pf_actm_act_joke / 2) % 2) + (_p == 2) * (floor(pf_actm_act_joke / 4) % 2) + (_p == 3) * (floor(pf_actm_act_joke / 8) % 2) + (_p == 4) * (floor(pf_actm_act_joke / 16) % 2) > 0"
+              ]
+            },
+            "then": [ { "math": [ "_p = (_p + 1) % 5" ] } ]
+          },
+          {
+            "if": {
+              "math": [
+                "(_p == 0) * (floor(pf_actm_act_joke / 1) % 2) + (_p == 1) * (floor(pf_actm_act_joke / 2) % 2) + (_p == 2) * (floor(pf_actm_act_joke / 4) % 2) + (_p == 3) * (floor(pf_actm_act_joke / 8) % 2) + (_p == 4) * (floor(pf_actm_act_joke / 16) % 2) > 0"
+              ]
+            },
+            "then": [ { "math": [ "_p = (_p + 1) % 5" ] } ]
+          },
+          {
+            "if": {
+              "math": [
+                "(_p == 0) * (floor(pf_actm_act_joke / 1) % 2) + (_p == 1) * (floor(pf_actm_act_joke / 2) % 2) + (_p == 2) * (floor(pf_actm_act_joke / 4) % 2) + (_p == 3) * (floor(pf_actm_act_joke / 8) % 2) + (_p == 4) * (floor(pf_actm_act_joke / 16) % 2) == 0"
+              ]
+            },
+            "then": [ { "math": [ "pf_actm_act_joke += (_p == 0) * 1 + (_p == 1) * 2 + (_p == 2) * 4 + (_p == 3) * 8 + (_p == 4) * 16" ] } ]
+          },
+          { "math": [ "pf_actv_act_joke = _p" ] },
+          {
+            "if": { "math": [ "_p == 0" ] },
+            "then": [
+              {
+                "u_message": "<global_val:pf_say_a> cracks a joke about the dead that's in very poor taste.  Somebody snorts anyway.",
+                "type": "info"
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "_p == 1" ] },
+            "then": [
+              {
+                "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+                "then": [
+                  {
+                    "u_message": "<global_val:pf_say_a> does a bit about a zombie trying to use a revolving door.  It goes on too long and gets funnier for it.",
+                    "type": "info"
+                  }
+                ],
+                "else": [
+                  {
+                    "u_message": "<global_val:pf_say_a> does a bit about a zombie trying to use a revolving door.  It goes on too long and gets funnier for it.",
+                    "type": "info"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "_p == 2" ] },
+            "then": [
+              {
+                "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+                "then": [
+                  {
+                    "u_message": "<global_val:pf_say_a> proposes a toast to the dead, \"who never complain about the cooking.\"",
+                    "type": "info"
+                  }
+                ],
+                "else": [
+                  {
+                    "u_message": "<global_val:pf_say_a> proposes a toast to the dead, \"who never complain about the cooking.\"",
+                    "type": "info"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "_p == 3" ] },
+            "then": [
+              {
+                "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+                "then": [
+                  {
+                    "u_message": "<global_val:pf_say_a> keeps a running list of the stupidest ways they've nearly died, and adds today's to it out loud.",
+                    "type": "info"
+                  }
+                ],
+                "else": [
+                  {
+                    "u_message": "<global_val:pf_say_a> keeps a running list of the stupidest ways they've nearly died, and adds today's to it out loud.",
+                    "type": "info"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "_p == 4" ] },
+            "then": [
+              {
+                "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+                "then": [
+                  {
+                    "u_message": "<global_val:pf_say_a> does a weather report for the end of the world.  \"Scattered dead, clearing by evening.\"",
+                    "type": "info"
+                  }
+                ],
+                "else": [
+                  {
+                    "u_message": "<global_val:pf_say_a> does a weather report for the end of the world.  \"Scattered dead, clearing by evening.\"",
+                    "type": "info"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_act" }, "act_proud" ] },
+        "then": [
+          {
+            "if": { "math": [ "value_or(pf_actd_act_proud, -1) != floor(time('now') / time('1 d'))" ] },
+            "then": [
+              { "math": [ "pf_actd_act_proud = floor(time('now') / time('1 d'))" ] },
+              {
+                "math": [
+                  "pf_actm_act_proud = (value_or(pf_actv_act_proud, -1) == 0) * 1 + (value_or(pf_actv_act_proud, -1) == 1) * 2 + (value_or(pf_actv_act_proud, -1) == 2) * 4 + (value_or(pf_actv_act_proud, -1) == 3) * 8 + (value_or(pf_actv_act_proud, -1) == 4) * 16"
+                ]
+              }
+            ]
+          },
+          { "math": [ "_p = rand(4)" ] },
+          {
+            "if": {
+              "math": [
+                "(_p == 0) * (floor(pf_actm_act_proud / 1) % 2) + (_p == 1) * (floor(pf_actm_act_proud / 2) % 2) + (_p == 2) * (floor(pf_actm_act_proud / 4) % 2) + (_p == 3) * (floor(pf_actm_act_proud / 8) % 2) + (_p == 4) * (floor(pf_actm_act_proud / 16) % 2) > 0"
+              ]
+            },
+            "then": [ { "math": [ "_p = (_p + 1) % 5" ] } ]
+          },
+          {
+            "if": {
+              "math": [
+                "(_p == 0) * (floor(pf_actm_act_proud / 1) % 2) + (_p == 1) * (floor(pf_actm_act_proud / 2) % 2) + (_p == 2) * (floor(pf_actm_act_proud / 4) % 2) + (_p == 3) * (floor(pf_actm_act_proud / 8) % 2) + (_p == 4) * (floor(pf_actm_act_proud / 16) % 2) > 0"
+              ]
+            },
+            "then": [ { "math": [ "_p = (_p + 1) % 5" ] } ]
+          },
+          {
+            "if": {
+              "math": [
+                "(_p == 0) * (floor(pf_actm_act_proud / 1) % 2) + (_p == 1) * (floor(pf_actm_act_proud / 2) % 2) + (_p == 2) * (floor(pf_actm_act_proud / 4) % 2) + (_p == 3) * (floor(pf_actm_act_proud / 8) % 2) + (_p == 4) * (floor(pf_actm_act_proud / 16) % 2) > 0"
+              ]
+            },
+            "then": [ { "math": [ "_p = (_p + 1) % 5" ] } ]
+          },
+          {
+            "if": {
+              "math": [
+                "(_p == 0) * (floor(pf_actm_act_proud / 1) % 2) + (_p == 1) * (floor(pf_actm_act_proud / 2) % 2) + (_p == 2) * (floor(pf_actm_act_proud / 4) % 2) + (_p == 3) * (floor(pf_actm_act_proud / 8) % 2) + (_p == 4) * (floor(pf_actm_act_proud / 16) % 2) > 0"
+              ]
+            },
+            "then": [ { "math": [ "_p = (_p + 1) % 5" ] } ]
+          },
+          {
+            "if": {
+              "math": [
+                "(_p == 0) * (floor(pf_actm_act_proud / 1) % 2) + (_p == 1) * (floor(pf_actm_act_proud / 2) % 2) + (_p == 2) * (floor(pf_actm_act_proud / 4) % 2) + (_p == 3) * (floor(pf_actm_act_proud / 8) % 2) + (_p == 4) * (floor(pf_actm_act_proud / 16) % 2) == 0"
+              ]
+            },
+            "then": [
+              { "math": [ "pf_actm_act_proud += (_p == 0) * 1 + (_p == 1) * 2 + (_p == 2) * 4 + (_p == 3) * 8 + (_p == 4) * 16" ] }
+            ]
+          },
+          { "math": [ "pf_actv_act_proud = _p" ] },
+          {
+            "if": { "math": [ "_p == 0" ] },
+            "then": [
+              {
+                "u_message": "<global_val:pf_say_a> talks about the time they held a door against a dozen of them.  It gets bigger every telling.",
+                "type": "info"
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "_p == 1" ] },
+            "then": [
+              {
+                "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+                "then": [
+                  {
+                    "u_message": "<global_val:pf_say_a> explains, at length, the right way to sharpen a machete.  Nobody asked.",
+                    "type": "info"
+                  }
+                ],
+                "else": [
+                  {
+                    "u_message": "<global_val:pf_say_a> explains, at length, the right way to sharpen a machete.  Nobody asked.",
+                    "type": "info"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "_p == 2" ] },
+            "then": [
+              {
+                "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+                "then": [
+                  {
+                    "u_message": "<global_val:pf_say_a> shows off a scar and the story that goes with it.  The story has more teeth every time.",
+                    "type": "info"
+                  }
+                ],
+                "else": [
+                  {
+                    "u_message": "<global_val:pf_say_a> shows off a scar and the story that goes with it.  The story has more teeth every time.",
+                    "type": "info"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "_p == 3" ] },
+            "then": [
+              {
+                "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+                "then": [
+                  {
+                    "u_message": "<global_val:pf_say_a> explains how they would have handled today, if anyone had asked.",
+                    "type": "info"
+                  }
+                ],
+                "else": [
+                  {
+                    "u_message": "<global_val:pf_say_a> explains how they would have handled today, if anyone had asked.",
+                    "type": "info"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "_p == 4" ] },
+            "then": [
+              {
+                "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+                "then": [
+                  {
+                    "u_message": "<global_val:pf_say_a> cleans their weapon slowly where everyone can see it, and waits to be asked about it.",
+                    "type": "info"
+                  }
+                ],
+                "else": [
+                  {
+                    "u_message": "<global_val:pf_say_a> cleans their weapon slowly where everyone can see it, and waits to be asked about it.",
+                    "type": "info"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_act" }, "act_child" ] },
+        "then": [
+          {
+            "if": { "math": [ "value_or(pf_actd_act_child, -1) != floor(time('now') / time('1 d'))" ] },
+            "then": [
+              { "math": [ "pf_actd_act_child = floor(time('now') / time('1 d'))" ] },
+              {
+                "math": [
+                  "pf_actm_act_child = (value_or(pf_actv_act_child, -1) == 0) * 1 + (value_or(pf_actv_act_child, -1) == 1) * 2 + (value_or(pf_actv_act_child, -1) == 2) * 4 + (value_or(pf_actv_act_child, -1) == 3) * 8 + (value_or(pf_actv_act_child, -1) == 4) * 16 + (value_or(pf_actv_act_child, -1) == 5) * 32 + (value_or(pf_actv_act_child, -1) == 6) * 64"
+                ]
+              }
+            ]
+          },
+          { "math": [ "_p = rand(6)" ] },
+          {
+            "if": {
+              "math": [
+                "(_p == 0) * (floor(pf_actm_act_child / 1) % 2) + (_p == 1) * (floor(pf_actm_act_child / 2) % 2) + (_p == 2) * (floor(pf_actm_act_child / 4) % 2) + (_p == 3) * (floor(pf_actm_act_child / 8) % 2) + (_p == 4) * (floor(pf_actm_act_child / 16) % 2) + (_p == 5) * (floor(pf_actm_act_child / 32) % 2) + (_p == 6) * (floor(pf_actm_act_child / 64) % 2) > 0"
+              ]
+            },
+            "then": [ { "math": [ "_p = (_p + 1) % 7" ] } ]
+          },
+          {
+            "if": {
+              "math": [
+                "(_p == 0) * (floor(pf_actm_act_child / 1) % 2) + (_p == 1) * (floor(pf_actm_act_child / 2) % 2) + (_p == 2) * (floor(pf_actm_act_child / 4) % 2) + (_p == 3) * (floor(pf_actm_act_child / 8) % 2) + (_p == 4) * (floor(pf_actm_act_child / 16) % 2) + (_p == 5) * (floor(pf_actm_act_child / 32) % 2) + (_p == 6) * (floor(pf_actm_act_child / 64) % 2) > 0"
+              ]
+            },
+            "then": [ { "math": [ "_p = (_p + 1) % 7" ] } ]
+          },
+          {
+            "if": {
+              "math": [
+                "(_p == 0) * (floor(pf_actm_act_child / 1) % 2) + (_p == 1) * (floor(pf_actm_act_child / 2) % 2) + (_p == 2) * (floor(pf_actm_act_child / 4) % 2) + (_p == 3) * (floor(pf_actm_act_child / 8) % 2) + (_p == 4) * (floor(pf_actm_act_child / 16) % 2) + (_p == 5) * (floor(pf_actm_act_child / 32) % 2) + (_p == 6) * (floor(pf_actm_act_child / 64) % 2) > 0"
+              ]
+            },
+            "then": [ { "math": [ "_p = (_p + 1) % 7" ] } ]
+          },
+          {
+            "if": {
+              "math": [
+                "(_p == 0) * (floor(pf_actm_act_child / 1) % 2) + (_p == 1) * (floor(pf_actm_act_child / 2) % 2) + (_p == 2) * (floor(pf_actm_act_child / 4) % 2) + (_p == 3) * (floor(pf_actm_act_child / 8) % 2) + (_p == 4) * (floor(pf_actm_act_child / 16) % 2) + (_p == 5) * (floor(pf_actm_act_child / 32) % 2) + (_p == 6) * (floor(pf_actm_act_child / 64) % 2) > 0"
+              ]
+            },
+            "then": [ { "math": [ "_p = (_p + 1) % 7" ] } ]
+          },
+          {
+            "if": {
+              "math": [
+                "(_p == 0) * (floor(pf_actm_act_child / 1) % 2) + (_p == 1) * (floor(pf_actm_act_child / 2) % 2) + (_p == 2) * (floor(pf_actm_act_child / 4) % 2) + (_p == 3) * (floor(pf_actm_act_child / 8) % 2) + (_p == 4) * (floor(pf_actm_act_child / 16) % 2) + (_p == 5) * (floor(pf_actm_act_child / 32) % 2) + (_p == 6) * (floor(pf_actm_act_child / 64) % 2) > 0"
+              ]
+            },
+            "then": [ { "math": [ "_p = (_p + 1) % 7" ] } ]
+          },
+          {
+            "if": {
+              "math": [
+                "(_p == 0) * (floor(pf_actm_act_child / 1) % 2) + (_p == 1) * (floor(pf_actm_act_child / 2) % 2) + (_p == 2) * (floor(pf_actm_act_child / 4) % 2) + (_p == 3) * (floor(pf_actm_act_child / 8) % 2) + (_p == 4) * (floor(pf_actm_act_child / 16) % 2) + (_p == 5) * (floor(pf_actm_act_child / 32) % 2) + (_p == 6) * (floor(pf_actm_act_child / 64) % 2) > 0"
+              ]
+            },
+            "then": [ { "math": [ "_p = (_p + 1) % 7" ] } ]
+          },
+          {
+            "if": {
+              "math": [
+                "(_p == 0) * (floor(pf_actm_act_child / 1) % 2) + (_p == 1) * (floor(pf_actm_act_child / 2) % 2) + (_p == 2) * (floor(pf_actm_act_child / 4) % 2) + (_p == 3) * (floor(pf_actm_act_child / 8) % 2) + (_p == 4) * (floor(pf_actm_act_child / 16) % 2) + (_p == 5) * (floor(pf_actm_act_child / 32) % 2) + (_p == 6) * (floor(pf_actm_act_child / 64) % 2) == 0"
+              ]
+            },
+            "then": [
+              {
+                "math": [
+                  "pf_actm_act_child += (_p == 0) * 1 + (_p == 1) * 2 + (_p == 2) * 4 + (_p == 3) * 8 + (_p == 4) * 16 + (_p == 5) * 32 + (_p == 6) * 64"
+                ]
+              }
+            ]
+          },
+          { "math": [ "pf_actv_act_child = _p" ] },
+          {
+            "if": { "math": [ "_p == 0" ] },
+            "then": [
+              {
+                "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+                "then": [ { "u_message": "<global_val:pf_say_a> sits on the floor, hugging their knees, and listens.", "type": "info" } ],
+                "else": [ { "u_message": "<global_val:pf_say_a> sits close to the fire, hugging their knees, and listens.", "type": "info" } ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "_p == 1" ] },
+            "then": [
+              {
+                "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+                "then": [
+                  {
+                    "u_message": "<global_val:pf_say_a> falls asleep against the nearest grown-up halfway through a story.",
+                    "type": "info"
+                  }
+                ],
+                "else": [
+                  {
+                    "u_message": "<global_val:pf_say_a> falls asleep against the nearest grown-up halfway through a story.",
+                    "type": "info"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "_p == 2" ] },
+            "then": [
+              {
+                "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+                "then": [
+                  {
+                    "u_message": "<global_val:pf_say_a> asks for the scary story, then hides their face for the scary part.",
+                    "type": "info"
+                  }
+                ],
+                "else": [
+                  {
+                    "u_message": "<global_val:pf_say_a> asks for the scary story, then hides their face for the scary part.",
+                    "type": "info"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "_p == 3" ] },
+            "then": [
+              {
+                "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+                "then": [
+                  {
+                    "u_message": "<global_val:pf_say_a> wants to know what everyone's favorite animal was, before.  It takes all evening.",
+                    "type": "info"
+                  }
+                ],
+                "else": [
+                  {
+                    "u_message": "<global_val:pf_say_a> wants to know what the stars are called.  Nobody really knows, so they make names up together.",
+                    "type": "info"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "_p == 4" ] },
+            "then": [
+              {
+                "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+                "then": [
+                  {
+                    "u_message": "<global_val:pf_say_a> teaches everyone a clapping game from school.  The grown-ups are terrible at it.",
+                    "type": "info"
+                  }
+                ],
+                "else": [
+                  {
+                    "u_message": "<global_val:pf_say_a> teaches everyone a clapping game from school.  The grown-ups are terrible at it.",
+                    "type": "info"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "_p == 5" ] },
+            "then": [
+              {
+                "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+                "then": [
+                  {
+                    "u_message": "<global_val:pf_say_a> draws on the floor with a bit of charcoal: a house, a dog, a lot of people holding hands.",
+                    "type": "info"
+                  }
+                ],
+                "else": [
+                  {
+                    "u_message": "<global_val:pf_say_a> draws in the dirt with a stick: a house, a dog, a lot of people holding hands.",
+                    "type": "info"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "_p == 6" ] },
+            "then": [
+              {
+                "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+                "then": [
+                  {
+                    "u_message": "<global_val:pf_say_a> asks for the story about the time before, and listens with their whole face.",
+                    "type": "info"
+                  }
+                ],
+                "else": [
+                  {
+                    "u_message": "<global_val:pf_say_a> asks for the story about the time before, and listens with their whole face.",
+                    "type": "info"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_act" }, "act_quiet" ] },
+        "then": [
+          {
+            "if": { "math": [ "value_or(pf_actd_act_quiet, -1) != floor(time('now') / time('1 d'))" ] },
+            "then": [
+              { "math": [ "pf_actd_act_quiet = floor(time('now') / time('1 d'))" ] },
+              {
+                "math": [
+                  "pf_actm_act_quiet = (value_or(pf_actv_act_quiet, -1) == 0) * 1 + (value_or(pf_actv_act_quiet, -1) == 1) * 2 + (value_or(pf_actv_act_quiet, -1) == 2) * 4 + (value_or(pf_actv_act_quiet, -1) == 3) * 8 + (value_or(pf_actv_act_quiet, -1) == 4) * 16"
+                ]
+              }
+            ]
+          },
+          { "math": [ "_p = rand(4)" ] },
+          {
+            "if": {
+              "math": [
+                "(_p == 0) * (floor(pf_actm_act_quiet / 1) % 2) + (_p == 1) * (floor(pf_actm_act_quiet / 2) % 2) + (_p == 2) * (floor(pf_actm_act_quiet / 4) % 2) + (_p == 3) * (floor(pf_actm_act_quiet / 8) % 2) + (_p == 4) * (floor(pf_actm_act_quiet / 16) % 2) > 0"
+              ]
+            },
+            "then": [ { "math": [ "_p = (_p + 1) % 5" ] } ]
+          },
+          {
+            "if": {
+              "math": [
+                "(_p == 0) * (floor(pf_actm_act_quiet / 1) % 2) + (_p == 1) * (floor(pf_actm_act_quiet / 2) % 2) + (_p == 2) * (floor(pf_actm_act_quiet / 4) % 2) + (_p == 3) * (floor(pf_actm_act_quiet / 8) % 2) + (_p == 4) * (floor(pf_actm_act_quiet / 16) % 2) > 0"
+              ]
+            },
+            "then": [ { "math": [ "_p = (_p + 1) % 5" ] } ]
+          },
+          {
+            "if": {
+              "math": [
+                "(_p == 0) * (floor(pf_actm_act_quiet / 1) % 2) + (_p == 1) * (floor(pf_actm_act_quiet / 2) % 2) + (_p == 2) * (floor(pf_actm_act_quiet / 4) % 2) + (_p == 3) * (floor(pf_actm_act_quiet / 8) % 2) + (_p == 4) * (floor(pf_actm_act_quiet / 16) % 2) > 0"
+              ]
+            },
+            "then": [ { "math": [ "_p = (_p + 1) % 5" ] } ]
+          },
+          {
+            "if": {
+              "math": [
+                "(_p == 0) * (floor(pf_actm_act_quiet / 1) % 2) + (_p == 1) * (floor(pf_actm_act_quiet / 2) % 2) + (_p == 2) * (floor(pf_actm_act_quiet / 4) % 2) + (_p == 3) * (floor(pf_actm_act_quiet / 8) % 2) + (_p == 4) * (floor(pf_actm_act_quiet / 16) % 2) > 0"
+              ]
+            },
+            "then": [ { "math": [ "_p = (_p + 1) % 5" ] } ]
+          },
+          {
+            "if": {
+              "math": [
+                "(_p == 0) * (floor(pf_actm_act_quiet / 1) % 2) + (_p == 1) * (floor(pf_actm_act_quiet / 2) % 2) + (_p == 2) * (floor(pf_actm_act_quiet / 4) % 2) + (_p == 3) * (floor(pf_actm_act_quiet / 8) % 2) + (_p == 4) * (floor(pf_actm_act_quiet / 16) % 2) == 0"
+              ]
+            },
+            "then": [
+              { "math": [ "pf_actm_act_quiet += (_p == 0) * 1 + (_p == 1) * 2 + (_p == 2) * 4 + (_p == 3) * 8 + (_p == 4) * 16" ] }
+            ]
+          },
+          { "math": [ "pf_actv_act_quiet = _p" ] },
+          {
+            "if": { "math": [ "_p == 0" ] },
+            "then": [
+              {
+                "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+                "then": [ { "u_message": "<global_val:pf_say_a> sits in the corner, quiet, looking out at the dark.", "type": "info" } ],
+                "else": [ { "u_message": "<global_val:pf_say_a> stares into the flames, quiet.", "type": "info" } ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "_p == 1" ] },
+            "then": [
+              {
+                "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+                "then": [
+                  {
+                    "u_message": "<global_val:pf_say_a> turns a ring over and over in their fingers, watching the window.",
+                    "type": "info"
+                  }
+                ],
+                "else": [
+                  { "u_message": "<global_val:pf_say_a> turns a ring over and over in their fingers, watching the fire.", "type": "info" }
+                ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "_p == 2" ] },
+            "then": [
+              {
+                "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+                "then": [ { "u_message": "<global_val:pf_say_a> listens to everyone else and smiles at the right places.", "type": "info" } ],
+                "else": [ { "u_message": "<global_val:pf_say_a> listens to everyone else and smiles at the right places.", "type": "info" } ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "_p == 3" ] },
+            "then": [
+              {
+                "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+                "then": [
+                  {
+                    "u_message": "<global_val:pf_say_a> writes in a notebook by the lamp, and closes it when anyone looks over.",
+                    "type": "info"
+                  }
+                ],
+                "else": [
+                  {
+                    "u_message": "<global_val:pf_say_a> writes in a notebook by the light, and closes it when anyone looks over.",
+                    "type": "info"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "_p == 4" ] },
+            "then": [
+              {
+                "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+                "then": [
+                  {
+                    "u_message": "<global_val:pf_say_a> hums something under their breath and doesn't notice the others have gone quiet to listen.",
+                    "type": "info"
+                  }
+                ],
+                "else": [
+                  {
+                    "u_message": "<global_val:pf_say_a> hums something under their breath and doesn't notice the others have gone quiet to listen.",
+                    "type": "info"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_act" }, "act_mourn" ] },
+        "then": [
+          {
+            "if": { "math": [ "value_or(pf_eve_home, 0) == 1" ] },
+            "then": [ { "u_message": "<global_val:pf_say_a> sits apart from the others, not really listening.", "type": "info" } ],
+            "else": [ { "u_message": "<global_val:pf_say_a> sits at the edge of the light, not really listening.", "type": "info" } ]
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_act" }, "act_guitar" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> tunes up a battered guitar and plays something everyone almost remembers.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_act" }, "act_violin" ] },
+        "then": [ { "u_message": "<global_val:pf_say_a> plays the violin, badly at first, then not badly at all.", "type": "info" } ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_act" }, "act_cards" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> deals a hand of cards and loses on purpose to whoever looks like they need a win.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_act" }, "act_read" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> finds a paperback on the shelf and reads it aloud, doing all the voices.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_act" }, "act_piano" ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> sits down at the piano.  Half the keys stick, and it's still the best thing anyone has heard in weeks.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_act" }, "act_couch" ] },
+        "then": [
+          { "u_message": "<global_val:pf_say_a> sinks into the couch with a sigh and is asleep within minutes.", "type": "info" }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_SAY_save",
+    "//": "u = avatar.  Rescue lines: who saved whom, and the running score between them.",
+    "effect": [
+      {
+        "if": { "and": [ { "math": [ "pf_save_case == 1" ] }, { "math": [ "pf_save_d == 1" ] } ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> drags the thing off you and finishes it.  \"Got you.  You're okay.  You're okay.\"",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "math": [ "pf_save_case == 1" ] }, { "math": [ "pf_save_d >= 2" ] } ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> drags the thing off you and finishes it.  \"That's <global_val:pf_save_n> times now.  Stop making me do this.\"",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "math": [ "pf_save_case == 1" ] }, { "math": [ "pf_save_d == 0" ] } ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> drags the thing off you and finishes it.  \"There.  Now we're even.\"",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "math": [ "pf_save_case == 1" ] }, { "math": [ "pf_save_d < 0" ] } ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_a> drags the thing off you and finishes it.  \"Still owe you <global_val:pf_save_n>.  I'm catching up.\"",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "math": [ "pf_save_case == 2" ] }, { "math": [ "pf_save_d == 1" ] } ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_b> stares at the thing you just put down, then at you.  \"I thought that was it.  I owe you one.\"",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "math": [ "pf_save_case == 2" ] }, { "math": [ "pf_save_d >= 2" ] } ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_b> stares at the thing you just put down, then at you.  \"That's <global_val:pf_save_n> I owe you now.\"",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "math": [ "pf_save_case == 2" ] }, { "math": [ "pf_save_d == 0" ] } ] },
+        "then": [ { "u_message": "<global_val:pf_say_b> lets out a shaky breath.  \"Guess we're square.\"", "type": "good" } ]
+      },
+      {
+        "if": { "and": [ { "math": [ "pf_save_case == 2" ] }, { "math": [ "pf_save_d < 0" ] } ] },
+        "then": [
+          {
+            "u_message": "<global_val:pf_say_b> lets out a shaky breath.  \"Okay.  Now you only owe me <global_val:pf_save_n>.\"",
+            "type": "good"
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "math": [ "pf_save_case == 3" ] }, { "math": [ "pf_save_d >= 2" ] } ] },
+        "then": [ { "u_message": "<global_val:pf_say_a> drags the thing off <global_val:pf_say_b> again.", "type": "good" } ]
+      },
+      {
+        "if": { "and": [ { "math": [ "pf_save_case == 3" ] }, { "math": [ "pf_save_d < 2" ] } ] },
+        "then": [ { "u_message": "<global_val:pf_say_a> drags the thing off <global_val:pf_say_b> and finishes it.", "type": "good" } ]
+      }
+    ]
+  }
+]

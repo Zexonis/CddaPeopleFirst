@@ -1,0 +1,3315 @@
+[
+  {
+    "type": "morale_type",
+    "id": "PF_morale_rest",
+    "text": "The rest day"
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KEEP_law_step",
+    "//": "u = avatar.  One law per meeting: the one you put to it, or (one meeting in two) one somebody has a reason to bring up: a law not yet in force whose moment has come (a third shift for the same guards, a fight this week, stores running low, quarrels piling up, more households), or a law in force that someone wants gone (one time in three).",
+    "effect": [
+      { "math": [ "pf_kl_law = 0" ] },
+      { "math": [ "pf_kl_rep = 0" ] },
+      { "math": [ "pf_kl_byyou = 0" ] },
+      {
+        "if": { "math": [ "value_or(pf_kp_prop, 0) > 0" ] },
+        "then": [
+          { "math": [ "pf_kl_law = pf_kp_prop" ] },
+          { "math": [ "pf_kl_rep = value_or(pf_kp_prop_rep, 0)" ] },
+          { "math": [ "pf_kl_byyou = 1" ] },
+          { "math": [ "pf_kp_prop = 0" ] }
+        ],
+        "else": [
+          {
+            "if": { "or": [ { "math": [ "value_or(pf_kl_force, 0) == 1" ] }, { "math": [ "rand(1) == 0" ] } ] },
+            "then": [
+              { "math": [ "pf_kl_start = rand(6)" ] },
+              {
+                "if": { "math": [ "pf_kl_law == 0" ] },
+                "then": [
+                  { "math": [ "pf_kl_try = (pf_kl_start + 0) % 7 + 1" ] },
+                  { "math": [ "pf_kl_law = pf_kl_try" ] },
+                  {
+                    "if": { "math": [ "pf_kl_law == 1" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_watch, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 2" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_dark, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 3" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_tithe, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 4" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_rest, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 5" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_door, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 6" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_lord, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 7" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_council, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 1" ] },
+                    "then": [ { "math": [ "pf_kl_trig = value_or(pf_wt_nights_total, 0) >= 3" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 2" ] },
+                    "then": [
+                      {
+                        "math": [ "pf_kl_trig = (time('now') - value_or(pf_horn_t, -999999) < time('7 d')) * (value_or(pf_households_n, 0) >= 1)" ]
+                      }
+                    ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 3" ] },
+                    "then": [ { "math": [ "pf_kl_trig = (value_or(pf_stores, 0) < 10) * (value_or(pf_households_n, 0) >= 1)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 4" ] },
+                    "then": [ { "math": [ "pf_kl_trig = value_or(pf_disputes_total, 0) >= 2" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 5" ] },
+                    "then": [ { "math": [ "pf_kl_trig = value_or(pf_households_n, 0) >= 2" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 6" ] },
+                    "then": [
+                      {
+                        "math": [
+                          "pf_kl_trig = (value_or(pf_law_council, 0) == 0) * (value_or(pf_chief_set, 0) > 0) * (time('now') - value_or(pf_chief_since, 0) >= time('14 d')) * (value_or(pf_elections_total, 0) >= 2)"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 7" ] },
+                    "then": [
+                      {
+                        "math": [
+                          "pf_kl_trig = (value_or(pf_law_lord, 0) == 0) * ((value_or(pf_confidence_total, 0) + value_or(pf_coups_total, 0) >= 1) + (value_or(pf_disputes_total, 0) >= 3) * (value_or(pf_households_n, 0) >= 2) > 0)"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "if": { "math": [ "(pf_kl_in == 0) * ((pf_kl_trig > 0) + value_or(pf_kl_force, 0) > 0)" ] },
+                    "then": [ { "math": [ "pf_kl_rep = 0" ] } ],
+                    "else": [
+                      {
+                        "if": { "math": [ "(pf_kl_in == 1) * (rand(2) == 0)" ] },
+                        "then": [ { "math": [ "pf_kl_rep = 1" ] } ],
+                        "else": [ { "math": [ "pf_kl_law = 0" ] } ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "if": { "math": [ "pf_kl_law == 0" ] },
+                "then": [
+                  { "math": [ "pf_kl_try = (pf_kl_start + 1) % 7 + 1" ] },
+                  { "math": [ "pf_kl_law = pf_kl_try" ] },
+                  {
+                    "if": { "math": [ "pf_kl_law == 1" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_watch, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 2" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_dark, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 3" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_tithe, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 4" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_rest, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 5" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_door, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 6" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_lord, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 7" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_council, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 1" ] },
+                    "then": [ { "math": [ "pf_kl_trig = value_or(pf_wt_nights_total, 0) >= 3" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 2" ] },
+                    "then": [
+                      {
+                        "math": [ "pf_kl_trig = (time('now') - value_or(pf_horn_t, -999999) < time('7 d')) * (value_or(pf_households_n, 0) >= 1)" ]
+                      }
+                    ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 3" ] },
+                    "then": [ { "math": [ "pf_kl_trig = (value_or(pf_stores, 0) < 10) * (value_or(pf_households_n, 0) >= 1)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 4" ] },
+                    "then": [ { "math": [ "pf_kl_trig = value_or(pf_disputes_total, 0) >= 2" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 5" ] },
+                    "then": [ { "math": [ "pf_kl_trig = value_or(pf_households_n, 0) >= 2" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 6" ] },
+                    "then": [
+                      {
+                        "math": [
+                          "pf_kl_trig = (value_or(pf_law_council, 0) == 0) * (value_or(pf_chief_set, 0) > 0) * (time('now') - value_or(pf_chief_since, 0) >= time('14 d')) * (value_or(pf_elections_total, 0) >= 2)"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 7" ] },
+                    "then": [
+                      {
+                        "math": [
+                          "pf_kl_trig = (value_or(pf_law_lord, 0) == 0) * ((value_or(pf_confidence_total, 0) + value_or(pf_coups_total, 0) >= 1) + (value_or(pf_disputes_total, 0) >= 3) * (value_or(pf_households_n, 0) >= 2) > 0)"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "if": { "math": [ "(pf_kl_in == 0) * ((pf_kl_trig > 0) + value_or(pf_kl_force, 0) > 0)" ] },
+                    "then": [ { "math": [ "pf_kl_rep = 0" ] } ],
+                    "else": [
+                      {
+                        "if": { "math": [ "(pf_kl_in == 1) * (rand(2) == 0)" ] },
+                        "then": [ { "math": [ "pf_kl_rep = 1" ] } ],
+                        "else": [ { "math": [ "pf_kl_law = 0" ] } ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "if": { "math": [ "pf_kl_law == 0" ] },
+                "then": [
+                  { "math": [ "pf_kl_try = (pf_kl_start + 2) % 7 + 1" ] },
+                  { "math": [ "pf_kl_law = pf_kl_try" ] },
+                  {
+                    "if": { "math": [ "pf_kl_law == 1" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_watch, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 2" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_dark, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 3" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_tithe, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 4" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_rest, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 5" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_door, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 6" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_lord, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 7" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_council, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 1" ] },
+                    "then": [ { "math": [ "pf_kl_trig = value_or(pf_wt_nights_total, 0) >= 3" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 2" ] },
+                    "then": [
+                      {
+                        "math": [ "pf_kl_trig = (time('now') - value_or(pf_horn_t, -999999) < time('7 d')) * (value_or(pf_households_n, 0) >= 1)" ]
+                      }
+                    ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 3" ] },
+                    "then": [ { "math": [ "pf_kl_trig = (value_or(pf_stores, 0) < 10) * (value_or(pf_households_n, 0) >= 1)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 4" ] },
+                    "then": [ { "math": [ "pf_kl_trig = value_or(pf_disputes_total, 0) >= 2" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 5" ] },
+                    "then": [ { "math": [ "pf_kl_trig = value_or(pf_households_n, 0) >= 2" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 6" ] },
+                    "then": [
+                      {
+                        "math": [
+                          "pf_kl_trig = (value_or(pf_law_council, 0) == 0) * (value_or(pf_chief_set, 0) > 0) * (time('now') - value_or(pf_chief_since, 0) >= time('14 d')) * (value_or(pf_elections_total, 0) >= 2)"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 7" ] },
+                    "then": [
+                      {
+                        "math": [
+                          "pf_kl_trig = (value_or(pf_law_lord, 0) == 0) * ((value_or(pf_confidence_total, 0) + value_or(pf_coups_total, 0) >= 1) + (value_or(pf_disputes_total, 0) >= 3) * (value_or(pf_households_n, 0) >= 2) > 0)"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "if": { "math": [ "(pf_kl_in == 0) * ((pf_kl_trig > 0) + value_or(pf_kl_force, 0) > 0)" ] },
+                    "then": [ { "math": [ "pf_kl_rep = 0" ] } ],
+                    "else": [
+                      {
+                        "if": { "math": [ "(pf_kl_in == 1) * (rand(2) == 0)" ] },
+                        "then": [ { "math": [ "pf_kl_rep = 1" ] } ],
+                        "else": [ { "math": [ "pf_kl_law = 0" ] } ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "if": { "math": [ "pf_kl_law == 0" ] },
+                "then": [
+                  { "math": [ "pf_kl_try = (pf_kl_start + 3) % 7 + 1" ] },
+                  { "math": [ "pf_kl_law = pf_kl_try" ] },
+                  {
+                    "if": { "math": [ "pf_kl_law == 1" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_watch, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 2" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_dark, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 3" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_tithe, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 4" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_rest, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 5" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_door, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 6" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_lord, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 7" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_council, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 1" ] },
+                    "then": [ { "math": [ "pf_kl_trig = value_or(pf_wt_nights_total, 0) >= 3" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 2" ] },
+                    "then": [
+                      {
+                        "math": [ "pf_kl_trig = (time('now') - value_or(pf_horn_t, -999999) < time('7 d')) * (value_or(pf_households_n, 0) >= 1)" ]
+                      }
+                    ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 3" ] },
+                    "then": [ { "math": [ "pf_kl_trig = (value_or(pf_stores, 0) < 10) * (value_or(pf_households_n, 0) >= 1)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 4" ] },
+                    "then": [ { "math": [ "pf_kl_trig = value_or(pf_disputes_total, 0) >= 2" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 5" ] },
+                    "then": [ { "math": [ "pf_kl_trig = value_or(pf_households_n, 0) >= 2" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 6" ] },
+                    "then": [
+                      {
+                        "math": [
+                          "pf_kl_trig = (value_or(pf_law_council, 0) == 0) * (value_or(pf_chief_set, 0) > 0) * (time('now') - value_or(pf_chief_since, 0) >= time('14 d')) * (value_or(pf_elections_total, 0) >= 2)"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 7" ] },
+                    "then": [
+                      {
+                        "math": [
+                          "pf_kl_trig = (value_or(pf_law_lord, 0) == 0) * ((value_or(pf_confidence_total, 0) + value_or(pf_coups_total, 0) >= 1) + (value_or(pf_disputes_total, 0) >= 3) * (value_or(pf_households_n, 0) >= 2) > 0)"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "if": { "math": [ "(pf_kl_in == 0) * ((pf_kl_trig > 0) + value_or(pf_kl_force, 0) > 0)" ] },
+                    "then": [ { "math": [ "pf_kl_rep = 0" ] } ],
+                    "else": [
+                      {
+                        "if": { "math": [ "(pf_kl_in == 1) * (rand(2) == 0)" ] },
+                        "then": [ { "math": [ "pf_kl_rep = 1" ] } ],
+                        "else": [ { "math": [ "pf_kl_law = 0" ] } ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "if": { "math": [ "pf_kl_law == 0" ] },
+                "then": [
+                  { "math": [ "pf_kl_try = (pf_kl_start + 4) % 7 + 1" ] },
+                  { "math": [ "pf_kl_law = pf_kl_try" ] },
+                  {
+                    "if": { "math": [ "pf_kl_law == 1" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_watch, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 2" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_dark, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 3" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_tithe, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 4" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_rest, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 5" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_door, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 6" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_lord, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 7" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_council, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 1" ] },
+                    "then": [ { "math": [ "pf_kl_trig = value_or(pf_wt_nights_total, 0) >= 3" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 2" ] },
+                    "then": [
+                      {
+                        "math": [ "pf_kl_trig = (time('now') - value_or(pf_horn_t, -999999) < time('7 d')) * (value_or(pf_households_n, 0) >= 1)" ]
+                      }
+                    ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 3" ] },
+                    "then": [ { "math": [ "pf_kl_trig = (value_or(pf_stores, 0) < 10) * (value_or(pf_households_n, 0) >= 1)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 4" ] },
+                    "then": [ { "math": [ "pf_kl_trig = value_or(pf_disputes_total, 0) >= 2" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 5" ] },
+                    "then": [ { "math": [ "pf_kl_trig = value_or(pf_households_n, 0) >= 2" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 6" ] },
+                    "then": [
+                      {
+                        "math": [
+                          "pf_kl_trig = (value_or(pf_law_council, 0) == 0) * (value_or(pf_chief_set, 0) > 0) * (time('now') - value_or(pf_chief_since, 0) >= time('14 d')) * (value_or(pf_elections_total, 0) >= 2)"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 7" ] },
+                    "then": [
+                      {
+                        "math": [
+                          "pf_kl_trig = (value_or(pf_law_lord, 0) == 0) * ((value_or(pf_confidence_total, 0) + value_or(pf_coups_total, 0) >= 1) + (value_or(pf_disputes_total, 0) >= 3) * (value_or(pf_households_n, 0) >= 2) > 0)"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "if": { "math": [ "(pf_kl_in == 0) * ((pf_kl_trig > 0) + value_or(pf_kl_force, 0) > 0)" ] },
+                    "then": [ { "math": [ "pf_kl_rep = 0" ] } ],
+                    "else": [
+                      {
+                        "if": { "math": [ "(pf_kl_in == 1) * (rand(2) == 0)" ] },
+                        "then": [ { "math": [ "pf_kl_rep = 1" ] } ],
+                        "else": [ { "math": [ "pf_kl_law = 0" ] } ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "if": { "math": [ "pf_kl_law == 0" ] },
+                "then": [
+                  { "math": [ "pf_kl_try = (pf_kl_start + 5) % 7 + 1" ] },
+                  { "math": [ "pf_kl_law = pf_kl_try" ] },
+                  {
+                    "if": { "math": [ "pf_kl_law == 1" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_watch, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 2" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_dark, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 3" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_tithe, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 4" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_rest, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 5" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_door, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 6" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_lord, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 7" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_council, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 1" ] },
+                    "then": [ { "math": [ "pf_kl_trig = value_or(pf_wt_nights_total, 0) >= 3" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 2" ] },
+                    "then": [
+                      {
+                        "math": [ "pf_kl_trig = (time('now') - value_or(pf_horn_t, -999999) < time('7 d')) * (value_or(pf_households_n, 0) >= 1)" ]
+                      }
+                    ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 3" ] },
+                    "then": [ { "math": [ "pf_kl_trig = (value_or(pf_stores, 0) < 10) * (value_or(pf_households_n, 0) >= 1)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 4" ] },
+                    "then": [ { "math": [ "pf_kl_trig = value_or(pf_disputes_total, 0) >= 2" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 5" ] },
+                    "then": [ { "math": [ "pf_kl_trig = value_or(pf_households_n, 0) >= 2" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 6" ] },
+                    "then": [
+                      {
+                        "math": [
+                          "pf_kl_trig = (value_or(pf_law_council, 0) == 0) * (value_or(pf_chief_set, 0) > 0) * (time('now') - value_or(pf_chief_since, 0) >= time('14 d')) * (value_or(pf_elections_total, 0) >= 2)"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 7" ] },
+                    "then": [
+                      {
+                        "math": [
+                          "pf_kl_trig = (value_or(pf_law_lord, 0) == 0) * ((value_or(pf_confidence_total, 0) + value_or(pf_coups_total, 0) >= 1) + (value_or(pf_disputes_total, 0) >= 3) * (value_or(pf_households_n, 0) >= 2) > 0)"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "if": { "math": [ "(pf_kl_in == 0) * ((pf_kl_trig > 0) + value_or(pf_kl_force, 0) > 0)" ] },
+                    "then": [ { "math": [ "pf_kl_rep = 0" ] } ],
+                    "else": [
+                      {
+                        "if": { "math": [ "(pf_kl_in == 1) * (rand(2) == 0)" ] },
+                        "then": [ { "math": [ "pf_kl_rep = 1" ] } ],
+                        "else": [ { "math": [ "pf_kl_law = 0" ] } ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "if": { "math": [ "pf_kl_law == 0" ] },
+                "then": [
+                  { "math": [ "pf_kl_try = (pf_kl_start + 6) % 7 + 1" ] },
+                  { "math": [ "pf_kl_law = pf_kl_try" ] },
+                  {
+                    "if": { "math": [ "pf_kl_law == 1" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_watch, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 2" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_dark, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 3" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_tithe, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 4" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_rest, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 5" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_door, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 6" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_lord, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 7" ] },
+                    "then": [ { "math": [ "pf_kl_in = value_or(pf_law_council, 0)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 1" ] },
+                    "then": [ { "math": [ "pf_kl_trig = value_or(pf_wt_nights_total, 0) >= 3" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 2" ] },
+                    "then": [
+                      {
+                        "math": [ "pf_kl_trig = (time('now') - value_or(pf_horn_t, -999999) < time('7 d')) * (value_or(pf_households_n, 0) >= 1)" ]
+                      }
+                    ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 3" ] },
+                    "then": [ { "math": [ "pf_kl_trig = (value_or(pf_stores, 0) < 10) * (value_or(pf_households_n, 0) >= 1)" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 4" ] },
+                    "then": [ { "math": [ "pf_kl_trig = value_or(pf_disputes_total, 0) >= 2" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 5" ] },
+                    "then": [ { "math": [ "pf_kl_trig = value_or(pf_households_n, 0) >= 2" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 6" ] },
+                    "then": [
+                      {
+                        "math": [
+                          "pf_kl_trig = (value_or(pf_law_council, 0) == 0) * (value_or(pf_chief_set, 0) > 0) * (time('now') - value_or(pf_chief_since, 0) >= time('14 d')) * (value_or(pf_elections_total, 0) >= 2)"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 7" ] },
+                    "then": [
+                      {
+                        "math": [
+                          "pf_kl_trig = (value_or(pf_law_lord, 0) == 0) * ((value_or(pf_confidence_total, 0) + value_or(pf_coups_total, 0) >= 1) + (value_or(pf_disputes_total, 0) >= 3) * (value_or(pf_households_n, 0) >= 2) > 0)"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "if": { "math": [ "(pf_kl_in == 0) * ((pf_kl_trig > 0) + value_or(pf_kl_force, 0) > 0)" ] },
+                    "then": [ { "math": [ "pf_kl_rep = 0" ] } ],
+                    "else": [
+                      {
+                        "if": { "math": [ "(pf_kl_in == 1) * (rand(2) == 0)" ] },
+                        "then": [ { "math": [ "pf_kl_rep = 1" ] } ],
+                        "else": [ { "math": [ "pf_kl_law = 0" ] } ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      { "if": { "math": [ "pf_kl_law > 0" ] }, "then": [ { "run_eocs": "PF_KEEP_law_vote" } ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KEEP_law_vote",
+    "//": "u = avatar.  Who proposes it (you; or someone it suits, else anyone), then everyone who lives here votes from their own temperament, job and what has happened lately, plus a tenth of their trust in whoever proposed it; you vote too (a popup) if you're there.  The proposer votes for it.  More for than against: it passes.",
+    "effect": [
+      {
+        "if": { "math": [ "pf_kl_law == 1" ] },
+        "then": [
+          { "set_string_var": "everyone takes a turn on the watch", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "everyone takes a turn on the watch, not just the guards",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 2" ] },
+        "then": [
+          { "set_string_var": "no strangers after dark", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "nobody new comes in after dark: they wait outside till morning",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 3" ] },
+        "then": [
+          { "set_string_var": "a tithe to the stores", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "every household puts a share of its work into the common stores",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 4" ] },
+        "then": [
+          { "set_string_var": "a rest day", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "meeting day is a day of rest: no chores, no work, just each other",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 5" ] },
+        "then": [
+          { "set_string_var": "the meeting decides who moves in", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "the whole meeting decides who moves in, not one person",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 6" ] },
+        "then": [
+          { "set_string_var": "a lord for life", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "the chief rules for life, and their heir after them",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 7" ] },
+        "then": [
+          { "set_string_var": "a council of three", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "the place is run by a council of three, chosen by the meeting, not by one chief",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      { "math": [ "pf_kp_events += 1" ] },
+      { "math": [ "pf_kl_yes = 0" ] },
+      { "math": [ "pf_kl_no = 0" ] },
+      { "math": [ "pf_kl_lordseen = 0" ] },
+      { "math": [ "pf_kl_youv = -1" ] },
+      {
+        "if": { "math": [ "pf_kl_byyou == 1" ] },
+        "then": [
+          { "set_string_var": "AVATAR", "target_var": { "global_val": "pf_kl_puid" } },
+          { "set_string_var": "you", "target_var": { "global_val": "pf_kl_pname" } },
+          { "math": [ "pf_kl_yes = 1" ] },
+          { "math": [ "pf_kl_youv = 1" ] }
+        ],
+        "else": [
+          { "math": [ "pf_kl_got = 0" ] },
+          {
+            "u_run_npc_eocs": [
+              {
+                "id": "PF_KEEP_proposer_pref",
+                "condition": {
+                  "and": [
+                    {
+                      "and": [
+                        { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+                        { "math": [ "value_or(u_pf_resident, 0) == 1" ] },
+                        { "math": [ "has_var(u_pf_uid)" ] }
+                      ]
+                    },
+                    { "math": [ "pf_kl_got == 0" ] }
+                  ]
+                },
+                "effect": [
+                  { "if": { "math": [ "pf_kl_law == 1" ] }, "then": [ { "math": [ "_pf = value_or(u_pf_role, 0) == 2" ] } ] },
+                  {
+                    "if": { "math": [ "pf_kl_law == 2" ] },
+                    "then": [ { "math": [ "_pf = u_has_trait('PF_Q_GRUDGE') + u_has_trait('PF_T_LONER') > 0" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 3" ] },
+                    "then": [ { "math": [ "_pf = u_has_trait('PF_Q_HATES_WASTE') + (value_or(u_pf_role, 0) == 1) > 0" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 4" ] },
+                    "then": [ { "math": [ "_pf = u_has_trait('PF_T_SOCIABLE') > 0" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 5" ] },
+                    "then": [ { "math": [ "_pf = u_has_trait('PF_Q_GRUDGE') + u_has_trait('PF_T_LONER') + u_has_trait('PF_Q_PROUD') > 0" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 6" ] },
+                    "then": [ { "math": [ "_pf = u_has_trait('PF_Q_LOYAL') > 0" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "pf_kl_law == 7" ] },
+                    "then": [ { "math": [ "_pf = u_has_trait('PF_Q_PROUD') + u_has_trait('PF_Q_GRUDGE') > 0" ] } ]
+                  },
+                  {
+                    "if": { "math": [ "_pf > 0" ] },
+                    "then": [
+                      { "math": [ "pf_kl_got = 1" ] },
+                      { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_kl_puid" } },
+                      {
+                        "set_string_var": "<u_name>",
+                        "target_var": { "global_val": "pf_kl_pname" },
+                        "parse_tags": true
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "local": true,
+            "npc_range": 60
+          },
+          {
+            "u_run_npc_eocs": [
+              {
+                "id": "PF_KEEP_proposer_any",
+                "condition": {
+                  "and": [
+                    {
+                      "and": [
+                        { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+                        { "math": [ "value_or(u_pf_resident, 0) == 1" ] },
+                        { "math": [ "has_var(u_pf_uid)" ] }
+                      ]
+                    },
+                    { "math": [ "pf_kl_got == 0" ] }
+                  ]
+                },
+                "effect": [
+                  { "math": [ "pf_kl_got = 1" ] },
+                  { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_kl_puid" } },
+                  { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_kl_pname" }, "parse_tags": true }
+                ]
+              }
+            ],
+            "local": true,
+            "npc_range": 60
+          },
+          { "math": [ "pf_kl_yes = 1" ] }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_byyou == 1" ] },
+        "then": [
+          {
+            "if": { "math": [ "pf_kl_rep == 1" ] },
+            "then": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "law_put_repeal_you" } } ],
+            "else": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "law_put_you" } } ]
+          }
+        ],
+        "else": [
+          {
+            "if": { "math": [ "pf_kl_rep == 1" ] },
+            "then": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "law_put_repeal" } } ],
+            "else": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "law_put" } } ]
+          }
+        ]
+      },
+      { "u_run_npc_eocs": [ "PF_KEEP_law_voter" ], "local": true, "npc_range": 60 },
+      {
+        "if": { "math": [ "(pf_kl_byyou == 0) * (distance(pf_kp_av, pf_home_loc) <= 30)" ] },
+        "then": [
+          {
+            "if": { "math": [ "pf_kl_rep == 1" ] },
+            "then": [
+              {
+                "set_string_var": "<global_val:pf_kl_pname> wants to do away with the law that <global_val:pf_kl_text>.  Do you vote to do away with it?",
+                "target_var": { "global_val": "pf_kl_q" },
+                "parse_tags": true
+              }
+            ],
+            "else": [
+              {
+                "set_string_var": "<global_val:pf_kl_pname> proposes a law: that <global_val:pf_kl_text>.  Do you vote for it?",
+                "target_var": { "global_val": "pf_kl_q" },
+                "parse_tags": true
+              }
+            ]
+          },
+          {
+            "if": { "u_query": { "global_val": "pf_kl_q" }, "default": false },
+            "then": [ { "math": [ "pf_kl_yes += 1" ] }, { "math": [ "pf_kl_youv = 1" ] } ],
+            "else": [ { "math": [ "pf_kl_no += 1" ] }, { "math": [ "pf_kl_youv = 0" ] } ]
+          }
+        ]
+      },
+      { "math": [ "pf_kl_pass = pf_kl_yes > pf_kl_no" ] },
+      { "math": [ "pf_kl_over = 0" ] },
+      {
+        "if": { "math": [ "value_or(pf_law_lord, 0) == 1" ] },
+        "then": [
+          {
+            "if": { "math": [ "(value_or(pf_chief_set, 0) == 2) * (pf_kl_youv >= 0) * (pf_kl_youv != pf_kl_pass)" ] },
+            "then": [
+              { "math": [ "pf_kl_pass = pf_kl_youv" ] },
+              { "math": [ "pf_kl_over = 1" ] },
+              { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "law_you_overrule" } }
+            ]
+          },
+          {
+            "if": { "math": [ "(value_or(pf_chief_set, 0) == 1) * value_or(pf_kl_lordseen, 0) * (pf_kl_lordv != pf_kl_pass)" ] },
+            "then": [
+              { "math": [ "pf_kl_pass = pf_kl_lordv" ] },
+              { "math": [ "pf_kl_over = 1" ] },
+              { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "law_lord_overrule" } }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "(pf_kl_law == 6) * (pf_kl_rep == 0) * (value_or(pf_chief_set, 0) == 0)" ] },
+        "then": [ { "math": [ "pf_kl_pass = 0" ] } ]
+      },
+      {
+        "if": { "math": [ "(pf_kl_law == 6) * (pf_kl_rep == 0) * (value_or(pf_law_council, 0) == 1)" ] },
+        "then": [ { "math": [ "pf_kl_pass = 0" ] } ]
+      },
+      {
+        "if": { "math": [ "(pf_kl_law == 7) * (pf_kl_rep == 0) * (value_or(pf_law_lord, 0) == 1)" ] },
+        "then": [ { "math": [ "pf_kl_pass = 0" ] } ]
+      },
+      {
+        "if": { "math": [ "pf_kl_pass == 1" ] },
+        "then": [
+          {
+            "if": { "math": [ "pf_kl_law == 1" ] },
+            "then": [ { "math": [ "pf_law_watch = pf_kl_rep == 1 ? 0 : 1" ] }, { "math": [ "pf_law_watch_t = time('now')" ] } ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 2" ] },
+            "then": [ { "math": [ "pf_law_dark = pf_kl_rep == 1 ? 0 : 1" ] }, { "math": [ "pf_law_dark_t = time('now')" ] } ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 3" ] },
+            "then": [ { "math": [ "pf_law_tithe = pf_kl_rep == 1 ? 0 : 1" ] }, { "math": [ "pf_law_tithe_t = time('now')" ] } ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 4" ] },
+            "then": [ { "math": [ "pf_law_rest = pf_kl_rep == 1 ? 0 : 1" ] }, { "math": [ "pf_law_rest_t = time('now')" ] } ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 5" ] },
+            "then": [ { "math": [ "pf_law_door = pf_kl_rep == 1 ? 0 : 1" ] }, { "math": [ "pf_law_door_t = time('now')" ] } ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 6" ] },
+            "then": [ { "math": [ "pf_law_lord = pf_kl_rep == 1 ? 0 : 1" ] }, { "math": [ "pf_law_lord_t = time('now')" ] } ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 7" ] },
+            "then": [ { "math": [ "pf_law_council = pf_kl_rep == 1 ? 0 : 1" ] }, { "math": [ "pf_law_council_t = time('now')" ] } ]
+          },
+          {
+            "if": { "math": [ "pf_kl_over == 1" ] },
+            "then": [
+              {
+                "if": { "math": [ "pf_kl_rep == 1" ] },
+                "then": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "law_repealed_lord" } } ],
+                "else": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "law_passed_lord" } } ]
+              }
+            ],
+            "else": [
+              {
+                "if": { "math": [ "pf_kl_rep == 1" ] },
+                "then": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "law_repealed" } } ],
+                "else": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "law_passed" } } ]
+              }
+            ]
+          },
+          { "math": [ "pf_laws_passed_total = value_or(pf_laws_passed_total, 0) + 1" ] },
+          {
+            "if": { "math": [ "pf_kl_law == 7" ] },
+            "then": [
+              { "math": [ "pf_cn_n = 0" ] },
+              { "math": [ "pf_cn_term = value_or(pf_cn_term, 0) + 1" ] },
+              {
+                "if": { "math": [ "pf_kl_rep == 1" ] },
+                "then": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "council_gone" } } ],
+                "else": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "council_law" } } ]
+              }
+            ]
+          }
+        ],
+        "else": [
+          {
+            "if": { "math": [ "pf_kl_over == 1" ] },
+            "then": [
+              {
+                "if": { "math": [ "pf_kl_rep == 1" ] },
+                "then": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "law_kept_lord" } } ],
+                "else": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "law_failed_lord" } } ]
+              }
+            ],
+            "else": [
+              {
+                "if": { "math": [ "pf_kl_rep == 1" ] },
+                "then": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "law_kept" } } ],
+                "else": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "law_failed" } } ]
+              }
+            ]
+          },
+          { "math": [ "pf_laws_failed_total = value_or(pf_laws_failed_total, 0) + 1" ] }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KEEP_law_voter",
+    "//": "u = a grown-up who lives here (not the proposer): their vote.",
+    "condition": {
+      "and": [
+        {
+          "and": [
+            { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+            { "math": [ "value_or(u_pf_resident, 0) == 1" ] },
+            { "math": [ "has_var(u_pf_uid)" ] }
+          ]
+        },
+        { "not": { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_kl_puid" } ] } }
+      ]
+    },
+    "effect": [
+      {
+        "if": { "math": [ "pf_kl_law == 1" ] },
+        "then": [
+          {
+            "math": [
+              "_b = (value_or(u_pf_role, 0) == 2) * 3 - (value_or(u_pf_role, 0) == 1) + u_has_trait('PF_Q_LOYAL') - u_has_trait('PF_T_LONER') + rand(2) - 1"
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 2" ] },
+        "then": [
+          {
+            "math": [
+              "_b = u_has_trait('PF_Q_GRUDGE') * 2 + u_has_trait('PF_T_LONER') * 2 - u_has_trait('PF_T_SOCIABLE') * 2 - u_has_trait('PF_Q_MOTHER_HEN') * 2 + (time('now') - value_or(pf_horn_t, -999999) < time('7 d')) * 2 + rand(2) - 1"
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 3" ] },
+        "then": [
+          {
+            "math": [
+              "_b = u_has_trait('PF_Q_HATES_WASTE') * 3 + (value_or(u_pf_role, 0) == 1) * 2 - u_has_trait('PF_T_LONER') * 2 - u_has_trait('PF_Q_PROUD') + (value_or(pf_stores, 0) < 10) + rand(2) - 1"
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 4" ] },
+        "then": [
+          {
+            "math": [
+              "_b = u_has_trait('PF_T_SOCIABLE') * 3 + u_has_trait('PF_Q_GALLOWS') - u_has_trait('PF_Q_HATES_WASTE') * 2 - (value_or(u_pf_role, 0) == 7) + rand(2) - 1"
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 5" ] },
+        "then": [
+          {
+            "math": [
+              "_b = u_has_trait('PF_Q_GRUDGE') + u_has_trait('PF_T_LONER') + u_has_trait('PF_Q_PROUD') + (value_or(pf_households_n, 0) >= 3) * 2 - u_has_trait('PF_T_SOCIABLE') + rand(2) - 1"
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 6" ] },
+        "then": [
+          {
+            "math": [
+              "_b = u_has_trait('PF_Q_LOYAL') * 2 + u_has_trait('PF_Q_MOTHER_HEN') - u_has_trait('PF_Q_PROUD') * 2 - u_has_trait('PF_T_LONER') * 2 + rand(2) - 1"
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 7" ] },
+        "then": [
+          {
+            "math": [
+              "_b = u_has_trait('PF_Q_PROUD') * 2 + u_has_trait('PF_Q_GRUDGE') + u_has_trait('PF_T_SOCIABLE') - u_has_trait('PF_Q_LOYAL') * 2 - u_has_trait('PF_T_LONER') + (value_or(pf_disputes_total, 0) >= 3) + rand(2) - 1"
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "(pf_kl_law == 6) * (value_or(pf_chief_set, 0) > 0)" ] },
+        "then": [
+          {
+            "if": { "math": [ "pf_chief_set == 2" ] },
+            "then": [ { "set_string_var": "AVATAR", "target_var": { "global_val": "pf_m_other" } } ],
+            "else": [ { "copy_var": { "global_val": "pf_chief_uid" }, "target_var": { "global_val": "pf_m_other" } } ]
+          },
+          { "run_eocs": "PF_VIEW_read" },
+          { "math": [ "_b += (pf_read_t - 20) / 5" ] }
+        ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_kl_law == 6" ] },
+            { "math": [ "value_or(pf_chief_set, 0) == 1" ] },
+            { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_chief_uid" } ] }
+          ]
+        },
+        "then": [ { "math": [ "_b = 10" ] } ]
+      },
+      {
+        "if": { "math": [ "(pf_kl_law == 7) * (value_or(pf_chief_set, 0) > 0)" ] },
+        "then": [
+          {
+            "if": { "math": [ "pf_chief_set == 2" ] },
+            "then": [ { "set_string_var": "AVATAR", "target_var": { "global_val": "pf_m_other" } } ],
+            "else": [ { "copy_var": { "global_val": "pf_chief_uid" }, "target_var": { "global_val": "pf_m_other" } } ]
+          },
+          { "run_eocs": "PF_VIEW_read" },
+          { "math": [ "_b += (15 - pf_read_t) / 5" ] }
+        ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_kl_law == 7" ] },
+            { "math": [ "value_or(pf_chief_set, 0) == 1" ] },
+            { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_chief_uid" } ] }
+          ]
+        },
+        "then": [ { "math": [ "_b = u_has_trait('PF_T_SOCIABLE') * 3 - 2" ] } ]
+      },
+      { "if": { "math": [ "pf_kl_rep == 1" ] }, "then": [ { "math": [ "_b = -_b" ] } ] },
+      { "copy_var": { "global_val": "pf_kl_puid" }, "target_var": { "global_val": "pf_m_other" } },
+      { "run_eocs": "PF_VIEW_read" },
+      { "math": [ "_b += pf_read_t / 10" ] },
+      {
+        "if": { "math": [ "_b > 0" ] },
+        "then": [ { "math": [ "pf_kl_yes += 1" ] } ],
+        "else": [ { "math": [ "pf_kl_no += 1" ] } ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "value_or(pf_chief_set, 0) == 1" ] },
+            { "compare_string": [ { "u_val": "pf_uid" }, { "global_val": "pf_chief_uid" } ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_kl_lordseen = 1" ] }, { "math": [ "pf_kl_lordv = _b > 0" ] } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KEEP_propose_menu",
+    "//": "u = avatar.  Home menu: Put a law to the meeting.",
+    "condition": { "and": [ { "math": [ "value_or(pf_home_set, 0) == 1" ] }, { "math": [ "value_or(pf_kp_prop, 0) == 0" ] } ] },
+    "effect": [
+      {
+        "run_eoc_selector": [
+          "PF_KEEP_prop_watch",
+          "PF_KEEP_prop_dark",
+          "PF_KEEP_prop_tithe",
+          "PF_KEEP_prop_rest",
+          "PF_KEEP_prop_door",
+          "PF_KEEP_prop_lord",
+          "PF_KEEP_prop_council",
+          "PF_KEEP_rep_watch",
+          "PF_KEEP_rep_dark",
+          "PF_KEEP_rep_tithe",
+          "PF_KEEP_rep_rest",
+          "PF_KEEP_rep_door",
+          "PF_KEEP_rep_lord",
+          "PF_KEEP_rep_council"
+        ],
+        "names": [
+          "Propose: everyone takes a turn on the watch",
+          "Propose: no strangers after dark",
+          "Propose: a tithe to the stores",
+          "Propose: a rest day",
+          "Propose: the meeting decides who moves in",
+          "Propose: a lord for life",
+          "Propose: a council of three",
+          "Do away with: everyone takes a turn on the watch",
+          "Do away with: no strangers after dark",
+          "Do away with: a tithe to the stores",
+          "Do away with: a rest day",
+          "Do away with: the meeting decides who moves in",
+          "Do away with: a lord for life",
+          "Do away with: a council of three"
+        ],
+        "descriptions": [
+          "Put it to the next meeting: that everyone takes a turn on the watch, not just the guards.",
+          "Put it to the next meeting: that nobody new comes in after dark: they wait outside till morning.",
+          "Put it to the next meeting: that every household puts a share of its work into the common stores.",
+          "Put it to the next meeting: that meeting day is a day of rest: no chores, no work, just each other.",
+          "Put it to the next meeting: that the whole meeting decides who moves in, not one person.",
+          "Put it to the next meeting: that the chief rules for life, and their heir after them.",
+          "Put it to the next meeting: that the place is run by a council of three, chosen by the meeting, not by one chief.",
+          "Ask the next meeting to do away with the law that everyone takes a turn on the watch, not just the guards.",
+          "Ask the next meeting to do away with the law that nobody new comes in after dark: they wait outside till morning.",
+          "Ask the next meeting to do away with the law that every household puts a share of its work into the common stores.",
+          "Ask the next meeting to do away with the law that meeting day is a day of rest: no chores, no work, just each other.",
+          "Ask the next meeting to do away with the law that the whole meeting decides who moves in, not one person.",
+          "Ask the next meeting to do away with the law that the chief rules for life, and their heir after them.",
+          "Ask the next meeting to do away with the law that the place is run by a council of three, chosen by the meeting, not by one chief."
+        ],
+        "keys": [ "1", "2", "3", "4", "5", "6", "7", "a", "b", "c", "d", "e", "f", "g" ],
+        "title": "Put a law to the meeting",
+        "hide_failing": true,
+        "allow_cancel": true
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KEEP_prop_watch",
+    "condition": { "math": [ "value_or(pf_law_watch, 0) == 0" ] },
+    "effect": [
+      { "math": [ "pf_kp_prop = 1" ] },
+      { "math": [ "pf_kp_prop_rep = 0" ] },
+      { "math": [ "pf_kl_law = 1" ] },
+      {
+        "if": { "math": [ "pf_kl_law == 1" ] },
+        "then": [
+          { "set_string_var": "everyone takes a turn on the watch", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "everyone takes a turn on the watch, not just the guards",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 2" ] },
+        "then": [
+          { "set_string_var": "no strangers after dark", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "nobody new comes in after dark: they wait outside till morning",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 3" ] },
+        "then": [
+          { "set_string_var": "a tithe to the stores", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "every household puts a share of its work into the common stores",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 4" ] },
+        "then": [
+          { "set_string_var": "a rest day", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "meeting day is a day of rest: no chores, no work, just each other",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 5" ] },
+        "then": [
+          { "set_string_var": "the meeting decides who moves in", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "the whole meeting decides who moves in, not one person",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 6" ] },
+        "then": [
+          { "set_string_var": "a lord for life", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "the chief rules for life, and their heir after them",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 7" ] },
+        "then": [
+          { "set_string_var": "a council of three", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "the place is run by a council of three, chosen by the meeting, not by one chief",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "you_propose" } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KEEP_prop_dark",
+    "condition": { "math": [ "value_or(pf_law_dark, 0) == 0" ] },
+    "effect": [
+      { "math": [ "pf_kp_prop = 2" ] },
+      { "math": [ "pf_kp_prop_rep = 0" ] },
+      { "math": [ "pf_kl_law = 2" ] },
+      {
+        "if": { "math": [ "pf_kl_law == 1" ] },
+        "then": [
+          { "set_string_var": "everyone takes a turn on the watch", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "everyone takes a turn on the watch, not just the guards",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 2" ] },
+        "then": [
+          { "set_string_var": "no strangers after dark", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "nobody new comes in after dark: they wait outside till morning",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 3" ] },
+        "then": [
+          { "set_string_var": "a tithe to the stores", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "every household puts a share of its work into the common stores",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 4" ] },
+        "then": [
+          { "set_string_var": "a rest day", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "meeting day is a day of rest: no chores, no work, just each other",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 5" ] },
+        "then": [
+          { "set_string_var": "the meeting decides who moves in", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "the whole meeting decides who moves in, not one person",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 6" ] },
+        "then": [
+          { "set_string_var": "a lord for life", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "the chief rules for life, and their heir after them",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 7" ] },
+        "then": [
+          { "set_string_var": "a council of three", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "the place is run by a council of three, chosen by the meeting, not by one chief",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "you_propose" } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KEEP_prop_tithe",
+    "condition": { "math": [ "value_or(pf_law_tithe, 0) == 0" ] },
+    "effect": [
+      { "math": [ "pf_kp_prop = 3" ] },
+      { "math": [ "pf_kp_prop_rep = 0" ] },
+      { "math": [ "pf_kl_law = 3" ] },
+      {
+        "if": { "math": [ "pf_kl_law == 1" ] },
+        "then": [
+          { "set_string_var": "everyone takes a turn on the watch", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "everyone takes a turn on the watch, not just the guards",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 2" ] },
+        "then": [
+          { "set_string_var": "no strangers after dark", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "nobody new comes in after dark: they wait outside till morning",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 3" ] },
+        "then": [
+          { "set_string_var": "a tithe to the stores", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "every household puts a share of its work into the common stores",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 4" ] },
+        "then": [
+          { "set_string_var": "a rest day", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "meeting day is a day of rest: no chores, no work, just each other",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 5" ] },
+        "then": [
+          { "set_string_var": "the meeting decides who moves in", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "the whole meeting decides who moves in, not one person",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 6" ] },
+        "then": [
+          { "set_string_var": "a lord for life", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "the chief rules for life, and their heir after them",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 7" ] },
+        "then": [
+          { "set_string_var": "a council of three", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "the place is run by a council of three, chosen by the meeting, not by one chief",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "you_propose" } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KEEP_prop_rest",
+    "condition": { "math": [ "value_or(pf_law_rest, 0) == 0" ] },
+    "effect": [
+      { "math": [ "pf_kp_prop = 4" ] },
+      { "math": [ "pf_kp_prop_rep = 0" ] },
+      { "math": [ "pf_kl_law = 4" ] },
+      {
+        "if": { "math": [ "pf_kl_law == 1" ] },
+        "then": [
+          { "set_string_var": "everyone takes a turn on the watch", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "everyone takes a turn on the watch, not just the guards",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 2" ] },
+        "then": [
+          { "set_string_var": "no strangers after dark", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "nobody new comes in after dark: they wait outside till morning",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 3" ] },
+        "then": [
+          { "set_string_var": "a tithe to the stores", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "every household puts a share of its work into the common stores",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 4" ] },
+        "then": [
+          { "set_string_var": "a rest day", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "meeting day is a day of rest: no chores, no work, just each other",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 5" ] },
+        "then": [
+          { "set_string_var": "the meeting decides who moves in", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "the whole meeting decides who moves in, not one person",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 6" ] },
+        "then": [
+          { "set_string_var": "a lord for life", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "the chief rules for life, and their heir after them",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 7" ] },
+        "then": [
+          { "set_string_var": "a council of three", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "the place is run by a council of three, chosen by the meeting, not by one chief",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "you_propose" } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KEEP_prop_door",
+    "condition": { "math": [ "value_or(pf_law_door, 0) == 0" ] },
+    "effect": [
+      { "math": [ "pf_kp_prop = 5" ] },
+      { "math": [ "pf_kp_prop_rep = 0" ] },
+      { "math": [ "pf_kl_law = 5" ] },
+      {
+        "if": { "math": [ "pf_kl_law == 1" ] },
+        "then": [
+          { "set_string_var": "everyone takes a turn on the watch", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "everyone takes a turn on the watch, not just the guards",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 2" ] },
+        "then": [
+          { "set_string_var": "no strangers after dark", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "nobody new comes in after dark: they wait outside till morning",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 3" ] },
+        "then": [
+          { "set_string_var": "a tithe to the stores", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "every household puts a share of its work into the common stores",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 4" ] },
+        "then": [
+          { "set_string_var": "a rest day", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "meeting day is a day of rest: no chores, no work, just each other",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 5" ] },
+        "then": [
+          { "set_string_var": "the meeting decides who moves in", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "the whole meeting decides who moves in, not one person",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 6" ] },
+        "then": [
+          { "set_string_var": "a lord for life", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "the chief rules for life, and their heir after them",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 7" ] },
+        "then": [
+          { "set_string_var": "a council of three", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "the place is run by a council of three, chosen by the meeting, not by one chief",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "you_propose" } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KEEP_prop_lord",
+    "condition": { "math": [ "(value_or(pf_law_lord, 0) == 0) * (value_or(pf_law_council, 0) == 0)" ] },
+    "effect": [
+      { "math": [ "pf_kp_prop = 6" ] },
+      { "math": [ "pf_kp_prop_rep = 0" ] },
+      { "math": [ "pf_kl_law = 6" ] },
+      {
+        "if": { "math": [ "pf_kl_law == 1" ] },
+        "then": [
+          { "set_string_var": "everyone takes a turn on the watch", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "everyone takes a turn on the watch, not just the guards",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 2" ] },
+        "then": [
+          { "set_string_var": "no strangers after dark", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "nobody new comes in after dark: they wait outside till morning",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 3" ] },
+        "then": [
+          { "set_string_var": "a tithe to the stores", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "every household puts a share of its work into the common stores",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 4" ] },
+        "then": [
+          { "set_string_var": "a rest day", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "meeting day is a day of rest: no chores, no work, just each other",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 5" ] },
+        "then": [
+          { "set_string_var": "the meeting decides who moves in", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "the whole meeting decides who moves in, not one person",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 6" ] },
+        "then": [
+          { "set_string_var": "a lord for life", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "the chief rules for life, and their heir after them",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 7" ] },
+        "then": [
+          { "set_string_var": "a council of three", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "the place is run by a council of three, chosen by the meeting, not by one chief",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "you_propose" } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KEEP_prop_council",
+    "condition": { "math": [ "(value_or(pf_law_council, 0) == 0) * (value_or(pf_law_lord, 0) == 0)" ] },
+    "effect": [
+      { "math": [ "pf_kp_prop = 7" ] },
+      { "math": [ "pf_kp_prop_rep = 0" ] },
+      { "math": [ "pf_kl_law = 7" ] },
+      {
+        "if": { "math": [ "pf_kl_law == 1" ] },
+        "then": [
+          { "set_string_var": "everyone takes a turn on the watch", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "everyone takes a turn on the watch, not just the guards",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 2" ] },
+        "then": [
+          { "set_string_var": "no strangers after dark", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "nobody new comes in after dark: they wait outside till morning",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 3" ] },
+        "then": [
+          { "set_string_var": "a tithe to the stores", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "every household puts a share of its work into the common stores",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 4" ] },
+        "then": [
+          { "set_string_var": "a rest day", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "meeting day is a day of rest: no chores, no work, just each other",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 5" ] },
+        "then": [
+          { "set_string_var": "the meeting decides who moves in", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "the whole meeting decides who moves in, not one person",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 6" ] },
+        "then": [
+          { "set_string_var": "a lord for life", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "the chief rules for life, and their heir after them",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 7" ] },
+        "then": [
+          { "set_string_var": "a council of three", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "the place is run by a council of three, chosen by the meeting, not by one chief",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "you_propose" } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KEEP_rep_watch",
+    "condition": { "math": [ "value_or(pf_law_watch, 0) == 1" ] },
+    "effect": [
+      { "math": [ "pf_kp_prop = 1" ] },
+      { "math": [ "pf_kp_prop_rep = 1" ] },
+      { "math": [ "pf_kl_law = 1" ] },
+      {
+        "if": { "math": [ "pf_kl_law == 1" ] },
+        "then": [
+          { "set_string_var": "everyone takes a turn on the watch", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "everyone takes a turn on the watch, not just the guards",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 2" ] },
+        "then": [
+          { "set_string_var": "no strangers after dark", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "nobody new comes in after dark: they wait outside till morning",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 3" ] },
+        "then": [
+          { "set_string_var": "a tithe to the stores", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "every household puts a share of its work into the common stores",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 4" ] },
+        "then": [
+          { "set_string_var": "a rest day", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "meeting day is a day of rest: no chores, no work, just each other",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 5" ] },
+        "then": [
+          { "set_string_var": "the meeting decides who moves in", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "the whole meeting decides who moves in, not one person",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 6" ] },
+        "then": [
+          { "set_string_var": "a lord for life", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "the chief rules for life, and their heir after them",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 7" ] },
+        "then": [
+          { "set_string_var": "a council of three", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "the place is run by a council of three, chosen by the meeting, not by one chief",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "you_propose_repeal" } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KEEP_rep_dark",
+    "condition": { "math": [ "value_or(pf_law_dark, 0) == 1" ] },
+    "effect": [
+      { "math": [ "pf_kp_prop = 2" ] },
+      { "math": [ "pf_kp_prop_rep = 1" ] },
+      { "math": [ "pf_kl_law = 2" ] },
+      {
+        "if": { "math": [ "pf_kl_law == 1" ] },
+        "then": [
+          { "set_string_var": "everyone takes a turn on the watch", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "everyone takes a turn on the watch, not just the guards",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 2" ] },
+        "then": [
+          { "set_string_var": "no strangers after dark", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "nobody new comes in after dark: they wait outside till morning",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 3" ] },
+        "then": [
+          { "set_string_var": "a tithe to the stores", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "every household puts a share of its work into the common stores",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 4" ] },
+        "then": [
+          { "set_string_var": "a rest day", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "meeting day is a day of rest: no chores, no work, just each other",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 5" ] },
+        "then": [
+          { "set_string_var": "the meeting decides who moves in", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "the whole meeting decides who moves in, not one person",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 6" ] },
+        "then": [
+          { "set_string_var": "a lord for life", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "the chief rules for life, and their heir after them",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 7" ] },
+        "then": [
+          { "set_string_var": "a council of three", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "the place is run by a council of three, chosen by the meeting, not by one chief",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "you_propose_repeal" } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KEEP_rep_tithe",
+    "condition": { "math": [ "value_or(pf_law_tithe, 0) == 1" ] },
+    "effect": [
+      { "math": [ "pf_kp_prop = 3" ] },
+      { "math": [ "pf_kp_prop_rep = 1" ] },
+      { "math": [ "pf_kl_law = 3" ] },
+      {
+        "if": { "math": [ "pf_kl_law == 1" ] },
+        "then": [
+          { "set_string_var": "everyone takes a turn on the watch", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "everyone takes a turn on the watch, not just the guards",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 2" ] },
+        "then": [
+          { "set_string_var": "no strangers after dark", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "nobody new comes in after dark: they wait outside till morning",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 3" ] },
+        "then": [
+          { "set_string_var": "a tithe to the stores", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "every household puts a share of its work into the common stores",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 4" ] },
+        "then": [
+          { "set_string_var": "a rest day", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "meeting day is a day of rest: no chores, no work, just each other",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 5" ] },
+        "then": [
+          { "set_string_var": "the meeting decides who moves in", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "the whole meeting decides who moves in, not one person",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 6" ] },
+        "then": [
+          { "set_string_var": "a lord for life", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "the chief rules for life, and their heir after them",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 7" ] },
+        "then": [
+          { "set_string_var": "a council of three", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "the place is run by a council of three, chosen by the meeting, not by one chief",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "you_propose_repeal" } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KEEP_rep_rest",
+    "condition": { "math": [ "value_or(pf_law_rest, 0) == 1" ] },
+    "effect": [
+      { "math": [ "pf_kp_prop = 4" ] },
+      { "math": [ "pf_kp_prop_rep = 1" ] },
+      { "math": [ "pf_kl_law = 4" ] },
+      {
+        "if": { "math": [ "pf_kl_law == 1" ] },
+        "then": [
+          { "set_string_var": "everyone takes a turn on the watch", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "everyone takes a turn on the watch, not just the guards",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 2" ] },
+        "then": [
+          { "set_string_var": "no strangers after dark", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "nobody new comes in after dark: they wait outside till morning",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 3" ] },
+        "then": [
+          { "set_string_var": "a tithe to the stores", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "every household puts a share of its work into the common stores",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 4" ] },
+        "then": [
+          { "set_string_var": "a rest day", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "meeting day is a day of rest: no chores, no work, just each other",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 5" ] },
+        "then": [
+          { "set_string_var": "the meeting decides who moves in", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "the whole meeting decides who moves in, not one person",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 6" ] },
+        "then": [
+          { "set_string_var": "a lord for life", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "the chief rules for life, and their heir after them",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 7" ] },
+        "then": [
+          { "set_string_var": "a council of three", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "the place is run by a council of three, chosen by the meeting, not by one chief",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "you_propose_repeal" } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KEEP_rep_door",
+    "condition": { "math": [ "value_or(pf_law_door, 0) == 1" ] },
+    "effect": [
+      { "math": [ "pf_kp_prop = 5" ] },
+      { "math": [ "pf_kp_prop_rep = 1" ] },
+      { "math": [ "pf_kl_law = 5" ] },
+      {
+        "if": { "math": [ "pf_kl_law == 1" ] },
+        "then": [
+          { "set_string_var": "everyone takes a turn on the watch", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "everyone takes a turn on the watch, not just the guards",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 2" ] },
+        "then": [
+          { "set_string_var": "no strangers after dark", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "nobody new comes in after dark: they wait outside till morning",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 3" ] },
+        "then": [
+          { "set_string_var": "a tithe to the stores", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "every household puts a share of its work into the common stores",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 4" ] },
+        "then": [
+          { "set_string_var": "a rest day", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "meeting day is a day of rest: no chores, no work, just each other",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 5" ] },
+        "then": [
+          { "set_string_var": "the meeting decides who moves in", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "the whole meeting decides who moves in, not one person",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 6" ] },
+        "then": [
+          { "set_string_var": "a lord for life", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "the chief rules for life, and their heir after them",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 7" ] },
+        "then": [
+          { "set_string_var": "a council of three", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "the place is run by a council of three, chosen by the meeting, not by one chief",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "you_propose_repeal" } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KEEP_rep_lord",
+    "condition": { "math": [ "value_or(pf_law_lord, 0) == 1" ] },
+    "effect": [
+      { "math": [ "pf_kp_prop = 6" ] },
+      { "math": [ "pf_kp_prop_rep = 1" ] },
+      { "math": [ "pf_kl_law = 6" ] },
+      {
+        "if": { "math": [ "pf_kl_law == 1" ] },
+        "then": [
+          { "set_string_var": "everyone takes a turn on the watch", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "everyone takes a turn on the watch, not just the guards",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 2" ] },
+        "then": [
+          { "set_string_var": "no strangers after dark", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "nobody new comes in after dark: they wait outside till morning",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 3" ] },
+        "then": [
+          { "set_string_var": "a tithe to the stores", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "every household puts a share of its work into the common stores",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 4" ] },
+        "then": [
+          { "set_string_var": "a rest day", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "meeting day is a day of rest: no chores, no work, just each other",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 5" ] },
+        "then": [
+          { "set_string_var": "the meeting decides who moves in", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "the whole meeting decides who moves in, not one person",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 6" ] },
+        "then": [
+          { "set_string_var": "a lord for life", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "the chief rules for life, and their heir after them",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 7" ] },
+        "then": [
+          { "set_string_var": "a council of three", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "the place is run by a council of three, chosen by the meeting, not by one chief",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "you_propose_repeal" } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KEEP_rep_council",
+    "condition": { "math": [ "value_or(pf_law_council, 0) == 1" ] },
+    "effect": [
+      { "math": [ "pf_kp_prop = 7" ] },
+      { "math": [ "pf_kp_prop_rep = 1" ] },
+      { "math": [ "pf_kl_law = 7" ] },
+      {
+        "if": { "math": [ "pf_kl_law == 1" ] },
+        "then": [
+          { "set_string_var": "everyone takes a turn on the watch", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "everyone takes a turn on the watch, not just the guards",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 2" ] },
+        "then": [
+          { "set_string_var": "no strangers after dark", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "nobody new comes in after dark: they wait outside till morning",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 3" ] },
+        "then": [
+          { "set_string_var": "a tithe to the stores", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "every household puts a share of its work into the common stores",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 4" ] },
+        "then": [
+          { "set_string_var": "a rest day", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "meeting day is a day of rest: no chores, no work, just each other",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 5" ] },
+        "then": [
+          { "set_string_var": "the meeting decides who moves in", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "the whole meeting decides who moves in, not one person",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 6" ] },
+        "then": [
+          { "set_string_var": "a lord for life", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "the chief rules for life, and their heir after them",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_law == 7" ] },
+        "then": [
+          { "set_string_var": "a council of three", "target_var": { "global_val": "pf_kl_name" } },
+          {
+            "set_string_var": "the place is run by a council of three, chosen by the meeting, not by one chief",
+            "target_var": { "global_val": "pf_kl_text" }
+          }
+        ]
+      },
+      { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "you_propose_repeal" } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KEEP_laws_menu",
+    "//": "u = avatar.  Home menu: The laws of the place.",
+    "condition": { "math": [ "value_or(pf_home_set, 0) == 1" ] },
+    "effect": [
+      { "math": [ "pf_kl_n = 0" ] },
+      {
+        "if": { "math": [ "value_or(pf_law_watch, 0) == 1" ] },
+        "then": [
+          { "math": [ "pf_kl_n += 1" ] },
+          { "math": [ "pf_kl_law = 1" ] },
+          { "math": [ "pf_kl_days = floor((time('now') - pf_law_watch_t) / time('1 d'))" ] },
+          {
+            "set_string_var": "<global_val:pf_kl_days> days",
+            "target_var": { "global_val": "pf_kl_days_t" },
+            "parse_tags": true
+          },
+          {
+            "if": { "math": [ "pf_kl_days == 1" ] },
+            "then": [ { "set_string_var": "a day", "target_var": { "global_val": "pf_kl_days_t" } } ]
+          },
+          {
+            "if": { "math": [ "pf_kl_days < 1" ] },
+            "then": [ { "set_string_var": "less than a day", "target_var": { "global_val": "pf_kl_days_t" } } ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 1" ] },
+            "then": [
+              { "set_string_var": "everyone takes a turn on the watch", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "everyone takes a turn on the watch, not just the guards",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 2" ] },
+            "then": [
+              { "set_string_var": "no strangers after dark", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "nobody new comes in after dark: they wait outside till morning",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 3" ] },
+            "then": [
+              { "set_string_var": "a tithe to the stores", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "every household puts a share of its work into the common stores",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 4" ] },
+            "then": [
+              { "set_string_var": "a rest day", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "meeting day is a day of rest: no chores, no work, just each other",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 5" ] },
+            "then": [
+              { "set_string_var": "the meeting decides who moves in", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "the whole meeting decides who moves in, not one person",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 6" ] },
+            "then": [
+              { "set_string_var": "a lord for life", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "the chief rules for life, and their heir after them",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 7" ] },
+            "then": [
+              { "set_string_var": "a council of three", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "the place is run by a council of three, chosen by the meeting, not by one chief",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "law_list" } }
+        ]
+      },
+      {
+        "if": { "math": [ "value_or(pf_law_dark, 0) == 1" ] },
+        "then": [
+          { "math": [ "pf_kl_n += 1" ] },
+          { "math": [ "pf_kl_law = 2" ] },
+          { "math": [ "pf_kl_days = floor((time('now') - pf_law_dark_t) / time('1 d'))" ] },
+          {
+            "set_string_var": "<global_val:pf_kl_days> days",
+            "target_var": { "global_val": "pf_kl_days_t" },
+            "parse_tags": true
+          },
+          {
+            "if": { "math": [ "pf_kl_days == 1" ] },
+            "then": [ { "set_string_var": "a day", "target_var": { "global_val": "pf_kl_days_t" } } ]
+          },
+          {
+            "if": { "math": [ "pf_kl_days < 1" ] },
+            "then": [ { "set_string_var": "less than a day", "target_var": { "global_val": "pf_kl_days_t" } } ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 1" ] },
+            "then": [
+              { "set_string_var": "everyone takes a turn on the watch", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "everyone takes a turn on the watch, not just the guards",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 2" ] },
+            "then": [
+              { "set_string_var": "no strangers after dark", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "nobody new comes in after dark: they wait outside till morning",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 3" ] },
+            "then": [
+              { "set_string_var": "a tithe to the stores", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "every household puts a share of its work into the common stores",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 4" ] },
+            "then": [
+              { "set_string_var": "a rest day", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "meeting day is a day of rest: no chores, no work, just each other",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 5" ] },
+            "then": [
+              { "set_string_var": "the meeting decides who moves in", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "the whole meeting decides who moves in, not one person",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 6" ] },
+            "then": [
+              { "set_string_var": "a lord for life", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "the chief rules for life, and their heir after them",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 7" ] },
+            "then": [
+              { "set_string_var": "a council of three", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "the place is run by a council of three, chosen by the meeting, not by one chief",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "law_list" } }
+        ]
+      },
+      {
+        "if": { "math": [ "value_or(pf_law_tithe, 0) == 1" ] },
+        "then": [
+          { "math": [ "pf_kl_n += 1" ] },
+          { "math": [ "pf_kl_law = 3" ] },
+          { "math": [ "pf_kl_days = floor((time('now') - pf_law_tithe_t) / time('1 d'))" ] },
+          {
+            "set_string_var": "<global_val:pf_kl_days> days",
+            "target_var": { "global_val": "pf_kl_days_t" },
+            "parse_tags": true
+          },
+          {
+            "if": { "math": [ "pf_kl_days == 1" ] },
+            "then": [ { "set_string_var": "a day", "target_var": { "global_val": "pf_kl_days_t" } } ]
+          },
+          {
+            "if": { "math": [ "pf_kl_days < 1" ] },
+            "then": [ { "set_string_var": "less than a day", "target_var": { "global_val": "pf_kl_days_t" } } ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 1" ] },
+            "then": [
+              { "set_string_var": "everyone takes a turn on the watch", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "everyone takes a turn on the watch, not just the guards",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 2" ] },
+            "then": [
+              { "set_string_var": "no strangers after dark", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "nobody new comes in after dark: they wait outside till morning",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 3" ] },
+            "then": [
+              { "set_string_var": "a tithe to the stores", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "every household puts a share of its work into the common stores",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 4" ] },
+            "then": [
+              { "set_string_var": "a rest day", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "meeting day is a day of rest: no chores, no work, just each other",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 5" ] },
+            "then": [
+              { "set_string_var": "the meeting decides who moves in", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "the whole meeting decides who moves in, not one person",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 6" ] },
+            "then": [
+              { "set_string_var": "a lord for life", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "the chief rules for life, and their heir after them",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 7" ] },
+            "then": [
+              { "set_string_var": "a council of three", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "the place is run by a council of three, chosen by the meeting, not by one chief",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "law_list" } }
+        ]
+      },
+      {
+        "if": { "math": [ "value_or(pf_law_rest, 0) == 1" ] },
+        "then": [
+          { "math": [ "pf_kl_n += 1" ] },
+          { "math": [ "pf_kl_law = 4" ] },
+          { "math": [ "pf_kl_days = floor((time('now') - pf_law_rest_t) / time('1 d'))" ] },
+          {
+            "set_string_var": "<global_val:pf_kl_days> days",
+            "target_var": { "global_val": "pf_kl_days_t" },
+            "parse_tags": true
+          },
+          {
+            "if": { "math": [ "pf_kl_days == 1" ] },
+            "then": [ { "set_string_var": "a day", "target_var": { "global_val": "pf_kl_days_t" } } ]
+          },
+          {
+            "if": { "math": [ "pf_kl_days < 1" ] },
+            "then": [ { "set_string_var": "less than a day", "target_var": { "global_val": "pf_kl_days_t" } } ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 1" ] },
+            "then": [
+              { "set_string_var": "everyone takes a turn on the watch", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "everyone takes a turn on the watch, not just the guards",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 2" ] },
+            "then": [
+              { "set_string_var": "no strangers after dark", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "nobody new comes in after dark: they wait outside till morning",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 3" ] },
+            "then": [
+              { "set_string_var": "a tithe to the stores", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "every household puts a share of its work into the common stores",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 4" ] },
+            "then": [
+              { "set_string_var": "a rest day", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "meeting day is a day of rest: no chores, no work, just each other",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 5" ] },
+            "then": [
+              { "set_string_var": "the meeting decides who moves in", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "the whole meeting decides who moves in, not one person",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 6" ] },
+            "then": [
+              { "set_string_var": "a lord for life", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "the chief rules for life, and their heir after them",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 7" ] },
+            "then": [
+              { "set_string_var": "a council of three", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "the place is run by a council of three, chosen by the meeting, not by one chief",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "law_list" } }
+        ]
+      },
+      {
+        "if": { "math": [ "value_or(pf_law_door, 0) == 1" ] },
+        "then": [
+          { "math": [ "pf_kl_n += 1" ] },
+          { "math": [ "pf_kl_law = 5" ] },
+          { "math": [ "pf_kl_days = floor((time('now') - pf_law_door_t) / time('1 d'))" ] },
+          {
+            "set_string_var": "<global_val:pf_kl_days> days",
+            "target_var": { "global_val": "pf_kl_days_t" },
+            "parse_tags": true
+          },
+          {
+            "if": { "math": [ "pf_kl_days == 1" ] },
+            "then": [ { "set_string_var": "a day", "target_var": { "global_val": "pf_kl_days_t" } } ]
+          },
+          {
+            "if": { "math": [ "pf_kl_days < 1" ] },
+            "then": [ { "set_string_var": "less than a day", "target_var": { "global_val": "pf_kl_days_t" } } ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 1" ] },
+            "then": [
+              { "set_string_var": "everyone takes a turn on the watch", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "everyone takes a turn on the watch, not just the guards",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 2" ] },
+            "then": [
+              { "set_string_var": "no strangers after dark", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "nobody new comes in after dark: they wait outside till morning",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 3" ] },
+            "then": [
+              { "set_string_var": "a tithe to the stores", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "every household puts a share of its work into the common stores",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 4" ] },
+            "then": [
+              { "set_string_var": "a rest day", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "meeting day is a day of rest: no chores, no work, just each other",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 5" ] },
+            "then": [
+              { "set_string_var": "the meeting decides who moves in", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "the whole meeting decides who moves in, not one person",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 6" ] },
+            "then": [
+              { "set_string_var": "a lord for life", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "the chief rules for life, and their heir after them",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 7" ] },
+            "then": [
+              { "set_string_var": "a council of three", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "the place is run by a council of three, chosen by the meeting, not by one chief",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "law_list" } }
+        ]
+      },
+      {
+        "if": { "math": [ "value_or(pf_law_lord, 0) == 1" ] },
+        "then": [
+          { "math": [ "pf_kl_n += 1" ] },
+          { "math": [ "pf_kl_law = 6" ] },
+          { "math": [ "pf_kl_days = floor((time('now') - pf_law_lord_t) / time('1 d'))" ] },
+          {
+            "set_string_var": "<global_val:pf_kl_days> days",
+            "target_var": { "global_val": "pf_kl_days_t" },
+            "parse_tags": true
+          },
+          {
+            "if": { "math": [ "pf_kl_days == 1" ] },
+            "then": [ { "set_string_var": "a day", "target_var": { "global_val": "pf_kl_days_t" } } ]
+          },
+          {
+            "if": { "math": [ "pf_kl_days < 1" ] },
+            "then": [ { "set_string_var": "less than a day", "target_var": { "global_val": "pf_kl_days_t" } } ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 1" ] },
+            "then": [
+              { "set_string_var": "everyone takes a turn on the watch", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "everyone takes a turn on the watch, not just the guards",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 2" ] },
+            "then": [
+              { "set_string_var": "no strangers after dark", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "nobody new comes in after dark: they wait outside till morning",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 3" ] },
+            "then": [
+              { "set_string_var": "a tithe to the stores", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "every household puts a share of its work into the common stores",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 4" ] },
+            "then": [
+              { "set_string_var": "a rest day", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "meeting day is a day of rest: no chores, no work, just each other",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 5" ] },
+            "then": [
+              { "set_string_var": "the meeting decides who moves in", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "the whole meeting decides who moves in, not one person",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 6" ] },
+            "then": [
+              { "set_string_var": "a lord for life", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "the chief rules for life, and their heir after them",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 7" ] },
+            "then": [
+              { "set_string_var": "a council of three", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "the place is run by a council of three, chosen by the meeting, not by one chief",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "law_list" } }
+        ]
+      },
+      {
+        "if": { "math": [ "value_or(pf_law_council, 0) == 1" ] },
+        "then": [
+          { "math": [ "pf_kl_n += 1" ] },
+          { "math": [ "pf_kl_law = 7" ] },
+          { "math": [ "pf_kl_days = floor((time('now') - pf_law_council_t) / time('1 d'))" ] },
+          {
+            "set_string_var": "<global_val:pf_kl_days> days",
+            "target_var": { "global_val": "pf_kl_days_t" },
+            "parse_tags": true
+          },
+          {
+            "if": { "math": [ "pf_kl_days == 1" ] },
+            "then": [ { "set_string_var": "a day", "target_var": { "global_val": "pf_kl_days_t" } } ]
+          },
+          {
+            "if": { "math": [ "pf_kl_days < 1" ] },
+            "then": [ { "set_string_var": "less than a day", "target_var": { "global_val": "pf_kl_days_t" } } ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 1" ] },
+            "then": [
+              { "set_string_var": "everyone takes a turn on the watch", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "everyone takes a turn on the watch, not just the guards",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 2" ] },
+            "then": [
+              { "set_string_var": "no strangers after dark", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "nobody new comes in after dark: they wait outside till morning",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 3" ] },
+            "then": [
+              { "set_string_var": "a tithe to the stores", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "every household puts a share of its work into the common stores",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 4" ] },
+            "then": [
+              { "set_string_var": "a rest day", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "meeting day is a day of rest: no chores, no work, just each other",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 5" ] },
+            "then": [
+              { "set_string_var": "the meeting decides who moves in", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "the whole meeting decides who moves in, not one person",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 6" ] },
+            "then": [
+              { "set_string_var": "a lord for life", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "the chief rules for life, and their heir after them",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 7" ] },
+            "then": [
+              { "set_string_var": "a council of three", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "the place is run by a council of three, chosen by the meeting, not by one chief",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "law_list" } }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_kl_n == 0" ] },
+        "then": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "law_none" } } ]
+      },
+      {
+        "if": { "math": [ "value_or(pf_kp_prop, 0) > 0" ] },
+        "then": [
+          { "math": [ "pf_kl_law = pf_kp_prop" ] },
+          {
+            "if": { "math": [ "pf_kl_law == 1" ] },
+            "then": [
+              { "set_string_var": "everyone takes a turn on the watch", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "everyone takes a turn on the watch, not just the guards",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 2" ] },
+            "then": [
+              { "set_string_var": "no strangers after dark", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "nobody new comes in after dark: they wait outside till morning",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 3" ] },
+            "then": [
+              { "set_string_var": "a tithe to the stores", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "every household puts a share of its work into the common stores",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 4" ] },
+            "then": [
+              { "set_string_var": "a rest day", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "meeting day is a day of rest: no chores, no work, just each other",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 5" ] },
+            "then": [
+              { "set_string_var": "the meeting decides who moves in", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "the whole meeting decides who moves in, not one person",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 6" ] },
+            "then": [
+              { "set_string_var": "a lord for life", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "the chief rules for life, and their heir after them",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_kl_law == 7" ] },
+            "then": [
+              { "set_string_var": "a council of three", "target_var": { "global_val": "pf_kl_name" } },
+              {
+                "set_string_var": "the place is run by a council of three, chosen by the meeting, not by one chief",
+                "target_var": { "global_val": "pf_kl_text" }
+              }
+            ]
+          },
+          { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "law_pending" } }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KEEP_tithe_one",
+    "//": "u = someone who lives here and just did their chore (household.json), with the tithe in force: a share goes to the stores (+1).  Now and then a loner or a proud one keeps theirs back (the first each week is noticed).",
+    "effect": [
+      {
+        "if": {
+          "and": [
+            { "math": [ "value_or(pf_tithe_shirk, 0) == 0" ] },
+            { "math": [ "u_has_trait('PF_T_LONER') + u_has_trait('PF_Q_PROUD') > 0" ] },
+            { "math": [ "rand(11) == 0" ] }
+          ]
+        },
+        "then": [
+          { "math": [ "pf_tithe_shirk = 1" ] },
+          { "math": [ "u_pf_shirks = value_or(u_pf_shirks, 0) + 1" ] },
+          { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_tithe_shirk_uid" } },
+          { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_tithe_shirk_name" }, "parse_tags": true }
+        ],
+        "else": [
+          { "math": [ "pf_stores = value_or(pf_stores, 0) + 1" ] },
+          { "math": [ "pf_tithe_week = value_or(pf_tithe_week, 0) + 1" ] },
+          { "math": [ "pf_tithe_total = value_or(pf_tithe_total, 0) + 1" ] }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KEEP_tithe_step",
+    "//": "u = avatar.  With the tithe in force: what it brought in this week, and anyone who kept their share back.  The chief fines them (3 into the stores) and they resent it; if you're chief, you decide; with no chief, nobody holds them to it.",
+    "effect": [
+      {
+        "if": { "math": [ "value_or(pf_law_tithe, 0) == 1" ] },
+        "then": [
+          {
+            "if": { "math": [ "value_or(pf_tithe_week, 0) > 0" ] },
+            "then": [
+              { "math": [ "pf_kp_events += 1" ] },
+              { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "tithe_report" } }
+            ]
+          },
+          { "math": [ "pf_tithe_week = 0" ] },
+          {
+            "if": { "math": [ "value_or(pf_tithe_shirk, 0) == 1" ] },
+            "then": [
+              { "math": [ "pf_tithe_shirk = 0" ] },
+              { "math": [ "pf_kp_events += 1" ] },
+              { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "tithe_shirk" } },
+              {
+                "if": { "math": [ "pf_kp_judge == 2" ] },
+                "then": [
+                  {
+                    "set_string_var": "<global_val:pf_tithe_shirk_name> kept back their share of the tithe.  Do you fine them?",
+                    "target_var": { "global_val": "pf_kt_q" },
+                    "parse_tags": true
+                  },
+                  {
+                    "if": { "u_query": { "global_val": "pf_kt_q" }, "default": false },
+                    "then": [
+                      { "math": [ "pf_stores = value_or(pf_stores, 0) + 3" ] },
+                      { "run_eocs": "PF_KEEP_tithe_fine", "alpha_talker": "avatar" },
+                      {
+                        "run_eocs": "PF_SAY_keep",
+                        "alpha_talker": "avatar",
+                        "variables": { "line": "tithe_fined_you" }
+                      }
+                    ],
+                    "else": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "tithe_let_go" } } ]
+                  }
+                ],
+                "else": [
+                  {
+                    "if": { "math": [ "pf_kp_judge == 1" ] },
+                    "then": [
+                      { "math": [ "pf_stores = value_or(pf_stores, 0) + 3" ] },
+                      { "run_eocs": "PF_KEEP_tithe_fine", "alpha_talker": { "global_val": "pf_kp_chief_t" } },
+                      { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "tithe_fined" } }
+                    ],
+                    "else": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "tithe_nobody" } } ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KEEP_tithe_fine",
+    "//": "u = the chief (or you): the one who kept their share back resents the fine (ruled_against), if they're here.",
+    "effect": [
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_kd_judge" }, "parse_tags": true },
+      { "copy_var": { "global_val": "pf_tithe_shirk_uid" }, "target_var": { "global_val": "pf_find_uid" } },
+      { "run_eocs": "PF_FIND_by_uid" },
+      {
+        "if": { "math": [ "pf_find_ok == 1" ] },
+        "then": [ { "run_eocs": "PF_MK_ruled_against", "beta_talker": { "global_val": "pf_find_who" } } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KEEP_rest_tick",
+    "//": "Once on the rest day, 07:00-10:00, with the rest-day law in force and you at home: nobody works (chores and the workday skip the day), and the day is spent together.",
+    "recurrence": "30 minutes",
+    "global": true,
+    "condition": {
+      "and": [
+        { "math": [ "value_or(pf_home_set, 0) == 1" ] },
+        { "math": [ "(value_or(pf_law_rest, 0) == 1) * (floor(time('now') / time('1 d')) % 7 == 2)" ] },
+        { "math": [ "time_since('midnight', 'unit': 'hours') >= 7" ] },
+        { "math": [ "time_since('midnight', 'unit': 'hours') < 10" ] },
+        { "math": [ "value_or(pf_rest_day, -1) != floor(time('now') / time('1 d'))" ] }
+      ]
+    },
+    "effect": [
+      { "math": [ "pf_rest_day = floor(time('now') / time('1 d'))" ] },
+      { "u_location_variable": { "global_val": "pf_kp_av" } },
+      {
+        "if": { "math": [ "distance(pf_kp_av, pf_home_loc) <= 30" ] },
+        "then": [ { "run_eocs": "PF_KEEP_rest_now" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KEEP_rest_now",
+    "//": "u = avatar.  The rest day: 'The rest day' morale (+8), and a quiet time together with everyone who lives here.",
+    "effect": [
+      { "u_add_morale": "PF_morale_rest", "bonus": 8, "max_bonus": 8, "duration": "14 hours", "decay_start": "8 hours" },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_KEEP_rest_one",
+            "condition": { "and": [ { "math": [ "value_or(u_pf_resident, 0) == 1" ] }, { "math": [ "has_var(u_pf_uid)" ] } ] },
+            "effect": [ { "math": [ "pf_m_str_in = 20" ] }, { "run_eocs": "PF_MK_fire_evening", "beta_talker": "avatar" } ]
+          }
+        ],
+        "local": true,
+        "npc_range": 60
+      },
+      {
+        "if": { "math": [ "value_or(pf_set_chatter, 1) == 1" ] },
+        "then": [
+          { "math": [ "_p = rand(2)" ] },
+          { "if": { "math": [ "_p == value_or(pf_kl_rest, -1)" ] }, "then": [ { "math": [ "_p = (_p + 1) % 3" ] } ] },
+          { "math": [ "pf_kl_rest = _p" ] },
+          {
+            "if": { "math": [ "_p == 0" ] },
+            "then": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "rest_0" } } ]
+          },
+          {
+            "if": { "math": [ "_p == 1" ] },
+            "then": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "rest_1" } } ]
+          },
+          {
+            "if": { "math": [ "_p == 2" ] },
+            "then": [ { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "rest_2" } } ]
+          }
+        ]
+      },
+      { "math": [ "pf_rest_days_total = value_or(pf_rest_days_total, 0) + 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_KEEP_door_vote",
+    "//": "u = avatar.  With the door law in force, the family at the door is put to everyone who lives here (sociable and mother-hen people say yes, loners and grudge-holders no, fewer once there are 4+ households) and to you.",
+    "effect": [
+      { "math": [ "pf_kv_dyes = 0" ] },
+      { "math": [ "pf_kv_dno = 0" ] },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_KEEP_door_voter",
+            "condition": {
+              "and": [
+                { "and": [ { "not": { "u_has_trait": "PF_CHILD" } }, { "math": [ "u_val('age') >= 18" ] } ] },
+                { "math": [ "value_or(u_pf_resident, 0) == 1" ] },
+                { "math": [ "has_var(u_pf_uid)" ] }
+              ]
+            },
+            "effect": [
+              {
+                "math": [
+                  "_b = 1 + u_has_trait('PF_T_SOCIABLE') * 2 + u_has_trait('PF_Q_MOTHER_HEN') * 2 - u_has_trait('PF_T_LONER') * 2 - u_has_trait('PF_Q_GRUDGE') - (value_or(pf_households_n, 0) >= 4) * 2 + rand(2) - 1"
+                ]
+              },
+              {
+                "if": { "math": [ "_b > 0" ] },
+                "then": [ { "math": [ "pf_kv_dyes += 1" ] } ],
+                "else": [ { "math": [ "pf_kv_dno += 1" ] } ]
+              }
+            ]
+          }
+        ],
+        "local": true,
+        "npc_range": 60
+      },
+      {
+        "set_string_var": "<global_val:pf_tj_name> and their family are at the door with everything they own, asking to live here.  By the law of the place, the meeting decides.  Do you vote to take them in?",
+        "target_var": { "global_val": "pf_kv_dq" },
+        "parse_tags": true
+      },
+      {
+        "if": { "u_query": { "global_val": "pf_kv_dq" }, "default": true },
+        "then": [ { "math": [ "pf_kv_dyes += 1" ] } ],
+        "else": [ { "math": [ "pf_kv_dno += 1" ] } ]
+      },
+      {
+        "if": { "math": [ "pf_kv_dyes > pf_kv_dno" ] },
+        "then": [
+          { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "door_vote_yes" } },
+          { "run_eocs": "PF_TOWN_join_yes" }
+        ],
+        "else": [
+          { "run_eocs": "PF_SAY_keep", "alpha_talker": "avatar", "variables": { "line": "door_vote_no" } },
+          { "run_eocs": "PF_TOWN_join_no" }
+        ]
+      }
+    ]
+  }
+]
