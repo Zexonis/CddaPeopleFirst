@@ -160,6 +160,8 @@
   {
     "type": "effect_on_condition",
     "id": "PF_BAND_snap_one",
+    "//": "2026-10-16: during the A-Life tick (pf_snap_hold), nobody within range of you is moved: a member standing in your sight stays put and walks back to the band instead.  The scan (PF_ALIFE_scan_one) marks them with u_pf_seen_t.  Lab snaps don't set the hold.",
+    "condition": { "math": [ "(value_or(pf_snap_hold, 0) == 0) + (value_or(u_pf_seen_t, -1) != value_or(pf_alife_tick_n, 0)) > 0" ] },
     "effect": [
       { "copy_var": { "global_val": "pf_band_anchor" }, "target_var": { "u_val": "pf_snap_to" } },
       {
