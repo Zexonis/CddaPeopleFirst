@@ -343,7 +343,12 @@
       { "copy_var": { "u_val": "pf_vpos" }, "target_var": { "u_val": "pf_wp_b" } },
       {
         "if": { "math": [ "pf_ws_kind == 2" ] },
-        "then": [ { "math": [ "u_pf_settled = 1" ] }, { "copy_var": { "u_val": "pf_vpos" }, "target_var": { "u_val": "pf_home" } } ],
+        "then": [
+          { "math": [ "u_pf_settled = 1" ] },
+          { "copy_var": { "u_val": "pf_vpos" }, "target_var": { "u_val": "pf_home" } },
+          { "math": [ "pf_pl_join_only = 0" ] },
+          { "run_eocs": "PF_PLACE_found_or_join" }
+        ],
         "else": [
           {
             "location_variable_adjust": { "u_val": "pf_wp_a" },
@@ -369,7 +374,7 @@
   {
     "type": "effect_on_condition",
     "id": "PF_WORLD_drift_tick",
-    "//": "Once a day: bands change their lives a little.  A family on the road may find a place and settle (one day in seven); hunters may move to new grounds (one day in three).  Pure data: waypoints move, nothing loads.",
+    "//": "Once a day: bands change their lives a little.  A band may make camp for a few days (one day in four), a family on the road may find a place and settle (one day in seven), hunters may move to new grounds (one day in two).  Pure data: waypoints move, nothing loads.",
     "condition": { "math": [ "value_or(pf_alife_on, 1) == 1" ] },
     "recurrence": "1 days",
     "global": true,
@@ -397,47 +402,110 @@
   {
     "type": "effect_on_condition",
     "id": "PF_WORLD_drift_one",
-    "//": "u = a band's leader (by unique id).",
+    "//": "u = a band's leader (by unique id).  A camping band stays put; one day in four a band on the road makes camp where it is for 4-10 days.",
     "condition": { "math": [ "value_or(u_pf_settled, 0) == 0" ] },
     "effect": [
       { "if": { "math": [ "value_or(u_pf_online, 0) == 1" ] }, "then": [ { "u_location_variable": { "u_val": "pf_vpos" } } ] },
       {
-        "if": {
-          "and": [
-            { "math": [ "value_or(u_pf_task, 1) == 0" ] },
-            { "math": [ "rand(6) == 0" ] },
-            {
-              "or": [ { "math": [ "value_or(pf_home_set, 0) == 0" ] }, { "math": [ "distance(u_pf_vpos, pf_home_loc) > 60" ] } ]
-            }
-          ]
-        },
+        "if": { "math": [ "value_or(u_pf_camp_until, 0) <= time('now')" ] },
         "then": [
-          { "math": [ "u_pf_settled = 1" ] },
-          { "copy_var": { "u_val": "pf_vpos" }, "target_var": { "u_val": "pf_home" } },
-          { "copy_var": { "u_val": "pf_vpos" }, "target_var": { "u_val": "pf_wp_a" } },
-          { "copy_var": { "u_val": "pf_vpos" }, "target_var": { "u_val": "pf_wp_b" } },
-          { "copy_var": { "u_val": "pf_vpos" }, "target_var": { "u_val": "pf_goal" } },
-          { "math": [ "pf_world_settled_total = value_or(pf_world_settled_total, 0) + 1" ] }
-        ]
-      },
-      {
-        "if": { "and": [ { "math": [ "value_or(u_pf_task, 1) == 1" ] }, { "math": [ "rand(2) == 0" ] } ] },
-        "then": [
-          { "math": [ "pf_dr_x = rand(12) - 6" ] },
-          { "math": [ "pf_dr_y = rand(12) - 6" ] },
           {
-            "location_variable_adjust": { "u_val": "pf_wp_a" },
-            "overmap_tile": true,
-            "x_adjust": { "math": [ "pf_dr_x" ] },
-            "y_adjust": { "math": [ "pf_dr_y" ] }
+            "if": { "math": [ "value_or(u_pf_camp_until, 0) > 0" ] },
+            "then": [
+              { "math": [ "u_pf_camp_until = 0" ] },
+              { "copy_var": { "u_val": "pf_camp" }, "target_var": { "u_val": "pf_wp_a" } },
+              { "copy_var": { "u_val": "pf_camp" }, "target_var": { "u_val": "pf_wp_b" } },
+              {
+                "location_variable_adjust": { "u_val": "pf_wp_a" },
+                "overmap_tile": true,
+                "x_adjust": { "math": [ "(rand(1) * 2 - 1) * (3 + rand(6))" ] },
+                "y_adjust": { "math": [ "rand(12) - 6" ] }
+              },
+              {
+                "location_variable_adjust": { "u_val": "pf_wp_b" },
+                "overmap_tile": true,
+                "x_adjust": { "math": [ "(rand(1) * 2 - 1) * (3 + rand(6))" ] },
+                "y_adjust": { "math": [ "rand(12) - 6" ] }
+              },
+              { "copy_var": { "u_val": "pf_wp_a" }, "target_var": { "u_val": "pf_goal" } },
+              { "math": [ "u_pf_goal_is_b = 0" ] },
+              { "math": [ "pf_world_camps_ended_total = value_or(pf_world_camps_ended_total, 0) + 1" ] }
+            ]
+          },
+          { "math": [ "pf_dr_camped = 0" ] },
+          {
+            "if": { "and": [ { "math": [ "value_or(u_pf_based, 0) == 0" ] }, { "math": [ "rand(3) == 0" ] } ] },
+            "then": [
+              { "math": [ "pf_pl_join_only = 1" ] },
+              { "run_eocs": "PF_PLACE_found_or_join" },
+              { "math": [ "pf_dr_camped = pf_pl_joined" ] }
+            ]
+          },
+          { "if": { "math": [ "value_or(u_pf_based, 0) == 1" ] }, "then": [ { "math": [ "pf_dr_camped = 1" ] } ] },
+          {
+            "if": {
+              "and": [
+                { "math": [ "pf_dr_camped == 0" ] },
+                { "math": [ "rand(3) == 0" ] },
+                { "math": [ "value_or(u_pf_joining, 0) == 0" ] }
+              ]
+            },
+            "then": [
+              { "math": [ "pf_dr_camped = 1" ] },
+              { "copy_var": { "u_val": "pf_vpos" }, "target_var": { "u_val": "pf_camp" } },
+              { "copy_var": { "u_val": "pf_vpos" }, "target_var": { "u_val": "pf_wp_a" } },
+              { "copy_var": { "u_val": "pf_vpos" }, "target_var": { "u_val": "pf_wp_b" } },
+              { "copy_var": { "u_val": "pf_vpos" }, "target_var": { "u_val": "pf_goal" } },
+              { "math": [ "u_pf_goal_is_b = 0" ] },
+              { "math": [ "u_pf_camp_until = time('now') + time('1 d') * (4 + rand(6))" ] },
+              { "math": [ "pf_world_camps_total = value_or(pf_world_camps_total, 0) + 1" ] }
+            ]
           },
           {
-            "location_variable_adjust": { "u_val": "pf_wp_b" },
-            "overmap_tile": true,
-            "x_adjust": { "math": [ "pf_dr_x" ] },
-            "y_adjust": { "math": [ "pf_dr_y" ] }
+            "if": {
+              "and": [
+                { "math": [ "pf_dr_camped == 0" ] },
+                { "math": [ "value_or(u_pf_task, 1) == 0" ] },
+                { "math": [ "rand(6) == 0" ] },
+                {
+                  "or": [ { "math": [ "value_or(pf_home_set, 0) == 0" ] }, { "math": [ "distance(u_pf_vpos, pf_home_loc) > 60" ] } ]
+                }
+              ]
+            },
+            "then": [
+              { "math": [ "u_pf_settled = 1" ] },
+              { "copy_var": { "u_val": "pf_vpos" }, "target_var": { "u_val": "pf_home" } },
+              { "copy_var": { "u_val": "pf_vpos" }, "target_var": { "u_val": "pf_wp_a" } },
+              { "copy_var": { "u_val": "pf_vpos" }, "target_var": { "u_val": "pf_wp_b" } },
+              { "copy_var": { "u_val": "pf_vpos" }, "target_var": { "u_val": "pf_goal" } },
+              { "math": [ "pf_world_settled_total = value_or(pf_world_settled_total, 0) + 1" ] },
+              { "math": [ "pf_pl_join_only = 0" ] },
+              { "run_eocs": "PF_PLACE_found_or_join" },
+              { "math": [ "pf_dr_camped = 1" ] }
+            ]
           },
-          { "math": [ "pf_world_moved_total = value_or(pf_world_moved_total, 0) + 1" ] }
+          {
+            "if": {
+              "and": [ { "math": [ "pf_dr_camped == 0" ] }, { "math": [ "value_or(u_pf_task, 1) == 1" ] }, { "math": [ "rand(2) == 0" ] } ]
+            },
+            "then": [
+              { "math": [ "pf_dr_x = rand(12) - 6" ] },
+              { "math": [ "pf_dr_y = rand(12) - 6" ] },
+              {
+                "location_variable_adjust": { "u_val": "pf_wp_a" },
+                "overmap_tile": true,
+                "x_adjust": { "math": [ "pf_dr_x" ] },
+                "y_adjust": { "math": [ "pf_dr_y" ] }
+              },
+              {
+                "location_variable_adjust": { "u_val": "pf_wp_b" },
+                "overmap_tile": true,
+                "x_adjust": { "math": [ "pf_dr_x" ] },
+                "y_adjust": { "math": [ "pf_dr_y" ] }
+              },
+              { "math": [ "pf_world_moved_total = value_or(pf_world_moved_total, 0) + 1" ] }
+            ]
+          }
         ]
       }
     ]

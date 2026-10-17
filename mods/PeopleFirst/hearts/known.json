@@ -511,6 +511,7 @@
     "effect": [
       { "math": [ "pf_kb_ok = 1" ] },
       { "copy_var": { "u_val": "pf_vpos" }, "target_var": { "global_val": "pf_kb_v" } },
+      { "math": [ "pf_kb_camp = value_or(u_pf_camp_until, 0) > time('now')" ] },
       {
         "if": { "math": [ "has_var(u_pf_goal)" ] },
         "then": [ { "copy_var": { "u_val": "pf_goal" }, "target_var": { "global_val": "pf_kb_g" } }, { "math": [ "pf_kb_hg = 1" ] } ],
@@ -791,6 +792,10 @@
               }
             ],
             "else": [ { "set_string_var": "staying put", "target_var": { "global_val": "pf_kb_heading" } } ]
+          },
+          {
+            "if": { "math": [ "value_or(pf_kb_camp, 0) == 1" ] },
+            "then": [ { "set_string_var": "camped there for a while", "target_var": { "global_val": "pf_kb_heading" } } ]
           },
           {
             "if": { "math": [ "pf_kb_mt < 2" ] },

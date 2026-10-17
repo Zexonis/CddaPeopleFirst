@@ -89,6 +89,12 @@
                 "else": [ { "run_eocs": "PF_SAY_home", "alpha_talker": "avatar", "variables": { "line": "invite_trust" } } ]
               }
             ]
+          },
+          { "math": [ "pf_bd_ok = 0" ] },
+          { "run_eocs": "PF_PM_bond_read", "alpha_talker": "npc" },
+          {
+            "if": { "math": [ "pf_bd_ok == 1" ] },
+            "then": [ { "u_message": "<global_val:pf_bd_bar> <global_val:pf_bd_word>  <global_val:pf_bd_hint>", "type": "info" } ]
           }
         ]
       }
@@ -141,6 +147,13 @@
     "condition": { "math": [ "value_or(u_pf_resident, 0) == 0" ] },
     "effect": [
       { "run_eocs": "PF_ID_ensure" },
+      {
+        "if": { "math": [ "(value_or(pf_tv_on, 0) == 1) * (value_or(u_pf_band, -1) == value_or(pf_tv_band, -2))" ] },
+        "then": [ { "math": [ "pf_tv_on = 0" ] } ]
+      },
+      { "math": [ "u_pf_tv_player = 0" ] },
+      { "math": [ "u_pf_based = 0" ] },
+      { "math": [ "u_pf_place = 0" ] },
       { "math": [ "u_pf_resident = 1" ] },
       { "math": [ "u_pf_resident_since = time('now')" ] },
       { "math": [ "u_pf_is_leader = -1" ] },

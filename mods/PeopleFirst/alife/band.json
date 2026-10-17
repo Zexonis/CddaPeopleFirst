@@ -495,6 +495,32 @@
           { "math": [ "pf_succ_task = value_or(u_pf_task, 0)" ] },
           { "math": [ "pf_succ_quarry = value_or(u_pf_quarry_spawned, 0)" ] },
           { "math": [ "pf_succ_online = value_or(u_pf_online, 0)" ] },
+          {
+            "//": "v0.9: the band's home, camp, place and travelling companion go to the heir too (a settled family whose leader died used to take to the road).",
+            "math": [ "pf_succ_settled = value_or(u_pf_settled, 0)" ]
+          },
+          { "math": [ "pf_succ_based = value_or(u_pf_based, 0)" ] },
+          { "math": [ "pf_succ_place = value_or(u_pf_place, 0)" ] },
+          { "math": [ "pf_succ_camp_until = value_or(u_pf_camp_until, 0)" ] },
+          { "math": [ "pf_succ_mark_until = value_or(u_pf_mark_until, 0)" ] },
+          { "math": [ "pf_succ_tv = value_or(u_pf_tv_player, 0)" ] },
+          { "math": [ "pf_succ_has_home = has_var(u_pf_home)" ] },
+          {
+            "if": { "math": [ "pf_succ_has_home" ] },
+            "then": [ { "copy_var": { "u_val": "pf_home" }, "target_var": { "global_val": "pf_succ_home" } } ]
+          },
+          { "math": [ "pf_succ_has_camp = has_var(u_pf_camp)" ] },
+          {
+            "if": { "math": [ "pf_succ_has_camp" ] },
+            "then": [ { "copy_var": { "u_val": "pf_camp" }, "target_var": { "global_val": "pf_succ_camp" } } ]
+          },
+          {
+            "if": { "math": [ "pf_succ_place > 0" ] },
+            "then": [
+              { "copy_var": { "u_val": "pf_place_at" }, "target_var": { "global_val": "pf_succ_place_at" } },
+              { "copy_var": { "u_val": "pf_place_name" }, "target_var": { "global_val": "pf_succ_place_name" } }
+            ]
+          },
           { "copy_var": { "global_val": "pf_succ_heir" }, "target_var": { "var_val": "ref" } },
           {
             "u_run_npc_eocs": [ "PF_BAND_become_leader" ],
@@ -543,6 +569,27 @@
       { "math": [ "u_pf_task = pf_succ_task" ] },
       { "math": [ "u_pf_quarry_spawned = pf_succ_quarry" ] },
       { "math": [ "u_pf_online = pf_succ_online" ] },
+      { "math": [ "u_pf_settled = value_or(pf_succ_settled, 0)" ] },
+      { "math": [ "u_pf_based = value_or(pf_succ_based, 0)" ] },
+      { "math": [ "u_pf_place = value_or(pf_succ_place, 0)" ] },
+      { "math": [ "u_pf_camp_until = value_or(pf_succ_camp_until, 0)" ] },
+      { "math": [ "u_pf_mark_until = value_or(pf_succ_mark_until, 0)" ] },
+      { "math": [ "u_pf_tv_player = value_or(pf_succ_tv, 0)" ] },
+      {
+        "if": { "math": [ "value_or(pf_succ_has_home, 0)" ] },
+        "then": [ { "copy_var": { "global_val": "pf_succ_home" }, "target_var": { "u_val": "pf_home" } } ]
+      },
+      {
+        "if": { "math": [ "value_or(pf_succ_has_camp, 0)" ] },
+        "then": [ { "copy_var": { "global_val": "pf_succ_camp" }, "target_var": { "u_val": "pf_camp" } } ]
+      },
+      {
+        "if": { "math": [ "value_or(pf_succ_place, 0) > 0" ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_succ_place_at" }, "target_var": { "u_val": "pf_place_at" } },
+          { "copy_var": { "global_val": "pf_succ_place_name" }, "target_var": { "u_val": "pf_place_name" } }
+        ]
+      },
       { "math": [ "u_pf_stuck = -1" ] },
       { "u_location_variable": { "u_val": "pf_last_online_pos" } },
       { "copy_var": { "global_val": "pf_succ_vpos" }, "target_var": { "u_val": "pf_vpos" } },

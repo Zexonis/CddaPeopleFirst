@@ -320,6 +320,10 @@
           "math": [ "value_or(u_pf_fire_seated, -1) != floor(time('now') / time('1 d'))" ]
         },
         {
+          "//": "v0.9: a band you travel with (gen_places PF_TRAVEL_lead_on) waits for you when you fall more than 15 tiles behind.",
+          "math": [ "(value_or(u_pf_tv_player, 0) == 0) + (distance(u_pf_pos, pf_player_pos) <= 15) > 0" ]
+        },
+        {
           "//": "Full run day 151: Golly took the watch over Dante, and her band set off at 06:00 while he slept.  A band with one of its own on watch for you holds camp until you wake (gen_life PF_WATCH_take sets pf_watch_band).",
           "math": [
             "(value_or(pf_watch_active, 0) == 0) + (value_or(pf_watch_band, 0) != value_or(u_pf_band, -1)) + (time('now') - value_or(pf_watch_t, 0) > time('12 h')) > 0"

@@ -1,0 +1,249 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PLACE_lab_shown",
+    "//": "The Places lab, only with Settings: test labs shown.",
+    "condition": { "math": [ "value_or(pf_set_labs, 0) == 1" ] },
+    "effect": [ { "run_eocs": "PF_PLACE_lab" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PLACE_lab",
+    "effect": [
+      {
+        "run_eoc_selector": [ "PF_LP_know", "PF_LP_settle", "PF_LP_drift", "PF_LP_census", "PF_LP_report", "PF_LP_nohouse" ],
+        "names": [
+          "Nearest band knows you well (saved life x2 with each)",
+          "Settle the nearest band where it stands (it founds or joins a place)",
+          "Run the daily world drift now",
+          "Run the daily place census now",
+          "Report places and travel",
+          "[test] Forget your home and household count"
+        ],
+        "keys": [ "a", "b", "c", "d", "e", "f" ],
+        "title": "[lab] Places and travel (v0.9)",
+        "allow_cancel": true
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LP_know",
+    "effect": [
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_LP_know_one",
+            "condition": {
+              "and": [
+                { "math": [ "value_or(u_pf_band, 0) > 0" ] },
+                { "math": [ "value_or(u_pf_resident, 0) == 0" ] },
+                { "not": { "u_has_trait": "PF_CHILD" } }
+              ]
+            },
+            "effect": [
+              { "math": [ "pf_m_str_in = 90" ] },
+              { "run_eocs": "PF_MK_saved_life", "alpha_talker": "avatar", "beta_talker": "u" },
+              { "run_eocs": "PF_MK_saved_life", "alpha_talker": "avatar", "beta_talker": "u" }
+            ]
+          }
+        ],
+        "local": true,
+        "npc_range": 60
+      },
+      { "u_message": "[places lab] Everyone in a band within 60 tiles: you saved their life, twice.", "type": "info" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LP_settle",
+    "effect": [
+      { "math": [ "pf_lp_best = 999" ] },
+      { "set_string_var": "none", "target_var": { "global_val": "pf_lp_uid" } },
+      { "u_location_variable": { "global_val": "pf_lp_av" } },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_LP_near_one",
+            "condition": {
+              "and": [
+                { "math": [ "value_or(u_pf_is_leader, 0) == 1" ] },
+                { "math": [ "value_or(u_pf_band, 0) > 0" ] },
+                { "math": [ "value_or(u_pf_resident, 0) == 0" ] }
+              ]
+            },
+            "effect": [
+              { "u_location_variable": { "u_val": "pf_pos" } },
+              {
+                "if": { "math": [ "distance(u_pf_pos, pf_lp_av) < pf_lp_best" ] },
+                "then": [
+                  { "math": [ "pf_lp_best = distance(u_pf_pos, pf_lp_av)" ] },
+                  { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_lp_uid" } },
+                  { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_lp_name" }, "parse_tags": true }
+                ]
+              }
+            ]
+          }
+        ],
+        "local": true,
+        "npc_range": 60
+      },
+      {
+        "if": { "compare_string": [ { "global_val": "pf_lp_uid" }, "none" ] },
+        "then": [ { "u_message": "[places lab] No band leader within 60 tiles.", "type": "info" } ],
+        "else": [
+          {
+            "u_run_npc_eocs": [
+              {
+                "id": "PF_LP_settle_one",
+                "effect": [
+                  { "u_location_variable": { "u_val": "pf_vpos" } },
+                  { "math": [ "u_pf_settled = 1" ] },
+                  { "math": [ "u_pf_camp_until = 0" ] },
+                  { "copy_var": { "u_val": "pf_vpos" }, "target_var": { "u_val": "pf_home" } },
+                  { "copy_var": { "u_val": "pf_vpos" }, "target_var": { "u_val": "pf_wp_a" } },
+                  { "copy_var": { "u_val": "pf_vpos" }, "target_var": { "u_val": "pf_wp_b" } },
+                  { "copy_var": { "u_val": "pf_vpos" }, "target_var": { "u_val": "pf_goal" } },
+                  { "math": [ "pf_pl_join_only = 0" ] },
+                  { "run_eocs": "PF_PLACE_found_or_join" },
+                  { "set_string_var": "(none)", "target_var": { "global_val": "pf_lp_pn" } },
+                  {
+                    "if": { "math": [ "value_or(u_pf_place, 0) > 0" ] },
+                    "then": [ { "copy_var": { "u_val": "pf_place_name" }, "target_var": { "global_val": "pf_lp_pn" } } ]
+                  }
+                ]
+              }
+            ],
+            "unique_ids": [ { "global_val": "pf_lp_uid" } ],
+            "local": false
+          },
+          {
+            "u_message": "[places lab] <global_val:pf_lp_name>'s band settled; place: <global_val:pf_lp_pn>, joined an existing one: <global_val:pf_pl_joined>.",
+            "type": "info"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LP_drift",
+    "effect": [
+      { "run_eocs": "PF_WORLD_drift_tick" },
+      {
+        "u_message": "[places lab] Ran the daily drift.  Places founded <global_val:pf_places_founded_total>, joined <global_val:pf_places_joined_total>, camps <global_val:pf_world_camps_total>.",
+        "type": "info"
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LP_census",
+    "effect": [ { "run_eocs": "PF_PLACE_tick" }, { "u_message": "[places lab] Ran the census.", "type": "info" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LP_report",
+    "effect": [
+      { "math": [ "pf_lp_tv = value_or(pf_tv_on, 0)" ] },
+      { "math": [ "pf_lp_tvb = value_or(pf_tv_band, 0)" ] },
+      { "math": [ "pf_lp_hs = value_or(pf_home_set, 0)" ] },
+      { "math": [ "pf_lp_rn = value_or(pf_residents_n, 0)" ] },
+      { "math": [ "pf_lp_cs = value_or(pf_chief_set, 0)" ] },
+      {
+        "u_message": "[places lab] travelling: <global_val:pf_lp_tv> (band <global_val:pf_lp_tvb>, <global_val:pf_tv_name>), home set: <global_val:pf_lp_hs>, residents: <global_val:pf_lp_rn>, chief: <global_val:pf_lp_cs> <global_val:pf_chief_name>",
+        "type": "info"
+      },
+      {
+        "if": { "math": [ "value_or(pf_pl_0_alive, 0) == 1" ] },
+        "then": [
+          { "math": [ "pf_lp_n = pf_pl_0_n" ] },
+          { "math": [ "pf_lp_kn = value_or(pf_pl_0_known, 0)" ] },
+          { "u_location_variable": { "global_val": "pf_lp_av" } },
+          { "math": [ "pf_lp_d = round(distance(pf_lp_av, pf_pl_0_at))" ] },
+          {
+            "u_message": "[places lab] place 0: <global_val:pf_pl_0_name>, founded by <global_val:pf_pl_0_fname>, <global_val:pf_lp_n> households, known <global_val:pf_lp_kn>, <global_val:pf_lp_d> tiles away",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "value_or(pf_pl_1_alive, 0) == 1" ] },
+        "then": [
+          { "math": [ "pf_lp_n = pf_pl_1_n" ] },
+          { "math": [ "pf_lp_kn = value_or(pf_pl_1_known, 0)" ] },
+          { "u_location_variable": { "global_val": "pf_lp_av" } },
+          { "math": [ "pf_lp_d = round(distance(pf_lp_av, pf_pl_1_at))" ] },
+          {
+            "u_message": "[places lab] place 1: <global_val:pf_pl_1_name>, founded by <global_val:pf_pl_1_fname>, <global_val:pf_lp_n> households, known <global_val:pf_lp_kn>, <global_val:pf_lp_d> tiles away",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "value_or(pf_pl_2_alive, 0) == 1" ] },
+        "then": [
+          { "math": [ "pf_lp_n = pf_pl_2_n" ] },
+          { "math": [ "pf_lp_kn = value_or(pf_pl_2_known, 0)" ] },
+          { "u_location_variable": { "global_val": "pf_lp_av" } },
+          { "math": [ "pf_lp_d = round(distance(pf_lp_av, pf_pl_2_at))" ] },
+          {
+            "u_message": "[places lab] place 2: <global_val:pf_pl_2_name>, founded by <global_val:pf_pl_2_fname>, <global_val:pf_lp_n> households, known <global_val:pf_lp_kn>, <global_val:pf_lp_d> tiles away",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "value_or(pf_pl_3_alive, 0) == 1" ] },
+        "then": [
+          { "math": [ "pf_lp_n = pf_pl_3_n" ] },
+          { "math": [ "pf_lp_kn = value_or(pf_pl_3_known, 0)" ] },
+          { "u_location_variable": { "global_val": "pf_lp_av" } },
+          { "math": [ "pf_lp_d = round(distance(pf_lp_av, pf_pl_3_at))" ] },
+          {
+            "u_message": "[places lab] place 3: <global_val:pf_pl_3_name>, founded by <global_val:pf_pl_3_fname>, <global_val:pf_lp_n> households, known <global_val:pf_lp_kn>, <global_val:pf_lp_d> tiles away",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "value_or(pf_pl_4_alive, 0) == 1" ] },
+        "then": [
+          { "math": [ "pf_lp_n = pf_pl_4_n" ] },
+          { "math": [ "pf_lp_kn = value_or(pf_pl_4_known, 0)" ] },
+          { "u_location_variable": { "global_val": "pf_lp_av" } },
+          { "math": [ "pf_lp_d = round(distance(pf_lp_av, pf_pl_4_at))" ] },
+          {
+            "u_message": "[places lab] place 4: <global_val:pf_pl_4_name>, founded by <global_val:pf_pl_4_fname>, <global_val:pf_lp_n> households, known <global_val:pf_lp_kn>, <global_val:pf_lp_d> tiles away",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "value_or(pf_pl_5_alive, 0) == 1" ] },
+        "then": [
+          { "math": [ "pf_lp_n = pf_pl_5_n" ] },
+          { "math": [ "pf_lp_kn = value_or(pf_pl_5_known, 0)" ] },
+          { "u_location_variable": { "global_val": "pf_lp_av" } },
+          { "math": [ "pf_lp_d = round(distance(pf_lp_av, pf_pl_5_at))" ] },
+          {
+            "u_message": "[places lab] place 5: <global_val:pf_pl_5_name>, founded by <global_val:pf_pl_5_fname>, <global_val:pf_lp_n> households, known <global_val:pf_lp_kn>, <global_val:pf_lp_d> tiles away",
+            "type": "info"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_LP_nohouse",
+    "effect": [
+      { "math": [ "pf_home_set = 0" ] },
+      { "math": [ "pf_residents_n = 0" ] },
+      {
+        "u_message": "[places lab] Home forgotten and the household count set to 0 (the people stay; only for testing Ask to live with them).",
+        "type": "info"
+      }
+    ]
+  }
+]

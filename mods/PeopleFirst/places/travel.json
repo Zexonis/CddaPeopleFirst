@@ -1,0 +1,231 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TRAVEL_ask",
+    "//": "u = you, npc = someone in a band.  They answer from their own view of you (warmth 20 and trust 10).  Yes: you travel with the band; its leader decides where.",
+    "effect": [
+      { "math": [ "pf_bd_ok = 0" ] },
+      { "run_eocs": "PF_PM_bond_read", "alpha_talker": "npc" },
+      { "math": [ "pf_tv_yes = (pf_bd_ok == 1) * (pf_read_w >= 20) * (pf_read_t >= 10)" ] },
+      {
+        "if": { "math": [ "pf_tv_yes == 0" ] },
+        "then": [
+          {
+            "u_message": "<npc_name> looks you over.  \"We don't take on people we don't know.  Eat with us a few times first.\"",
+            "type": "info"
+          },
+          {
+            "if": { "math": [ "pf_bd_ok == 1" ] },
+            "then": [ { "u_message": "<global_val:pf_bd_bar> <global_val:pf_bd_word>  <global_val:pf_bd_hint>", "type": "info" } ]
+          }
+        ],
+        "else": [
+          { "math": [ "pf_wh_ok = 0" ] },
+          { "run_eocs": "PF_WHERE_get_lead", "alpha_talker": "npc" },
+          {
+            "if": { "math": [ "pf_wh_ok == 1" ] },
+            "then": [
+              { "u_run_npc_eocs": [ "PF_TRAVEL_lead_on" ], "unique_ids": [ { "global_val": "pf_wh_lead" } ], "local": false },
+              { "copy_var": { "global_val": "pf_wh_lead" }, "target_var": { "global_val": "pf_tv_lead" } },
+              { "math": [ "pf_tv_on = 1" ] },
+              { "math": [ "pf_tv_since = time('now')" ] },
+              { "math": [ "pf_tv_seen = time('now')" ] },
+              { "math": [ "pf_tv_day3 = 0" ] },
+              { "math": [ "pf_tv_wait_t = 0" ] },
+              { "math": [ "pf_tv_total = value_or(pf_tv_total, 0) + 1" ] },
+              { "math": [ "pf_m_str_in = 50" ] },
+              { "run_eocs": "PF_MK_welcomed", "alpha_talker": "npc", "beta_talker": "avatar" },
+              {
+                "u_message": "<npc_name> looks at the others, then back at you.  \"Keep up, and pull your weight.\"  You travel with <global_val:pf_tv_name>'s band now: where they go, you go.",
+                "type": "good"
+              },
+              {
+                "u_message": "They lead.  When you want to go your own way, tell one of them (People nearby: Part ways with them).",
+                "type": "info"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TRAVEL_lead_on",
+    "//": "u = the band's leader.  Marks the band as the one you travel with (alife.json: it waits for you).",
+    "effect": [
+      { "math": [ "u_pf_tv_player = 1" ] },
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_tv_name" }, "parse_tags": true },
+      { "math": [ "pf_tv_band = value_or(u_pf_band, 0)" ] },
+      { "math": [ "pf_tv_slot = value_or(u_pf_band, 1) - 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TRAVEL_end",
+    "//": "u = you.  You no longer travel with the band.",
+    "effect": [
+      { "math": [ "pf_tv_on = 0" ] },
+      {
+        "set_string_var": "pf_slot_<global_val:pf_tv_slot>",
+        "target_var": { "context_val": "ref" },
+        "parse_tags": true
+      },
+      {
+        "if": { "not": { "compare_string": [ { "var_val": "ref" }, "none" ] } },
+        "then": [
+          {
+            "u_run_npc_eocs": [ { "id": "PF_TRAVEL_lead_off", "effect": [ { "math": [ "u_pf_tv_player = 0" ] } ] } ],
+            "unique_ids": [ { "var_val": "ref" } ],
+            "local": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TRAVEL_part",
+    "//": "u = you, npc = someone in the band you travel with.  You leave; they tell you where they'll be (a map mark).",
+    "effect": [
+      { "u_message": "You tell <npc_name> you're going your own way.  \"You know where to find us.\"", "type": "info" },
+      { "run_eocs": "PF_TRAVEL_end" },
+      { "math": [ "pf_wh_auto = 0" ] },
+      { "run_eocs": "PF_WHERE_ask" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TRAVEL_tick",
+    "//": "Every 5 minutes while you travel with a band: the band waits if you fall behind, shares supper in the evening, and if you've lost it for 6 hours you're on your own again.",
+    "recurrence": "5 minutes",
+    "global": true,
+    "condition": { "math": [ "value_or(pf_tv_on, 0) == 1" ] },
+    "effect": [
+      { "set_string_var": "pf_slot_<global_val:pf_tv_slot>", "target_var": { "context_val": "ref" }, "parse_tags": true },
+      {
+        "if": { "compare_string": [ { "var_val": "ref" }, "none" ] },
+        "then": [
+          { "math": [ "pf_tv_on = 0" ] },
+          { "u_message": "<global_val:pf_tv_name>'s band is no more.  You're on your own again.", "type": "bad" }
+        ],
+        "else": [
+          { "copy_var": { "var_val": "ref" }, "target_var": { "global_val": "pf_tv_lead" } },
+          { "math": [ "pf_tv_lon = 0" ] },
+          {
+            "u_run_npc_eocs": [ "PF_TRAVEL_lead_read" ],
+            "unique_ids": [ { "global_val": "pf_tv_lead" } ],
+            "local": false
+          },
+          {
+            "if": { "math": [ "pf_tv_lon == 1" ] },
+            "then": [
+              { "math": [ "pf_tv_seen = time('now')" ] },
+              { "u_location_variable": { "global_val": "pf_tv_av" } },
+              { "math": [ "pf_tv_d = distance(pf_tv_av, pf_tv_lpos)" ] },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "pf_tv_d > 15" ] },
+                    {
+                      "math": [ "(time_since('midnight', 'unit': 'hours') >= 6) * (time_since('midnight', 'unit': 'hours') < 21)" ]
+                    },
+                    { "math": [ "time('now') - value_or(pf_tv_wait_t, 0) >= time('30 m')" ] }
+                  ]
+                },
+                "then": [
+                  { "math": [ "pf_tv_wait_t = time('now')" ] },
+                  {
+                    "u_message": "<global_val:pf_tv_name>'s band stops and waits for you to catch up.",
+                    "type": "info"
+                  }
+                ]
+              },
+              {
+                "if": {
+                  "and": [
+                    { "math": [ "(time_since('midnight', 'unit': 'hours') >= 18) * (time_since('midnight', 'unit': 'hours') < 23)" ] },
+                    { "math": [ "value_or(pf_tv_supper_day, -1) != floor(time('now') / time('1 d'))" ] },
+                    { "math": [ "pf_tv_d <= 30" ] }
+                  ]
+                },
+                "then": [ { "run_eocs": "PF_TRAVEL_supper" } ]
+              }
+            ],
+            "else": [
+              {
+                "if": { "math": [ "time('now') - value_or(pf_tv_seen, 0) > time('6 h')" ] },
+                "then": [
+                  { "run_eocs": "PF_TRAVEL_end" },
+                  {
+                    "u_message": "You've lost <global_val:pf_tv_name>'s band.  Word along the road might turn them up again (People you know).",
+                    "type": "bad"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "if": {
+              "math": [ "(value_or(pf_tv_on, 0) == 1) * (value_or(pf_tv_day3, 0) == 0) * (time('now') - pf_tv_since >= time('3 d'))" ]
+            },
+            "then": [
+              { "math": [ "pf_tv_day3 = 1" ] },
+              {
+                "u_message": "Three days on the road with <global_val:pf_tv_name>'s band.  Nobody in it counts you as a stranger anymore.",
+                "type": "good"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TRAVEL_lead_read",
+    "//": "u = the band's leader.  Reads its position only while it's on-screen (loaded: cheap).",
+    "effect": [
+      { "math": [ "u_pf_tv_player = 1" ] },
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_tv_name" }, "parse_tags": true },
+      { "math": [ "pf_tv_hunt = value_or(u_pf_task, 0)" ] },
+      {
+        "if": { "math": [ "value_or(u_pf_online, 0) == 1" ] },
+        "then": [ { "math": [ "pf_tv_lon = 1" ] }, { "u_location_variable": { "global_val": "pf_tv_lpos" } } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_TRAVEL_supper",
+    "//": "u = you, travelling with a band, in the evening.  Once a day: something to eat in your hands, and a meal shared with each of them nearby.",
+    "effect": [
+      { "math": [ "pf_tv_supper_day = floor(time('now') / time('1 d'))" ] },
+      {
+        "if": { "math": [ "pf_tv_hunt == 1" ] },
+        "then": [
+          { "u_spawn_item": "meat_cooked", "suppress_message": true },
+          {
+            "u_message": "<global_val:pf_tv_name>'s band shares out what they hunted today, and there's a portion for you.",
+            "type": "good"
+          }
+        ],
+        "else": [
+          { "u_spawn_item": "pemmican", "suppress_message": true },
+          { "u_message": "<global_val:pf_tv_name>'s band shares its supper with you.", "type": "good" }
+        ]
+      },
+      {
+        "u_run_npc_eocs": [
+          {
+            "id": "PF_TRAVEL_supper_one",
+            "condition": { "and": [ { "math": [ "value_or(u_pf_band, 0) == pf_tv_band" ] }, { "math": [ "value_or(u_pf_resident, 0) == 0" ] } ] },
+            "effect": [ { "math": [ "pf_m_str_in = 35" ] }, { "run_eocs": "PF_MK_meal_shared", "beta_talker": "avatar" } ]
+          }
+        ],
+        "local": true,
+        "npc_range": 25
+      }
+    ]
+  }
+]

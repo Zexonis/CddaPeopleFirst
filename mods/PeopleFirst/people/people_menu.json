@@ -229,6 +229,18 @@
         ]
       },
       { "run_eocs": "PF_REG_name" },
+      { "math": [ "pf_bd_ok = 0" ] },
+      { "run_eocs": "PF_PM_bond_read" },
+      {
+        "if": { "math": [ "pf_bd_ok == 1" ] },
+        "then": [
+          {
+            "set_string_var": "<global_val:pf_pm_tmp_role>, <global_val:pf_bd_bar>",
+            "target_var": { "global_val": "pf_pm_tmp_role" },
+            "parse_tags": true
+          }
+        ]
+      },
       {
         "set_string_var": "pf_pm_label_<global_val:pf_pm_n>",
         "target_var": { "context_val": "ref" },
@@ -479,6 +491,10 @@
           "PF_PM_act_letgo",
           "PF_PM_act_teach",
           "PF_PM_act_invite",
+          "PF_PM_act_where",
+          "PF_PM_act_travel",
+          "PF_PM_act_part",
+          "PF_PM_act_movein",
           "PF_PM_act_role",
           "PF_PM_act_info",
           "PF_PM_moments_shown"
@@ -502,6 +518,10 @@
           "Let go of their hand",
           "Teach them something",
           "Ask them to come live with you",
+          "Ask where they're headed",
+          "Ask to travel with them",
+          "Part ways with them",
+          "Ask to live with them",
           "Ask them to take a different job",
           "What do I know about them?",
           "Moments (lab)"
@@ -524,13 +544,43 @@
           "Little legs.  They stay at your side until you let go.",
           "They go back to following their family.",
           "Show them something you know better than they do.  Once a day.",
-          "Home has room.  They'll answer from their own heart; if they travel with a band, the whole band comes.",
+          { "global_val": "pf_pm_inv_desc" },
+          "Where their people will be over the next couple of weeks.  It goes on your map, so you can find them again.",
+          "Go where they go.  Their leader decides the road and where to sleep; they wait if you fall behind and share their supper.  They answer from their own view of you.",
+          "Go your own way.  They'll tell you where to find them.",
+          "Their home becomes yours: everyone who lives there, and their leader runs the place.  They answer as they would to living with you.  You can't leave people of your own behind.",
           "Cook, guard, forager, tinkerer, carer: the next one in line.",
           "How they seem to see you, how you see them, and what you've picked up about them.",
           "[lab] Make something happen between you and them, and watch the bond spine react."
         ],
-        "keys": [ "t", "n", "a", "c", "f", "y", "r", "l", "p", "e", "h", "w", "u", "d", "o", "g", "s", "v", "b", "i", "m" ],
-        "title": "<global_val:pf_pm_sel_label>",
+        "keys": [
+          "t",
+          "n",
+          "a",
+          "c",
+          "f",
+          "y",
+          "r",
+          "l",
+          "p",
+          "e",
+          "h",
+          "w",
+          "u",
+          "d",
+          "o",
+          "g",
+          "s",
+          "v",
+          "k",
+          "j",
+          "q",
+          "z",
+          "b",
+          "i",
+          "m"
+        ],
+        "title": "<global_val:pf_pm_sel_label><global_val:pf_pm_sel_bondtxt>",
         "hide_failing": true,
         "allow_cancel": true
       }
@@ -599,6 +649,51 @@
       { "npc_location_variable": { "global_val": "pf_pm_sel_pos" } },
       { "u_location_variable": { "global_val": "pf_pm_av_pos" } },
       { "math": [ "pf_pm_sel_dist = distance(pf_pm_sel_pos, pf_pm_av_pos)" ] },
+      { "set_string_var": "", "target_var": { "global_val": "pf_pm_sel_bondtxt" } },
+      {
+        "set_string_var": "Home has room.  They'll answer from their own heart; if they travel with a band, the whole band comes.",
+        "target_var": { "global_val": "pf_pm_inv_desc" }
+      },
+      { "math": [ "pf_pm_sel_lhome = 0" ] },
+      { "math": [ "pf_wh_ok = 0" ] },
+      { "run_eocs": "PF_WHERE_get_lead", "alpha_talker": "npc" },
+      {
+        "if": { "math": [ "pf_wh_ok == 1" ] },
+        "then": [
+          {
+            "u_run_npc_eocs": [
+              {
+                "id": "PF_PM_lead_flags",
+                "effect": [ { "math": [ "pf_pm_sel_lhome = (value_or(u_pf_settled, 0) == 1) + (value_or(u_pf_place, 0) > 0) > 0" ] } ]
+              }
+            ],
+            "unique_ids": [ { "global_val": "pf_wh_lead" } ],
+            "local": false
+          }
+        ]
+      },
+      {
+        "math": [
+          "pf_pm_sel_tvband = (value_or(pf_tv_on, 0) == 1) * (value_or(n_pf_band, 0) > 0) * (value_or(n_pf_band, 0) == value_or(pf_tv_band, -1))"
+        ]
+      },
+      { "math": [ "pf_bd_ok = 0" ] },
+      { "run_eocs": "PF_PM_bond_read", "alpha_talker": "npc" },
+      {
+        "if": { "math": [ "pf_bd_ok == 1" ] },
+        "then": [
+          {
+            "set_string_var": "  <global_val:pf_bd_word>",
+            "target_var": { "global_val": "pf_pm_sel_bondtxt" },
+            "parse_tags": true
+          },
+          {
+            "set_string_var": "Home has room.  They'll answer from their own heart; if they travel with a band, the whole band comes.  Right now: <global_val:pf_bd_bar> <global_val:pf_bd_word>  <global_val:pf_bd_hint>",
+            "target_var": { "global_val": "pf_pm_inv_desc" },
+            "parse_tags": true
+          }
+        ]
+      },
       {
         "if": { "and": [ { "npc_has_trait": "PF_CHILD" }, { "not": { "npc_has_effect": "PF_infant" } } ] },
         "then": [ { "math": [ "pf_pm_sel_kid = 1" ] } ]
@@ -1792,7 +1887,10 @@
               }
             ]
           },
-          { "u_message": "One <global_val:pf_ml_food>, split two ways.", "type": "info" }
+          { "u_message": "One <global_val:pf_ml_food>, split two ways.", "type": "info" },
+          { "run_eocs": "PF_PM_bond_report" },
+          { "math": [ "pf_wh_auto = 1" ] },
+          { "run_eocs": "PF_WHERE_ask" }
         ]
       }
     ]
@@ -1913,7 +2011,8 @@
       },
       { "math": [ "pf_m_str_in = 60" ] },
       { "run_eocs": "PF_MK_care_given" },
-      { "math": [ "pf_tended_total = value_or(pf_tended_total, 0) + 1" ] }
+      { "math": [ "pf_tended_total = value_or(pf_tended_total, 0) + 1" ] },
+      { "run_eocs": "PF_PM_bond_report" }
     ]
   },
   {
@@ -2185,7 +2284,10 @@
                   }
                 ]
               },
-              { "math": [ "pf_supplies_given_total = value_or(pf_supplies_given_total, 0) + 1" ] }
+              { "math": [ "pf_supplies_given_total = value_or(pf_supplies_given_total, 0) + 1" ] },
+              { "run_eocs": "PF_PM_bond_report", "beta_talker": { "global_val": "pf_pm_sel_id" } },
+              { "math": [ "pf_wh_auto = 1" ] },
+              { "run_eocs": "PF_WHERE_ask", "beta_talker": { "global_val": "pf_pm_sel_id" } }
             ]
           }
         ]
@@ -2591,6 +2693,1338 @@
         "parse_tags": true
       },
       { "if": { "math": [ "value_or(v_rl, -1) >= 0" ] }, "then": [ { "math": [ "v_rl = v_rl - time('60 d')" ] } ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_bond_read",
+    "//": "u = an adult who doesn't live with you.  Their own view of you, as a 5-step meter toward a yes to living with you (pf_bd_bar, pf_bd_word, pf_bd_hint; pf_bd_up = a step up since you last looked).",
+    "condition": {
+      "and": [
+        { "not": { "u_has_trait": "PF_CHILD" } },
+        { "math": [ "u_val('age') >= 18" ] },
+        { "math": [ "value_or(u_pf_resident, 0) == 0" ] },
+        {
+          "not": {
+            "and": [ { "math": [ "value_or(u_pf_has_sweet, 0) == 1" ] }, { "compare_string": [ { "u_val": "pf_sweet" }, "AVATAR" ] } ]
+          }
+        }
+      ]
+    },
+    "effect": [
+      { "run_eocs": "PF_ID_ensure" },
+      { "set_string_var": "AVATAR", "target_var": { "global_val": "pf_m_other" } },
+      { "run_eocs": "PF_VIEW_read" },
+      { "math": [ "pf_bd_ok = 1" ] },
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_bd_name" }, "parse_tags": true },
+      { "math": [ "_w = max(pf_read_w, 0)" ] },
+      { "math": [ "_t = max(pf_read_t, 0)" ] },
+      { "math": [ "pf_bd_ready = (_w >= 35) * (_t >= 25) + (_w >= 50) * (_t >= 15) > 0" ] },
+      { "math": [ "pf_bd_p = max(min(min(_w / 35, _t / 25), 1), min(min(_w / 50, _t / 15), 1))" ] },
+      { "math": [ "pf_bd_pips = pf_bd_ready == 1 ? 5 : min(4, floor(pf_bd_p * 5))" ] },
+      { "math": [ "pf_bd_up = pf_bd_pips > value_or(u_pf_bond_seen, 0)" ] },
+      { "math": [ "u_pf_bond_seen = pf_bd_pips" ] },
+      {
+        "switch": { "math": [ "pf_bd_pips" ] },
+        "cases": [
+          {
+            "case": 0,
+            "effect": [
+              { "set_string_var": "[-----]", "target_var": { "global_val": "pf_bd_bar" } },
+              { "set_string_var": "They don't know you yet.", "target_var": { "global_val": "pf_bd_word" } }
+            ]
+          },
+          {
+            "case": 1,
+            "effect": [
+              { "set_string_var": "[#----]", "target_var": { "global_val": "pf_bd_bar" } },
+              { "set_string_var": "They've started to notice you.", "target_var": { "global_val": "pf_bd_word" } }
+            ]
+          },
+          {
+            "case": 2,
+            "effect": [
+              { "set_string_var": "[##---]", "target_var": { "global_val": "pf_bd_bar" } },
+              { "set_string_var": "They're getting to know you.", "target_var": { "global_val": "pf_bd_word" } }
+            ]
+          },
+          {
+            "case": 3,
+            "effect": [
+              { "set_string_var": "[###--]", "target_var": { "global_val": "pf_bd_bar" } },
+              { "set_string_var": "They like having you around.", "target_var": { "global_val": "pf_bd_word" } }
+            ]
+          },
+          {
+            "case": 4,
+            "effect": [
+              { "set_string_var": "[####-]", "target_var": { "global_val": "pf_bd_bar" } },
+              {
+                "set_string_var": "They're nearly ready to throw in with you.",
+                "target_var": { "global_val": "pf_bd_word" }
+              }
+            ]
+          },
+          {
+            "case": 5,
+            "effect": [
+              { "set_string_var": "[#####]", "target_var": { "global_val": "pf_bd_bar" } },
+              {
+                "set_string_var": "They'd say yes if you asked them to live with you.",
+                "target_var": { "global_val": "pf_bd_word" }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_bd_ready == 1" ] },
+        "then": [
+          {
+            "if": { "math": [ "value_or(pf_home_set, 0) == 1" ] },
+            "then": [ { "set_string_var": "Ask them to come live with you.", "target_var": { "global_val": "pf_bd_hint" } } ],
+            "else": [
+              {
+                "set_string_var": "Make a place your home first (People First menu: Home), then ask them.",
+                "target_var": { "global_val": "pf_bd_hint" }
+              }
+            ]
+          }
+        ],
+        "else": [
+          {
+            "if": { "math": [ "pf_read_x >= 25" ] },
+            "then": [
+              {
+                "set_string_var": "Something sits wrong between you.  Give it a few days.",
+                "target_var": { "global_val": "pf_bd_hint" }
+              }
+            ],
+            "else": [
+              {
+                "if": { "math": [ "_t / 25 < _w / 35" ] },
+                "then": [
+                  {
+                    "set_string_var": "They like you, but they don't trust you yet: tend their wounds, bring their people supplies, stand with them in a fight.",
+                    "target_var": { "global_val": "pf_bd_hint" }
+                  }
+                ],
+                "else": [
+                  {
+                    "set_string_var": "Time together is what they need: eat with them once a day, sit by the fire, talk.",
+                    "target_var": { "global_val": "pf_bd_hint" }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_bond_report",
+    "//": "u = you, npc = the person.  After a meal, supplies or tending: the meter, and whether it moved.",
+    "effect": [
+      { "math": [ "pf_bd_ok = 0" ] },
+      { "run_eocs": "PF_PM_bond_read", "alpha_talker": "npc" },
+      {
+        "if": { "math": [ "pf_bd_ok == 1" ] },
+        "then": [
+          {
+            "if": { "math": [ "pf_bd_up == 1" ] },
+            "then": [
+              {
+                "u_message": "Where you stand with <global_val:pf_bd_name>: <global_val:pf_bd_bar> <global_val:pf_bd_word>  A step closer than before.",
+                "type": "good"
+              }
+            ],
+            "else": [
+              {
+                "u_message": "Where you stand with <global_val:pf_bd_name>: <global_val:pf_bd_bar> <global_val:pf_bd_word>",
+                "type": "info"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "PF_MARK_0",
+    "type": "mission_definition",
+    "name": { "str": "Where they said they'd be (1)" },
+    "goal": "MGOAL_CONDITION",
+    "difficulty": 0,
+    "value": 0,
+    "invisible_on_complete": true,
+    "description": "Someone you met on the road told you where to find their people.  The People First menu (Where to find people) says who.  The mark is good for about two weeks.",
+    "start": { "assign_mission_target": { "var": { "global_val": "pf_mk_target" } } }
+  },
+  {
+    "id": "PF_MARK_1",
+    "type": "mission_definition",
+    "name": { "str": "Where they said they'd be (2)" },
+    "goal": "MGOAL_CONDITION",
+    "difficulty": 0,
+    "value": 0,
+    "invisible_on_complete": true,
+    "description": "Someone you met on the road told you where to find their people.  The People First menu (Where to find people) says who.  The mark is good for about two weeks.",
+    "start": { "assign_mission_target": { "var": { "global_val": "pf_mk_target" } } }
+  },
+  {
+    "id": "PF_MARK_2",
+    "type": "mission_definition",
+    "name": { "str": "Where they said they'd be (3)" },
+    "goal": "MGOAL_CONDITION",
+    "difficulty": 0,
+    "value": 0,
+    "invisible_on_complete": true,
+    "description": "Someone you met on the road told you where to find their people.  The People First menu (Where to find people) says who.  The mark is good for about two weeks.",
+    "start": { "assign_mission_target": { "var": { "global_val": "pf_mk_target" } } }
+  },
+  {
+    "id": "PF_MARK_3",
+    "type": "mission_definition",
+    "name": { "str": "Where they said they'd be (4)" },
+    "goal": "MGOAL_CONDITION",
+    "difficulty": 0,
+    "value": 0,
+    "invisible_on_complete": true,
+    "description": "Someone you met on the road told you where to find their people.  The People First menu (Where to find people) says who.  The mark is good for about two weeks.",
+    "start": { "assign_mission_target": { "var": { "global_val": "pf_mk_target" } } }
+  },
+  {
+    "id": "PF_MARK_4",
+    "type": "mission_definition",
+    "name": { "str": "Where they said they'd be (5)" },
+    "goal": "MGOAL_CONDITION",
+    "difficulty": 0,
+    "value": 0,
+    "invisible_on_complete": true,
+    "description": "Someone you met on the road told you where to find their people.  The People First menu (Where to find people) says who.  The mark is good for about two weeks.",
+    "start": { "assign_mission_target": { "var": { "global_val": "pf_mk_target" } } }
+  },
+  {
+    "id": "PF_MARK_5",
+    "type": "mission_definition",
+    "name": { "str": "Where they said they'd be (6)" },
+    "goal": "MGOAL_CONDITION",
+    "difficulty": 0,
+    "value": 0,
+    "invisible_on_complete": true,
+    "description": "Someone you met on the road told you where to find their people.  The People First menu (Where to find people) says who.  The mark is good for about two weeks.",
+    "start": { "assign_mission_target": { "var": { "global_val": "pf_mk_target" } } }
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_act_where",
+    "condition": {
+      "and": [
+        { "math": [ "pf_pm_sel_band == 1" ] },
+        { "math": [ "value_or(pf_pm_sel_res, 0) == 0" ] },
+        { "math": [ "value_or(pf_pm_sel_adult, 0) == 1" ] }
+      ]
+    },
+    "effect": [
+      { "math": [ "pf_wh_auto = 0" ] },
+      {
+        "run_eocs": "PF_WHERE_ask",
+        "beta_talker": { "global_val": "pf_pm_sel_id" },
+        "false_eocs": [ { "id": "PF_PM_gone_where", "effect": [ { "u_message": "They're not here anymore.", "type": "info" } ] } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_act_travel",
+    "condition": {
+      "and": [
+        { "math": [ "pf_pm_sel_band == 1" ] },
+        { "math": [ "value_or(pf_pm_sel_res, 0) == 0" ] },
+        { "math": [ "value_or(pf_pm_sel_adult, 0) == 1" ] },
+        { "math": [ "value_or(pf_tv_on, 0) == 0" ] }
+      ]
+    },
+    "effect": [
+      {
+        "run_eocs": "PF_TRAVEL_ask",
+        "beta_talker": { "global_val": "pf_pm_sel_id" },
+        "false_eocs": [ { "id": "PF_PM_gone_travel", "effect": [ { "u_message": "They're not here anymore.", "type": "info" } ] } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_act_part",
+    "condition": { "math": [ "value_or(pf_pm_sel_tvband, 0) == 1" ] },
+    "effect": [
+      {
+        "run_eocs": "PF_TRAVEL_part",
+        "beta_talker": { "global_val": "pf_pm_sel_id" },
+        "false_eocs": [ { "id": "PF_PM_gone_part", "effect": [ { "u_message": "They're not here anymore.", "type": "info" } ] } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PM_act_movein",
+    "condition": {
+      "and": [
+        { "math": [ "pf_pm_sel_band == 1" ] },
+        { "math": [ "value_or(pf_pm_sel_res, 0) == 0" ] },
+        { "math": [ "value_or(pf_pm_sel_adult, 0) == 1" ] },
+        { "math": [ "value_or(pf_pm_sel_lhome, 0) == 1" ] }
+      ]
+    },
+    "effect": [
+      {
+        "run_eocs": "PF_PLACE_move_in",
+        "beta_talker": { "global_val": "pf_pm_sel_id" },
+        "false_eocs": [ { "id": "PF_PM_gone_movein", "effect": [ { "u_message": "They're not here anymore.", "type": "info" } ] } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_WHERE_get_lead",
+    "//": "u = someone in a band (not living with you).  pf_wh_lead = their band's leader (the band's data lives there).",
+    "condition": { "and": [ { "math": [ "value_or(u_pf_band, 0) > 0" ] }, { "math": [ "value_or(u_pf_resident, 0) == 0" ] } ] },
+    "effect": [
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_wh_who" }, "parse_tags": true },
+      {
+        "if": { "math": [ "value_or(u_pf_is_leader, 0) == 1" ] },
+        "then": [ { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_wh_lead" } }, { "math": [ "pf_wh_ok = 1" ] } ],
+        "else": [
+          {
+            "if": { "math": [ "has_var(u_pf_leader)" ] },
+            "then": [
+              { "copy_var": { "u_val": "pf_leader" }, "target_var": { "global_val": "pf_wh_lead" } },
+              { "math": [ "pf_wh_ok = 1" ] }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_WHERE_leader",
+    "//": "u = a band's leader (by unique id; off-screen is fine: only its variables are read).  pf_wh_kind: 1 their home (settled), 2 camped already, 3 camping right here, 4 on their way to you, 5 camping where they were headed; -1 they already told you (an automatic telling).",
+    "effect": [
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_wh_lname" }, "parse_tags": true },
+      { "math": [ "pf_wh_days = 14" ] },
+      {
+        "if": { "math": [ "(pf_wh_auto == 1) * (value_or(u_pf_mark_until, 0) > time('now'))" ] },
+        "then": [ { "math": [ "pf_wh_kind = -1" ] } ],
+        "else": [
+          {
+            "if": { "math": [ "(value_or(u_pf_visiting, 0) == 1) + (value_or(u_pf_joining, 0) == 1) > 0" ] },
+            "then": [ { "math": [ "pf_wh_kind = 4" ] } ],
+            "else": [
+              {
+                "if": {
+                  "math": [ "(value_or(u_pf_place, 0) > 0) * ((value_or(u_pf_settled, 0) == 1) + (value_or(u_pf_based, 0) == 1) > 0)" ]
+                },
+                "then": [
+                  { "math": [ "pf_wh_kind = value_or(u_pf_based, 0) == 1 ? 7 : 6" ] },
+                  { "copy_var": { "u_val": "pf_place_at" }, "target_var": { "global_val": "pf_wh_at" } },
+                  { "copy_var": { "u_val": "pf_place_name" }, "target_var": { "global_val": "pf_wh_place" } },
+                  { "if": { "math": [ "u_pf_place == 1" ] }, "then": [ { "math": [ "pf_pl_0_known = 1" ] } ] },
+                  { "if": { "math": [ "u_pf_place == 2" ] }, "then": [ { "math": [ "pf_pl_1_known = 1" ] } ] },
+                  { "if": { "math": [ "u_pf_place == 3" ] }, "then": [ { "math": [ "pf_pl_2_known = 1" ] } ] },
+                  { "if": { "math": [ "u_pf_place == 4" ] }, "then": [ { "math": [ "pf_pl_3_known = 1" ] } ] },
+                  { "if": { "math": [ "u_pf_place == 5" ] }, "then": [ { "math": [ "pf_pl_4_known = 1" ] } ] },
+                  { "if": { "math": [ "u_pf_place == 6" ] }, "then": [ { "math": [ "pf_pl_5_known = 1" ] } ] }
+                ],
+                "else": [
+                  {
+                    "if": { "math": [ "value_or(u_pf_settled, 0) == 1" ] },
+                    "then": [ { "math": [ "pf_wh_kind = 1" ] }, { "copy_var": { "u_val": "pf_home" }, "target_var": { "global_val": "pf_wh_at" } } ],
+                    "else": [
+                      {
+                        "if": { "math": [ "value_or(u_pf_camp_until, 0) > time('now')" ] },
+                        "then": [
+                          { "math": [ "pf_wh_kind = 2" ] },
+                          { "copy_var": { "u_val": "pf_camp" }, "target_var": { "global_val": "pf_wh_at" } },
+                          {
+                            "math": [ "pf_wh_days = floor((u_pf_camp_until - time('now') + time('1 d') - 1) / time('1 d'))" ]
+                          }
+                        ],
+                        "else": [
+                          { "set_string_var": "AVATAR", "target_var": { "global_val": "pf_m_other" } },
+                          { "run_eocs": "PF_VIEW_read" },
+                          {
+                            "if": { "math": [ "(pf_read_w >= 10) + (rand(1) == 0) > 0" ] },
+                            "then": [ { "math": [ "pf_wh_kind = 3" ] }, { "copy_var": { "u_val": "pf_vpos" }, "target_var": { "global_val": "pf_wh_at" } } ],
+                            "else": [
+                              { "math": [ "pf_wh_kind = 5" ] },
+                              { "copy_var": { "u_val": "pf_vpos" }, "target_var": { "global_val": "pf_wh_at" } },
+                              {
+                                "if": { "math": [ "has_var(u_pf_goal)" ] },
+                                "then": [ { "copy_var": { "u_val": "pf_goal" }, "target_var": { "global_val": "pf_wh_at" } } ]
+                              }
+                            ]
+                          },
+                          { "run_eocs": "PF_WHERE_make_camp" }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "(pf_wh_kind > 0) * (pf_wh_kind != 4)" ] },
+        "then": [ { "math": [ "u_pf_mark_until = time('now') + time('1 d') * pf_wh_days" ] } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_WHERE_make_camp",
+    "//": "u = a band's leader.  The band makes camp at pf_wh_at for two weeks: both its waypoints are the camp, so A-Life keeps it there, on-screen or off (gen_home PF_WORLD_drift_one leaves a camping band alone, then sends it back on the road).",
+    "effect": [
+      { "copy_var": { "global_val": "pf_wh_at" }, "target_var": { "u_val": "pf_camp" } },
+      { "copy_var": { "global_val": "pf_wh_at" }, "target_var": { "u_val": "pf_wp_a" } },
+      { "copy_var": { "global_val": "pf_wh_at" }, "target_var": { "u_val": "pf_wp_b" } },
+      { "copy_var": { "global_val": "pf_wh_at" }, "target_var": { "u_val": "pf_goal" } },
+      { "math": [ "u_pf_goal_is_b = 0" ] },
+      { "math": [ "u_pf_camp_until = time('now') + time('14 d')" ] },
+      { "math": [ "pf_camps_told_total = value_or(pf_camps_told_total, 0) + 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_WHERE_ask",
+    "//": "u = you, npc = someone in a band.  They say where their people will be (making camp if they're on the move) and you get a map mark.  pf_wh_auto = 1 when it comes up by itself after a meal or supplies: silent if they've told you already.",
+    "effect": [
+      { "math": [ "pf_wh_ok = 0" ] },
+      { "math": [ "pf_wh_kind = 0" ] },
+      { "run_eocs": "PF_WHERE_get_lead", "alpha_talker": "npc" },
+      {
+        "if": { "math": [ "pf_wh_ok == 1" ] },
+        "then": [ { "u_run_npc_eocs": [ "PF_WHERE_leader" ], "unique_ids": [ { "global_val": "pf_wh_lead" } ], "local": false } ]
+      },
+      {
+        "if": { "math": [ "pf_wh_auto == 0" ] },
+        "then": [
+          {
+            "if": { "math": [ "pf_wh_ok == 0" ] },
+            "then": [ { "u_message": "<npc_name> shrugs.  \"Wherever the road goes.\"", "type": "info" } ]
+          },
+          {
+            "if": { "math": [ "pf_wh_kind == 4" ] },
+            "then": [ { "u_message": "<npc_name> grins.  \"We're on our way to your place.\"", "type": "info" } ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "(pf_wh_kind > 0) * (pf_wh_kind != 4)" ] },
+        "then": [
+          { "u_location_variable": { "global_val": "pf_wh_av" } },
+          { "math": [ "pf_wh_dx = pf_wh_at.x - pf_wh_av.x" ] },
+          { "math": [ "pf_wh_dy = pf_wh_at.y - pf_wh_av.y" ] },
+          { "math": [ "pf_wh_mt = floor((max(abs(pf_wh_dx), abs(pf_wh_dy)) + 12) / 24)" ] },
+          { "set_string_var": "", "target_var": { "global_val": "pf_wh_dir_ns" } },
+          { "set_string_var": "", "target_var": { "global_val": "pf_wh_dir_ew" } },
+          {
+            "if": { "math": [ "abs(pf_wh_dy) * 2 >= abs(pf_wh_dx)" ] },
+            "then": [
+              {
+                "if": { "math": [ "pf_wh_dy < 0" ] },
+                "then": [ { "set_string_var": "north", "target_var": { "global_val": "pf_wh_dir_ns" } } ],
+                "else": [ { "set_string_var": "south", "target_var": { "global_val": "pf_wh_dir_ns" } } ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "abs(pf_wh_dx) * 2 >= abs(pf_wh_dy)" ] },
+            "then": [
+              {
+                "if": { "math": [ "pf_wh_dx < 0" ] },
+                "then": [ { "set_string_var": "west", "target_var": { "global_val": "pf_wh_dir_ew" } } ],
+                "else": [ { "set_string_var": "east", "target_var": { "global_val": "pf_wh_dir_ew" } } ]
+              }
+            ]
+          },
+          {
+            "set_string_var": "<global_val:pf_wh_dir_ns><global_val:pf_wh_dir_ew>",
+            "target_var": { "global_val": "pf_wh_dir" },
+            "parse_tags": true
+          },
+          {
+            "if": { "math": [ "pf_wh_auto == 1" ] },
+            "then": [ { "u_message": "Before you part, <global_val:pf_wh_who> tells you where to find them.", "type": "info" } ]
+          },
+          {
+            "if": { "math": [ "pf_wh_kind == 1" ] },
+            "then": [
+              {
+                "if": { "math": [ "pf_wh_mt < 2" ] },
+                "then": [
+                  {
+                    "u_message": "<global_val:pf_wh_who> nods at the houses close by.  \"This is home now.  Come by any time.\"",
+                    "type": "info"
+                  }
+                ],
+                "else": [
+                  {
+                    "u_message": "<global_val:pf_wh_who> points <global_val:pf_wh_dir>.  \"Home's that way, about <global_val:pf_wh_mt> map tiles.  Come by any time.\"",
+                    "type": "info"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_wh_kind == 2" ] },
+            "then": [
+              {
+                "if": { "math": [ "pf_wh_mt < 2" ] },
+                "then": [
+                  {
+                    "u_message": "<global_val:pf_wh_who> waves at the ground around you.  \"We're camped right here, another <global_val:pf_wh_days> days or so.\"",
+                    "type": "info"
+                  }
+                ],
+                "else": [
+                  {
+                    "u_message": "<global_val:pf_wh_who> points <global_val:pf_wh_dir>.  \"We're camped about <global_val:pf_wh_mt> map tiles that way, another <global_val:pf_wh_days> days or so.\"",
+                    "type": "info"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_wh_kind == 3" ] },
+            "then": [
+              {
+                "if": { "math": [ "pf_wh_mt < 2" ] },
+                "then": [
+                  {
+                    "u_message": "<global_val:pf_wh_who> looks around.  \"We like it here.  We'll camp close by for a couple of weeks.\"",
+                    "type": "info"
+                  }
+                ],
+                "else": [
+                  {
+                    "u_message": "<global_val:pf_wh_who> looks around.  \"We like it here.  We'll camp close by for a couple of weeks.\"",
+                    "type": "info"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_wh_kind == 5" ] },
+            "then": [
+              {
+                "if": { "math": [ "pf_wh_mt < 2" ] },
+                "then": [
+                  {
+                    "u_message": "<global_val:pf_wh_who> nods at the ground ahead.  \"We're stopping just up here for a couple of weeks.\"",
+                    "type": "info"
+                  }
+                ],
+                "else": [
+                  {
+                    "u_message": "<global_val:pf_wh_who> points <global_val:pf_wh_dir>.  \"We're making for a spot about <global_val:pf_wh_mt> map tiles that way.  We'll stop there a couple of weeks.\"",
+                    "type": "info"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_wh_kind == 6" ] },
+            "then": [
+              {
+                "if": { "math": [ "pf_wh_mt < 2" ] },
+                "then": [
+                  {
+                    "u_message": "<global_val:pf_wh_who> spreads their arms.  \"This is <global_val:pf_wh_place>.  We live here.  Come by any time.\"",
+                    "type": "info"
+                  }
+                ],
+                "else": [
+                  {
+                    "u_message": "<global_val:pf_wh_who> points <global_val:pf_wh_dir>.  \"We live at <global_val:pf_wh_place>, about <global_val:pf_wh_mt> map tiles that way.  Come by any time.\"",
+                    "type": "info"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_wh_kind == 7" ] },
+            "then": [
+              {
+                "if": { "math": [ "pf_wh_mt < 2" ] },
+                "then": [
+                  {
+                    "u_message": "<global_val:pf_wh_who> nods at the houses.  \"We hunt out of here, <global_val:pf_wh_place>.\"",
+                    "type": "info"
+                  }
+                ],
+                "else": [
+                  {
+                    "u_message": "<global_val:pf_wh_who> points <global_val:pf_wh_dir>.  \"We hunt out of <global_val:pf_wh_place>, about <global_val:pf_wh_mt> map tiles that way.\"",
+                    "type": "info"
+                  }
+                ]
+              }
+            ]
+          },
+          { "run_eocs": "PF_MARK_set" },
+          {
+            "u_message": "It's on your map: the Missions screen lists it as \"Where they said they'd be (<global_val:pf_mk_shown>)\", and the People First menu as Where to find people.",
+            "type": "good"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_MARK_set",
+    "//": "u = you.  Puts the band pf_wh_lead's spot (pf_wh_at) on your map for pf_wh_days days: their old mark if they had one, else the mark that runs out soonest.  The mission's own deadline is a day later; PF_MARK_tick takes it off first (a deadline counts as a failed mission).",
+    "effect": [
+      { "math": [ "pf_mk_slot = -1" ] },
+      { "math": [ "pf_mk_best = time('now') + time('999 d')" ] },
+      {
+        "if": {
+          "and": [
+            { "math": [ "value_or(pf_mk_0_until, 0) > 0" ] },
+            { "compare_string": [ { "global_val": "pf_mk_0_lead" }, { "global_val": "pf_wh_lead" } ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_mk_slot = 0" ] }, { "math": [ "pf_mk_best = -1" ] } ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "value_or(pf_mk_1_until, 0) > 0" ] },
+            { "compare_string": [ { "global_val": "pf_mk_1_lead" }, { "global_val": "pf_wh_lead" } ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_mk_slot = 1" ] }, { "math": [ "pf_mk_best = -1" ] } ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "value_or(pf_mk_2_until, 0) > 0" ] },
+            { "compare_string": [ { "global_val": "pf_mk_2_lead" }, { "global_val": "pf_wh_lead" } ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_mk_slot = 2" ] }, { "math": [ "pf_mk_best = -1" ] } ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "value_or(pf_mk_3_until, 0) > 0" ] },
+            { "compare_string": [ { "global_val": "pf_mk_3_lead" }, { "global_val": "pf_wh_lead" } ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_mk_slot = 3" ] }, { "math": [ "pf_mk_best = -1" ] } ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "value_or(pf_mk_4_until, 0) > 0" ] },
+            { "compare_string": [ { "global_val": "pf_mk_4_lead" }, { "global_val": "pf_wh_lead" } ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_mk_slot = 4" ] }, { "math": [ "pf_mk_best = -1" ] } ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "value_or(pf_mk_5_until, 0) > 0" ] },
+            { "compare_string": [ { "global_val": "pf_mk_5_lead" }, { "global_val": "pf_wh_lead" } ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_mk_slot = 5" ] }, { "math": [ "pf_mk_best = -1" ] } ]
+      },
+      {
+        "if": { "math": [ "value_or(pf_mk_0_until, 0) < pf_mk_best" ] },
+        "then": [ { "math": [ "pf_mk_slot = 0" ] }, { "math": [ "pf_mk_best = value_or(pf_mk_0_until, 0)" ] } ]
+      },
+      {
+        "if": { "math": [ "value_or(pf_mk_1_until, 0) < pf_mk_best" ] },
+        "then": [ { "math": [ "pf_mk_slot = 1" ] }, { "math": [ "pf_mk_best = value_or(pf_mk_1_until, 0)" ] } ]
+      },
+      {
+        "if": { "math": [ "value_or(pf_mk_2_until, 0) < pf_mk_best" ] },
+        "then": [ { "math": [ "pf_mk_slot = 2" ] }, { "math": [ "pf_mk_best = value_or(pf_mk_2_until, 0)" ] } ]
+      },
+      {
+        "if": { "math": [ "value_or(pf_mk_3_until, 0) < pf_mk_best" ] },
+        "then": [ { "math": [ "pf_mk_slot = 3" ] }, { "math": [ "pf_mk_best = value_or(pf_mk_3_until, 0)" ] } ]
+      },
+      {
+        "if": { "math": [ "value_or(pf_mk_4_until, 0) < pf_mk_best" ] },
+        "then": [ { "math": [ "pf_mk_slot = 4" ] }, { "math": [ "pf_mk_best = value_or(pf_mk_4_until, 0)" ] } ]
+      },
+      {
+        "if": { "math": [ "value_or(pf_mk_5_until, 0) < pf_mk_best" ] },
+        "then": [ { "math": [ "pf_mk_slot = 5" ] }, { "math": [ "pf_mk_best = value_or(pf_mk_5_until, 0)" ] } ]
+      },
+      {
+        "if": { "math": [ "pf_mk_slot == 0" ] },
+        "then": [
+          { "remove_active_mission": "PF_MARK_0" },
+          { "copy_var": { "global_val": "pf_wh_at" }, "target_var": { "global_val": "pf_mk_target" } },
+          {
+            "assign_mission": "PF_MARK_0",
+            "deadline": { "math": [ "time('now') + time('1 d') * (pf_wh_days + 1)" ] }
+          },
+          { "copy_var": { "global_val": "pf_wh_lead" }, "target_var": { "global_val": "pf_mk_0_lead" } },
+          { "copy_var": { "global_val": "pf_wh_at" }, "target_var": { "global_val": "pf_mk_0_at" } },
+          {
+            "set_string_var": "<global_val:pf_wh_lname>'s people",
+            "target_var": { "global_val": "pf_mk_0_name" },
+            "parse_tags": true
+          },
+          { "math": [ "pf_mk_0_until = time('now') + time('1 d') * pf_wh_days" ] },
+          { "math": [ "pf_mk_shown = 1" ] }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_mk_slot == 1" ] },
+        "then": [
+          { "remove_active_mission": "PF_MARK_1" },
+          { "copy_var": { "global_val": "pf_wh_at" }, "target_var": { "global_val": "pf_mk_target" } },
+          {
+            "assign_mission": "PF_MARK_1",
+            "deadline": { "math": [ "time('now') + time('1 d') * (pf_wh_days + 1)" ] }
+          },
+          { "copy_var": { "global_val": "pf_wh_lead" }, "target_var": { "global_val": "pf_mk_1_lead" } },
+          { "copy_var": { "global_val": "pf_wh_at" }, "target_var": { "global_val": "pf_mk_1_at" } },
+          {
+            "set_string_var": "<global_val:pf_wh_lname>'s people",
+            "target_var": { "global_val": "pf_mk_1_name" },
+            "parse_tags": true
+          },
+          { "math": [ "pf_mk_1_until = time('now') + time('1 d') * pf_wh_days" ] },
+          { "math": [ "pf_mk_shown = 2" ] }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_mk_slot == 2" ] },
+        "then": [
+          { "remove_active_mission": "PF_MARK_2" },
+          { "copy_var": { "global_val": "pf_wh_at" }, "target_var": { "global_val": "pf_mk_target" } },
+          {
+            "assign_mission": "PF_MARK_2",
+            "deadline": { "math": [ "time('now') + time('1 d') * (pf_wh_days + 1)" ] }
+          },
+          { "copy_var": { "global_val": "pf_wh_lead" }, "target_var": { "global_val": "pf_mk_2_lead" } },
+          { "copy_var": { "global_val": "pf_wh_at" }, "target_var": { "global_val": "pf_mk_2_at" } },
+          {
+            "set_string_var": "<global_val:pf_wh_lname>'s people",
+            "target_var": { "global_val": "pf_mk_2_name" },
+            "parse_tags": true
+          },
+          { "math": [ "pf_mk_2_until = time('now') + time('1 d') * pf_wh_days" ] },
+          { "math": [ "pf_mk_shown = 3" ] }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_mk_slot == 3" ] },
+        "then": [
+          { "remove_active_mission": "PF_MARK_3" },
+          { "copy_var": { "global_val": "pf_wh_at" }, "target_var": { "global_val": "pf_mk_target" } },
+          {
+            "assign_mission": "PF_MARK_3",
+            "deadline": { "math": [ "time('now') + time('1 d') * (pf_wh_days + 1)" ] }
+          },
+          { "copy_var": { "global_val": "pf_wh_lead" }, "target_var": { "global_val": "pf_mk_3_lead" } },
+          { "copy_var": { "global_val": "pf_wh_at" }, "target_var": { "global_val": "pf_mk_3_at" } },
+          {
+            "set_string_var": "<global_val:pf_wh_lname>'s people",
+            "target_var": { "global_val": "pf_mk_3_name" },
+            "parse_tags": true
+          },
+          { "math": [ "pf_mk_3_until = time('now') + time('1 d') * pf_wh_days" ] },
+          { "math": [ "pf_mk_shown = 4" ] }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_mk_slot == 4" ] },
+        "then": [
+          { "remove_active_mission": "PF_MARK_4" },
+          { "copy_var": { "global_val": "pf_wh_at" }, "target_var": { "global_val": "pf_mk_target" } },
+          {
+            "assign_mission": "PF_MARK_4",
+            "deadline": { "math": [ "time('now') + time('1 d') * (pf_wh_days + 1)" ] }
+          },
+          { "copy_var": { "global_val": "pf_wh_lead" }, "target_var": { "global_val": "pf_mk_4_lead" } },
+          { "copy_var": { "global_val": "pf_wh_at" }, "target_var": { "global_val": "pf_mk_4_at" } },
+          {
+            "set_string_var": "<global_val:pf_wh_lname>'s people",
+            "target_var": { "global_val": "pf_mk_4_name" },
+            "parse_tags": true
+          },
+          { "math": [ "pf_mk_4_until = time('now') + time('1 d') * pf_wh_days" ] },
+          { "math": [ "pf_mk_shown = 5" ] }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_mk_slot == 5" ] },
+        "then": [
+          { "remove_active_mission": "PF_MARK_5" },
+          { "copy_var": { "global_val": "pf_wh_at" }, "target_var": { "global_val": "pf_mk_target" } },
+          {
+            "assign_mission": "PF_MARK_5",
+            "deadline": { "math": [ "time('now') + time('1 d') * (pf_wh_days + 1)" ] }
+          },
+          { "copy_var": { "global_val": "pf_wh_lead" }, "target_var": { "global_val": "pf_mk_5_lead" } },
+          { "copy_var": { "global_val": "pf_wh_at" }, "target_var": { "global_val": "pf_mk_5_at" } },
+          {
+            "set_string_var": "<global_val:pf_wh_lname>'s people",
+            "target_var": { "global_val": "pf_mk_5_name" },
+            "parse_tags": true
+          },
+          { "math": [ "pf_mk_5_until = time('now') + time('1 d') * pf_wh_days" ] },
+          { "math": [ "pf_mk_shown = 6" ] }
+        ]
+      },
+      { "math": [ "pf_marks_total = value_or(pf_marks_total, 0) + 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_MARK_tick",
+    "//": "Hourly: marks that ran out (or whose band moved in) come off your map.",
+    "recurrence": "1 hours",
+    "global": true,
+    "condition": {
+      "math": [
+        "value_or(pf_mk_0_until, 0) + value_or(pf_mk_1_until, 0) + value_or(pf_mk_2_until, 0) + value_or(pf_mk_3_until, 0) + value_or(pf_mk_4_until, 0) + value_or(pf_mk_5_until, 0) > 0"
+      ]
+    },
+    "effect": [
+      {
+        "if": { "math": [ "(value_or(pf_mk_0_until, 0) > 0) * (value_or(pf_mk_0_until, 0) <= time('now'))" ] },
+        "then": [ { "remove_active_mission": "PF_MARK_0" }, { "math": [ "pf_mk_0_until = 0" ] } ]
+      },
+      {
+        "if": { "math": [ "value_or(pf_mk_0_until, 0) > time('now')" ] },
+        "then": [
+          { "set_string_var": "pf_reg_<global_val:pf_mk_0_lead>_dead", "target_var": { "context_val": "md" }, "parse_tags": true },
+          { "math": [ "pf_mk_gone = 0" ] },
+          {
+            "if": { "math": [ "value_or(v_md, 0) == 0" ] },
+            "then": [
+              {
+                "u_run_npc_eocs": [
+                  {
+                    "id": "PF_MARK_check_0",
+                    "effect": [ { "if": { "math": [ "value_or(u_pf_is_leader, 0) != 1" ] }, "then": [ { "math": [ "pf_mk_gone = 1" ] } ] } ]
+                  }
+                ],
+                "unique_ids": [ { "global_val": "pf_mk_0_lead" } ],
+                "local": false
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_mk_gone == 1" ] },
+            "then": [ { "remove_active_mission": "PF_MARK_0" }, { "math": [ "pf_mk_0_until = 0" ] } ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "(value_or(pf_mk_1_until, 0) > 0) * (value_or(pf_mk_1_until, 0) <= time('now'))" ] },
+        "then": [ { "remove_active_mission": "PF_MARK_1" }, { "math": [ "pf_mk_1_until = 0" ] } ]
+      },
+      {
+        "if": { "math": [ "value_or(pf_mk_1_until, 0) > time('now')" ] },
+        "then": [
+          { "set_string_var": "pf_reg_<global_val:pf_mk_1_lead>_dead", "target_var": { "context_val": "md" }, "parse_tags": true },
+          { "math": [ "pf_mk_gone = 0" ] },
+          {
+            "if": { "math": [ "value_or(v_md, 0) == 0" ] },
+            "then": [
+              {
+                "u_run_npc_eocs": [
+                  {
+                    "id": "PF_MARK_check_1",
+                    "effect": [ { "if": { "math": [ "value_or(u_pf_is_leader, 0) != 1" ] }, "then": [ { "math": [ "pf_mk_gone = 1" ] } ] } ]
+                  }
+                ],
+                "unique_ids": [ { "global_val": "pf_mk_1_lead" } ],
+                "local": false
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_mk_gone == 1" ] },
+            "then": [ { "remove_active_mission": "PF_MARK_1" }, { "math": [ "pf_mk_1_until = 0" ] } ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "(value_or(pf_mk_2_until, 0) > 0) * (value_or(pf_mk_2_until, 0) <= time('now'))" ] },
+        "then": [ { "remove_active_mission": "PF_MARK_2" }, { "math": [ "pf_mk_2_until = 0" ] } ]
+      },
+      {
+        "if": { "math": [ "value_or(pf_mk_2_until, 0) > time('now')" ] },
+        "then": [
+          { "set_string_var": "pf_reg_<global_val:pf_mk_2_lead>_dead", "target_var": { "context_val": "md" }, "parse_tags": true },
+          { "math": [ "pf_mk_gone = 0" ] },
+          {
+            "if": { "math": [ "value_or(v_md, 0) == 0" ] },
+            "then": [
+              {
+                "u_run_npc_eocs": [
+                  {
+                    "id": "PF_MARK_check_2",
+                    "effect": [ { "if": { "math": [ "value_or(u_pf_is_leader, 0) != 1" ] }, "then": [ { "math": [ "pf_mk_gone = 1" ] } ] } ]
+                  }
+                ],
+                "unique_ids": [ { "global_val": "pf_mk_2_lead" } ],
+                "local": false
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_mk_gone == 1" ] },
+            "then": [ { "remove_active_mission": "PF_MARK_2" }, { "math": [ "pf_mk_2_until = 0" ] } ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "(value_or(pf_mk_3_until, 0) > 0) * (value_or(pf_mk_3_until, 0) <= time('now'))" ] },
+        "then": [ { "remove_active_mission": "PF_MARK_3" }, { "math": [ "pf_mk_3_until = 0" ] } ]
+      },
+      {
+        "if": { "math": [ "value_or(pf_mk_3_until, 0) > time('now')" ] },
+        "then": [
+          { "set_string_var": "pf_reg_<global_val:pf_mk_3_lead>_dead", "target_var": { "context_val": "md" }, "parse_tags": true },
+          { "math": [ "pf_mk_gone = 0" ] },
+          {
+            "if": { "math": [ "value_or(v_md, 0) == 0" ] },
+            "then": [
+              {
+                "u_run_npc_eocs": [
+                  {
+                    "id": "PF_MARK_check_3",
+                    "effect": [ { "if": { "math": [ "value_or(u_pf_is_leader, 0) != 1" ] }, "then": [ { "math": [ "pf_mk_gone = 1" ] } ] } ]
+                  }
+                ],
+                "unique_ids": [ { "global_val": "pf_mk_3_lead" } ],
+                "local": false
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_mk_gone == 1" ] },
+            "then": [ { "remove_active_mission": "PF_MARK_3" }, { "math": [ "pf_mk_3_until = 0" ] } ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "(value_or(pf_mk_4_until, 0) > 0) * (value_or(pf_mk_4_until, 0) <= time('now'))" ] },
+        "then": [ { "remove_active_mission": "PF_MARK_4" }, { "math": [ "pf_mk_4_until = 0" ] } ]
+      },
+      {
+        "if": { "math": [ "value_or(pf_mk_4_until, 0) > time('now')" ] },
+        "then": [
+          { "set_string_var": "pf_reg_<global_val:pf_mk_4_lead>_dead", "target_var": { "context_val": "md" }, "parse_tags": true },
+          { "math": [ "pf_mk_gone = 0" ] },
+          {
+            "if": { "math": [ "value_or(v_md, 0) == 0" ] },
+            "then": [
+              {
+                "u_run_npc_eocs": [
+                  {
+                    "id": "PF_MARK_check_4",
+                    "effect": [ { "if": { "math": [ "value_or(u_pf_is_leader, 0) != 1" ] }, "then": [ { "math": [ "pf_mk_gone = 1" ] } ] } ]
+                  }
+                ],
+                "unique_ids": [ { "global_val": "pf_mk_4_lead" } ],
+                "local": false
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_mk_gone == 1" ] },
+            "then": [ { "remove_active_mission": "PF_MARK_4" }, { "math": [ "pf_mk_4_until = 0" ] } ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "(value_or(pf_mk_5_until, 0) > 0) * (value_or(pf_mk_5_until, 0) <= time('now'))" ] },
+        "then": [ { "remove_active_mission": "PF_MARK_5" }, { "math": [ "pf_mk_5_until = 0" ] } ]
+      },
+      {
+        "if": { "math": [ "value_or(pf_mk_5_until, 0) > time('now')" ] },
+        "then": [
+          { "set_string_var": "pf_reg_<global_val:pf_mk_5_lead>_dead", "target_var": { "context_val": "md" }, "parse_tags": true },
+          { "math": [ "pf_mk_gone = 0" ] },
+          {
+            "if": { "math": [ "value_or(v_md, 0) == 0" ] },
+            "then": [
+              {
+                "u_run_npc_eocs": [
+                  {
+                    "id": "PF_MARK_check_5",
+                    "effect": [ { "if": { "math": [ "value_or(u_pf_is_leader, 0) != 1" ] }, "then": [ { "math": [ "pf_mk_gone = 1" ] } ] } ]
+                  }
+                ],
+                "unique_ids": [ { "global_val": "pf_mk_5_lead" } ],
+                "local": false
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_mk_gone == 1" ] },
+            "then": [ { "remove_active_mission": "PF_MARK_5" }, { "math": [ "pf_mk_5_until = 0" ] } ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_MARK_list",
+    "//": "People First menu: Where to find people.  Every band that told you where it will be, with how far, which way, and for how long.",
+    "effect": [
+      { "math": [ "pf_mk_n = 0" ] },
+      { "u_location_variable": { "global_val": "pf_wh_av" } },
+      {
+        "if": { "math": [ "value_or(pf_mk_0_until, 0) > time('now')" ] },
+        "then": [
+          { "math": [ "pf_mk_n += 1" ] },
+          { "math": [ "pf_wh_dx = pf_mk_0_at.x - pf_wh_av.x" ] },
+          { "math": [ "pf_wh_dy = pf_mk_0_at.y - pf_wh_av.y" ] },
+          { "math": [ "pf_wh_mt = floor((max(abs(pf_wh_dx), abs(pf_wh_dy)) + 12) / 24)" ] },
+          { "math": [ "pf_wh_days = floor((pf_mk_0_until - time('now') + time('1 d') - 1) / time('1 d'))" ] },
+          { "set_string_var": "", "target_var": { "global_val": "pf_wh_dir_ns" } },
+          { "set_string_var": "", "target_var": { "global_val": "pf_wh_dir_ew" } },
+          {
+            "if": { "math": [ "abs(pf_wh_dy) * 2 >= abs(pf_wh_dx)" ] },
+            "then": [
+              {
+                "if": { "math": [ "pf_wh_dy < 0" ] },
+                "then": [ { "set_string_var": "north", "target_var": { "global_val": "pf_wh_dir_ns" } } ],
+                "else": [ { "set_string_var": "south", "target_var": { "global_val": "pf_wh_dir_ns" } } ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "abs(pf_wh_dx) * 2 >= abs(pf_wh_dy)" ] },
+            "then": [
+              {
+                "if": { "math": [ "pf_wh_dx < 0" ] },
+                "then": [ { "set_string_var": "west", "target_var": { "global_val": "pf_wh_dir_ew" } } ],
+                "else": [ { "set_string_var": "east", "target_var": { "global_val": "pf_wh_dir_ew" } } ]
+              }
+            ]
+          },
+          {
+            "set_string_var": "<global_val:pf_wh_dir_ns><global_val:pf_wh_dir_ew>",
+            "target_var": { "global_val": "pf_wh_dir" },
+            "parse_tags": true
+          },
+          {
+            "if": { "math": [ "pf_wh_mt < 2" ] },
+            "then": [
+              {
+                "u_message": "<global_val:pf_mk_0_name>: close by, for another <global_val:pf_wh_days> days or so.  (Missions: Where they said they'd be (1))",
+                "type": "info"
+              }
+            ],
+            "else": [
+              {
+                "u_message": "<global_val:pf_mk_0_name>: about <global_val:pf_wh_mt> map tiles <global_val:pf_wh_dir> of here, for another <global_val:pf_wh_days> days or so.  (Missions: Where they said they'd be (1))",
+                "type": "info"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "value_or(pf_mk_1_until, 0) > time('now')" ] },
+        "then": [
+          { "math": [ "pf_mk_n += 1" ] },
+          { "math": [ "pf_wh_dx = pf_mk_1_at.x - pf_wh_av.x" ] },
+          { "math": [ "pf_wh_dy = pf_mk_1_at.y - pf_wh_av.y" ] },
+          { "math": [ "pf_wh_mt = floor((max(abs(pf_wh_dx), abs(pf_wh_dy)) + 12) / 24)" ] },
+          { "math": [ "pf_wh_days = floor((pf_mk_1_until - time('now') + time('1 d') - 1) / time('1 d'))" ] },
+          { "set_string_var": "", "target_var": { "global_val": "pf_wh_dir_ns" } },
+          { "set_string_var": "", "target_var": { "global_val": "pf_wh_dir_ew" } },
+          {
+            "if": { "math": [ "abs(pf_wh_dy) * 2 >= abs(pf_wh_dx)" ] },
+            "then": [
+              {
+                "if": { "math": [ "pf_wh_dy < 0" ] },
+                "then": [ { "set_string_var": "north", "target_var": { "global_val": "pf_wh_dir_ns" } } ],
+                "else": [ { "set_string_var": "south", "target_var": { "global_val": "pf_wh_dir_ns" } } ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "abs(pf_wh_dx) * 2 >= abs(pf_wh_dy)" ] },
+            "then": [
+              {
+                "if": { "math": [ "pf_wh_dx < 0" ] },
+                "then": [ { "set_string_var": "west", "target_var": { "global_val": "pf_wh_dir_ew" } } ],
+                "else": [ { "set_string_var": "east", "target_var": { "global_val": "pf_wh_dir_ew" } } ]
+              }
+            ]
+          },
+          {
+            "set_string_var": "<global_val:pf_wh_dir_ns><global_val:pf_wh_dir_ew>",
+            "target_var": { "global_val": "pf_wh_dir" },
+            "parse_tags": true
+          },
+          {
+            "if": { "math": [ "pf_wh_mt < 2" ] },
+            "then": [
+              {
+                "u_message": "<global_val:pf_mk_1_name>: close by, for another <global_val:pf_wh_days> days or so.  (Missions: Where they said they'd be (2))",
+                "type": "info"
+              }
+            ],
+            "else": [
+              {
+                "u_message": "<global_val:pf_mk_1_name>: about <global_val:pf_wh_mt> map tiles <global_val:pf_wh_dir> of here, for another <global_val:pf_wh_days> days or so.  (Missions: Where they said they'd be (2))",
+                "type": "info"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "value_or(pf_mk_2_until, 0) > time('now')" ] },
+        "then": [
+          { "math": [ "pf_mk_n += 1" ] },
+          { "math": [ "pf_wh_dx = pf_mk_2_at.x - pf_wh_av.x" ] },
+          { "math": [ "pf_wh_dy = pf_mk_2_at.y - pf_wh_av.y" ] },
+          { "math": [ "pf_wh_mt = floor((max(abs(pf_wh_dx), abs(pf_wh_dy)) + 12) / 24)" ] },
+          { "math": [ "pf_wh_days = floor((pf_mk_2_until - time('now') + time('1 d') - 1) / time('1 d'))" ] },
+          { "set_string_var": "", "target_var": { "global_val": "pf_wh_dir_ns" } },
+          { "set_string_var": "", "target_var": { "global_val": "pf_wh_dir_ew" } },
+          {
+            "if": { "math": [ "abs(pf_wh_dy) * 2 >= abs(pf_wh_dx)" ] },
+            "then": [
+              {
+                "if": { "math": [ "pf_wh_dy < 0" ] },
+                "then": [ { "set_string_var": "north", "target_var": { "global_val": "pf_wh_dir_ns" } } ],
+                "else": [ { "set_string_var": "south", "target_var": { "global_val": "pf_wh_dir_ns" } } ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "abs(pf_wh_dx) * 2 >= abs(pf_wh_dy)" ] },
+            "then": [
+              {
+                "if": { "math": [ "pf_wh_dx < 0" ] },
+                "then": [ { "set_string_var": "west", "target_var": { "global_val": "pf_wh_dir_ew" } } ],
+                "else": [ { "set_string_var": "east", "target_var": { "global_val": "pf_wh_dir_ew" } } ]
+              }
+            ]
+          },
+          {
+            "set_string_var": "<global_val:pf_wh_dir_ns><global_val:pf_wh_dir_ew>",
+            "target_var": { "global_val": "pf_wh_dir" },
+            "parse_tags": true
+          },
+          {
+            "if": { "math": [ "pf_wh_mt < 2" ] },
+            "then": [
+              {
+                "u_message": "<global_val:pf_mk_2_name>: close by, for another <global_val:pf_wh_days> days or so.  (Missions: Where they said they'd be (3))",
+                "type": "info"
+              }
+            ],
+            "else": [
+              {
+                "u_message": "<global_val:pf_mk_2_name>: about <global_val:pf_wh_mt> map tiles <global_val:pf_wh_dir> of here, for another <global_val:pf_wh_days> days or so.  (Missions: Where they said they'd be (3))",
+                "type": "info"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "value_or(pf_mk_3_until, 0) > time('now')" ] },
+        "then": [
+          { "math": [ "pf_mk_n += 1" ] },
+          { "math": [ "pf_wh_dx = pf_mk_3_at.x - pf_wh_av.x" ] },
+          { "math": [ "pf_wh_dy = pf_mk_3_at.y - pf_wh_av.y" ] },
+          { "math": [ "pf_wh_mt = floor((max(abs(pf_wh_dx), abs(pf_wh_dy)) + 12) / 24)" ] },
+          { "math": [ "pf_wh_days = floor((pf_mk_3_until - time('now') + time('1 d') - 1) / time('1 d'))" ] },
+          { "set_string_var": "", "target_var": { "global_val": "pf_wh_dir_ns" } },
+          { "set_string_var": "", "target_var": { "global_val": "pf_wh_dir_ew" } },
+          {
+            "if": { "math": [ "abs(pf_wh_dy) * 2 >= abs(pf_wh_dx)" ] },
+            "then": [
+              {
+                "if": { "math": [ "pf_wh_dy < 0" ] },
+                "then": [ { "set_string_var": "north", "target_var": { "global_val": "pf_wh_dir_ns" } } ],
+                "else": [ { "set_string_var": "south", "target_var": { "global_val": "pf_wh_dir_ns" } } ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "abs(pf_wh_dx) * 2 >= abs(pf_wh_dy)" ] },
+            "then": [
+              {
+                "if": { "math": [ "pf_wh_dx < 0" ] },
+                "then": [ { "set_string_var": "west", "target_var": { "global_val": "pf_wh_dir_ew" } } ],
+                "else": [ { "set_string_var": "east", "target_var": { "global_val": "pf_wh_dir_ew" } } ]
+              }
+            ]
+          },
+          {
+            "set_string_var": "<global_val:pf_wh_dir_ns><global_val:pf_wh_dir_ew>",
+            "target_var": { "global_val": "pf_wh_dir" },
+            "parse_tags": true
+          },
+          {
+            "if": { "math": [ "pf_wh_mt < 2" ] },
+            "then": [
+              {
+                "u_message": "<global_val:pf_mk_3_name>: close by, for another <global_val:pf_wh_days> days or so.  (Missions: Where they said they'd be (4))",
+                "type": "info"
+              }
+            ],
+            "else": [
+              {
+                "u_message": "<global_val:pf_mk_3_name>: about <global_val:pf_wh_mt> map tiles <global_val:pf_wh_dir> of here, for another <global_val:pf_wh_days> days or so.  (Missions: Where they said they'd be (4))",
+                "type": "info"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "value_or(pf_mk_4_until, 0) > time('now')" ] },
+        "then": [
+          { "math": [ "pf_mk_n += 1" ] },
+          { "math": [ "pf_wh_dx = pf_mk_4_at.x - pf_wh_av.x" ] },
+          { "math": [ "pf_wh_dy = pf_mk_4_at.y - pf_wh_av.y" ] },
+          { "math": [ "pf_wh_mt = floor((max(abs(pf_wh_dx), abs(pf_wh_dy)) + 12) / 24)" ] },
+          { "math": [ "pf_wh_days = floor((pf_mk_4_until - time('now') + time('1 d') - 1) / time('1 d'))" ] },
+          { "set_string_var": "", "target_var": { "global_val": "pf_wh_dir_ns" } },
+          { "set_string_var": "", "target_var": { "global_val": "pf_wh_dir_ew" } },
+          {
+            "if": { "math": [ "abs(pf_wh_dy) * 2 >= abs(pf_wh_dx)" ] },
+            "then": [
+              {
+                "if": { "math": [ "pf_wh_dy < 0" ] },
+                "then": [ { "set_string_var": "north", "target_var": { "global_val": "pf_wh_dir_ns" } } ],
+                "else": [ { "set_string_var": "south", "target_var": { "global_val": "pf_wh_dir_ns" } } ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "abs(pf_wh_dx) * 2 >= abs(pf_wh_dy)" ] },
+            "then": [
+              {
+                "if": { "math": [ "pf_wh_dx < 0" ] },
+                "then": [ { "set_string_var": "west", "target_var": { "global_val": "pf_wh_dir_ew" } } ],
+                "else": [ { "set_string_var": "east", "target_var": { "global_val": "pf_wh_dir_ew" } } ]
+              }
+            ]
+          },
+          {
+            "set_string_var": "<global_val:pf_wh_dir_ns><global_val:pf_wh_dir_ew>",
+            "target_var": { "global_val": "pf_wh_dir" },
+            "parse_tags": true
+          },
+          {
+            "if": { "math": [ "pf_wh_mt < 2" ] },
+            "then": [
+              {
+                "u_message": "<global_val:pf_mk_4_name>: close by, for another <global_val:pf_wh_days> days or so.  (Missions: Where they said they'd be (5))",
+                "type": "info"
+              }
+            ],
+            "else": [
+              {
+                "u_message": "<global_val:pf_mk_4_name>: about <global_val:pf_wh_mt> map tiles <global_val:pf_wh_dir> of here, for another <global_val:pf_wh_days> days or so.  (Missions: Where they said they'd be (5))",
+                "type": "info"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "value_or(pf_mk_5_until, 0) > time('now')" ] },
+        "then": [
+          { "math": [ "pf_mk_n += 1" ] },
+          { "math": [ "pf_wh_dx = pf_mk_5_at.x - pf_wh_av.x" ] },
+          { "math": [ "pf_wh_dy = pf_mk_5_at.y - pf_wh_av.y" ] },
+          { "math": [ "pf_wh_mt = floor((max(abs(pf_wh_dx), abs(pf_wh_dy)) + 12) / 24)" ] },
+          { "math": [ "pf_wh_days = floor((pf_mk_5_until - time('now') + time('1 d') - 1) / time('1 d'))" ] },
+          { "set_string_var": "", "target_var": { "global_val": "pf_wh_dir_ns" } },
+          { "set_string_var": "", "target_var": { "global_val": "pf_wh_dir_ew" } },
+          {
+            "if": { "math": [ "abs(pf_wh_dy) * 2 >= abs(pf_wh_dx)" ] },
+            "then": [
+              {
+                "if": { "math": [ "pf_wh_dy < 0" ] },
+                "then": [ { "set_string_var": "north", "target_var": { "global_val": "pf_wh_dir_ns" } } ],
+                "else": [ { "set_string_var": "south", "target_var": { "global_val": "pf_wh_dir_ns" } } ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "abs(pf_wh_dx) * 2 >= abs(pf_wh_dy)" ] },
+            "then": [
+              {
+                "if": { "math": [ "pf_wh_dx < 0" ] },
+                "then": [ { "set_string_var": "west", "target_var": { "global_val": "pf_wh_dir_ew" } } ],
+                "else": [ { "set_string_var": "east", "target_var": { "global_val": "pf_wh_dir_ew" } } ]
+              }
+            ]
+          },
+          {
+            "set_string_var": "<global_val:pf_wh_dir_ns><global_val:pf_wh_dir_ew>",
+            "target_var": { "global_val": "pf_wh_dir" },
+            "parse_tags": true
+          },
+          {
+            "if": { "math": [ "pf_wh_mt < 2" ] },
+            "then": [
+              {
+                "u_message": "<global_val:pf_mk_5_name>: close by, for another <global_val:pf_wh_days> days or so.  (Missions: Where they said they'd be (6))",
+                "type": "info"
+              }
+            ],
+            "else": [
+              {
+                "u_message": "<global_val:pf_mk_5_name>: about <global_val:pf_wh_mt> map tiles <global_val:pf_wh_dir> of here, for another <global_val:pf_wh_days> days or so.  (Missions: Where they said they'd be (6))",
+                "type": "info"
+              }
+            ]
+          }
+        ]
+      },
+      { "run_eocs": "PF_PLACE_list_known" },
+      {
+        "if": { "math": [ "pf_mk_n + value_or(pf_pl_shown, 0) == 0" ] },
+        "then": [
+          {
+            "u_message": "Nobody has told you where to find them lately.  Ask someone in a band where they're headed (People nearby), or share a meal with them.",
+            "type": "info"
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_mk_n > 0" ] },
+        "then": [ { "u_message": "Pick one on the Missions screen to point your compass at it.", "type": "info" } ]
+      }
     ]
   },
   {

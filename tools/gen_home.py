@@ -276,7 +276,10 @@ files["residents.json"] = [
                      "else": [{"if": {"compare_string": [g("pf_inv_lead"), "none"]}, "then": [line("invite_stranger_one")], "else": [line("invite_stranger")]}]}],
                    "else": [{"if": m("pf_read_w < 35"),
                              "then": [{"if": {"compare_string": [g("pf_inv_lead"), "none"]}, "then": [line("invite_warming_one")], "else": [line("invite_warming")]}],
-                             "else": [line("invite_trust")]}]}]},
+                             "else": [line("invite_trust")]}]},
+                  # 2026-10-17 (the user): "We don't know you" said nothing about how far there was to go.  The meter and what helps.
+                  m("pf_bd_ok = 0"), {"run_eocs": "PF_PM_bond_read", "alpha_talker": "npc"},
+                  {"if": m("pf_bd_ok == 1"), "then": [say("<global_val:pf_bd_bar> <global_val:pf_bd_word>  <global_val:pf_bd_hint>")]}]},
     ], "u = you, npc = the person you ask (People menu: Ask them to live with you).  They answer from their own view of you: warmth 35+ and trust 25+ (or warmth 50+ and trust 15+).  If they travel with an A-Life band, the whole band comes: it leaves the roster (the world no longer moves it) and everyone in it lives with you now.",
         condition=m(AT_HOME)),
     eoc("PF_HOME_unroster_i", [
@@ -290,6 +293,9 @@ files["residents.json"] = [
         "u = the band's leader (by unique id).  Everyone in the band moves in."),
     eoc("PF_HOME_join_one", [
         {"run_eocs": "PF_ID_ensure"},
+        # v0.9: the band you travel with moves in with you (or you with them): you're no longer travelling
+        {"if": m("(value_or(pf_tv_on, 0) == 1) * (value_or(u_pf_band, -1) == value_or(pf_tv_band, -2))"), "then": [m("pf_tv_on = 0")]},
+        m("u_pf_tv_player = 0"), m("u_pf_based = 0"), m("u_pf_place = 0"),
         m("u_pf_resident = 1"), m("u_pf_resident_since = time('now')"),
         m("u_pf_is_leader = -1"), {"set_string_var": "none", "target_var": {"u_val": "pf_leader"}}, m("u_pf_band = 0"),
         m("u_pf_online = 1"), m("u_pf_settled = 0"), m("u_pf_pack = 1"),
@@ -476,7 +482,8 @@ files["world.json"] = [
         {"copy_var": {"u_val": "pf_vpos"}, "target_var": {"u_val": "pf_wp_a"}},
         {"copy_var": {"u_val": "pf_vpos"}, "target_var": {"u_val": "pf_wp_b"}},
         {"if": m("pf_ws_kind == 2"),
-         "then": [m("u_pf_settled = 1"), {"copy_var": {"u_val": "pf_vpos"}, "target_var": {"u_val": "pf_home"}}],
+         "then": [m("u_pf_settled = 1"), {"copy_var": {"u_val": "pf_vpos"}, "target_var": {"u_val": "pf_home"}},
+                  m("pf_pl_join_only = 0"), {"run_eocs": "PF_PLACE_found_or_join"}],  # v0.9: a family found in a house has a place (gen_places)
          "else": [{"location_variable_adjust": {"u_val": "pf_wp_a"}, "overmap_tile": True, "x_adjust": m("(rand(1) * 2 - 1) * (3 + rand(6))"), "y_adjust": m("rand(12) - 6")},
                   {"location_variable_adjust": {"u_val": "pf_wp_b"}, "overmap_tile": True, "x_adjust": m("(rand(1) * 2 - 1) * (3 + rand(6))"), "y_adjust": m("rand(12) - 6")}]},
         {"copy_var": {"u_val": "pf_wp_a"}, "target_var": {"u_val": "pf_goal"}},
@@ -773,7 +780,7 @@ files["world.json"] += [
     eoc("PF_WORLD_drift_tick", [
         m("pf_wi = 0"),
         {"run_eocs": "PF_WORLD_drift_i", "condition": m("pf_wi < value_or(pf_band_n, 0)"), "iterations": 1000},
-    ], "Once a day: bands change their lives a little.  A family on the road may find a place and settle (one day in seven); hunters may move to new grounds (one day in three).  Pure data: waypoints move, nothing loads.",
+    ], "Once a day: bands change their lives a little.  A band may make camp for a few days (one day in four), a family on the road may find a place and settle (one day in seven), hunters may move to new grounds (one day in two).  Pure data: waypoints move, nothing loads.",
         recurrence="1 days", **{"global": True}, condition=m("value_or(pf_alife_on, 1) == 1")),
     eoc("PF_WORLD_drift_i", [
         {"set_string_var": "pf_slot_<global_val:pf_wi>", "target_var": ctx("ref"), "parse_tags": True},
@@ -782,18 +789,44 @@ files["world.json"] += [
     ]),
     eoc("PF_WORLD_drift_one", [
         {"if": m("value_or(u_pf_online, 0) == 1"), "then": [{"u_location_variable": {"u_val": "pf_vpos"}}]},
-        {"if": {"and": [m("value_or(u_pf_task, 1) == 0"), m("rand(6) == 0"),
-                        {"or": [m("value_or(pf_home_set, 0) == 0"), m("distance(u_pf_vpos, pf_home_loc) > 60")]}]}, "then": [
-            m("u_pf_settled = 1"), {"copy_var": {"u_val": "pf_vpos"}, "target_var": {"u_val": "pf_home"}},
-            {"copy_var": {"u_val": "pf_vpos"}, "target_var": {"u_val": "pf_wp_a"}}, {"copy_var": {"u_val": "pf_vpos"}, "target_var": {"u_val": "pf_wp_b"}},
-            {"copy_var": {"u_val": "pf_vpos"}, "target_var": {"u_val": "pf_goal"}},
-            m("pf_world_settled_total = value_or(pf_world_settled_total, 0) + 1")]},
-        {"if": {"and": [m("value_or(u_pf_task, 1) == 1"), m("rand(2) == 0")]}, "then": [
-            m("pf_dr_x = rand(12) - 6"), m("pf_dr_y = rand(12) - 6"),
-            {"location_variable_adjust": {"u_val": "pf_wp_a"}, "overmap_tile": True, "x_adjust": m("pf_dr_x"), "y_adjust": m("pf_dr_y")},
-            {"location_variable_adjust": {"u_val": "pf_wp_b"}, "overmap_tile": True, "x_adjust": m("pf_dr_x"), "y_adjust": m("pf_dr_y")},
-            m("pf_world_moved_total = value_or(pf_world_moved_total, 0) + 1")]},
-    ], "u = a band's leader (by unique id).", condition=m("value_or(u_pf_settled, 0) == 0")),
+        # 2026-10-17 (the user: "all npcs are just missed opportunities flowing down a river"): bands make camp now and then.
+        # A camping band (u_pf_camp_until; both waypoints are the camp, people menu PF_WHERE_make_camp) stays put, and
+        # word along the road says so; when the camp ends it goes back on the road from there.
+        {"if": m("value_or(u_pf_camp_until, 0) <= time('now')"), "then": [
+            {"if": m("value_or(u_pf_camp_until, 0) > 0"), "then": [
+                m("u_pf_camp_until = 0"),
+                {"copy_var": {"u_val": "pf_camp"}, "target_var": {"u_val": "pf_wp_a"}}, {"copy_var": {"u_val": "pf_camp"}, "target_var": {"u_val": "pf_wp_b"}},
+                {"location_variable_adjust": {"u_val": "pf_wp_a"}, "overmap_tile": True, "x_adjust": m("(rand(1) * 2 - 1) * (3 + rand(6))"), "y_adjust": m("rand(12) - 6")},
+                {"location_variable_adjust": {"u_val": "pf_wp_b"}, "overmap_tile": True, "x_adjust": m("(rand(1) * 2 - 1) * (3 + rand(6))"), "y_adjust": m("rand(12) - 6")},
+                {"copy_var": {"u_val": "pf_wp_a"}, "target_var": {"u_val": "pf_goal"}}, m("u_pf_goal_is_b = 0"),
+                m("pf_world_camps_ended_total = value_or(pf_world_camps_ended_total, 0) + 1")]},
+            m("pf_dr_camped = 0"),
+            # v0.9 (gen_places): a band on the road near a place people made may drift into it, one day in four (families
+            # settle there, hunters hunt out of it).  Hunters already based at a place keep their grounds.
+            {"if": {"and": [m("value_or(u_pf_based, 0) == 0"), m("rand(3) == 0")]}, "then": [
+                m("pf_pl_join_only = 1"), {"run_eocs": "PF_PLACE_found_or_join"}, m("pf_dr_camped = pf_pl_joined")]},
+            {"if": m("value_or(u_pf_based, 0) == 1"), "then": [m("pf_dr_camped = 1")]},
+            {"if": {"and": [m("pf_dr_camped == 0"), m("rand(3) == 0"), m("value_or(u_pf_joining, 0) == 0")]}, "then": [
+                m("pf_dr_camped = 1"),
+                {"copy_var": {"u_val": "pf_vpos"}, "target_var": {"u_val": "pf_camp"}},
+                {"copy_var": {"u_val": "pf_vpos"}, "target_var": {"u_val": "pf_wp_a"}}, {"copy_var": {"u_val": "pf_vpos"}, "target_var": {"u_val": "pf_wp_b"}},
+                {"copy_var": {"u_val": "pf_vpos"}, "target_var": {"u_val": "pf_goal"}}, m("u_pf_goal_is_b = 0"),
+                m("u_pf_camp_until = time('now') + time('1 d') * (4 + rand(6))"),
+                m("pf_world_camps_total = value_or(pf_world_camps_total, 0) + 1")]},
+            {"if": {"and": [m("pf_dr_camped == 0"), m("value_or(u_pf_task, 1) == 0"), m("rand(6) == 0"),
+                            {"or": [m("value_or(pf_home_set, 0) == 0"), m("distance(u_pf_vpos, pf_home_loc) > 60")]}]}, "then": [
+                m("u_pf_settled = 1"), {"copy_var": {"u_val": "pf_vpos"}, "target_var": {"u_val": "pf_home"}},
+                {"copy_var": {"u_val": "pf_vpos"}, "target_var": {"u_val": "pf_wp_a"}}, {"copy_var": {"u_val": "pf_vpos"}, "target_var": {"u_val": "pf_wp_b"}},
+                {"copy_var": {"u_val": "pf_vpos"}, "target_var": {"u_val": "pf_goal"}},
+                m("pf_world_settled_total = value_or(pf_world_settled_total, 0) + 1"),
+                # v0.9: settling means a place: the nearest one with room within 8 map tiles, else a new one of their own
+                m("pf_pl_join_only = 0"), {"run_eocs": "PF_PLACE_found_or_join"}, m("pf_dr_camped = 1")]},
+            {"if": {"and": [m("pf_dr_camped == 0"), m("value_or(u_pf_task, 1) == 1"), m("rand(2) == 0")]}, "then": [
+                m("pf_dr_x = rand(12) - 6"), m("pf_dr_y = rand(12) - 6"),
+                {"location_variable_adjust": {"u_val": "pf_wp_a"}, "overmap_tile": True, "x_adjust": m("pf_dr_x"), "y_adjust": m("pf_dr_y")},
+                {"location_variable_adjust": {"u_val": "pf_wp_b"}, "overmap_tile": True, "x_adjust": m("pf_dr_x"), "y_adjust": m("pf_dr_y")},
+                m("pf_world_moved_total = value_or(pf_world_moved_total, 0) + 1")]}]},
+    ], "u = a band's leader (by unique id).  A camping band stays put; one day in four a band on the road makes camp where it is for 4-10 days.", condition=m("value_or(u_pf_settled, 0) == 0")),
 ]
 
 # ============================================================ FRICTION, LEAVING, PRACTICE, NEIGHBORS (v0.4 pass 3)

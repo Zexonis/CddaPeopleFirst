@@ -1,0 +1,1314 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PLACE_found_or_join",
+    "//": "u = a band's leader, settling now (pf_pl_join_only 0) or on the road near a place (1).  Joins the nearest place with room within 8 map tiles (10 on the road): a household spot near its heart; families settle there, hunters hunt out of it (u_pf_based).  Else a settling family founds a place of its own.  pf_pl_joined = 1 if it joined one.",
+    "effect": [
+      { "math": [ "pf_pl_best = -1" ] },
+      { "math": [ "pf_pl_bd = 999999" ] },
+      { "math": [ "pf_pl_joined = 0" ] },
+      { "math": [ "pf_pl_r = value_or(pf_pl_join_only, 0) == 1 ? 240 : 192" ] },
+      {
+        "if": {
+          "and": [
+            { "math": [ "value_or(pf_pl_0_alive, 0) == 1" ] },
+            { "math": [ "value_or(pf_pl_0_n, 0) < 5" ] },
+            { "math": [ "distance(u_pf_vpos, pf_pl_0_at) <= pf_pl_r" ] },
+            { "math": [ "distance(u_pf_vpos, pf_pl_0_at) < pf_pl_bd" ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_pl_best = 0" ] }, { "math": [ "pf_pl_bd = distance(u_pf_vpos, pf_pl_0_at)" ] } ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "value_or(pf_pl_1_alive, 0) == 1" ] },
+            { "math": [ "value_or(pf_pl_1_n, 0) < 5" ] },
+            { "math": [ "distance(u_pf_vpos, pf_pl_1_at) <= pf_pl_r" ] },
+            { "math": [ "distance(u_pf_vpos, pf_pl_1_at) < pf_pl_bd" ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_pl_best = 1" ] }, { "math": [ "pf_pl_bd = distance(u_pf_vpos, pf_pl_1_at)" ] } ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "value_or(pf_pl_2_alive, 0) == 1" ] },
+            { "math": [ "value_or(pf_pl_2_n, 0) < 5" ] },
+            { "math": [ "distance(u_pf_vpos, pf_pl_2_at) <= pf_pl_r" ] },
+            { "math": [ "distance(u_pf_vpos, pf_pl_2_at) < pf_pl_bd" ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_pl_best = 2" ] }, { "math": [ "pf_pl_bd = distance(u_pf_vpos, pf_pl_2_at)" ] } ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "value_or(pf_pl_3_alive, 0) == 1" ] },
+            { "math": [ "value_or(pf_pl_3_n, 0) < 5" ] },
+            { "math": [ "distance(u_pf_vpos, pf_pl_3_at) <= pf_pl_r" ] },
+            { "math": [ "distance(u_pf_vpos, pf_pl_3_at) < pf_pl_bd" ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_pl_best = 3" ] }, { "math": [ "pf_pl_bd = distance(u_pf_vpos, pf_pl_3_at)" ] } ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "value_or(pf_pl_4_alive, 0) == 1" ] },
+            { "math": [ "value_or(pf_pl_4_n, 0) < 5" ] },
+            { "math": [ "distance(u_pf_vpos, pf_pl_4_at) <= pf_pl_r" ] },
+            { "math": [ "distance(u_pf_vpos, pf_pl_4_at) < pf_pl_bd" ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_pl_best = 4" ] }, { "math": [ "pf_pl_bd = distance(u_pf_vpos, pf_pl_4_at)" ] } ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "value_or(pf_pl_5_alive, 0) == 1" ] },
+            { "math": [ "value_or(pf_pl_5_n, 0) < 5" ] },
+            { "math": [ "distance(u_pf_vpos, pf_pl_5_at) <= pf_pl_r" ] },
+            { "math": [ "distance(u_pf_vpos, pf_pl_5_at) < pf_pl_bd" ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_pl_best = 5" ] }, { "math": [ "pf_pl_bd = distance(u_pf_vpos, pf_pl_5_at)" ] } ]
+      },
+      {
+        "if": { "math": [ "pf_pl_best == 0" ] },
+        "then": [
+          { "math": [ "u_pf_place = 1" ] },
+          { "math": [ "pf_pl_0_n = value_or(pf_pl_0_n, 0) + 1" ] },
+          { "copy_var": { "global_val": "pf_pl_0_at" }, "target_var": { "u_val": "pf_place_at" } },
+          { "copy_var": { "global_val": "pf_pl_0_name" }, "target_var": { "u_val": "pf_place_name" } }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_pl_best == 1" ] },
+        "then": [
+          { "math": [ "u_pf_place = 2" ] },
+          { "math": [ "pf_pl_1_n = value_or(pf_pl_1_n, 0) + 1" ] },
+          { "copy_var": { "global_val": "pf_pl_1_at" }, "target_var": { "u_val": "pf_place_at" } },
+          { "copy_var": { "global_val": "pf_pl_1_name" }, "target_var": { "u_val": "pf_place_name" } }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_pl_best == 2" ] },
+        "then": [
+          { "math": [ "u_pf_place = 3" ] },
+          { "math": [ "pf_pl_2_n = value_or(pf_pl_2_n, 0) + 1" ] },
+          { "copy_var": { "global_val": "pf_pl_2_at" }, "target_var": { "u_val": "pf_place_at" } },
+          { "copy_var": { "global_val": "pf_pl_2_name" }, "target_var": { "u_val": "pf_place_name" } }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_pl_best == 3" ] },
+        "then": [
+          { "math": [ "u_pf_place = 4" ] },
+          { "math": [ "pf_pl_3_n = value_or(pf_pl_3_n, 0) + 1" ] },
+          { "copy_var": { "global_val": "pf_pl_3_at" }, "target_var": { "u_val": "pf_place_at" } },
+          { "copy_var": { "global_val": "pf_pl_3_name" }, "target_var": { "u_val": "pf_place_name" } }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_pl_best == 4" ] },
+        "then": [
+          { "math": [ "u_pf_place = 5" ] },
+          { "math": [ "pf_pl_4_n = value_or(pf_pl_4_n, 0) + 1" ] },
+          { "copy_var": { "global_val": "pf_pl_4_at" }, "target_var": { "u_val": "pf_place_at" } },
+          { "copy_var": { "global_val": "pf_pl_4_name" }, "target_var": { "u_val": "pf_place_name" } }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_pl_best == 5" ] },
+        "then": [
+          { "math": [ "u_pf_place = 6" ] },
+          { "math": [ "pf_pl_5_n = value_or(pf_pl_5_n, 0) + 1" ] },
+          { "copy_var": { "global_val": "pf_pl_5_at" }, "target_var": { "u_val": "pf_place_at" } },
+          { "copy_var": { "global_val": "pf_pl_5_name" }, "target_var": { "u_val": "pf_place_name" } }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_pl_best >= 0" ] },
+        "then": [
+          { "math": [ "pf_pl_joined = 1" ] },
+          { "copy_var": { "u_val": "pf_place_at" }, "target_var": { "u_val": "pf_home" } },
+          {
+            "location_variable_adjust": { "u_val": "pf_home" },
+            "x_adjust": { "math": [ "(rand(1) * 2 - 1) * (6 + rand(10))" ] },
+            "y_adjust": { "math": [ "(rand(1) * 2 - 1) * (6 + rand(10))" ] }
+          },
+          {
+            "if": { "math": [ "value_or(u_pf_task, 0) == 1" ] },
+            "then": [
+              { "math": [ "u_pf_based = 1" ] },
+              { "copy_var": { "u_val": "pf_place_at" }, "target_var": { "u_val": "pf_wp_a" } },
+              { "copy_var": { "u_val": "pf_place_at" }, "target_var": { "u_val": "pf_wp_b" } },
+              {
+                "location_variable_adjust": { "u_val": "pf_wp_a" },
+                "overmap_tile": true,
+                "x_adjust": { "math": [ "2 + rand(1)" ] },
+                "y_adjust": { "math": [ "rand(4) - 2" ] }
+              },
+              {
+                "location_variable_adjust": { "u_val": "pf_wp_b" },
+                "overmap_tile": true,
+                "x_adjust": { "math": [ "0 - 2 - rand(1)" ] },
+                "y_adjust": { "math": [ "rand(4) - 2" ] }
+              }
+            ],
+            "else": [
+              { "math": [ "u_pf_settled = 1" ] },
+              { "copy_var": { "u_val": "pf_home" }, "target_var": { "u_val": "pf_wp_a" } },
+              { "copy_var": { "u_val": "pf_home" }, "target_var": { "u_val": "pf_wp_b" } }
+            ]
+          },
+          { "copy_var": { "u_val": "pf_wp_a" }, "target_var": { "u_val": "pf_goal" } },
+          { "math": [ "u_pf_goal_is_b = 0" ] },
+          { "math": [ "u_pf_camp_until = 0" ] },
+          { "math": [ "pf_places_joined_total = value_or(pf_places_joined_total, 0) + 1" ] },
+          {
+            "if": { "math": [ "(value_or(pf_tv_on, 0) == 1) * (value_or(u_pf_band, -1) == value_or(pf_tv_band, -2))" ] },
+            "then": [
+              { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_pl_say_lead" }, "parse_tags": true },
+              { "copy_var": { "u_val": "pf_place_name" }, "target_var": { "global_val": "pf_pl_say_place" } },
+              {
+                "run_eocs": {
+                  "id": "PF_PLACE_tv_join_say",
+                  "effect": [
+                    {
+                      "u_message": "<global_val:pf_pl_say_lead> says they're done wandering: the band is making its home at <global_val:pf_pl_say_place>, and you're welcome to come.",
+                      "type": "good"
+                    }
+                  ]
+                },
+                "alpha_talker": "avatar"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "(pf_pl_best == -1) * (value_or(pf_pl_join_only, 0) == 0) * (value_or(u_pf_settled, 0) == 1)" ] },
+        "then": [
+          { "math": [ "pf_pl_free = -1" ] },
+          {
+            "if": { "math": [ "(pf_pl_free == -1) * (value_or(pf_pl_0_alive, 0) == 0)" ] },
+            "then": [ { "math": [ "pf_pl_free = 0" ] } ]
+          },
+          {
+            "if": { "math": [ "(pf_pl_free == -1) * (value_or(pf_pl_1_alive, 0) == 0)" ] },
+            "then": [ { "math": [ "pf_pl_free = 1" ] } ]
+          },
+          {
+            "if": { "math": [ "(pf_pl_free == -1) * (value_or(pf_pl_2_alive, 0) == 0)" ] },
+            "then": [ { "math": [ "pf_pl_free = 2" ] } ]
+          },
+          {
+            "if": { "math": [ "(pf_pl_free == -1) * (value_or(pf_pl_3_alive, 0) == 0)" ] },
+            "then": [ { "math": [ "pf_pl_free = 3" ] } ]
+          },
+          {
+            "if": { "math": [ "(pf_pl_free == -1) * (value_or(pf_pl_4_alive, 0) == 0)" ] },
+            "then": [ { "math": [ "pf_pl_free = 4" ] } ]
+          },
+          {
+            "if": { "math": [ "(pf_pl_free == -1) * (value_or(pf_pl_5_alive, 0) == 0)" ] },
+            "then": [ { "math": [ "pf_pl_free = 5" ] } ]
+          },
+          {
+            "if": { "math": [ "pf_pl_free == 0" ] },
+            "then": [
+              { "math": [ "pf_pl_0_alive = 1" ] },
+              { "math": [ "pf_pl_0_n = 1" ] },
+              { "math": [ "pf_pl_0_known = 0" ] },
+              { "math": [ "pf_pl_0_since = time('now')" ] },
+              { "copy_var": { "u_val": "pf_home" }, "target_var": { "global_val": "pf_pl_0_at" } },
+              { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_pl_0_lead" } },
+              { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_pl_0_fname" }, "parse_tags": true },
+              {
+                "switch": { "math": [ "value_or(pf_pl_names_i, 0) % 12" ] },
+                "cases": [
+                  { "case": 0, "effect": [ { "set_string_var": "Cedar Hollow", "target_var": { "global_val": "pf_pl_0_name" } } ] },
+                  {
+                    "case": 1,
+                    "effect": [ { "set_string_var": "Stillwater", "target_var": { "global_val": "pf_pl_0_name" } } ]
+                  },
+                  {
+                    "case": 2,
+                    "effect": [ { "set_string_var": "the Crossing", "target_var": { "global_val": "pf_pl_0_name" } } ]
+                  },
+                  {
+                    "case": 3,
+                    "effect": [ { "set_string_var": "Long Meadow", "target_var": { "global_val": "pf_pl_0_name" } } ]
+                  },
+                  {
+                    "case": 4,
+                    "effect": [ { "set_string_var": "Ashford", "target_var": { "global_val": "pf_pl_0_name" } } ]
+                  },
+                  {
+                    "case": 5,
+                    "effect": [ { "set_string_var": "Haven", "target_var": { "global_val": "pf_pl_0_name" } } ]
+                  },
+                  {
+                    "case": 6,
+                    "effect": [ { "set_string_var": "Little Hope", "target_var": { "global_val": "pf_pl_0_name" } } ]
+                  },
+                  {
+                    "case": 7,
+                    "effect": [ { "set_string_var": "Tall Pines", "target_var": { "global_val": "pf_pl_0_name" } } ]
+                  },
+                  {
+                    "case": 8,
+                    "effect": [ { "set_string_var": "Mill Creek", "target_var": { "global_val": "pf_pl_0_name" } } ]
+                  },
+                  {
+                    "case": 9,
+                    "effect": [ { "set_string_var": "the Orchard", "target_var": { "global_val": "pf_pl_0_name" } } ]
+                  },
+                  {
+                    "case": 10,
+                    "effect": [ { "set_string_var": "Redstone", "target_var": { "global_val": "pf_pl_0_name" } } ]
+                  },
+                  {
+                    "case": 11,
+                    "effect": [ { "set_string_var": "Second Chance", "target_var": { "global_val": "pf_pl_0_name" } } ]
+                  }
+                ]
+              },
+              { "math": [ "pf_pl_names_i = value_or(pf_pl_names_i, 0) + 1" ] },
+              { "math": [ "u_pf_place = 1" ] },
+              { "copy_var": { "global_val": "pf_pl_0_at" }, "target_var": { "u_val": "pf_place_at" } },
+              { "copy_var": { "global_val": "pf_pl_0_name" }, "target_var": { "u_val": "pf_place_name" } },
+              { "math": [ "pf_places_founded_total = value_or(pf_places_founded_total, 0) + 1" ] }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_pl_free == 1" ] },
+            "then": [
+              { "math": [ "pf_pl_1_alive = 1" ] },
+              { "math": [ "pf_pl_1_n = 1" ] },
+              { "math": [ "pf_pl_1_known = 0" ] },
+              { "math": [ "pf_pl_1_since = time('now')" ] },
+              { "copy_var": { "u_val": "pf_home" }, "target_var": { "global_val": "pf_pl_1_at" } },
+              { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_pl_1_lead" } },
+              { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_pl_1_fname" }, "parse_tags": true },
+              {
+                "switch": { "math": [ "value_or(pf_pl_names_i, 0) % 12" ] },
+                "cases": [
+                  { "case": 0, "effect": [ { "set_string_var": "Cedar Hollow", "target_var": { "global_val": "pf_pl_1_name" } } ] },
+                  {
+                    "case": 1,
+                    "effect": [ { "set_string_var": "Stillwater", "target_var": { "global_val": "pf_pl_1_name" } } ]
+                  },
+                  {
+                    "case": 2,
+                    "effect": [ { "set_string_var": "the Crossing", "target_var": { "global_val": "pf_pl_1_name" } } ]
+                  },
+                  {
+                    "case": 3,
+                    "effect": [ { "set_string_var": "Long Meadow", "target_var": { "global_val": "pf_pl_1_name" } } ]
+                  },
+                  {
+                    "case": 4,
+                    "effect": [ { "set_string_var": "Ashford", "target_var": { "global_val": "pf_pl_1_name" } } ]
+                  },
+                  {
+                    "case": 5,
+                    "effect": [ { "set_string_var": "Haven", "target_var": { "global_val": "pf_pl_1_name" } } ]
+                  },
+                  {
+                    "case": 6,
+                    "effect": [ { "set_string_var": "Little Hope", "target_var": { "global_val": "pf_pl_1_name" } } ]
+                  },
+                  {
+                    "case": 7,
+                    "effect": [ { "set_string_var": "Tall Pines", "target_var": { "global_val": "pf_pl_1_name" } } ]
+                  },
+                  {
+                    "case": 8,
+                    "effect": [ { "set_string_var": "Mill Creek", "target_var": { "global_val": "pf_pl_1_name" } } ]
+                  },
+                  {
+                    "case": 9,
+                    "effect": [ { "set_string_var": "the Orchard", "target_var": { "global_val": "pf_pl_1_name" } } ]
+                  },
+                  {
+                    "case": 10,
+                    "effect": [ { "set_string_var": "Redstone", "target_var": { "global_val": "pf_pl_1_name" } } ]
+                  },
+                  {
+                    "case": 11,
+                    "effect": [ { "set_string_var": "Second Chance", "target_var": { "global_val": "pf_pl_1_name" } } ]
+                  }
+                ]
+              },
+              { "math": [ "pf_pl_names_i = value_or(pf_pl_names_i, 0) + 1" ] },
+              { "math": [ "u_pf_place = 2" ] },
+              { "copy_var": { "global_val": "pf_pl_1_at" }, "target_var": { "u_val": "pf_place_at" } },
+              { "copy_var": { "global_val": "pf_pl_1_name" }, "target_var": { "u_val": "pf_place_name" } },
+              { "math": [ "pf_places_founded_total = value_or(pf_places_founded_total, 0) + 1" ] }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_pl_free == 2" ] },
+            "then": [
+              { "math": [ "pf_pl_2_alive = 1" ] },
+              { "math": [ "pf_pl_2_n = 1" ] },
+              { "math": [ "pf_pl_2_known = 0" ] },
+              { "math": [ "pf_pl_2_since = time('now')" ] },
+              { "copy_var": { "u_val": "pf_home" }, "target_var": { "global_val": "pf_pl_2_at" } },
+              { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_pl_2_lead" } },
+              { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_pl_2_fname" }, "parse_tags": true },
+              {
+                "switch": { "math": [ "value_or(pf_pl_names_i, 0) % 12" ] },
+                "cases": [
+                  { "case": 0, "effect": [ { "set_string_var": "Cedar Hollow", "target_var": { "global_val": "pf_pl_2_name" } } ] },
+                  {
+                    "case": 1,
+                    "effect": [ { "set_string_var": "Stillwater", "target_var": { "global_val": "pf_pl_2_name" } } ]
+                  },
+                  {
+                    "case": 2,
+                    "effect": [ { "set_string_var": "the Crossing", "target_var": { "global_val": "pf_pl_2_name" } } ]
+                  },
+                  {
+                    "case": 3,
+                    "effect": [ { "set_string_var": "Long Meadow", "target_var": { "global_val": "pf_pl_2_name" } } ]
+                  },
+                  {
+                    "case": 4,
+                    "effect": [ { "set_string_var": "Ashford", "target_var": { "global_val": "pf_pl_2_name" } } ]
+                  },
+                  {
+                    "case": 5,
+                    "effect": [ { "set_string_var": "Haven", "target_var": { "global_val": "pf_pl_2_name" } } ]
+                  },
+                  {
+                    "case": 6,
+                    "effect": [ { "set_string_var": "Little Hope", "target_var": { "global_val": "pf_pl_2_name" } } ]
+                  },
+                  {
+                    "case": 7,
+                    "effect": [ { "set_string_var": "Tall Pines", "target_var": { "global_val": "pf_pl_2_name" } } ]
+                  },
+                  {
+                    "case": 8,
+                    "effect": [ { "set_string_var": "Mill Creek", "target_var": { "global_val": "pf_pl_2_name" } } ]
+                  },
+                  {
+                    "case": 9,
+                    "effect": [ { "set_string_var": "the Orchard", "target_var": { "global_val": "pf_pl_2_name" } } ]
+                  },
+                  {
+                    "case": 10,
+                    "effect": [ { "set_string_var": "Redstone", "target_var": { "global_val": "pf_pl_2_name" } } ]
+                  },
+                  {
+                    "case": 11,
+                    "effect": [ { "set_string_var": "Second Chance", "target_var": { "global_val": "pf_pl_2_name" } } ]
+                  }
+                ]
+              },
+              { "math": [ "pf_pl_names_i = value_or(pf_pl_names_i, 0) + 1" ] },
+              { "math": [ "u_pf_place = 3" ] },
+              { "copy_var": { "global_val": "pf_pl_2_at" }, "target_var": { "u_val": "pf_place_at" } },
+              { "copy_var": { "global_val": "pf_pl_2_name" }, "target_var": { "u_val": "pf_place_name" } },
+              { "math": [ "pf_places_founded_total = value_or(pf_places_founded_total, 0) + 1" ] }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_pl_free == 3" ] },
+            "then": [
+              { "math": [ "pf_pl_3_alive = 1" ] },
+              { "math": [ "pf_pl_3_n = 1" ] },
+              { "math": [ "pf_pl_3_known = 0" ] },
+              { "math": [ "pf_pl_3_since = time('now')" ] },
+              { "copy_var": { "u_val": "pf_home" }, "target_var": { "global_val": "pf_pl_3_at" } },
+              { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_pl_3_lead" } },
+              { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_pl_3_fname" }, "parse_tags": true },
+              {
+                "switch": { "math": [ "value_or(pf_pl_names_i, 0) % 12" ] },
+                "cases": [
+                  { "case": 0, "effect": [ { "set_string_var": "Cedar Hollow", "target_var": { "global_val": "pf_pl_3_name" } } ] },
+                  {
+                    "case": 1,
+                    "effect": [ { "set_string_var": "Stillwater", "target_var": { "global_val": "pf_pl_3_name" } } ]
+                  },
+                  {
+                    "case": 2,
+                    "effect": [ { "set_string_var": "the Crossing", "target_var": { "global_val": "pf_pl_3_name" } } ]
+                  },
+                  {
+                    "case": 3,
+                    "effect": [ { "set_string_var": "Long Meadow", "target_var": { "global_val": "pf_pl_3_name" } } ]
+                  },
+                  {
+                    "case": 4,
+                    "effect": [ { "set_string_var": "Ashford", "target_var": { "global_val": "pf_pl_3_name" } } ]
+                  },
+                  {
+                    "case": 5,
+                    "effect": [ { "set_string_var": "Haven", "target_var": { "global_val": "pf_pl_3_name" } } ]
+                  },
+                  {
+                    "case": 6,
+                    "effect": [ { "set_string_var": "Little Hope", "target_var": { "global_val": "pf_pl_3_name" } } ]
+                  },
+                  {
+                    "case": 7,
+                    "effect": [ { "set_string_var": "Tall Pines", "target_var": { "global_val": "pf_pl_3_name" } } ]
+                  },
+                  {
+                    "case": 8,
+                    "effect": [ { "set_string_var": "Mill Creek", "target_var": { "global_val": "pf_pl_3_name" } } ]
+                  },
+                  {
+                    "case": 9,
+                    "effect": [ { "set_string_var": "the Orchard", "target_var": { "global_val": "pf_pl_3_name" } } ]
+                  },
+                  {
+                    "case": 10,
+                    "effect": [ { "set_string_var": "Redstone", "target_var": { "global_val": "pf_pl_3_name" } } ]
+                  },
+                  {
+                    "case": 11,
+                    "effect": [ { "set_string_var": "Second Chance", "target_var": { "global_val": "pf_pl_3_name" } } ]
+                  }
+                ]
+              },
+              { "math": [ "pf_pl_names_i = value_or(pf_pl_names_i, 0) + 1" ] },
+              { "math": [ "u_pf_place = 4" ] },
+              { "copy_var": { "global_val": "pf_pl_3_at" }, "target_var": { "u_val": "pf_place_at" } },
+              { "copy_var": { "global_val": "pf_pl_3_name" }, "target_var": { "u_val": "pf_place_name" } },
+              { "math": [ "pf_places_founded_total = value_or(pf_places_founded_total, 0) + 1" ] }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_pl_free == 4" ] },
+            "then": [
+              { "math": [ "pf_pl_4_alive = 1" ] },
+              { "math": [ "pf_pl_4_n = 1" ] },
+              { "math": [ "pf_pl_4_known = 0" ] },
+              { "math": [ "pf_pl_4_since = time('now')" ] },
+              { "copy_var": { "u_val": "pf_home" }, "target_var": { "global_val": "pf_pl_4_at" } },
+              { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_pl_4_lead" } },
+              { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_pl_4_fname" }, "parse_tags": true },
+              {
+                "switch": { "math": [ "value_or(pf_pl_names_i, 0) % 12" ] },
+                "cases": [
+                  { "case": 0, "effect": [ { "set_string_var": "Cedar Hollow", "target_var": { "global_val": "pf_pl_4_name" } } ] },
+                  {
+                    "case": 1,
+                    "effect": [ { "set_string_var": "Stillwater", "target_var": { "global_val": "pf_pl_4_name" } } ]
+                  },
+                  {
+                    "case": 2,
+                    "effect": [ { "set_string_var": "the Crossing", "target_var": { "global_val": "pf_pl_4_name" } } ]
+                  },
+                  {
+                    "case": 3,
+                    "effect": [ { "set_string_var": "Long Meadow", "target_var": { "global_val": "pf_pl_4_name" } } ]
+                  },
+                  {
+                    "case": 4,
+                    "effect": [ { "set_string_var": "Ashford", "target_var": { "global_val": "pf_pl_4_name" } } ]
+                  },
+                  {
+                    "case": 5,
+                    "effect": [ { "set_string_var": "Haven", "target_var": { "global_val": "pf_pl_4_name" } } ]
+                  },
+                  {
+                    "case": 6,
+                    "effect": [ { "set_string_var": "Little Hope", "target_var": { "global_val": "pf_pl_4_name" } } ]
+                  },
+                  {
+                    "case": 7,
+                    "effect": [ { "set_string_var": "Tall Pines", "target_var": { "global_val": "pf_pl_4_name" } } ]
+                  },
+                  {
+                    "case": 8,
+                    "effect": [ { "set_string_var": "Mill Creek", "target_var": { "global_val": "pf_pl_4_name" } } ]
+                  },
+                  {
+                    "case": 9,
+                    "effect": [ { "set_string_var": "the Orchard", "target_var": { "global_val": "pf_pl_4_name" } } ]
+                  },
+                  {
+                    "case": 10,
+                    "effect": [ { "set_string_var": "Redstone", "target_var": { "global_val": "pf_pl_4_name" } } ]
+                  },
+                  {
+                    "case": 11,
+                    "effect": [ { "set_string_var": "Second Chance", "target_var": { "global_val": "pf_pl_4_name" } } ]
+                  }
+                ]
+              },
+              { "math": [ "pf_pl_names_i = value_or(pf_pl_names_i, 0) + 1" ] },
+              { "math": [ "u_pf_place = 5" ] },
+              { "copy_var": { "global_val": "pf_pl_4_at" }, "target_var": { "u_val": "pf_place_at" } },
+              { "copy_var": { "global_val": "pf_pl_4_name" }, "target_var": { "u_val": "pf_place_name" } },
+              { "math": [ "pf_places_founded_total = value_or(pf_places_founded_total, 0) + 1" ] }
+            ]
+          },
+          {
+            "if": { "math": [ "pf_pl_free == 5" ] },
+            "then": [
+              { "math": [ "pf_pl_5_alive = 1" ] },
+              { "math": [ "pf_pl_5_n = 1" ] },
+              { "math": [ "pf_pl_5_known = 0" ] },
+              { "math": [ "pf_pl_5_since = time('now')" ] },
+              { "copy_var": { "u_val": "pf_home" }, "target_var": { "global_val": "pf_pl_5_at" } },
+              { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_pl_5_lead" } },
+              { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_pl_5_fname" }, "parse_tags": true },
+              {
+                "switch": { "math": [ "value_or(pf_pl_names_i, 0) % 12" ] },
+                "cases": [
+                  { "case": 0, "effect": [ { "set_string_var": "Cedar Hollow", "target_var": { "global_val": "pf_pl_5_name" } } ] },
+                  {
+                    "case": 1,
+                    "effect": [ { "set_string_var": "Stillwater", "target_var": { "global_val": "pf_pl_5_name" } } ]
+                  },
+                  {
+                    "case": 2,
+                    "effect": [ { "set_string_var": "the Crossing", "target_var": { "global_val": "pf_pl_5_name" } } ]
+                  },
+                  {
+                    "case": 3,
+                    "effect": [ { "set_string_var": "Long Meadow", "target_var": { "global_val": "pf_pl_5_name" } } ]
+                  },
+                  {
+                    "case": 4,
+                    "effect": [ { "set_string_var": "Ashford", "target_var": { "global_val": "pf_pl_5_name" } } ]
+                  },
+                  {
+                    "case": 5,
+                    "effect": [ { "set_string_var": "Haven", "target_var": { "global_val": "pf_pl_5_name" } } ]
+                  },
+                  {
+                    "case": 6,
+                    "effect": [ { "set_string_var": "Little Hope", "target_var": { "global_val": "pf_pl_5_name" } } ]
+                  },
+                  {
+                    "case": 7,
+                    "effect": [ { "set_string_var": "Tall Pines", "target_var": { "global_val": "pf_pl_5_name" } } ]
+                  },
+                  {
+                    "case": 8,
+                    "effect": [ { "set_string_var": "Mill Creek", "target_var": { "global_val": "pf_pl_5_name" } } ]
+                  },
+                  {
+                    "case": 9,
+                    "effect": [ { "set_string_var": "the Orchard", "target_var": { "global_val": "pf_pl_5_name" } } ]
+                  },
+                  {
+                    "case": 10,
+                    "effect": [ { "set_string_var": "Redstone", "target_var": { "global_val": "pf_pl_5_name" } } ]
+                  },
+                  {
+                    "case": 11,
+                    "effect": [ { "set_string_var": "Second Chance", "target_var": { "global_val": "pf_pl_5_name" } } ]
+                  }
+                ]
+              },
+              { "math": [ "pf_pl_names_i = value_or(pf_pl_names_i, 0) + 1" ] },
+              { "math": [ "u_pf_place = 6" ] },
+              { "copy_var": { "global_val": "pf_pl_5_at" }, "target_var": { "u_val": "pf_place_at" } },
+              { "copy_var": { "global_val": "pf_pl_5_name" }, "target_var": { "u_val": "pf_place_name" } },
+              { "math": [ "pf_places_founded_total = value_or(pf_places_founded_total, 0) + 1" ] }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PLACE_count",
+    "//": "Counts each place's households (settled or based bands); settled bands from before v0.9 find or found their place.",
+    "effect": [
+      { "math": [ "pf_pl_i = 0" ] },
+      {
+        "run_eocs": "PF_PLACE_count_i",
+        "condition": { "math": [ "pf_pl_i < value_or(pf_band_n, 0)" ] },
+        "iterations": 1000
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PLACE_count_i",
+    "effect": [
+      { "set_string_var": "pf_slot_<global_val:pf_pl_i>", "target_var": { "context_val": "ref" }, "parse_tags": true },
+      {
+        "if": { "not": { "compare_string": [ { "var_val": "ref" }, "none" ] } },
+        "then": [ { "u_run_npc_eocs": [ "PF_PLACE_count_one" ], "unique_ids": [ { "var_val": "ref" } ], "local": false } ]
+      },
+      { "math": [ "pf_pl_i += 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PLACE_count_one",
+    "condition": { "math": [ "value_or(u_pf_is_leader, 0) == 1" ] },
+    "effect": [
+      {
+        "if": {
+          "and": [
+            { "math": [ "value_or(u_pf_place, 0) == 1" ] },
+            { "math": [ "(value_or(u_pf_settled, 0) == 1) + (value_or(u_pf_based, 0) == 1) > 0" ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_pl_0_n += 1" ] } ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "value_or(u_pf_place, 0) == 2" ] },
+            { "math": [ "(value_or(u_pf_settled, 0) == 1) + (value_or(u_pf_based, 0) == 1) > 0" ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_pl_1_n += 1" ] } ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "value_or(u_pf_place, 0) == 3" ] },
+            { "math": [ "(value_or(u_pf_settled, 0) == 1) + (value_or(u_pf_based, 0) == 1) > 0" ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_pl_2_n += 1" ] } ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "value_or(u_pf_place, 0) == 4" ] },
+            { "math": [ "(value_or(u_pf_settled, 0) == 1) + (value_or(u_pf_based, 0) == 1) > 0" ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_pl_3_n += 1" ] } ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "value_or(u_pf_place, 0) == 5" ] },
+            { "math": [ "(value_or(u_pf_settled, 0) == 1) + (value_or(u_pf_based, 0) == 1) > 0" ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_pl_4_n += 1" ] } ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "value_or(u_pf_place, 0) == 6" ] },
+            { "math": [ "(value_or(u_pf_settled, 0) == 1) + (value_or(u_pf_based, 0) == 1) > 0" ] }
+          ]
+        },
+        "then": [ { "math": [ "pf_pl_5_n += 1" ] } ]
+      },
+      {
+        "if": { "and": [ { "math": [ "value_or(u_pf_settled, 0) == 1" ] }, { "math": [ "value_or(u_pf_place, 0) == 0" ] } ] },
+        "then": [ { "math": [ "pf_pl_join_only = 0" ] }, { "run_eocs": "PF_PLACE_found_or_join" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PLACE_tick",
+    "//": "Once a day: how many households each place has; a place with nobody left is abandoned (its slot can hold a new one).",
+    "recurrence": "1 days",
+    "global": true,
+    "condition": { "math": [ "value_or(pf_alife_on, 1) == 1" ] },
+    "effect": [
+      { "math": [ "pf_pl_0_n = 0" ] },
+      { "math": [ "pf_pl_1_n = 0" ] },
+      { "math": [ "pf_pl_2_n = 0" ] },
+      { "math": [ "pf_pl_3_n = 0" ] },
+      { "math": [ "pf_pl_4_n = 0" ] },
+      { "math": [ "pf_pl_5_n = 0" ] },
+      { "run_eocs": "PF_PLACE_count" },
+      {
+        "if": { "math": [ "(value_or(pf_pl_0_alive, 0) == 1) * (pf_pl_0_n == 0)" ] },
+        "then": [
+          { "math": [ "pf_pl_0_alive = 0" ] },
+          { "math": [ "pf_places_abandoned_total = value_or(pf_places_abandoned_total, 0) + 1" ] }
+        ]
+      },
+      {
+        "if": { "math": [ "(value_or(pf_pl_1_alive, 0) == 1) * (pf_pl_1_n == 0)" ] },
+        "then": [
+          { "math": [ "pf_pl_1_alive = 0" ] },
+          { "math": [ "pf_places_abandoned_total = value_or(pf_places_abandoned_total, 0) + 1" ] }
+        ]
+      },
+      {
+        "if": { "math": [ "(value_or(pf_pl_2_alive, 0) == 1) * (pf_pl_2_n == 0)" ] },
+        "then": [
+          { "math": [ "pf_pl_2_alive = 0" ] },
+          { "math": [ "pf_places_abandoned_total = value_or(pf_places_abandoned_total, 0) + 1" ] }
+        ]
+      },
+      {
+        "if": { "math": [ "(value_or(pf_pl_3_alive, 0) == 1) * (pf_pl_3_n == 0)" ] },
+        "then": [
+          { "math": [ "pf_pl_3_alive = 0" ] },
+          { "math": [ "pf_places_abandoned_total = value_or(pf_places_abandoned_total, 0) + 1" ] }
+        ]
+      },
+      {
+        "if": { "math": [ "(value_or(pf_pl_4_alive, 0) == 1) * (pf_pl_4_n == 0)" ] },
+        "then": [
+          { "math": [ "pf_pl_4_alive = 0" ] },
+          { "math": [ "pf_places_abandoned_total = value_or(pf_places_abandoned_total, 0) + 1" ] }
+        ]
+      },
+      {
+        "if": { "math": [ "(value_or(pf_pl_5_alive, 0) == 1) * (pf_pl_5_n == 0)" ] },
+        "then": [
+          { "math": [ "pf_pl_5_alive = 0" ] },
+          { "math": [ "pf_places_abandoned_total = value_or(pf_places_abandoned_total, 0) + 1" ] }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PLACE_near_tick",
+    "//": "Every 10 minutes: walking into a place you didn't know (45 tiles of its heart) introduces it, and it goes on Where to find people.",
+    "recurrence": "10 minutes",
+    "global": true,
+    "condition": {
+      "math": [
+        "value_or(pf_pl_0_alive, 0) + value_or(pf_pl_1_alive, 0) + value_or(pf_pl_2_alive, 0) + value_or(pf_pl_3_alive, 0) + value_or(pf_pl_4_alive, 0) + value_or(pf_pl_5_alive, 0) > 0"
+      ]
+    },
+    "effect": [
+      { "u_location_variable": { "global_val": "pf_pl_av" } },
+      {
+        "if": {
+          "and": [
+            { "math": [ "value_or(pf_pl_0_alive, 0) == 1" ] },
+            { "math": [ "value_or(pf_pl_0_known, 0) == 0" ] },
+            { "math": [ "distance(pf_pl_av, pf_pl_0_at) <= 45" ] }
+          ]
+        },
+        "then": [
+          { "math": [ "pf_pl_0_known = 1" ] },
+          {
+            "if": { "math": [ "pf_pl_0_n <= 1" ] },
+            "then": [
+              {
+                "u_message": "You come to a place someone has made a home of: <global_val:pf_pl_0_name>.  <global_val:pf_pl_0_fname> started it.",
+                "type": "good"
+              }
+            ],
+            "else": [
+              { "math": [ "pf_pl_say_n = pf_pl_0_n" ] },
+              {
+                "u_message": "You come to <global_val:pf_pl_0_name>: <global_val:pf_pl_say_n> households have made a home here.  <global_val:pf_pl_0_fname> started it.",
+                "type": "good"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "value_or(pf_pl_1_alive, 0) == 1" ] },
+            { "math": [ "value_or(pf_pl_1_known, 0) == 0" ] },
+            { "math": [ "distance(pf_pl_av, pf_pl_1_at) <= 45" ] }
+          ]
+        },
+        "then": [
+          { "math": [ "pf_pl_1_known = 1" ] },
+          {
+            "if": { "math": [ "pf_pl_1_n <= 1" ] },
+            "then": [
+              {
+                "u_message": "You come to a place someone has made a home of: <global_val:pf_pl_1_name>.  <global_val:pf_pl_1_fname> started it.",
+                "type": "good"
+              }
+            ],
+            "else": [
+              { "math": [ "pf_pl_say_n = pf_pl_1_n" ] },
+              {
+                "u_message": "You come to <global_val:pf_pl_1_name>: <global_val:pf_pl_say_n> households have made a home here.  <global_val:pf_pl_1_fname> started it.",
+                "type": "good"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "value_or(pf_pl_2_alive, 0) == 1" ] },
+            { "math": [ "value_or(pf_pl_2_known, 0) == 0" ] },
+            { "math": [ "distance(pf_pl_av, pf_pl_2_at) <= 45" ] }
+          ]
+        },
+        "then": [
+          { "math": [ "pf_pl_2_known = 1" ] },
+          {
+            "if": { "math": [ "pf_pl_2_n <= 1" ] },
+            "then": [
+              {
+                "u_message": "You come to a place someone has made a home of: <global_val:pf_pl_2_name>.  <global_val:pf_pl_2_fname> started it.",
+                "type": "good"
+              }
+            ],
+            "else": [
+              { "math": [ "pf_pl_say_n = pf_pl_2_n" ] },
+              {
+                "u_message": "You come to <global_val:pf_pl_2_name>: <global_val:pf_pl_say_n> households have made a home here.  <global_val:pf_pl_2_fname> started it.",
+                "type": "good"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "value_or(pf_pl_3_alive, 0) == 1" ] },
+            { "math": [ "value_or(pf_pl_3_known, 0) == 0" ] },
+            { "math": [ "distance(pf_pl_av, pf_pl_3_at) <= 45" ] }
+          ]
+        },
+        "then": [
+          { "math": [ "pf_pl_3_known = 1" ] },
+          {
+            "if": { "math": [ "pf_pl_3_n <= 1" ] },
+            "then": [
+              {
+                "u_message": "You come to a place someone has made a home of: <global_val:pf_pl_3_name>.  <global_val:pf_pl_3_fname> started it.",
+                "type": "good"
+              }
+            ],
+            "else": [
+              { "math": [ "pf_pl_say_n = pf_pl_3_n" ] },
+              {
+                "u_message": "You come to <global_val:pf_pl_3_name>: <global_val:pf_pl_say_n> households have made a home here.  <global_val:pf_pl_3_fname> started it.",
+                "type": "good"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "value_or(pf_pl_4_alive, 0) == 1" ] },
+            { "math": [ "value_or(pf_pl_4_known, 0) == 0" ] },
+            { "math": [ "distance(pf_pl_av, pf_pl_4_at) <= 45" ] }
+          ]
+        },
+        "then": [
+          { "math": [ "pf_pl_4_known = 1" ] },
+          {
+            "if": { "math": [ "pf_pl_4_n <= 1" ] },
+            "then": [
+              {
+                "u_message": "You come to a place someone has made a home of: <global_val:pf_pl_4_name>.  <global_val:pf_pl_4_fname> started it.",
+                "type": "good"
+              }
+            ],
+            "else": [
+              { "math": [ "pf_pl_say_n = pf_pl_4_n" ] },
+              {
+                "u_message": "You come to <global_val:pf_pl_4_name>: <global_val:pf_pl_say_n> households have made a home here.  <global_val:pf_pl_4_fname> started it.",
+                "type": "good"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": {
+          "and": [
+            { "math": [ "value_or(pf_pl_5_alive, 0) == 1" ] },
+            { "math": [ "value_or(pf_pl_5_known, 0) == 0" ] },
+            { "math": [ "distance(pf_pl_av, pf_pl_5_at) <= 45" ] }
+          ]
+        },
+        "then": [
+          { "math": [ "pf_pl_5_known = 1" ] },
+          {
+            "if": { "math": [ "pf_pl_5_n <= 1" ] },
+            "then": [
+              {
+                "u_message": "You come to a place someone has made a home of: <global_val:pf_pl_5_name>.  <global_val:pf_pl_5_fname> started it.",
+                "type": "good"
+              }
+            ],
+            "else": [
+              { "math": [ "pf_pl_say_n = pf_pl_5_n" ] },
+              {
+                "u_message": "You come to <global_val:pf_pl_5_name>: <global_val:pf_pl_say_n> households have made a home here.  <global_val:pf_pl_5_fname> started it.",
+                "type": "good"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PLACE_list_known",
+    "//": "u = you (Where to find people).  The places people made that you know of, with which way and how many households.",
+    "effect": [
+      { "u_location_variable": { "global_val": "pf_pl_av" } },
+      { "math": [ "pf_pl_shown = 0" ] },
+      {
+        "if": { "and": [ { "math": [ "value_or(pf_pl_0_alive, 0) == 1" ] }, { "math": [ "value_or(pf_pl_0_known, 0) == 1" ] } ] },
+        "then": [
+          { "math": [ "pf_pl_shown += 1" ] },
+          { "math": [ "pf_pl_say_n = pf_pl_0_n" ] },
+          { "math": [ "pf_pl_dx = pf_pl_0_at.x - pf_pl_av.x" ] },
+          { "math": [ "pf_pl_dy = pf_pl_0_at.y - pf_pl_av.y" ] },
+          { "math": [ "pf_pl_mt = floor((max(abs(pf_pl_dx), abs(pf_pl_dy)) + 12) / 24)" ] },
+          { "set_string_var": "", "target_var": { "global_val": "pf_pl_dir_ns" } },
+          { "set_string_var": "", "target_var": { "global_val": "pf_pl_dir_ew" } },
+          {
+            "if": { "math": [ "abs(pf_pl_dy) * 2 >= abs(pf_pl_dx)" ] },
+            "then": [
+              {
+                "if": { "math": [ "pf_pl_dy < 0" ] },
+                "then": [ { "set_string_var": "north", "target_var": { "global_val": "pf_pl_dir_ns" } } ],
+                "else": [ { "set_string_var": "south", "target_var": { "global_val": "pf_pl_dir_ns" } } ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "abs(pf_pl_dx) * 2 >= abs(pf_pl_dy)" ] },
+            "then": [
+              {
+                "if": { "math": [ "pf_pl_dx < 0" ] },
+                "then": [ { "set_string_var": "west", "target_var": { "global_val": "pf_pl_dir_ew" } } ],
+                "else": [ { "set_string_var": "east", "target_var": { "global_val": "pf_pl_dir_ew" } } ]
+              }
+            ]
+          },
+          {
+            "set_string_var": "<global_val:pf_pl_dir_ns><global_val:pf_pl_dir_ew>",
+            "target_var": { "global_val": "pf_pl_dir" },
+            "parse_tags": true
+          },
+          {
+            "set_string_var": "<global_val:pf_pl_say_n> households",
+            "target_var": { "global_val": "pf_pl_hh" },
+            "parse_tags": true
+          },
+          {
+            "if": { "math": [ "pf_pl_say_n == 1" ] },
+            "then": [ { "set_string_var": "one household", "target_var": { "global_val": "pf_pl_hh" } } ]
+          },
+          {
+            "if": { "math": [ "pf_pl_mt < 2" ] },
+            "then": [
+              { "u_message": "<global_val:pf_pl_0_name>, a place people made: right here, <global_val:pf_pl_hh>.", "type": "info" }
+            ],
+            "else": [
+              {
+                "u_message": "<global_val:pf_pl_0_name>, a place people made: about <global_val:pf_pl_mt> map tiles <global_val:pf_pl_dir> of here, <global_val:pf_pl_hh>.",
+                "type": "info"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "math": [ "value_or(pf_pl_1_alive, 0) == 1" ] }, { "math": [ "value_or(pf_pl_1_known, 0) == 1" ] } ] },
+        "then": [
+          { "math": [ "pf_pl_shown += 1" ] },
+          { "math": [ "pf_pl_say_n = pf_pl_1_n" ] },
+          { "math": [ "pf_pl_dx = pf_pl_1_at.x - pf_pl_av.x" ] },
+          { "math": [ "pf_pl_dy = pf_pl_1_at.y - pf_pl_av.y" ] },
+          { "math": [ "pf_pl_mt = floor((max(abs(pf_pl_dx), abs(pf_pl_dy)) + 12) / 24)" ] },
+          { "set_string_var": "", "target_var": { "global_val": "pf_pl_dir_ns" } },
+          { "set_string_var": "", "target_var": { "global_val": "pf_pl_dir_ew" } },
+          {
+            "if": { "math": [ "abs(pf_pl_dy) * 2 >= abs(pf_pl_dx)" ] },
+            "then": [
+              {
+                "if": { "math": [ "pf_pl_dy < 0" ] },
+                "then": [ { "set_string_var": "north", "target_var": { "global_val": "pf_pl_dir_ns" } } ],
+                "else": [ { "set_string_var": "south", "target_var": { "global_val": "pf_pl_dir_ns" } } ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "abs(pf_pl_dx) * 2 >= abs(pf_pl_dy)" ] },
+            "then": [
+              {
+                "if": { "math": [ "pf_pl_dx < 0" ] },
+                "then": [ { "set_string_var": "west", "target_var": { "global_val": "pf_pl_dir_ew" } } ],
+                "else": [ { "set_string_var": "east", "target_var": { "global_val": "pf_pl_dir_ew" } } ]
+              }
+            ]
+          },
+          {
+            "set_string_var": "<global_val:pf_pl_dir_ns><global_val:pf_pl_dir_ew>",
+            "target_var": { "global_val": "pf_pl_dir" },
+            "parse_tags": true
+          },
+          {
+            "set_string_var": "<global_val:pf_pl_say_n> households",
+            "target_var": { "global_val": "pf_pl_hh" },
+            "parse_tags": true
+          },
+          {
+            "if": { "math": [ "pf_pl_say_n == 1" ] },
+            "then": [ { "set_string_var": "one household", "target_var": { "global_val": "pf_pl_hh" } } ]
+          },
+          {
+            "if": { "math": [ "pf_pl_mt < 2" ] },
+            "then": [
+              { "u_message": "<global_val:pf_pl_1_name>, a place people made: right here, <global_val:pf_pl_hh>.", "type": "info" }
+            ],
+            "else": [
+              {
+                "u_message": "<global_val:pf_pl_1_name>, a place people made: about <global_val:pf_pl_mt> map tiles <global_val:pf_pl_dir> of here, <global_val:pf_pl_hh>.",
+                "type": "info"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "math": [ "value_or(pf_pl_2_alive, 0) == 1" ] }, { "math": [ "value_or(pf_pl_2_known, 0) == 1" ] } ] },
+        "then": [
+          { "math": [ "pf_pl_shown += 1" ] },
+          { "math": [ "pf_pl_say_n = pf_pl_2_n" ] },
+          { "math": [ "pf_pl_dx = pf_pl_2_at.x - pf_pl_av.x" ] },
+          { "math": [ "pf_pl_dy = pf_pl_2_at.y - pf_pl_av.y" ] },
+          { "math": [ "pf_pl_mt = floor((max(abs(pf_pl_dx), abs(pf_pl_dy)) + 12) / 24)" ] },
+          { "set_string_var": "", "target_var": { "global_val": "pf_pl_dir_ns" } },
+          { "set_string_var": "", "target_var": { "global_val": "pf_pl_dir_ew" } },
+          {
+            "if": { "math": [ "abs(pf_pl_dy) * 2 >= abs(pf_pl_dx)" ] },
+            "then": [
+              {
+                "if": { "math": [ "pf_pl_dy < 0" ] },
+                "then": [ { "set_string_var": "north", "target_var": { "global_val": "pf_pl_dir_ns" } } ],
+                "else": [ { "set_string_var": "south", "target_var": { "global_val": "pf_pl_dir_ns" } } ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "abs(pf_pl_dx) * 2 >= abs(pf_pl_dy)" ] },
+            "then": [
+              {
+                "if": { "math": [ "pf_pl_dx < 0" ] },
+                "then": [ { "set_string_var": "west", "target_var": { "global_val": "pf_pl_dir_ew" } } ],
+                "else": [ { "set_string_var": "east", "target_var": { "global_val": "pf_pl_dir_ew" } } ]
+              }
+            ]
+          },
+          {
+            "set_string_var": "<global_val:pf_pl_dir_ns><global_val:pf_pl_dir_ew>",
+            "target_var": { "global_val": "pf_pl_dir" },
+            "parse_tags": true
+          },
+          {
+            "set_string_var": "<global_val:pf_pl_say_n> households",
+            "target_var": { "global_val": "pf_pl_hh" },
+            "parse_tags": true
+          },
+          {
+            "if": { "math": [ "pf_pl_say_n == 1" ] },
+            "then": [ { "set_string_var": "one household", "target_var": { "global_val": "pf_pl_hh" } } ]
+          },
+          {
+            "if": { "math": [ "pf_pl_mt < 2" ] },
+            "then": [
+              { "u_message": "<global_val:pf_pl_2_name>, a place people made: right here, <global_val:pf_pl_hh>.", "type": "info" }
+            ],
+            "else": [
+              {
+                "u_message": "<global_val:pf_pl_2_name>, a place people made: about <global_val:pf_pl_mt> map tiles <global_val:pf_pl_dir> of here, <global_val:pf_pl_hh>.",
+                "type": "info"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "math": [ "value_or(pf_pl_3_alive, 0) == 1" ] }, { "math": [ "value_or(pf_pl_3_known, 0) == 1" ] } ] },
+        "then": [
+          { "math": [ "pf_pl_shown += 1" ] },
+          { "math": [ "pf_pl_say_n = pf_pl_3_n" ] },
+          { "math": [ "pf_pl_dx = pf_pl_3_at.x - pf_pl_av.x" ] },
+          { "math": [ "pf_pl_dy = pf_pl_3_at.y - pf_pl_av.y" ] },
+          { "math": [ "pf_pl_mt = floor((max(abs(pf_pl_dx), abs(pf_pl_dy)) + 12) / 24)" ] },
+          { "set_string_var": "", "target_var": { "global_val": "pf_pl_dir_ns" } },
+          { "set_string_var": "", "target_var": { "global_val": "pf_pl_dir_ew" } },
+          {
+            "if": { "math": [ "abs(pf_pl_dy) * 2 >= abs(pf_pl_dx)" ] },
+            "then": [
+              {
+                "if": { "math": [ "pf_pl_dy < 0" ] },
+                "then": [ { "set_string_var": "north", "target_var": { "global_val": "pf_pl_dir_ns" } } ],
+                "else": [ { "set_string_var": "south", "target_var": { "global_val": "pf_pl_dir_ns" } } ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "abs(pf_pl_dx) * 2 >= abs(pf_pl_dy)" ] },
+            "then": [
+              {
+                "if": { "math": [ "pf_pl_dx < 0" ] },
+                "then": [ { "set_string_var": "west", "target_var": { "global_val": "pf_pl_dir_ew" } } ],
+                "else": [ { "set_string_var": "east", "target_var": { "global_val": "pf_pl_dir_ew" } } ]
+              }
+            ]
+          },
+          {
+            "set_string_var": "<global_val:pf_pl_dir_ns><global_val:pf_pl_dir_ew>",
+            "target_var": { "global_val": "pf_pl_dir" },
+            "parse_tags": true
+          },
+          {
+            "set_string_var": "<global_val:pf_pl_say_n> households",
+            "target_var": { "global_val": "pf_pl_hh" },
+            "parse_tags": true
+          },
+          {
+            "if": { "math": [ "pf_pl_say_n == 1" ] },
+            "then": [ { "set_string_var": "one household", "target_var": { "global_val": "pf_pl_hh" } } ]
+          },
+          {
+            "if": { "math": [ "pf_pl_mt < 2" ] },
+            "then": [
+              { "u_message": "<global_val:pf_pl_3_name>, a place people made: right here, <global_val:pf_pl_hh>.", "type": "info" }
+            ],
+            "else": [
+              {
+                "u_message": "<global_val:pf_pl_3_name>, a place people made: about <global_val:pf_pl_mt> map tiles <global_val:pf_pl_dir> of here, <global_val:pf_pl_hh>.",
+                "type": "info"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "math": [ "value_or(pf_pl_4_alive, 0) == 1" ] }, { "math": [ "value_or(pf_pl_4_known, 0) == 1" ] } ] },
+        "then": [
+          { "math": [ "pf_pl_shown += 1" ] },
+          { "math": [ "pf_pl_say_n = pf_pl_4_n" ] },
+          { "math": [ "pf_pl_dx = pf_pl_4_at.x - pf_pl_av.x" ] },
+          { "math": [ "pf_pl_dy = pf_pl_4_at.y - pf_pl_av.y" ] },
+          { "math": [ "pf_pl_mt = floor((max(abs(pf_pl_dx), abs(pf_pl_dy)) + 12) / 24)" ] },
+          { "set_string_var": "", "target_var": { "global_val": "pf_pl_dir_ns" } },
+          { "set_string_var": "", "target_var": { "global_val": "pf_pl_dir_ew" } },
+          {
+            "if": { "math": [ "abs(pf_pl_dy) * 2 >= abs(pf_pl_dx)" ] },
+            "then": [
+              {
+                "if": { "math": [ "pf_pl_dy < 0" ] },
+                "then": [ { "set_string_var": "north", "target_var": { "global_val": "pf_pl_dir_ns" } } ],
+                "else": [ { "set_string_var": "south", "target_var": { "global_val": "pf_pl_dir_ns" } } ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "abs(pf_pl_dx) * 2 >= abs(pf_pl_dy)" ] },
+            "then": [
+              {
+                "if": { "math": [ "pf_pl_dx < 0" ] },
+                "then": [ { "set_string_var": "west", "target_var": { "global_val": "pf_pl_dir_ew" } } ],
+                "else": [ { "set_string_var": "east", "target_var": { "global_val": "pf_pl_dir_ew" } } ]
+              }
+            ]
+          },
+          {
+            "set_string_var": "<global_val:pf_pl_dir_ns><global_val:pf_pl_dir_ew>",
+            "target_var": { "global_val": "pf_pl_dir" },
+            "parse_tags": true
+          },
+          {
+            "set_string_var": "<global_val:pf_pl_say_n> households",
+            "target_var": { "global_val": "pf_pl_hh" },
+            "parse_tags": true
+          },
+          {
+            "if": { "math": [ "pf_pl_say_n == 1" ] },
+            "then": [ { "set_string_var": "one household", "target_var": { "global_val": "pf_pl_hh" } } ]
+          },
+          {
+            "if": { "math": [ "pf_pl_mt < 2" ] },
+            "then": [
+              { "u_message": "<global_val:pf_pl_4_name>, a place people made: right here, <global_val:pf_pl_hh>.", "type": "info" }
+            ],
+            "else": [
+              {
+                "u_message": "<global_val:pf_pl_4_name>, a place people made: about <global_val:pf_pl_mt> map tiles <global_val:pf_pl_dir> of here, <global_val:pf_pl_hh>.",
+                "type": "info"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "if": { "and": [ { "math": [ "value_or(pf_pl_5_alive, 0) == 1" ] }, { "math": [ "value_or(pf_pl_5_known, 0) == 1" ] } ] },
+        "then": [
+          { "math": [ "pf_pl_shown += 1" ] },
+          { "math": [ "pf_pl_say_n = pf_pl_5_n" ] },
+          { "math": [ "pf_pl_dx = pf_pl_5_at.x - pf_pl_av.x" ] },
+          { "math": [ "pf_pl_dy = pf_pl_5_at.y - pf_pl_av.y" ] },
+          { "math": [ "pf_pl_mt = floor((max(abs(pf_pl_dx), abs(pf_pl_dy)) + 12) / 24)" ] },
+          { "set_string_var": "", "target_var": { "global_val": "pf_pl_dir_ns" } },
+          { "set_string_var": "", "target_var": { "global_val": "pf_pl_dir_ew" } },
+          {
+            "if": { "math": [ "abs(pf_pl_dy) * 2 >= abs(pf_pl_dx)" ] },
+            "then": [
+              {
+                "if": { "math": [ "pf_pl_dy < 0" ] },
+                "then": [ { "set_string_var": "north", "target_var": { "global_val": "pf_pl_dir_ns" } } ],
+                "else": [ { "set_string_var": "south", "target_var": { "global_val": "pf_pl_dir_ns" } } ]
+              }
+            ]
+          },
+          {
+            "if": { "math": [ "abs(pf_pl_dx) * 2 >= abs(pf_pl_dy)" ] },
+            "then": [
+              {
+                "if": { "math": [ "pf_pl_dx < 0" ] },
+                "then": [ { "set_string_var": "west", "target_var": { "global_val": "pf_pl_dir_ew" } } ],
+                "else": [ { "set_string_var": "east", "target_var": { "global_val": "pf_pl_dir_ew" } } ]
+              }
+            ]
+          },
+          {
+            "set_string_var": "<global_val:pf_pl_dir_ns><global_val:pf_pl_dir_ew>",
+            "target_var": { "global_val": "pf_pl_dir" },
+            "parse_tags": true
+          },
+          {
+            "set_string_var": "<global_val:pf_pl_say_n> households",
+            "target_var": { "global_val": "pf_pl_hh" },
+            "parse_tags": true
+          },
+          {
+            "if": { "math": [ "pf_pl_say_n == 1" ] },
+            "then": [ { "set_string_var": "one household", "target_var": { "global_val": "pf_pl_hh" } } ]
+          },
+          {
+            "if": { "math": [ "pf_pl_mt < 2" ] },
+            "then": [
+              { "u_message": "<global_val:pf_pl_5_name>, a place people made: right here, <global_val:pf_pl_hh>.", "type": "info" }
+            ],
+            "else": [
+              {
+                "u_message": "<global_val:pf_pl_5_name>, a place people made: about <global_val:pf_pl_mt> map tiles <global_val:pf_pl_dir> of here, <global_val:pf_pl_hh>.",
+                "type": "info"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

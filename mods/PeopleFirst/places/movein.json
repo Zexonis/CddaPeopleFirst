@@ -1,0 +1,533 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PLACE_move_in",
+    "//": "u = you, npc = someone settled (or from a place).  They answer as they would to living with you (warmth 35 and trust 25, or 50 and 15).  You can't leave a household of your own behind.",
+    "effect": [
+      {
+        "if": { "math": [ "(value_or(pf_home_set, 0) == 1) * (value_or(pf_residents_n, 0) > 0)" ] },
+        "then": [ { "u_message": "You have people of your own at home.  You can't just walk out on them.", "type": "info" } ],
+        "else": [
+          { "math": [ "pf_bd_ok = 0" ] },
+          { "run_eocs": "PF_PM_bond_read", "alpha_talker": "npc" },
+          {
+            "if": { "math": [ "(pf_bd_ok == 1) * (pf_bd_ready == 1) == 0" ] },
+            "then": [
+              { "u_message": "<npc_name> glances at the others.  \"We'd have to know you better first.\"", "type": "info" },
+              {
+                "if": { "math": [ "pf_bd_ok == 1" ] },
+                "then": [ { "u_message": "<global_val:pf_bd_bar> <global_val:pf_bd_word>  <global_val:pf_bd_hint>", "type": "info" } ]
+              }
+            ],
+            "else": [ { "run_eocs": "PF_PLACE_move_in_yes" } ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PLACE_move_in_yes",
+    "//": "u = you, npc = the one who said yes.  Home becomes their place; its people become the town's households; their leader is chief.",
+    "effect": [
+      { "math": [ "pf_wh_ok = 0" ] },
+      { "run_eocs": "PF_WHERE_get_lead", "alpha_talker": "npc" },
+      { "math": [ "pf_mi_n = 0" ] },
+      { "math": [ "pf_mi_place = 0" ] },
+      { "u_run_npc_eocs": [ "PF_PLACE_host_read" ], "unique_ids": [ { "global_val": "pf_wh_lead" } ], "local": false },
+      { "math": [ "pf_mi_old = value_or(pf_home_set, 0)" ] },
+      { "copy_var": { "global_val": "pf_mi_home" }, "target_var": { "global_val": "pf_home_loc" } },
+      { "math": [ "pf_home_set = 1" ] },
+      { "math": [ "pf_home_since = time('now')" ] },
+      { "run_eocs": "PF_STORES_ensure" },
+      {
+        "if": { "math": [ "pf_mi_place > 0" ] },
+        "then": [ { "run_eocs": "PF_MI_gather" } ],
+        "else": [
+          { "math": [ "pf_mi_n = 1" ] },
+          { "copy_var": { "global_val": "pf_wh_lead" }, "target_var": { "global_val": "pf_mi_l_0" } }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_mi_n > 0" ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_mi_l_0" }, "target_var": { "global_val": "pf_inv_lead" } },
+          {
+            "u_run_npc_eocs": [
+              {
+                "id": "PF_PLACE_house_0",
+                "effect": [ { "copy_var": { "u_val": "pf_home" }, "target_var": { "global_val": "pf_tj_house" } } ]
+              }
+            ],
+            "unique_ids": [ { "global_val": "pf_mi_l_0" } ],
+            "local": false
+          },
+          { "math": [ "pf_hm_i = 0" ] },
+          { "run_eocs": "PF_HOME_unroster_i", "condition": { "math": [ "pf_hm_i < pf_band_n" ] }, "iterations": 1000 },
+          {
+            "if": { "math": [ "pf_households_n == 0" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_0" } } ]
+          },
+          {
+            "if": { "math": [ "pf_households_n == 1" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_1" } } ]
+          },
+          {
+            "if": { "math": [ "pf_households_n == 2" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_2" } } ]
+          },
+          {
+            "if": { "math": [ "pf_households_n == 3" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_3" } } ]
+          },
+          {
+            "if": { "math": [ "pf_households_n == 4" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_4" } } ]
+          },
+          {
+            "if": { "math": [ "pf_households_n == 5" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_5" } } ]
+          },
+          {
+            "if": { "math": [ "pf_households_n == 6" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_6" } } ]
+          },
+          {
+            "if": { "math": [ "pf_households_n == 7" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_7" } } ]
+          },
+          { "math": [ "pf_households_n = value_or(pf_households_n, 0) + 1" ] },
+          { "math": [ "pf_tj_hh = pf_households_n" ] },
+          {
+            "u_run_npc_eocs": [ "PF_TOWN_join_band" ],
+            "unique_ids": [ { "global_val": "pf_mi_l_0" } ],
+            "local": false
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_mi_n > 1" ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_mi_l_1" }, "target_var": { "global_val": "pf_inv_lead" } },
+          {
+            "u_run_npc_eocs": [
+              {
+                "id": "PF_PLACE_house_1",
+                "effect": [ { "copy_var": { "u_val": "pf_home" }, "target_var": { "global_val": "pf_tj_house" } } ]
+              }
+            ],
+            "unique_ids": [ { "global_val": "pf_mi_l_1" } ],
+            "local": false
+          },
+          { "math": [ "pf_hm_i = 0" ] },
+          { "run_eocs": "PF_HOME_unroster_i", "condition": { "math": [ "pf_hm_i < pf_band_n" ] }, "iterations": 1000 },
+          {
+            "if": { "math": [ "pf_households_n == 0" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_0" } } ]
+          },
+          {
+            "if": { "math": [ "pf_households_n == 1" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_1" } } ]
+          },
+          {
+            "if": { "math": [ "pf_households_n == 2" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_2" } } ]
+          },
+          {
+            "if": { "math": [ "pf_households_n == 3" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_3" } } ]
+          },
+          {
+            "if": { "math": [ "pf_households_n == 4" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_4" } } ]
+          },
+          {
+            "if": { "math": [ "pf_households_n == 5" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_5" } } ]
+          },
+          {
+            "if": { "math": [ "pf_households_n == 6" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_6" } } ]
+          },
+          {
+            "if": { "math": [ "pf_households_n == 7" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_7" } } ]
+          },
+          { "math": [ "pf_households_n = value_or(pf_households_n, 0) + 1" ] },
+          { "math": [ "pf_tj_hh = pf_households_n" ] },
+          {
+            "u_run_npc_eocs": [ "PF_TOWN_join_band" ],
+            "unique_ids": [ { "global_val": "pf_mi_l_1" } ],
+            "local": false
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_mi_n > 2" ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_mi_l_2" }, "target_var": { "global_val": "pf_inv_lead" } },
+          {
+            "u_run_npc_eocs": [
+              {
+                "id": "PF_PLACE_house_2",
+                "effect": [ { "copy_var": { "u_val": "pf_home" }, "target_var": { "global_val": "pf_tj_house" } } ]
+              }
+            ],
+            "unique_ids": [ { "global_val": "pf_mi_l_2" } ],
+            "local": false
+          },
+          { "math": [ "pf_hm_i = 0" ] },
+          { "run_eocs": "PF_HOME_unroster_i", "condition": { "math": [ "pf_hm_i < pf_band_n" ] }, "iterations": 1000 },
+          {
+            "if": { "math": [ "pf_households_n == 0" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_0" } } ]
+          },
+          {
+            "if": { "math": [ "pf_households_n == 1" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_1" } } ]
+          },
+          {
+            "if": { "math": [ "pf_households_n == 2" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_2" } } ]
+          },
+          {
+            "if": { "math": [ "pf_households_n == 3" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_3" } } ]
+          },
+          {
+            "if": { "math": [ "pf_households_n == 4" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_4" } } ]
+          },
+          {
+            "if": { "math": [ "pf_households_n == 5" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_5" } } ]
+          },
+          {
+            "if": { "math": [ "pf_households_n == 6" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_6" } } ]
+          },
+          {
+            "if": { "math": [ "pf_households_n == 7" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_7" } } ]
+          },
+          { "math": [ "pf_households_n = value_or(pf_households_n, 0) + 1" ] },
+          { "math": [ "pf_tj_hh = pf_households_n" ] },
+          {
+            "u_run_npc_eocs": [ "PF_TOWN_join_band" ],
+            "unique_ids": [ { "global_val": "pf_mi_l_2" } ],
+            "local": false
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_mi_n > 3" ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_mi_l_3" }, "target_var": { "global_val": "pf_inv_lead" } },
+          {
+            "u_run_npc_eocs": [
+              {
+                "id": "PF_PLACE_house_3",
+                "effect": [ { "copy_var": { "u_val": "pf_home" }, "target_var": { "global_val": "pf_tj_house" } } ]
+              }
+            ],
+            "unique_ids": [ { "global_val": "pf_mi_l_3" } ],
+            "local": false
+          },
+          { "math": [ "pf_hm_i = 0" ] },
+          { "run_eocs": "PF_HOME_unroster_i", "condition": { "math": [ "pf_hm_i < pf_band_n" ] }, "iterations": 1000 },
+          {
+            "if": { "math": [ "pf_households_n == 0" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_0" } } ]
+          },
+          {
+            "if": { "math": [ "pf_households_n == 1" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_1" } } ]
+          },
+          {
+            "if": { "math": [ "pf_households_n == 2" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_2" } } ]
+          },
+          {
+            "if": { "math": [ "pf_households_n == 3" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_3" } } ]
+          },
+          {
+            "if": { "math": [ "pf_households_n == 4" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_4" } } ]
+          },
+          {
+            "if": { "math": [ "pf_households_n == 5" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_5" } } ]
+          },
+          {
+            "if": { "math": [ "pf_households_n == 6" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_6" } } ]
+          },
+          {
+            "if": { "math": [ "pf_households_n == 7" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_7" } } ]
+          },
+          { "math": [ "pf_households_n = value_or(pf_households_n, 0) + 1" ] },
+          { "math": [ "pf_tj_hh = pf_households_n" ] },
+          {
+            "u_run_npc_eocs": [ "PF_TOWN_join_band" ],
+            "unique_ids": [ { "global_val": "pf_mi_l_3" } ],
+            "local": false
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_mi_n > 4" ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_mi_l_4" }, "target_var": { "global_val": "pf_inv_lead" } },
+          {
+            "u_run_npc_eocs": [
+              {
+                "id": "PF_PLACE_house_4",
+                "effect": [ { "copy_var": { "u_val": "pf_home" }, "target_var": { "global_val": "pf_tj_house" } } ]
+              }
+            ],
+            "unique_ids": [ { "global_val": "pf_mi_l_4" } ],
+            "local": false
+          },
+          { "math": [ "pf_hm_i = 0" ] },
+          { "run_eocs": "PF_HOME_unroster_i", "condition": { "math": [ "pf_hm_i < pf_band_n" ] }, "iterations": 1000 },
+          {
+            "if": { "math": [ "pf_households_n == 0" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_0" } } ]
+          },
+          {
+            "if": { "math": [ "pf_households_n == 1" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_1" } } ]
+          },
+          {
+            "if": { "math": [ "pf_households_n == 2" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_2" } } ]
+          },
+          {
+            "if": { "math": [ "pf_households_n == 3" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_3" } } ]
+          },
+          {
+            "if": { "math": [ "pf_households_n == 4" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_4" } } ]
+          },
+          {
+            "if": { "math": [ "pf_households_n == 5" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_5" } } ]
+          },
+          {
+            "if": { "math": [ "pf_households_n == 6" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_6" } } ]
+          },
+          {
+            "if": { "math": [ "pf_households_n == 7" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_7" } } ]
+          },
+          { "math": [ "pf_households_n = value_or(pf_households_n, 0) + 1" ] },
+          { "math": [ "pf_tj_hh = pf_households_n" ] },
+          {
+            "u_run_npc_eocs": [ "PF_TOWN_join_band" ],
+            "unique_ids": [ { "global_val": "pf_mi_l_4" } ],
+            "local": false
+          }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_mi_n > 5" ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_mi_l_5" }, "target_var": { "global_val": "pf_inv_lead" } },
+          {
+            "u_run_npc_eocs": [
+              {
+                "id": "PF_PLACE_house_5",
+                "effect": [ { "copy_var": { "u_val": "pf_home" }, "target_var": { "global_val": "pf_tj_house" } } ]
+              }
+            ],
+            "unique_ids": [ { "global_val": "pf_mi_l_5" } ],
+            "local": false
+          },
+          { "math": [ "pf_hm_i = 0" ] },
+          { "run_eocs": "PF_HOME_unroster_i", "condition": { "math": [ "pf_hm_i < pf_band_n" ] }, "iterations": 1000 },
+          {
+            "if": { "math": [ "pf_households_n == 0" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_0" } } ]
+          },
+          {
+            "if": { "math": [ "pf_households_n == 1" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_1" } } ]
+          },
+          {
+            "if": { "math": [ "pf_households_n == 2" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_2" } } ]
+          },
+          {
+            "if": { "math": [ "pf_households_n == 3" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_3" } } ]
+          },
+          {
+            "if": { "math": [ "pf_households_n == 4" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_4" } } ]
+          },
+          {
+            "if": { "math": [ "pf_households_n == 5" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_5" } } ]
+          },
+          {
+            "if": { "math": [ "pf_households_n == 6" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_6" } } ]
+          },
+          {
+            "if": { "math": [ "pf_households_n == 7" ] },
+            "then": [ { "copy_var": { "global_val": "pf_tj_house" }, "target_var": { "global_val": "pf_house_7" } } ]
+          },
+          { "math": [ "pf_households_n = value_or(pf_households_n, 0) + 1" ] },
+          { "math": [ "pf_tj_hh = pf_households_n" ] },
+          {
+            "u_run_npc_eocs": [ "PF_TOWN_join_band" ],
+            "unique_ids": [ { "global_val": "pf_mi_l_5" } ],
+            "local": false
+          }
+        ]
+      },
+      { "math": [ "pf_chief_set = 1" ] },
+      { "copy_var": { "global_val": "pf_wh_lead" }, "target_var": { "global_val": "pf_chief_uid" } },
+      { "copy_var": { "global_val": "pf_mi_lname" }, "target_var": { "global_val": "pf_chief_name" } },
+      {
+        "if": { "math": [ "value_or(pf_town_named, 0) == 0" ] },
+        "then": [
+          { "copy_var": { "global_val": "pf_mi_pname" }, "target_var": { "global_val": "pf_town_name" } },
+          { "math": [ "pf_town_named = 1" ] }
+        ]
+      },
+      {
+        "if": { "math": [ "pf_mi_place == 1" ] },
+        "then": [ { "math": [ "pf_pl_0_alive = 0" ] }, { "math": [ "pf_pl_0_yours = 1" ] } ]
+      },
+      {
+        "if": { "math": [ "pf_mi_place == 2" ] },
+        "then": [ { "math": [ "pf_pl_1_alive = 0" ] }, { "math": [ "pf_pl_1_yours = 1" ] } ]
+      },
+      {
+        "if": { "math": [ "pf_mi_place == 3" ] },
+        "then": [ { "math": [ "pf_pl_2_alive = 0" ] }, { "math": [ "pf_pl_2_yours = 1" ] } ]
+      },
+      {
+        "if": { "math": [ "pf_mi_place == 4" ] },
+        "then": [ { "math": [ "pf_pl_3_alive = 0" ] }, { "math": [ "pf_pl_3_yours = 1" ] } ]
+      },
+      {
+        "if": { "math": [ "pf_mi_place == 5" ] },
+        "then": [ { "math": [ "pf_pl_4_alive = 0" ] }, { "math": [ "pf_pl_4_yours = 1" ] } ]
+      },
+      {
+        "if": { "math": [ "pf_mi_place == 6" ] },
+        "then": [ { "math": [ "pf_pl_5_alive = 0" ] }, { "math": [ "pf_pl_5_yours = 1" ] } ]
+      },
+      { "if": { "math": [ "value_or(pf_tv_on, 0) == 1" ] }, "then": [ { "math": [ "pf_tv_on = 0" ] } ] },
+      { "math": [ "pf_home_host = 1" ] },
+      { "math": [ "pf_moved_in_total = value_or(pf_moved_in_total, 0) + 1" ] },
+      { "math": [ "pf_m_str_in = 70" ] },
+      { "run_eocs": "PF_MK_welcomed", "alpha_talker": "npc", "beta_talker": "avatar" },
+      {
+        "u_message": "<global_val:pf_mi_lname> shows you a corner that's yours.  \"You pull your weight, and we look after you.\"  You live at <global_val:pf_mi_pname> now, and <global_val:pf_mi_lname> runs the place.",
+        "type": "good"
+      },
+      {
+        "if": { "math": [ "pf_mi_old == 1" ] },
+        "then": [ { "u_message": "The old place isn't home anymore.", "type": "info" } ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_PLACE_host_read",
+    "//": "u = the host band's leader: where home will be, what it's called, and whether it's a place.",
+    "effect": [
+      { "set_string_var": "<u_name>", "target_var": { "global_val": "pf_mi_lname" }, "parse_tags": true },
+      { "set_string_var": "<u_name>'s place", "target_var": { "global_val": "pf_mi_pname" }, "parse_tags": true },
+      { "math": [ "pf_mi_place = value_or(u_pf_place, 0)" ] },
+      {
+        "if": { "math": [ "has_var(u_pf_home)" ] },
+        "then": [ { "copy_var": { "u_val": "pf_home" }, "target_var": { "global_val": "pf_mi_home" } } ],
+        "else": [ { "copy_var": { "u_val": "pf_vpos" }, "target_var": { "global_val": "pf_mi_home" } } ]
+      },
+      {
+        "if": { "math": [ "pf_mi_place > 0" ] },
+        "then": [
+          { "copy_var": { "u_val": "pf_place_at" }, "target_var": { "global_val": "pf_mi_home" } },
+          { "copy_var": { "u_val": "pf_place_name" }, "target_var": { "global_val": "pf_mi_pname" } }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_MI_gather",
+    "//": "Every band of the place you're moving into (up to 6), into pf_mi_l_<j>.",
+    "effect": [
+      { "math": [ "pf_pl_i = 0" ] },
+      {
+        "run_eocs": "PF_MI_gather_i",
+        "condition": { "math": [ "pf_pl_i < value_or(pf_band_n, 0)" ] },
+        "iterations": 1000
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_MI_gather_i",
+    "effect": [
+      { "set_string_var": "pf_slot_<global_val:pf_pl_i>", "target_var": { "context_val": "ref" }, "parse_tags": true },
+      {
+        "if": { "not": { "compare_string": [ { "var_val": "ref" }, "none" ] } },
+        "then": [ { "u_run_npc_eocs": [ "PF_MI_gather_one" ], "unique_ids": [ { "var_val": "ref" } ], "local": false } ]
+      },
+      { "math": [ "pf_pl_i += 1" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "PF_MI_gather_one",
+    "condition": { "math": [ "value_or(u_pf_is_leader, 0) == 1" ] },
+    "effect": [
+      {
+        "if": {
+          "and": [
+            { "math": [ "pf_mi_place > 0" ] },
+            { "math": [ "value_or(u_pf_place, 0) == pf_mi_place" ] },
+            { "math": [ "pf_mi_n < 6" ] },
+            { "math": [ "(value_or(u_pf_settled, 0) == 1) + (value_or(u_pf_based, 0) == 1) > 0" ] }
+          ]
+        },
+        "then": [
+          { "math": [ "pf_mi_n += 1" ] },
+          {
+            "if": { "math": [ "pf_mi_n == 1" ] },
+            "then": [ { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_mi_l_0" } } ]
+          },
+          {
+            "if": { "math": [ "pf_mi_n == 2" ] },
+            "then": [ { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_mi_l_1" } } ]
+          },
+          {
+            "if": { "math": [ "pf_mi_n == 3" ] },
+            "then": [ { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_mi_l_2" } } ]
+          },
+          {
+            "if": { "math": [ "pf_mi_n == 4" ] },
+            "then": [ { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_mi_l_3" } } ]
+          },
+          {
+            "if": { "math": [ "pf_mi_n == 5" ] },
+            "then": [ { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_mi_l_4" } } ]
+          },
+          {
+            "if": { "math": [ "pf_mi_n == 6" ] },
+            "then": [ { "copy_var": { "u_val": "pf_uid" }, "target_var": { "global_val": "pf_mi_l_5" } } ]
+          }
+        ]
+      }
+    ]
+  }
+]

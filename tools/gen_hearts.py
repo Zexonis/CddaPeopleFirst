@@ -768,6 +768,7 @@ files["known.json"] = [
     ], condition=m("has_var(u_pf_uid)")),
     eoc("PF_KNOWN_band_read", [
         m("pf_kb_ok = 1"), {"copy_var": {"u_val": "pf_vpos"}, "target_var": g("pf_kb_v")},
+        m("pf_kb_camp = value_or(u_pf_camp_until, 0) > time('now')"),  # 2026-10-17: bands make camp (gen_home drift, gen_people PF_WHERE)
         {"if": m("has_var(u_pf_goal)"), "then": [{"copy_var": {"u_val": "pf_goal"}, "target_var": g("pf_kb_g")}, m("pf_kb_hg = 1")],
          "else": [m("pf_kb_hg = 0")]},
     ], "u = a band leader (reached by unique id).  The band's position (vpos, its leader's body while on-screen) and goal for word along the road."),
@@ -838,6 +839,7 @@ files["known.json"] = [
                 {"if": m("max(abs(pf_kb_hx), abs(pf_kb_hy)) < 12"), "then": [{"set_string_var": "settling there", "target_var": g("pf_kb_heading")}],
                  "else": [{"set_string_var": "heading <global_val:pf_kb_head>", "target_var": g("pf_kb_heading"), "parse_tags": True}]}],
              "else": [{"set_string_var": "staying put", "target_var": g("pf_kb_heading")}]},
+            {"if": m("value_or(pf_kb_camp, 0) == 1"), "then": [{"set_string_var": "camped there for a while", "target_var": g("pf_kb_heading")}]},
             {"if": m("pf_kb_mt < 2"), "then": [say("Word along the road puts <global_val:pf_kn_name>'s people close by, <global_val:pf_kb_heading>.")],
              "else": [say("Word along the road puts <global_val:pf_kn_name>'s people about <global_val:pf_kb_mt> map tiles <global_val:pf_kb_dir> of here, <global_val:pf_kb_heading>.")]}]},
     ], "u = you, pf_kn_uid = someone you know.  Where you last saw them, from where you stand now; and for someone with a band out of sight, where the band really is (A-Life data)."),

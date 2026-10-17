@@ -162,16 +162,16 @@ footer { margin-top: 56px; padding-top: 16px; border-top: 1px solid var(--line);
       <h1>People First</h1>
       <p class="lede">A mod and a small engine patch set that give the survivors of Cataclysm an inner life. They remember what happened to you and to each other, fall in love and raise families, keep a watch, run a town, and go on living when you aren't looking. This is the full field guide to everything the fork adds.</p>
       <div class="dl" id="download">
-        <a class="dl-btn" href="https://github.com/Zexonis/CddaPeopleFirst/releases/download/v0.8/cdda-0.I-people-first-0.8-windows-x64.zip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>Download for Windows (x64)</a>
-        <p class="meta">v0.8 &middot; zip, 308 MB &middot; 64-bit Windows 10 or 11</p>
+        <a class="dl-btn" href="https://github.com/Zexonis/CddaPeopleFirst/releases/download/v0.9/cdda-0.I-people-first-0.9-windows-x64.zip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>Download for Windows (x64)</a>
+        <p class="meta">v0.9 &middot; zip, 308 MB &middot; 64-bit Windows 10 or 11</p>
         <p>The whole game, ready to play: Cataclysm: DDA 0.I "Ito" with People First built in. Unzip it anywhere, run <code>cataclysm-tiles.exe</code>, and create a world: the mod is already ticked. Windows only for now. On macOS or Linux, the <code>people_first</code> mod still runs on the official 0.I game, without the engine extras.</p>
         <p><a href="https://github.com/Zexonis/CddaPeopleFirst/releases">All releases</a> &middot; <a href="https://github.com/Zexonis/CddaPeopleFirst">Source and engine patches on GitHub</a> &middot; <a href="#feedback">Report a bug</a></p>
       </div>
       <ul class="facts">
         <li><b>2</b>mods: people_first, people_first_engine</li>
         <li><b>25</b>engine patches</li>
-        <li><b>1,112</b>effects on condition</li>
-        <li><b>8</b>versions, v0.1 to v0.8</li>
+        <li><b>1,148</b>effects on condition</li>
+        <li><b>9</b>versions, v0.1 to v0.9</li>
         <li><b>183</b>game days in the full test run</li>
       </ul>
     </div>
@@ -197,6 +197,7 @@ footer { margin-top: 56px; padding-top: 16px; border-top: 1px solid var(--line);
       <li><a href="#keep">v0.6 The Keep</a></li>
       <li><a href="#away">v0.7 Open threads</a></li>
       <li><a href="#house">v0.8 Housekeeping and courting</a></li>
+      <li><a href="#lives">v0.9 Their own lives</a></li>
       <li><a href="#engine">The engine patches</a></li>
       <li><a href="#settings">Settings</a></li>
       <li><a href="#compat">Compatibility</a></li>
@@ -241,7 +242,7 @@ footer { margin-top: 56px; padding-top: 16px; border-top: 1px solid var(--line);
 
 <section id="install">
   <h2>Getting started</h2>
-  <div class="note"><strong>To play on Windows (x64):</strong> <a href="https://github.com/Zexonis/CddaPeopleFirst/releases/download/v0.8/cdda-0.I-people-first-0.8-windows-x64.zip">download the zip</a>, unzip it anywhere, and run <code>cataclysm-tiles.exe</code>. It opens on the campfire title. Choose New Game, then Create World: People First and People First: Engine are already in the world's mod list. The Evacuee scenario is the one the mod was tested with. Press <code>,</code> in game to open the People menu.</div>
+  <div class="note"><strong>To play on Windows (x64):</strong> <a href="https://github.com/Zexonis/CddaPeopleFirst/releases/download/v0.9/cdda-0.I-people-first-0.9-windows-x64.zip">download the zip</a>, unzip it anywhere, and run <code>cataclysm-tiles.exe</code>. It opens on the campfire title. Choose New Game, then Create World: People First and People First: Engine are already in the world's mod list. The Evacuee scenario is the one the mod was tested with. Press <code>,</code> in game to open the People menu.</div>
   <p>The download is the official 0.I "Ito" game with four changes: the executable is built from the 0.I source (commit <code>27939e2</code>) with the fork's 25 patches; both mods are in <code>data/mods/</code>; new worlds include them by default; and the People key and title screen are installed. Other mods and existing 0.I saves work as in the official build. It has no saves or settings of its own, so keep it in a separate folder from any other copy of the game. The first start takes a little longer while the game builds its data cache.</p>
   <p>People First has two parts:</p>
   <ul>
@@ -327,10 +328,11 @@ footer { margin-top: 56px; padding-top: 16px; border-top: 1px solid var(--line);
   <div class="tbl"><table>
     <thead><tr><th>Screen</th><th>What it shows</th></tr></thead>
     <tbody>
-      <tr><td><strong>People nearby</strong></td><td>Everyone within about 60 tiles, with distance and what you can tell: <em>a stranger</em>, <em>travels with a band</em>, <em>lives with you</em>, <em>your sweetheart</em>, <em>married to you</em>, <em>your child, grown</em>, <em>a baby, in your arms</em>. Pick someone to open their person screen.</td></tr>
+      <tr><td><strong>People nearby</strong></td><td>Everyone within about 60 tiles, with distance and what you can tell: <em>a stranger</em>, <em>travels with a band</em>, <em>lives with you</em>, <em>your sweetheart</em>, <em>married to you</em>, <em>your child, grown</em>, <em>a baby, in your arms</em>. Grown-ups who don't live with you show how close they are to a yes, as a bar from <code>[-----]</code> to <code>[#####]</code>. Pick someone to open their person screen.</td></tr>
       <tr><td><strong>People you know</strong></td><td>Everyone you've met: how you see them, how long since anything happened, who is gone, where you last saw them ("28 steps west of here, within the hour"), and the word along the road about their band ("close by, heading west").</td></tr>
       <tr><td><strong>Who is with whom</strong></td><td>The web: couples, families, friends and rivals, as far as you know.</td></tr>
       <tr><td><strong>Journal</strong></td><td>The moments you remember, newest first.</td></tr>
+      <tr><td><strong>Where to find people</strong></td><td>Every band that told you where it will be (how far, which way, for how many more days, each marked on your map), and the places people have made that you know of.</td></tr>
       <tr><td><strong>Home</strong></td><td>Everything about your place: see <a href="#homemenu">the Home menu</a>.</td></tr>
       <tr><td><strong>Settings</strong></td><td>See <a href="#settings">Settings</a>.</td></tr>
     </tbody>
@@ -356,7 +358,11 @@ footer { margin-top: 56px; padding-top: 16px; border-top: 1px solid var(--line);
       <tr><td class="k">u / d</td><td>Pick them up, Set them down</td><td>Carry a baby (4 kg of your carry weight); set them down, or hand them back to their mother or guardian.</td></tr>
       <tr><td class="k">o / g</td><td>Take their hand, Let go</td><td>A toddler stays at your side until you let go.</td></tr>
       <tr><td class="k">s</td><td>Teach them something</td><td>Show a child a skill you know better. Once a day.</td></tr>
-      <tr><td class="k">v</td><td>Ask them to come live with you</td><td>They answer from their own heart; if they travel with a band, the whole band comes.</td></tr>
+      <tr><td class="k">v</td><td>Ask them to come live with you</td><td>They answer from their own heart; if they travel with a band, the whole band comes. Its description shows where you stand and what would help.</td></tr>
+      <tr><td class="k">k</td><td>Ask where they're headed</td><td>Where their people will be over the next couple of weeks: their home, their place, or a camp they make. It goes on your map.</td></tr>
+      <tr><td class="k">j</td><td>Ask to travel with them</td><td>Go where their band goes; their leader decides the road. A smaller ask than living together.</td></tr>
+      <tr><td class="k">q</td><td>Part ways with them</td><td>Go your own way; they tell you where to find them.</td></tr>
+      <tr><td class="k">z</td><td>Ask to live with them</td><td>For someone settled or from a place: you move in with them.</td></tr>
       <tr><td class="k">b</td><td>Ask them to take a different job</td><td>Cook, guard, forager, tinkerer, carer: the next one in line.</td></tr>
       <tr><td class="k">i</td><td>What do I know about them?</td><td>How they seem to see you, how you see them, their quirks as far as you've picked them up, family and partner.</td></tr>
     </tbody>
@@ -521,6 +527,48 @@ footer { margin-top: 56px; padding-top: 16px; border-top: 1px solid var(--line);
   <blockquote class="ingame"><p>Emanuel Ceballos talks it over with the others, and they come back smiling.  "We're tired of walking.  We'll come."</p></blockquote>
 </section>
 
+<section id="lives">
+  <h2>Their own lives <span class="ver">v0.9</span></h2>
+  <p class="standfirst">People make homes of their own, and you don't have to be the one in charge. Travel with a band, find the places people have made, and move in with them.</p>
+  <h3>Getting to know someone, visibly</h3>
+  <p>Everyone who doesn't live with you has a five-step bar: how close they are to saying yes to living with you, read from their own feelings. It shows on People nearby, on their person screen, after every meal, supply run or tending, and with every "not yet", together with what would help: time together if they don't know you yet, or being there for them (tending, supplies, standing with them in a fight) if they like you but don't trust you.</p>
+  <blockquote class="ingame"><p>Where you stand with Lillian Norton: [###--] They like having you around.  A step closer than before.</p><p>[#----] They've started to notice you.  Time together is what they need: eat with them once a day, sit by the fire, talk.</p></blockquote>
+  <h3>Where they'll be</h3>
+  <ul>
+    <li><strong>Ask where they're headed</strong> and a band tells you, then keeps its word: a band on the road makes camp for a couple of weeks, right there or where it was going.</li>
+    <li>It goes on your <strong>map</strong> as a mission marker, so the compass points the way. The mark fades on its own after about two weeks, or when they move in with you.</li>
+    <li>The first time you share a meal or bring supplies, they tell you <strong>without being asked</strong>: "Before you part, Lillian Norton tells you where to find them."</li>
+    <li>Bands on the road also <strong>make camp</strong> by themselves now and then, for a few days, and word along the road says so.</li>
+  </ul>
+  <h3>Travel with a band</h3>
+  <ul>
+    <li><strong>Ask to travel with them</strong> once they know you a little. Their leader decides where the band goes and where it sleeps; you go along.</li>
+    <li>They <strong>wait</strong> if you fall behind, share their <strong>supper</strong> with you every evening (real food, and a meal shared with each of them), and their fire and their night watch include you.</li>
+    <li><strong>Part ways</strong> whenever you like, and they tell you where to find them. Stay out of their sight for six hours and you've lost them.</li>
+    <li>If the band settles while you're with it, you're welcome to come: you follow them home.</li>
+  </ul>
+  <blockquote class="ingame"><p>Conrad Wade looks at the others, then back at you.  "Keep up, and pull your weight."  You travel with Devorah Manning's band now: where they go, you go.</p><p>Devorah Manning's band shares out what they hunted today, and there's a portion for you.</p></blockquote>
+  <h3>Places people make</h3>
+  <ul>
+    <li>A family that settles <strong>founds a place</strong> with a name (Cedar Hollow, Stillwater, Mill Creek...), or joins one nearby.</li>
+    <li>Bands on the road <strong>drift into places</strong> close by: families settle there, hunters hunt out of them. A place grows to five households; one that empties is abandoned.</li>
+    <li>Places are full of real people when you get there. Walking into one introduces it, its people name it when you ask where they live, and Where to find people lists the ones you know.</li>
+  </ul>
+  <blockquote class="ingame"><p>You come to a place someone has made a home of: Cedar Hollow.  Luis Salazar started it.</p></blockquote>
+  <h3>Live at their place</h3>
+  <ul>
+    <li><strong>Ask to live with them</strong> (someone settled, or from a place) once they'd say yes to living with you. You move in: their place becomes your home, every household there becomes part of the town, each in its own house, and <strong>their leader runs the place</strong> from the first day.</li>
+    <li>Everything a home has works there: jobs, evenings, the watch, meetings, laws. You're one of the people who live there, not the one in charge, unless the meeting decides otherwise.</li>
+    <li>You can't walk out on people of your own: with a household at home, the answer is no.</li>
+  </ul>
+  <blockquote class="ingame"><p>TonZa shows you a corner that's yours.  "You pull your weight, and we look after you."  You live at Cedar Hollow now, and TonZa runs the place.</p></blockquote>
+  <h3>Also in this version</h3>
+  <ul>
+    <li><strong>Bands no longer vanish when you reach them.</strong> A band you'd lost track of is found where it stands, and nobody within sight of you is ever moved by the simulation.</li>
+    <li>A band whose leader dies keeps its home, its camp and its place.</li>
+  </ul>
+</section>
+
 <section id="engine">
   <h2>The engine patches</h2>
   <p class="standfirst">A small C++ patch set on 0.I "Ito" (commit <code>27939e2</code>), applied by an idempotent script and kept as small as the mod allows. People First stays loadable on stock 0.I; these patches make it better. Several also fix vanilla bugs.</p>
@@ -631,6 +679,7 @@ footer { margin-top: 56px; padding-top: 16px; border-top: 1px solid var(--line);
     <li>The player married Consuelo Porter, from one of the bands they'd courted.</li>
   </ul>
   <p>Growing up, the vote of confidence and the coup were confirmed in fast tests on a copy of the world, as were engine patches 18 and 22. The council, walking envoys and matches were verified in their own test pass.</p>
+  <p>v0.9 was verified in game on copies of that world: a family founded Cedar Hollow and a band of hunters drifted into it; bars, hints and refusals; where they're headed, from a settled family, a band on the road and a first meal; the map marks; travelling with hunters who waited, shared supper, and were lost after hours out of sight; parting ways; walking into a place you didn't know; and moving in, with the founder as chief.</p>
   <p>Three tools ran alongside the play:</p>
   <ul>
     <li><strong>Mod check:</strong> every change was run through the game's own <code>--check-mods</code>.</li>
@@ -646,6 +695,8 @@ footer { margin-top: 56px; padding-top: 16px; border-top: 1px solid var(--line);
     <li>No sitting or sleeping postures, and no visible NPC-to-NPC speech bubbles.</li>
     <li>Not yet seen in natural play: the newest wording for a recalled kindness at the fire.</li>
     <li>On the stock executable, NPCs keep their random generated names.</li>
+    <li>Places people make live on as data while you're away: their households, not a running town. Jobs, evenings, meetings and walls happen where you live.</li>
+    <li>A map mark shows where they said they'd be when they said it.</li>
     <li>Hot or cold weather floods the vanilla message log with temperature lines; the log filter (<code>P</code>, <code>f</code>) finds People First lines.</li>
   </ul>
 </section>
@@ -665,13 +716,14 @@ footer { margin-top: 56px; padding-top: 16px; border-top: 1px solid var(--line);
       <tr><td>Farm, work, joining, town watch</td><td class="k">town/</td><td class="k">gen_town.py</td></tr>
       <tr><td>Meetings, laws, rule, walls, sieges, neighbors, council</td><td class="k">keep/</td><td class="k">gen_keep.py</td></tr>
       <tr><td>Away days, homecoming, the road</td><td class="k">away/</td><td class="k">gen_away.py</td></tr>
-      <tr><td>The People menu and settings</td><td class="k">people/</td><td class="k">gen_people.py</td></tr>
+      <tr><td>The People menu, settings, the bond meter, where they'll be</td><td class="k">people/</td><td class="k">gen_people.py</td></tr>
+      <tr><td>Travel with a band, places, moving in</td><td class="k">places/</td><td class="k">gen_places.py</td></tr>
       <tr><td>Engine patches, build, title art</td><td class="k">engine/</td><td class="k">apply_patches.py, build.ps1, make_title.py</td></tr>
     </tbody>
   </table></div>
   <p>In numbers:</p>
   <ul>
-    <li>The mod has 1,112 effects on condition and 17 NPC templates.</li>
+    <li>The mod has 1,148 effects on condition, 17 NPC templates and 6 map marks.</li>
     <li>14 traits (10 traits and quirks, 4 hidden markers), 12 morale types and 8 status effects.</li>
     <li>15 terrain transforms (field, wall, graves) and 8 dialogue topics.</li>
     <li>2 items: the carved keepsake and the sack of supplies.</li>

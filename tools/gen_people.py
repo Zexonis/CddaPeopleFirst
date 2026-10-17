@@ -81,6 +81,9 @@ out.append(eoc("PF_PM_scan_one", [
         {"if": {"and": [m("value_or(u_pf_follow, 0) == 2"), {"compare_string": [{"u_val": "pf_carrier"}, "AVATAR"]}]},
          "then": [{"set_string_var": "a baby, in your arms", "target_var": g("pf_pm_tmp_role")}]}]},
     {"run_eocs": "PF_REG_name"},  # keep the directory name current (renames)
+    # 2026-10-17: how close each grown-up who doesn't live with you is to a yes (PF_PM_bond_read), right on the list
+    m("pf_bd_ok = 0"), {"run_eocs": "PF_PM_bond_read"},
+    {"if": m("pf_bd_ok == 1"), "then": [{"set_string_var": "<global_val:pf_pm_tmp_role>, <global_val:pf_bd_bar>", "target_var": g("pf_pm_tmp_role"), "parse_tags": True}]},
     slotname("pf_pm_label_"),
     {"set_string_var": "<u_name>  (<global_val:pf_pm_tmp_dist> tiles, <global_val:pf_pm_tmp_role>)", "target_var": {"var_val": "ref"}, "parse_tags": True},
     slotname("pf_pm_desc_"),
@@ -99,8 +102,8 @@ out.append(eoc("PF_PM_person", [
     m("pf_pm_sel_adult = 0"),
     {"run_eocs": "PF_PM_sel_flags", "beta_talker": g("pf_pm_sel_id")},
     {
-    "run_eoc_selector": ["PF_PM_act_talk", "PF_PM_act_tend", "PF_PM_act_meal", "PF_PM_act_call", "PF_PM_act_fire", "PF_PM_act_supply", "PF_PM_act_flirt", "PF_PM_act_confess", "PF_PM_act_marry", "PF_PM_act_end", "PF_PM_act_takein", "PF_PM_act_stepadopt", "PF_PM_act_pickup", "PF_PM_act_setdown", "PF_PM_act_hand", "PF_PM_act_letgo", "PF_PM_act_teach", "PF_PM_act_invite", "PF_PM_act_role", "PF_PM_act_info", "PF_PM_moments_shown"],
-    "names": ["Talk", "Tend their wounds", "Share a meal with them", "Call them over", "Ask them to sit by the fire", "Bring their people supplies", "Flirt", "Tell them how you feel", "Ask them to marry you", "End it", "Take them in", "Raise them as your own", "Pick them up", "Set them down", "Take their hand", "Let go of their hand", "Teach them something", "Ask them to come live with you", "Ask them to take a different job", "What do I know about them?", "Moments (lab)"],
+    "run_eoc_selector": ["PF_PM_act_talk", "PF_PM_act_tend", "PF_PM_act_meal", "PF_PM_act_call", "PF_PM_act_fire", "PF_PM_act_supply", "PF_PM_act_flirt", "PF_PM_act_confess", "PF_PM_act_marry", "PF_PM_act_end", "PF_PM_act_takein", "PF_PM_act_stepadopt", "PF_PM_act_pickup", "PF_PM_act_setdown", "PF_PM_act_hand", "PF_PM_act_letgo", "PF_PM_act_teach", "PF_PM_act_invite", "PF_PM_act_where", "PF_PM_act_travel", "PF_PM_act_part", "PF_PM_act_movein", "PF_PM_act_role", "PF_PM_act_info", "PF_PM_moments_shown"],
+    "names": ["Talk", "Tend their wounds", "Share a meal with them", "Call them over", "Ask them to sit by the fire", "Bring their people supplies", "Flirt", "Tell them how you feel", "Ask them to marry you", "End it", "Take them in", "Raise them as your own", "Pick them up", "Set them down", "Take their hand", "Let go of their hand", "Teach them something", "Ask them to come live with you", "Ask where they're headed", "Ask to travel with them", "Part ways with them", "Ask to live with them", "Ask them to take a different job", "What do I know about them?", "Moments (lab)"],
     "descriptions": [
         "Start a conversation.",
         "Kneel beside them with a rag and some clean water: stop the bleeding, clean the bites, wrap what's torn.  They come over if they can walk (a baby you go to), and nothing hostile can be close.",
@@ -119,12 +122,16 @@ out.append(eoc("PF_PM_person", [
         "Little legs.  They stay at your side until you let go.",
         "They go back to following their family.",
         "Show them something you know better than they do.  Once a day.",
-        "Home has room.  They'll answer from their own heart; if they travel with a band, the whole band comes.",
+        g("pf_pm_inv_desc"),
+        "Where their people will be over the next couple of weeks.  It goes on your map, so you can find them again.",
+        "Go where they go.  Their leader decides the road and where to sleep; they wait if you fall behind and share their supper.  They answer from their own view of you.",
+        "Go your own way.  They'll tell you where to find them.",
+        "Their home becomes yours: everyone who lives there, and their leader runs the place.  They answer as they would to living with you.  You can't leave people of your own behind.",
         "Cook, guard, forager, tinkerer, carer: the next one in line.",
         "How they seem to see you, how you see them, and what you've picked up about them.",
         "[lab] Make something happen between you and them, and watch the bond spine react."],
-    "keys": ["t", "n", "a", "c", "f", "y", "r", "l", "p", "e", "h", "w", "u", "d", "o", "g", "s", "v", "b", "i", "m"],
-    "title": "<global_val:pf_pm_sel_label>",
+    "keys": ["t", "n", "a", "c", "f", "y", "r", "l", "p", "e", "h", "w", "u", "d", "o", "g", "s", "v", "k", "j", "q", "z", "b", "i", "m"],
+    "title": "<global_val:pf_pm_sel_label><global_val:pf_pm_sel_bondtxt>",
     "hide_failing": True,
     "allow_cancel": True}], "Person screen for the NPC whose character id is in pf_pm_sel_id.  Romance actions only exist for adults (never children; checked again inside)."))
 out.append(eoc("PF_PM_sel_flags", [
@@ -141,6 +148,20 @@ out.append(eoc("PF_PM_sel_flags", [
     {"set_string_var": "<npc_name>", "target_var": g("pf_pm_sel_name"), "parse_tags": True},
     {"npc_location_variable": g("pf_pm_sel_pos")}, {"u_location_variable": g("pf_pm_av_pos")},
     m("pf_pm_sel_dist = distance(pf_pm_sel_pos, pf_pm_av_pos)"),
+    # 2026-10-17: the bond meter in the screen's title, and what would help in the invitation's description
+    {"set_string_var": "", "target_var": g("pf_pm_sel_bondtxt")},
+    {"set_string_var": "Home has room.  They'll answer from their own heart; if they travel with a band, the whole band comes.", "target_var": g("pf_pm_inv_desc")},
+    # v0.9 (gen_places): their band's leader is settled or lives at a place (Ask to live with them); you travel with their band (Part ways)
+    m("pf_pm_sel_lhome = 0"), m("pf_wh_ok = 0"), {"run_eocs": "PF_WHERE_get_lead", "alpha_talker": "npc"},
+    {"if": m("pf_wh_ok == 1"), "then": [{"u_run_npc_eocs": [{"id": "PF_PM_lead_flags", "effect": [
+        m("pf_pm_sel_lhome = (value_or(u_pf_settled, 0) == 1) + (value_or(u_pf_place, 0) > 0) > 0")]}],
+        "unique_ids": [g("pf_wh_lead")], "local": False}]},
+    m("pf_pm_sel_tvband = (value_or(pf_tv_on, 0) == 1) * (value_or(n_pf_band, 0) > 0) * (value_or(n_pf_band, 0) == value_or(pf_tv_band, -1))"),
+    m("pf_bd_ok = 0"), {"run_eocs": "PF_PM_bond_read", "alpha_talker": "npc"},
+    {"if": m("pf_bd_ok == 1"), "then": [
+        {"set_string_var": "  <global_val:pf_bd_word>", "target_var": g("pf_pm_sel_bondtxt"), "parse_tags": True},  # the label has the bar
+        {"set_string_var": "Home has room.  They'll answer from their own heart; if they travel with a band, the whole band comes.  Right now: <global_val:pf_bd_bar> <global_val:pf_bd_word>  <global_val:pf_bd_hint>",
+         "target_var": g("pf_pm_inv_desc"), "parse_tags": True}]},
 
 
     {"if": {"and": [{"npc_has_trait": "PF_CHILD"}, {"not": {"npc_has_effect": "PF_infant"}}]}, "then": [m("pf_pm_sel_kid = 1")]},
@@ -270,7 +291,9 @@ out.append(eoc("PF_PM_do_meal", [
               m("pf_court_say = 0"), {"run_eocs": "PF_PM_court_read", "alpha_talker": "npc"},
               {"if": m("pf_court_say == 1"), "then": [msg("<npc_name> has started keeping a place for you when you sit down.  They're warming to you.", "good")]},
               {"if": m("pf_court_say == 2"), "then": [msg("<npc_name> lingers after the meal and asks, as if it doesn't matter, how many people live at your place.  Ask them now and they might say yes.", "good")]},
-              msg("One <global_val:pf_ml_food>, split two ways.")]},
+              msg("One <global_val:pf_ml_food>, split two ways."),
+              # 2026-10-17: the meter, and (the first time with a band) where to find them again
+              {"run_eocs": "PF_PM_bond_report"}, m("pf_wh_auto = 1"), {"run_eocs": "PF_WHERE_ask"}]},
 ], "Alpha = you, beta = the person.  Once a day with each person: a meal_shared moment between you (both views).  It uses one thing to eat (yours, else the stores at home) and you get half of it."))
 out.append(eoc("PF_PM_meal_take", [
     {"set_string_var": "<npc_name>", "target_var": g("pf_ml_food"), "parse_tags": True},
@@ -318,6 +341,7 @@ out.append(eoc("PF_PM_do_tend", [
                "else": [msg("You kneel beside <npc_name> with a rag and some clean water, clean the wounds and wrap what's torn.", "good")]}]},
     m("pf_m_str_in = 60"), {"run_eocs": "PF_MK_care_given"},
     m("pf_tended_total = value_or(pf_tended_total, 0) + 1"),
+    {"run_eocs": "PF_PM_bond_report"},
 ], "Alpha = you, beta = the wounded person.  Same as a carer's tending (PF_RK_tend_do): a little hp back on every main part, bleeding stopped, bites cleaned; care from you (60)."))
 out.append(eoc("PF_PM_act_talk", [{"run_eocs": "PF_PM_do_talk", "beta_talker": g("pf_pm_sel_id"),
     "false_eocs": [{"id": "PF_PM_gone_talk", "effect": [msg("They're not here anymore.")]}]}]))
@@ -408,7 +432,9 @@ out.append(eoc("PF_PM_act_supply", [
              "local": True, "npc_range": 60},
             {"if": m("pf_sp_src == 1"), "then": [msg("You fill a sack from the stores and carry it out to <global_val:pf_sp_who>'s people.  <global_val:pf_sp_who> looks at it for a long moment before taking it.")],
              "else": [msg("You hand <global_val:pf_sp_who> the sack you've carried all this way.  <global_val:pf_sp_who> opens it, looks at you, and doesn't say anything for a moment.")]},
-            m("pf_supplies_given_total = value_or(pf_supplies_given_total, 0) + 1")]}]},
+            m("pf_supplies_given_total = value_or(pf_supplies_given_total, 0) + 1"),
+            {"run_eocs": "PF_PM_bond_report", "beta_talker": g("pf_pm_sel_id")},
+            m("pf_wh_auto = 1"), {"run_eocs": "PF_WHERE_ask", "beta_talker": g("pf_pm_sel_id")}]}]},
 ], condition={"and": [m("value_or(pf_pm_sel_baby, 0) == 0"), m("pf_pm_sel_band == 1"), m("value_or(pf_pm_sel_res, 0) == 0"), m("value_or(pf_pm_sel_adult, 0) == 1")]}))
 out.append(eoc("PF_PM_act_info", [{"run_eocs": "PF_PM_show_info", "beta_talker": g("pf_pm_sel_id"),
     "false_eocs": [{"id": "PF_PM_gone_info", "effect": [msg("They're not here anymore.")]}]}]))
@@ -505,6 +531,205 @@ out.append(eoc("PF_PM_age_60_view", [
     {"set_string_var": "AVATAR", "target_var": g("pf_m_other")},
     {"set_string_var": "u_pf_v_<global_val:pf_m_other>_l", "target_var": {"context_val": "rl"}, "parse_tags": True},
     {"if": m("value_or(v_rl, -1) >= 0"), "then": [m("v_rl = v_rl - time('60 d')")]}]))
+# ---------------------------------------------------------------- getting to know people (2026-10-17, the user)
+# "I couldn't see or feel that I was making progress with the strangers... I couldn't tell if it was making a difference.
+# Worse, I felt like if I failed to connect in that moment, I might never see them again when they wander off."
+# 1. A visible bond meter: how close someone is to saying yes to living with you, from their own view of you (the same
+#    numbers PF_HOME_invite reads), with what would help.  Shown on the People nearby list, the person screen, after a
+#    meal, supplies or tending, and with a "not yet".
+# 2. "Ask where they're headed": a band says where it will be, makes camp there for a while, and you get a map mark
+#    (a mission marker) for two weeks.  The first time you share a meal or bring supplies, they tell you on their own.
+def by_uid(eocs, uid): return {"u_run_npc_eocs": eocs, "unique_ids": [uid], "local": False}
+def compass(dx, dy, out):
+    """Effects: a compass word (north, southeast...) for an offset, into global `out` (y grows southward).  As gen_hearts."""
+    return [{"set_string_var": "", "target_var": g(out + "_ns")}, {"set_string_var": "", "target_var": g(out + "_ew")},
+            {"if": m(f"abs({dy}) * 2 >= abs({dx})"), "then": [
+                {"if": m(f"{dy} < 0"), "then": [{"set_string_var": "north", "target_var": g(out + "_ns")}],
+                 "else": [{"set_string_var": "south", "target_var": g(out + "_ns")}]}]},
+            {"if": m(f"abs({dx}) * 2 >= abs({dy})"), "then": [
+                {"if": m(f"{dx} < 0"), "then": [{"set_string_var": "west", "target_var": g(out + "_ew")}],
+                 "else": [{"set_string_var": "east", "target_var": g(out + "_ew")}]}]},
+            {"set_string_var": f"<global_val:{out}_ns><global_val:{out}_ew>", "target_var": g(out), "parse_tags": True}]
+def setg(var, text, parse=False):
+    o = {"set_string_var": text, "target_var": g(var)}
+    if parse: o["parse_tags"] = True
+    return o
+
+BOND_BARS = ["[-----]", "[#----]", "[##---]", "[###--]", "[####-]", "[#####]"]
+BOND_WORDS = ["They don't know you yet.", "They've started to notice you.", "They're getting to know you.",
+              "They like having you around.", "They're nearly ready to throw in with you.", "They'd say yes if you asked them to live with you."]
+# u = an adult who doesn't live with you and isn't your sweetheart
+BOND_OK = {"and": [{"not": {"u_has_trait": "PF_CHILD"}}, m("u_val('age') >= 18"), m("value_or(u_pf_resident, 0) == 0"),
+                   {"not": {"and": [m("value_or(u_pf_has_sweet, 0) == 1"), {"compare_string": [{"u_val": "pf_sweet"}, "AVATAR"]}]}}]}
+out.append(eoc("PF_PM_bond_read", [
+    {"run_eocs": "PF_ID_ensure"},
+    {"set_string_var": "AVATAR", "target_var": g("pf_m_other")}, {"run_eocs": "PF_VIEW_read"},
+    m("pf_bd_ok = 1"), setg("pf_bd_name", "<u_name>", True),
+    m("_w = max(pf_read_w, 0)"), m("_t = max(pf_read_t, 0)"),
+    # the invitation's own test (gen_home PF_HOME_invite): warmth 35 and trust 25, or warmth 50 and trust 15
+    m("pf_bd_ready = (_w >= 35) * (_t >= 25) + (_w >= 50) * (_t >= 15) > 0"),
+    m("pf_bd_p = max(min(min(_w / 35, _t / 25), 1), min(min(_w / 50, _t / 15), 1))"),
+    m("pf_bd_pips = pf_bd_ready == 1 ? 5 : min(4, floor(pf_bd_p * 5))"),
+    m("pf_bd_up = pf_bd_pips > value_or(u_pf_bond_seen, 0)"), m("u_pf_bond_seen = pf_bd_pips"),
+    {"switch": m("pf_bd_pips"), "cases": [{"case": i, "effect": [setg("pf_bd_bar", BOND_BARS[i]), setg("pf_bd_word", BOND_WORDS[i])]} for i in range(6)]},
+    {"if": m("pf_bd_ready == 1"),
+     "then": [{"if": m("value_or(pf_home_set, 0) == 1"), "then": [setg("pf_bd_hint", "Ask them to come live with you.")],
+               "else": [setg("pf_bd_hint", "Make a place your home first (People First menu: Home), then ask them.")]}],
+     "else": [{"if": m("pf_read_x >= 25"), "then": [setg("pf_bd_hint", "Something sits wrong between you.  Give it a few days.")],
+               "else": [{"if": m("_t / 25 < _w / 35"),
+                         "then": [setg("pf_bd_hint", "They like you, but they don't trust you yet: tend their wounds, bring their people supplies, stand with them in a fight.")],
+                         "else": [setg("pf_bd_hint", "Time together is what they need: eat with them once a day, sit by the fire, talk.")]}]}]},
+], "u = an adult who doesn't live with you.  Their own view of you, as a 5-step meter toward a yes to living with you (pf_bd_bar, pf_bd_word, pf_bd_hint; pf_bd_up = a step up since you last looked).",
+    condition=BOND_OK))
+out.append(eoc("PF_PM_bond_report", [
+    m("pf_bd_ok = 0"), {"run_eocs": "PF_PM_bond_read", "alpha_talker": "npc"},
+    {"if": m("pf_bd_ok == 1"), "then": [
+        {"if": m("pf_bd_up == 1"),
+         "then": [msg("Where you stand with <global_val:pf_bd_name>: <global_val:pf_bd_bar> <global_val:pf_bd_word>  A step closer than before.", "good")],
+         "else": [msg("Where you stand with <global_val:pf_bd_name>: <global_val:pf_bd_bar> <global_val:pf_bd_word>")]}]},
+], "u = you, npc = the person.  After a meal, supplies or tending: the meter, and whether it moved."))
+
+# ---- where they'll be: map marks.  Missions with no giver and an MGOAL_CONDITION goal never complete on their own
+# (mission.cpp is_complete), so a mark doesn't vanish when you walk onto it; it ends when PF_MARK_tick removes it.
+MARKS = 6
+for k in range(MARKS):
+    out.append({"id": f"PF_MARK_{k}", "type": "mission_definition", "name": {"str": f"Where they said they'd be ({k + 1})"},
+                "goal": "MGOAL_CONDITION", "difficulty": 0, "value": 0, "invisible_on_complete": True,
+                "description": "Someone you met on the road told you where to find their people.  The People First menu (Where to find people) says who.  The mark is good for about two weeks.",
+                "start": {"assign_mission_target": {"var": g("pf_mk_target")}}})
+out.append(eoc("PF_PM_act_where", [m("pf_wh_auto = 0"), {"run_eocs": "PF_WHERE_ask", "beta_talker": g("pf_pm_sel_id"),
+    "false_eocs": [{"id": "PF_PM_gone_where", "effect": [msg("They're not here anymore.")]}]}],
+    condition={"and": [m("pf_pm_sel_band == 1"), m("value_or(pf_pm_sel_res, 0) == 0"), m("value_or(pf_pm_sel_adult, 0) == 1")]}))
+# v0.9 Their own lives (gen_places): travel with a band, part ways, live at their place
+SEL_BAND_STRANGER = [m("pf_pm_sel_band == 1"), m("value_or(pf_pm_sel_res, 0) == 0"), m("value_or(pf_pm_sel_adult, 0) == 1")]
+out.append(eoc("PF_PM_act_travel", [{"run_eocs": "PF_TRAVEL_ask", "beta_talker": g("pf_pm_sel_id"),
+    "false_eocs": [{"id": "PF_PM_gone_travel", "effect": [msg("They're not here anymore.")]}]}],
+    condition={"and": SEL_BAND_STRANGER + [m("value_or(pf_tv_on, 0) == 0")]}))
+out.append(eoc("PF_PM_act_part", [{"run_eocs": "PF_TRAVEL_part", "beta_talker": g("pf_pm_sel_id"),
+    "false_eocs": [{"id": "PF_PM_gone_part", "effect": [msg("They're not here anymore.")]}]}],
+    condition=m("value_or(pf_pm_sel_tvband, 0) == 1")))
+out.append(eoc("PF_PM_act_movein", [{"run_eocs": "PF_PLACE_move_in", "beta_talker": g("pf_pm_sel_id"),
+    "false_eocs": [{"id": "PF_PM_gone_movein", "effect": [msg("They're not here anymore.")]}]}],
+    condition={"and": SEL_BAND_STRANGER + [m("value_or(pf_pm_sel_lhome, 0) == 1")]}))
+out.append(eoc("PF_WHERE_get_lead", [
+    setg("pf_wh_who", "<u_name>", True),
+    {"if": m("value_or(u_pf_is_leader, 0) == 1"), "then": [{"copy_var": {"u_val": "pf_uid"}, "target_var": g("pf_wh_lead")}, m("pf_wh_ok = 1")],
+     "else": [{"if": m("has_var(u_pf_leader)"), "then": [{"copy_var": {"u_val": "pf_leader"}, "target_var": g("pf_wh_lead")}, m("pf_wh_ok = 1")]}]},
+], "u = someone in a band (not living with you).  pf_wh_lead = their band's leader (the band's data lives there).",
+    condition={"and": [m("value_or(u_pf_band, 0) > 0"), m("value_or(u_pf_resident, 0) == 0")]}))
+out.append(eoc("PF_WHERE_leader", [
+    setg("pf_wh_lname", "<u_name>", True),
+    m("pf_wh_days = 14"),
+    {"if": m("(pf_wh_auto == 1) * (value_or(u_pf_mark_until, 0) > time('now'))"), "then": [m("pf_wh_kind = -1")], "else": [
+        {"if": m("(value_or(u_pf_visiting, 0) == 1) + (value_or(u_pf_joining, 0) == 1) > 0"), "then": [m("pf_wh_kind = 4")], "else": [
+          # v0.9: people of a place say so (6 they live there, 7 hunters who hunt out of it), and the place becomes known to you
+          {"if": m("(value_or(u_pf_place, 0) > 0) * ((value_or(u_pf_settled, 0) == 1) + (value_or(u_pf_based, 0) == 1) > 0)"),
+           "then": [m("pf_wh_kind = value_or(u_pf_based, 0) == 1 ? 7 : 6"),
+                    {"copy_var": {"u_val": "pf_place_at"}, "target_var": g("pf_wh_at")},
+                    {"copy_var": {"u_val": "pf_place_name"}, "target_var": g("pf_wh_place")}] + [
+                    {"if": m(f"u_pf_place == {k + 1}"), "then": [m(f"pf_pl_{k}_known = 1")]} for k in range(6)],
+           "else": [
+            {"if": m("value_or(u_pf_settled, 0) == 1"),
+             "then": [m("pf_wh_kind = 1"), {"copy_var": {"u_val": "pf_home"}, "target_var": g("pf_wh_at")}],
+             "else": [{"if": m("value_or(u_pf_camp_until, 0) > time('now')"),
+                       "then": [m("pf_wh_kind = 2"), {"copy_var": {"u_val": "pf_camp"}, "target_var": g("pf_wh_at")},
+                                m("pf_wh_days = floor((u_pf_camp_until - time('now') + time('1 d') - 1) / time('1 d'))")],
+                       # on the move: they make camp, either right here (if they like you, or half the time) or where they were going
+                       "else": [{"set_string_var": "AVATAR", "target_var": g("pf_m_other")}, {"run_eocs": "PF_VIEW_read"},
+                                {"if": m("(pf_read_w >= 10) + (rand(1) == 0) > 0"),
+                                 "then": [m("pf_wh_kind = 3"), {"copy_var": {"u_val": "pf_vpos"}, "target_var": g("pf_wh_at")}],
+                                 "else": [m("pf_wh_kind = 5"), {"copy_var": {"u_val": "pf_vpos"}, "target_var": g("pf_wh_at")},
+                                          {"if": m("has_var(u_pf_goal)"), "then": [{"copy_var": {"u_val": "pf_goal"}, "target_var": g("pf_wh_at")}]}]},
+                                {"run_eocs": "PF_WHERE_make_camp"}]}]}]}]}]},
+    {"if": m("(pf_wh_kind > 0) * (pf_wh_kind != 4)"), "then": [m("u_pf_mark_until = time('now') + time('1 d') * pf_wh_days")]},
+], "u = a band's leader (by unique id; off-screen is fine: only its variables are read).  pf_wh_kind: 1 their home (settled), 2 camped already, 3 camping right here, 4 on their way to you, 5 camping where they were headed; -1 they already told you (an automatic telling)."))
+out.append(eoc("PF_WHERE_make_camp", [
+    {"copy_var": g("pf_wh_at"), "target_var": {"u_val": "pf_camp"}},
+    {"copy_var": g("pf_wh_at"), "target_var": {"u_val": "pf_wp_a"}}, {"copy_var": g("pf_wh_at"), "target_var": {"u_val": "pf_wp_b"}},
+    {"copy_var": g("pf_wh_at"), "target_var": {"u_val": "pf_goal"}}, m("u_pf_goal_is_b = 0"),
+    m("u_pf_camp_until = time('now') + time('14 d')"),
+    m("pf_camps_told_total = value_or(pf_camps_told_total, 0) + 1"),
+], "u = a band's leader.  The band makes camp at pf_wh_at for two weeks: both its waypoints are the camp, so A-Life keeps it there, on-screen or off (gen_home PF_WORLD_drift_one leaves a camping band alone, then sends it back on the road)."))
+# kind: (said when the spot is under 2 map tiles away, said otherwise)
+WHERE_SAY = {
+    1: ("<global_val:pf_wh_who> nods at the houses close by.  \"This is home now.  Come by any time.\"",
+        "<global_val:pf_wh_who> points <global_val:pf_wh_dir>.  \"Home's that way, about <global_val:pf_wh_mt> map tiles.  Come by any time.\""),
+    2: ("<global_val:pf_wh_who> waves at the ground around you.  \"We're camped right here, another <global_val:pf_wh_days> days or so.\"",
+        "<global_val:pf_wh_who> points <global_val:pf_wh_dir>.  \"We're camped about <global_val:pf_wh_mt> map tiles that way, another <global_val:pf_wh_days> days or so.\""),
+    3: ("<global_val:pf_wh_who> looks around.  \"We like it here.  We'll camp close by for a couple of weeks.\"",
+        "<global_val:pf_wh_who> looks around.  \"We like it here.  We'll camp close by for a couple of weeks.\""),
+    5: ("<global_val:pf_wh_who> nods at the ground ahead.  \"We're stopping just up here for a couple of weeks.\"",
+        "<global_val:pf_wh_who> points <global_val:pf_wh_dir>.  \"We're making for a spot about <global_val:pf_wh_mt> map tiles that way.  We'll stop there a couple of weeks.\""),
+    6: ("<global_val:pf_wh_who> spreads their arms.  \"This is <global_val:pf_wh_place>.  We live here.  Come by any time.\"",
+        "<global_val:pf_wh_who> points <global_val:pf_wh_dir>.  \"We live at <global_val:pf_wh_place>, about <global_val:pf_wh_mt> map tiles that way.  Come by any time.\""),
+    7: ("<global_val:pf_wh_who> nods at the houses.  \"We hunt out of here, <global_val:pf_wh_place>.\"",
+        "<global_val:pf_wh_who> points <global_val:pf_wh_dir>.  \"We hunt out of <global_val:pf_wh_place>, about <global_val:pf_wh_mt> map tiles that way.\""),
+}
+def where_say(kind):
+    near, far = WHERE_SAY[kind]
+    return [{"if": m("pf_wh_mt < 2"), "then": [msg(near)], "else": [msg(far)]}]
+out.append(eoc("PF_WHERE_ask", [
+    m("pf_wh_ok = 0"), m("pf_wh_kind = 0"),
+    {"run_eocs": "PF_WHERE_get_lead", "alpha_talker": "npc"},
+    {"if": m("pf_wh_ok == 1"), "then": [by_uid(["PF_WHERE_leader"], g("pf_wh_lead"))]},
+    {"if": m("pf_wh_auto == 0"), "then": [
+        {"if": m("pf_wh_ok == 0"), "then": [msg("<npc_name> shrugs.  \"Wherever the road goes.\"")]},
+        {"if": m("pf_wh_kind == 4"), "then": [msg("<npc_name> grins.  \"We're on our way to your place.\"")]}]},
+    {"if": m("(pf_wh_kind > 0) * (pf_wh_kind != 4)"), "then": [
+        {"u_location_variable": g("pf_wh_av")},
+        m("pf_wh_dx = pf_wh_at.x - pf_wh_av.x"), m("pf_wh_dy = pf_wh_at.y - pf_wh_av.y"),
+        m("pf_wh_mt = floor((max(abs(pf_wh_dx), abs(pf_wh_dy)) + 12) / 24)")] + compass("pf_wh_dx", "pf_wh_dy", "pf_wh_dir") + [
+        {"if": m("pf_wh_auto == 1"), "then": [msg("Before you part, <global_val:pf_wh_who> tells you where to find them.")]}] + [
+        {"if": m(f"pf_wh_kind == {kd}"), "then": where_say(kd)} for kd in (1, 2, 3, 5, 6, 7)] + [
+        {"run_eocs": "PF_MARK_set"},
+        msg("It's on your map: the Missions screen lists it as \"Where they said they'd be (<global_val:pf_mk_shown>)\", and the People First menu as Where to find people.", "good")]},
+], "u = you, npc = someone in a band.  They say where their people will be (making camp if they're on the move) and you get a map mark.  pf_wh_auto = 1 when it comes up by itself after a meal or supplies: silent if they've told you already."))
+set_slot = [m("pf_mk_slot = -1"), m("pf_mk_best = time('now') + time('999 d')")]
+for k in range(MARKS):  # their old mark first, else the slot that runs out soonest (an empty one is 0)
+    set_slot.append({"if": {"and": [m(f"value_or(pf_mk_{k}_until, 0) > 0"), {"compare_string": [g(f"pf_mk_{k}_lead"), g("pf_wh_lead")]}]},
+                     "then": [m(f"pf_mk_slot = {k}"), m("pf_mk_best = -1")]})
+for k in range(MARKS):
+    set_slot.append({"if": m(f"value_or(pf_mk_{k}_until, 0) < pf_mk_best"), "then": [m(f"pf_mk_slot = {k}"), m(f"pf_mk_best = value_or(pf_mk_{k}_until, 0)")]})
+for k in range(MARKS):
+    set_slot.append({"if": m(f"pf_mk_slot == {k}"), "then": [
+        {"remove_active_mission": f"PF_MARK_{k}"},
+        {"copy_var": g("pf_wh_at"), "target_var": g("pf_mk_target")},
+        {"assign_mission": f"PF_MARK_{k}", "deadline": m("time('now') + time('1 d') * (pf_wh_days + 1)")},
+        {"copy_var": g("pf_wh_lead"), "target_var": g(f"pf_mk_{k}_lead")},
+        {"copy_var": g("pf_wh_at"), "target_var": g(f"pf_mk_{k}_at")},
+        setg(f"pf_mk_{k}_name", "<global_val:pf_wh_lname>'s people", True),
+        m(f"pf_mk_{k}_until = time('now') + time('1 d') * pf_wh_days"),
+        m(f"pf_mk_shown = {k + 1}")]})
+out.append(eoc("PF_MARK_set", set_slot + [m("pf_marks_total = value_or(pf_marks_total, 0) + 1")],
+    "u = you.  Puts the band pf_wh_lead's spot (pf_wh_at) on your map for pf_wh_days days: their old mark if they had one, else the mark that runs out soonest.  The mission's own deadline is a day later; PF_MARK_tick takes it off first (a deadline counts as a failed mission)."))
+mark_tick = []
+for k in range(MARKS):
+    mark_tick += [
+        {"if": m(f"(value_or(pf_mk_{k}_until, 0) > 0) * (value_or(pf_mk_{k}_until, 0) <= time('now'))"),
+         "then": [{"remove_active_mission": f"PF_MARK_{k}"}, m(f"pf_mk_{k}_until = 0")]},
+        # they moved in with you (or anywhere: no longer a band's leader): the mark goes.  A dead leader's id is never reached.
+        {"if": m(f"value_or(pf_mk_{k}_until, 0) > time('now')"), "then": [
+            {"set_string_var": f"pf_reg_<global_val:pf_mk_{k}_lead>_dead", "target_var": {"context_val": "md"}, "parse_tags": True},
+            m("pf_mk_gone = 0"),
+            {"if": m("value_or(v_md, 0) == 0"), "then": [by_uid([{"id": f"PF_MARK_check_{k}", "effect": [{"if": m("value_or(u_pf_is_leader, 0) != 1"), "then": [m("pf_mk_gone = 1")]}]}], g(f"pf_mk_{k}_lead"))]},
+            {"if": m("pf_mk_gone == 1"), "then": [{"remove_active_mission": f"PF_MARK_{k}"}, m(f"pf_mk_{k}_until = 0")]}]}]
+out.append(eoc("PF_MARK_tick", mark_tick, "Hourly: marks that ran out (or whose band moved in) come off your map.",
+    recurrence="1 hours", **{"global": True}, condition=m(" + ".join(f"value_or(pf_mk_{k}_until, 0)" for k in range(MARKS)) + " > 0")))
+mark_list = [m("pf_mk_n = 0"), {"u_location_variable": g("pf_wh_av")}]
+for k in range(MARKS):
+    mark_list.append({"if": m(f"value_or(pf_mk_{k}_until, 0) > time('now')"), "then": [
+        m("pf_mk_n += 1"),
+        m(f"pf_wh_dx = pf_mk_{k}_at.x - pf_wh_av.x"), m(f"pf_wh_dy = pf_mk_{k}_at.y - pf_wh_av.y"),
+        m("pf_wh_mt = floor((max(abs(pf_wh_dx), abs(pf_wh_dy)) + 12) / 24)"),
+        m(f"pf_wh_days = floor((pf_mk_{k}_until - time('now') + time('1 d') - 1) / time('1 d'))")] + compass("pf_wh_dx", "pf_wh_dy", "pf_wh_dir") + [
+        {"if": m("pf_wh_mt < 2"),
+         "then": [msg(f"<global_val:pf_mk_{k}_name>: close by, for another <global_val:pf_wh_days> days or so.  (Missions: Where they said they'd be ({k + 1}))")],
+         "else": [msg(f"<global_val:pf_mk_{k}_name>: about <global_val:pf_wh_mt> map tiles <global_val:pf_wh_dir> of here, for another <global_val:pf_wh_days> days or so.  (Missions: Where they said they'd be ({k + 1}))")]}]})
+mark_list.append({"run_eocs": "PF_PLACE_list_known"})  # v0.9: the places people made that you know of
+mark_list.append({"if": m("pf_mk_n + value_or(pf_pl_shown, 0) == 0"), "then": [msg("Nobody has told you where to find them lately.  Ask someone in a band where they're headed (People nearby), or share a meal with them.")]})
+mark_list.append({"if": m("pf_mk_n > 0"), "then": [msg("Pick one on the Missions screen to point your compass at it.")]})
+out.append(eoc("PF_MARK_list", mark_list, "People First menu: Where to find people.  Every band that told you where it will be, with how far, which way, and for how long."))
+
 # ---------------------------------------------------------------- settings (concept §6.2 screen 6)
 def setname(var, default, cases, target):
     return {"switch": m(f"value_or({var}, {default})"), "cases": [{"case": k, "effect": {"set_string_var": v, "target_var": g(target)}} for k, v in cases]}
