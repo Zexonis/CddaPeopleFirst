@@ -166,9 +166,18 @@ files["watch.json"] = [
         {"run_eocs": "PF_FAM_watch_bonus"}, m("_score += pf_fm_watch_add"),
         {"if": m("value_or(u_pf_role, 0) == 2"), "then": [m("_score += 15")]},
         {"if": {"u_has_trait": "PF_CHILD"}, "then": [m("_score = -1000")]},
+        # 2026-10-17 (the user): bands passing by took the watch over him at home with no ties at all; a stranger scored 5
+        # (trust 0 + 5) and the rota's -20 let them beat his own people.  Only someone with a reason watches over you: they
+        # live with you, you travel with their band, they're your partner or your family, or they trust you (15+).
+        m("_why = (value_or(u_pf_resident, 0) == 1) + (pf_read_t >= 15)"),
+        {"if": m("(value_or(pf_tv_on, 0) == 1) * (value_or(u_pf_band, 0) > 0) * (value_or(u_pf_band, 0) == value_or(pf_tv_band, -1))"), "then": [m("_why += 1")]},
+        {"if": {"and": [m("value_or(u_pf_has_sweet, 0) == 1"), {"compare_string": [{"u_val": "pf_sweet"}, "AVATAR"]}]}, "then": [m("_why += 1")]},
+        {"if": {"or": [{"compare_string": [{"u_val": "pf_mom"}, "AVATAR"]}, {"compare_string": [{"u_val": "pf_dad"}, "AVATAR"]},
+                       {"compare_string": [{"u_val": "pf_guardian"}, "AVATAR"]}]}, "then": [m("_why += 1")]},
+        {"if": m("_why == 0"), "then": [m("_score = -1000")]},
         {"if": {"and": [m("_score >= 0"), m("_score > pf_watch_best")]},
          "then": [m("pf_watch_best = _score"), {"u_set_talker": g("pf_watch_who")}]},
-    ], "u = a nearby NPC.  Trust, +15 if loyal, -20 if they watched last time."),
+    ], "u = a nearby NPC.  Only someone with a reason (lives with you, travels with you, partner, family, or trust 15+).  Trust, +15 if loyal, -20 if they watched last time."),
     eoc("PF_WATCH_take", [
         {"copy_var": {"u_val": "pf_uid"}, "target_var": g("pf_watch_uid")}, m("pf_watch_t = time('now')"),
         # full run day 151: Golly (a band leader) took the watch at Dante's side, her band set off at 06:00, and he woke to
