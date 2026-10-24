@@ -152,24 +152,35 @@ jobs:
         continue-on-error: true
         timeout-minutes: 15
         run: |
-          sudo apt-get install -y xdotool >/dev/null
+          sudo apt-get install -y xdotool openbox x11-utils >/dev/null
           cd "out/cdda-0.I-people-first-${{ github.event.inputs.version }}-linux-x64"
           export DISPLAY=:99
           Xvfb :99 -screen 0 1280x800x24 & XV=$!
           sleep 2
+          openbox & WM=$!       # a window manager, so the game window gets keyboard focus (build 4: keys went nowhere)
+          sleep 2
           ./cataclysm-launcher & GAME=$!
           shot() { sleep "$2"; import -window root "../shot-$1.png"; echo "shot $1"; }
-          # no window manager on Xvfb: windowactivate --sync would wait forever (build 3 hung 3 hours).  Focus directly.
+          gwin() {
+            local p w
+            for p in $(pgrep -f "cataclysm-tiles" 2>/dev/null); do
+              w=$(timeout 5 xdotool search --pid "$p" 2>/dev/null | tail -1); [ -n "$w" ] && { echo "$w"; return; }
+            done
+            timeout 5 xdotool search --name "Cataclysm" 2>/dev/null | tail -1
+          }
           key() {
-            WID=$(timeout 10 xdotool search --name "Cataclysm" 2>/dev/null | head -1)
+            WID=$(gwin)
             if [ -n "$WID" ]; then
-              timeout 5 xdotool windowfocus "$WID" 2>/dev/null || true
-              timeout 5 xdotool mousemove --window "$WID" 50 50 2>/dev/null || true
+              timeout 5 xdotool windowactivate "$WID" 2>/dev/null || timeout 5 xdotool windowfocus "$WID" 2>/dev/null || true
+              timeout 5 xdotool key --clearmodifiers --window "$WID" "$1" 2>/dev/null || true
+              timeout 5 xdotool key --clearmodifiers "$1" || echo "key $1 failed"
+            else
+              echo "key $1: no game window"; timeout 5 xdotool key "$1" || true
             fi
-            timeout 5 xdotool key --clearmodifiers "$1" || echo "key $1 failed"
           }
           shot 1-language 45
-          timeout 10 xdotool search --name Cataclysm getwindowgeometry 2>/dev/null || echo "no game window found"
+          echo "game window: $(gwin)"
+          timeout 10 xwininfo -root -tree 2>/dev/null | grep -i -v "has no name" | head -20 || true
           key Return;  shot 2-title 10
           key Right;   shot 3-newgame-tab 3
           key Return;  shot 4-newgame-menu 3
