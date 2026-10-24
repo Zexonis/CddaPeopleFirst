@@ -65,6 +65,9 @@ code { background: var(--chip); padding: 0.05em 0.35em; border-radius: 3px; over
 .dl { margin: 22px 0 0; padding: 18px 20px; border: 1px solid #2c4a52; border-radius: 8px; background: #0f1a24; display: grid; gap: 10px; max-width: 640px; }
 .dl-btn { display: inline-flex; align-items: center; gap: 10px; justify-self: start; padding: 12px 20px; border-radius: 6px; background: #f2d264; color: #1a1406; font-family: var(--font-display); font-weight: 700; font-size: 1.08rem; text-decoration: none; }
 .dl-btn:hover { background: #ffe08a; }
+.dl-row { display: flex; flex-wrap: wrap; gap: 10px; }
+.dl-btn.alt { background: transparent; color: #f2d264; border: 1px solid #f2d264; }
+.dl-btn.alt:hover { background: #1c2a36; }
 .dl-btn:focus-visible { outline: 2px solid #f2d264; outline-offset: 3px; }
 .dl-btn svg { width: 20px; height: 20px; flex: none; }
 .dl p { margin: 0; font-size: 0.92rem; color: #b3cbd4; }
@@ -162,9 +165,12 @@ footer { margin-top: 56px; padding-top: 16px; border-top: 1px solid var(--line);
       <h1>People First</h1>
       <p class="lede">A mod and a small engine patch set that give the survivors of Cataclysm an inner life. They remember what happened to you and to each other, fall in love and raise families, keep a watch, run a town, and go on living when you aren't looking. This is the full field guide to everything the fork adds.</p>
       <div class="dl" id="download">
-        <a class="dl-btn" href="https://github.com/Zexonis/CddaPeopleFirst/releases/download/v0.9/cdda-0.I-people-first-0.9-windows-x64.zip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>Download for Windows (x64)</a>
-        <p class="meta">v0.9 &middot; zip, 308 MB &middot; 64-bit Windows 10 or 11</p>
-        <p>The whole game, ready to play: Cataclysm: DDA 0.I "Ito" with People First built in. Unzip it anywhere, run <code>cataclysm-tiles.exe</code>, and create a world: the mod is already ticked. Windows only for now. On macOS or Linux, the <code>people_first</code> mod still runs on the official 0.I game, without the engine extras.</p>
+        <div class="dl-row">
+          <a class="dl-btn" href="https://github.com/Zexonis/CddaPeopleFirst/releases/download/v0.9/cdda-0.I-people-first-0.9-windows-x64.zip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>Download for Windows (x64)</a>
+          <a class="dl-btn alt" href="https://github.com/Zexonis/CddaPeopleFirst/releases/download/v0.9/cdda-0.I-people-first-0.9-linux-x64.tar.gz"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>Download for Linux (x64)</a>
+        </div>
+        <p class="meta">v0.9 &middot; Windows: zip, 308 MB, 64-bit Windows 10 or 11 &middot; Linux: tar.gz, 330 MB, 64-bit</p>
+        <p>The whole game, ready to play: Cataclysm: DDA 0.I "Ito" with People First built in. Unzip it anywhere, run <code>cataclysm-tiles.exe</code> (Windows) or <code>./cataclysm-launcher</code> (Linux), and create a world: the mod is already ticked. On macOS, the <code>people_first</code> mod still runs on the official 0.I game, without the engine extras.</p>
         <p><a href="https://github.com/Zexonis/CddaPeopleFirst/releases">All releases</a> &middot; <a href="https://github.com/Zexonis/CddaPeopleFirst">Source and engine patches on GitHub</a> &middot; <a href="#feedback">Report a bug</a></p>
       </div>
       <ul class="facts">
@@ -243,11 +249,12 @@ footer { margin-top: 56px; padding-top: 16px; border-top: 1px solid var(--line);
 <section id="install">
   <h2>Getting started</h2>
   <div class="note"><strong>To play on Windows (x64):</strong> <a href="https://github.com/Zexonis/CddaPeopleFirst/releases/download/v0.9/cdda-0.I-people-first-0.9-windows-x64.zip">download the zip</a>, unzip it anywhere, and run <code>cataclysm-tiles.exe</code>. It opens on the campfire title. Choose New Game, then Create World: People First and People First: Engine are already in the world's mod list. The Evacuee scenario is the one the mod was tested with. Press <code>,</code> in game to open the People menu.</div>
+  <div class="note"><strong>To play on Linux (x64):</strong> <a href="https://github.com/Zexonis/CddaPeopleFirst/releases/download/v0.9/cdda-0.I-people-first-0.9-linux-x64.tar.gz">download the tar.gz</a>, unpack it anywhere (<code>tar -xzf</code> or your file manager), and run <code>./cataclysm-launcher</code> in the new folder. The game needs the SDL2 libraries most desktops already have; if it doesn't start, install them: <code>sudo apt install libsdl2-2.0-0 libsdl2-image-2.0-0 libsdl2-mixer-2.0-0 libsdl2-ttf-2.0-0</code> (Debian, Ubuntu, Mint), <code>sudo dnf install SDL2 SDL2_image SDL2_mixer SDL2_ttf</code> (Fedora) or <code>sudo pacman -S sdl2 sdl2_image sdl2_mixer sdl2_ttf</code> (Arch). Built the same way as CleverRaven's official Linux release (Ubuntu 22.04), so it runs on the same systems it does.</div>
   <p>The download is the official 0.I "Ito" game with four changes: the executable is built from the 0.I source (commit <code>27939e2</code>) with the fork's 25 patches; both mods are in <code>data/mods/</code>; new worlds include them by default; and the People key and title screen are installed. Other mods and existing 0.I saves work as in the official build. It has no saves or settings of its own, so keep it in a separate folder from any other copy of the game. The first start takes a little longer while the game builds its data cache.</p>
   <p>People First has two parts:</p>
   <ul>
     <li><strong>People First</strong> (<code>people_first</code>) is the mod itself: pure JSON and effect-on-condition scripts. It loads on a stock 0.I game on any system, including macOS and Linux.</li>
-    <li><strong>People First: Engine</strong> (<code>people_first_engine</code>) is a small companion mod that needs the patched executable. It turns on the features JSON can't reach: naming children, the full shared meal, rotten-food checks. For now the patched executable is built for 64-bit Windows only.</li>
+    <li><strong>People First: Engine</strong> (<code>people_first_engine</code>) is a small companion mod that needs the patched executable. It turns on the features JSON can't reach: naming children, the full shared meal, rotten-food checks. The patched executable is built for 64-bit Windows and 64-bit Linux.</li>
   </ul>
   <p>The tested mod list is <code>dda</code>, <code>no_npc_food</code>, <code>personal_portal_storms</code>, <code>mindovermatter</code>, <code>xedra_evolved</code>, <code>people_first</code> and <code>people_first_engine</code>. Only <code>dda</code> is required.</p>
 </section>

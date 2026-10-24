@@ -4,7 +4,7 @@ A mod and a small engine patch set for **Cataclysm: Dark Days Ahead 0.I "Ito"**.
 
 **Full guide:** https://zexonis.github.io/CddaPeopleFirst/
 
-## Download (Windows x64)
+## Download (Windows x64, Linux x64)
 
 Get the zip from the [latest release](https://github.com/Zexonis/CddaPeopleFirst/releases/latest). It's the whole game, ready to play: CDDA 0.I with People First built in.
 
@@ -12,7 +12,7 @@ Get the zip from the [latest release](https://github.com/Zexonis/CddaPeopleFirst
 2. New Game, then Create World. People First and People First: Engine are already in the mod list.
 3. Press `,` in game for the People menu.
 
-The download is built for 64-bit Windows 10 and 11 only, for now. On macOS or Linux, copy `mods/PeopleFirst` into the official 0.I game's `mods/` folder. It runs without the engine extras (you can't name your children, and people only defend each other up close).
+Downloads are built for 64-bit Windows 10 and 11 (`.zip`: run `cataclysm-tiles.exe`) and 64-bit Linux (`.tar.gz`: run `./cataclysm-launcher`; it needs the SDL2 libraries most desktops have). The Linux build comes from `.github/workflows/linux-release.yml`, CleverRaven's own Linux release recipe with our patches applied. On macOS, copy `mods/PeopleFirst` into the official 0.I game's `mods/` folder. It runs without the engine extras (you can't name your children, and people only defend each other up close).
 
 ## Bugs and feedback
 
