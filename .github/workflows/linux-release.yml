@@ -1,0 +1,169 @@
+# People First for Linux: builds the patched 0.I executable the way CleverRaven's own release does ("Linux Tiles
+# Sounds x64": Ubuntu 22.04, SDL 2.0.20, libbacktrace), drops it into the official 0.I Linux download with both mods
+# (tools/make_release_linux.py), checks it with the game's own loader, takes a screenshot of the title screen, and
+# uploads the tarball (an artifact, and the release named in release_tag if one is given).
+name: Linux release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: People First version (names the tarball)
+        required: true
+        default: "0.9"
+      release_tag:
+        description: Release to attach the tarball to (empty = artifact only)
+        required: false
+        default: ""
+      werror:
+        description: Treat warnings as errors, as upstream does (true/false)
+        required: false
+        default: "false"
+
+permissions:
+  contents: write
+
+jobs:
+  linux:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 240
+    env:
+      CDDA_SHA: 27939e29b8b4ddc081490d9f51de59a459c88df6
+      OFFICIAL_URL: https://github.com/CleverRaven/Cataclysm-DDA/releases/download/cdda-0.I-2026-06-06-1535/cdda-linux-with-graphics-and-sounds-x64-2026-06-06-1535.tar.gz
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
+      CCACHE_MAXSIZE: 2G
+      SDL_AUDIODRIVER: dummy
+    steps:
+      - name: Check out People First
+        uses: actions/checkout@v4
+        with:
+          path: pf
+
+      - name: Check out Cataclysm 0.I (27939e2)
+        uses: actions/checkout@v4
+        with:
+          repository: CleverRaven/Cataclysm-DDA
+          ref: ${{ env.CDDA_SHA }}
+          path: cdda
+          fetch-depth: 1
+
+      - name: Install dependencies (as upstream, plus test tools)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libsdl2-dev
+          git clone https://github.com/libsdl-org/SDL.git --branch release-2.0.20 --depth 1 sdl-src
+          cd sdl-src && mkdir build && cd build && ../configure && make -j"$(nproc)" && sudo make install
+          sudo apt-get install -y libncursesw5-dev libsdl2-ttf-dev libsdl2-image-dev libsdl2-mixer-dev libpulse-dev \
+            ccache gettext xvfb imagemagick
+
+      - name: Build libbacktrace (as upstream)
+        run: |
+          git clone https://github.com/ianlancetaylor/libbacktrace.git
+          cd libbacktrace && git checkout 14818b7783eeb9a56c3f0fca78cefd3143f8c5f6
+          ./configure && make -j"$(nproc)" && sudo make install
+
+      - name: Restore the compiler cache
+        uses: actions/cache@v4
+        with:
+          path: .ccache
+          key: ccache-linux-${{ hashFiles('pf/engine/apply_patches.py') }}-${{ github.run_id }}
+          restore-keys: |
+            ccache-linux-${{ hashFiles('pf/engine/apply_patches.py') }}-
+            ccache-linux-
+
+      - name: Apply the People First engine patches
+        run: python3 pf/engine/apply_patches.py cdda
+
+      - name: Build cataclysm-tiles
+        working-directory: cdda
+        run: |
+          set -o pipefail
+          FLAGS="CCACHE=1 TILES=1 SOUND=1 RELEASE=1 LOCALIZE=1 BACKTRACE=1 LIBBACKTRACE=1 PCH=0 TESTS=0"
+          if [ "${{ github.event.inputs.werror }}" != "true" ]; then
+            # upstream's warning set without -Werror: the build finishes, and the next step lists any warning in our lines
+            W="-Wall -Wextra -Wformat-signedness -Wlogical-op -Wmissing-declarations -Wmissing-noreturn -Wpedantic -Wunused-macros"
+            make $FLAGS WARNINGS="$W" version prefix
+            make -j"$(nproc)" $FLAGS WARNINGS="$W" cataclysm-tiles 2>&1 | tee ../build.log
+          else
+            make $FLAGS version prefix
+            make -j"$(nproc)" $FLAGS cataclysm-tiles 2>&1 | tee ../build.log
+          fi
+          ls -la cataclysm-tiles
+          ccache -s || true
+
+      - name: Warnings in the People First patches
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import re, subprocess, os
+          diff = subprocess.run(["git", "-C", "cdda", "diff", "-U0"], capture_output=True, text=True).stdout
+          ranges, cur = {}, None
+          for line in diff.splitlines():
+              if line.startswith("+++ b/"):
+                  cur = line[6:]
+              m = re.match(r"@@ -\S+ \+(\d+)(?:,(\d+))? @@", line)
+              if m and cur:
+                  a = int(m.group(1)); n = int(m.group(2) or 1)
+                  ranges.setdefault(cur, []).append((a, a + max(n, 1) - 1))
+          hits = []
+          if os.path.exists("build.log"):
+              for line in open("build.log", errors="replace"):
+                  m = re.match(r"(?:\./)?(src/[^:]+):(\d+):\d+: (warning|error):", line)
+                  if m and any(a <= int(m.group(2)) <= b for a, b in ranges.get(m.group(1), [])):
+                      hits.append(line.rstrip())
+          out = "\n".join(hits) if hits else "none"
+          print("Warnings and errors in People First lines:\n" + out)
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as f:
+              f.write("### Warnings and errors in People First lines\n```\n" + out + "\n```\n")
+          PY
+
+      - name: Stage the release (official 0.I Linux download + our build + mods)
+        run: |
+          curl -L --fail -o official.tar.gz "$OFFICIAL_URL"
+          cd pf && python3 tools/make_release_linux.py stage ../official.tar.gz ../cdda/cataclysm-tiles "${{ github.event.inputs.version }}" ../out
+
+      - name: Check both mods load (the game's own loader, twice)
+        run: |
+          cd "out/cdda-0.I-people-first-${{ github.event.inputs.version }}-linux-x64"
+          for n in 1 2; do
+            set +e
+            xvfb-run -a ./cataclysm-tiles --check-mods people_first_engine > "../check$n.out" 2> "../check$n.err"
+            code=$?
+            set -e
+            echo "run $n: exit $code"; tail -5 "../check$n.err" || true
+            errs=$(grep -c " ERROR " config/debug.log || true)
+            echo "run $n: $errs errors in debug.log"
+            if [ "$code" != "0" ] || [ "$errs" != "0" ]; then grep -n " ERROR " -A3 config/debug.log | head -60; exit 1; fi
+          done
+          head -3 ../check1.err
+
+      - name: Title screen (screenshot)
+        run: |
+          cd "out/cdda-0.I-people-first-${{ github.event.inputs.version }}-linux-x64"
+          Xvfb :99 -screen 0 1280x800x24 & XV=$!
+          sleep 2
+          DISPLAY=:99 ./cataclysm-launcher & GAME=$!
+          sleep 45
+          DISPLAY=:99 import -window root ../title.png
+          kill $GAME || true; sleep 2; kill -9 $GAME 2>/dev/null || true; kill $XV || true
+          grep -c " ERROR " config/debug.log || true
+          head -c 300 VERSION.txt 2>/dev/null || true
+
+      - name: Pack
+        run: cd pf && python3 tools/make_release_linux.py pack "${{ github.event.inputs.version }}" ../out
+
+      - name: Upload the tarball and the screenshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: people-first-linux-${{ github.event.inputs.version }}
+          path: |
+            out/*.tar.gz
+            out/title.png
+            build.log
+          compression-level: 0
+
+      - name: Attach to the release
+        if: github.event.inputs.release_tag != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ github.event.inputs.release_tag }}" "out/cdda-0.I-people-first-${{ github.event.inputs.version }}-linux-x64.tar.gz" --clobber --repo "${{ github.repository }}"
