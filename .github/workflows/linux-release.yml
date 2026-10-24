@@ -180,14 +180,13 @@ jobs:
           shot 1-language 45
           echo "game window: $(gwin)"
           timeout 10 xwininfo -root -tree 2>/dev/null | grep -i -v "has no name" | head -20 || true
-          key Return;  shot 2-title 10
-          key Right;   shot 3-newgame-tab 3
-          key Return;  shot 4-newgame-menu 3
-          key Up;      shot 5-play-now 2
-          key Return;  shot 6-after-play-now 120
-          key Return;  shot 7-after-enter 15
-          key comma;   shot 8-people-menu 5
-          key Escape;  shot 9-closed 3
+          key Return;  shot 2-title 10                 # English; the New Game menu opens by itself
+          key Home; key Down; key Down; key Down; shot 3-play-now-default 2
+          key Return;  shot 4-after-play-now 150      # world and character are created
+          key Return;  shot 5-after-enter 10
+          key comma;   shot 6-people-menu 5
+          key p;       shot 7-people-nearby 5
+          key Escape;  key Escape; shot 8-closed 3
           kill $GAME || true; sleep 2; pkill -9 -f cataclysm-tiles || true; kill $XV || true
           echo "errors in debug.log: $(grep -c ' ERROR ' config/debug.log 2>/dev/null || echo no-log)"
           grep -n " ERROR " -A3 config/debug.log 2>/dev/null | head -40 || true
