@@ -148,18 +148,31 @@ jobs:
             if [ "$code" != "0" ] || [ "${errs:-0}" != "0" ]; then grep -n " ERROR " -A3 config/debug.log | head -60 || true; exit 1; fi
           done
 
-      - name: Title screen (screenshot)
+      - name: Play test (fresh install, Play Now, People menu; screenshots)
+        continue-on-error: true
         run: |
+          sudo apt-get install -y xdotool >/dev/null
           cd "out/cdda-0.I-people-first-${{ github.event.inputs.version }}-linux-x64"
-          mkdir -p config
+          export DISPLAY=:99
           Xvfb :99 -screen 0 1280x800x24 & XV=$!
           sleep 2
-          DISPLAY=:99 ./cataclysm-launcher & GAME=$!
-          sleep 45
-          DISPLAY=:99 import -window root ../title.png
-          kill $GAME || true; sleep 2; kill -9 $GAME 2>/dev/null || true; kill $XV || true
-          grep -c " ERROR " config/debug.log || true
-          head -c 300 VERSION.txt 2>/dev/null || true
+          ./cataclysm-launcher & GAME=$!
+          shot() { sleep "$2"; import -window root "../shot-$1.png"; echo "shot $1"; }
+          key() { xdotool search --sync --onlyvisible --name "Cataclysm" windowactivate --sync 2>/dev/null || true; xdotool key "$1"; }
+          shot 1-language 45
+          key Return;  shot 2-title 10
+          key Right;   shot 3-newgame-tab 3
+          key Return;  shot 4-newgame-menu 3
+          key Up;      shot 5-play-now 2
+          key Return;  shot 6-after-play-now 120
+          key Return;  shot 7-after-enter 15
+          key comma;   shot 8-people-menu 5
+          key Escape;  shot 9-closed 3
+          kill $GAME || true; sleep 2; pkill -9 -f cataclysm-tiles || true; kill $XV || true
+          echo "errors in debug.log: $(grep -c ' ERROR ' config/debug.log 2>/dev/null || echo no-log)"
+          grep -n " ERROR " -A3 config/debug.log 2>/dev/null | head -40 || true
+          cp config/debug.log ../play-debug.log 2>/dev/null || true
+          ls save 2>/dev/null && cat save/*/mods.json 2>/dev/null | head -20 || true
 
       - name: Pack
         run: cd pf && python3 tools/make_release_linux.py pack "${{ github.event.inputs.version }}" ../out
@@ -174,7 +187,7 @@ jobs:
             out/*.out
             out/*.err
             out/*.log
-            out/title.png
+            out/shot-*.png
           if-no-files-found: ignore
 
       - name: Upload the tarball and the screenshot
@@ -183,7 +196,6 @@ jobs:
           name: people-first-linux-${{ github.event.inputs.version }}
           path: |
             out/*.tar.gz
-            out/title.png
             build.log
           compression-level: 0
 
