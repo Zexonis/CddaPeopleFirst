@@ -63,7 +63,7 @@ jobs:
           ./configure && make -j"$(nproc)" && sudo make install
 
       - name: Restore the compiler cache
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: .ccache
           key: ccache-linux-${{ hashFiles('pf/engine/apply_patches.py') }}-${{ github.run_id }}
@@ -90,6 +90,13 @@ jobs:
           fi
           ls -la cataclysm-tiles
           ccache -s || true
+
+      - name: Save the compiler cache (even if a later step fails)
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: .ccache
+          key: ccache-linux-${{ hashFiles('pf/engine/apply_patches.py') }}-${{ github.run_id }}
 
       - name: Warnings in the People First patches
         if: always()
@@ -125,21 +132,26 @@ jobs:
       - name: Check both mods load (the game's own loader, twice)
         run: |
           cd "out/cdda-0.I-people-first-${{ github.event.inputs.version }}-linux-x64"
+          mkdir -p config
+          ldd ./cataclysm-tiles | grep -i "sdl\|not found" || true
           for n in 1 2; do
             set +e
-            xvfb-run -a ./cataclysm-tiles --check-mods people_first_engine > "../check$n.out" 2> "../check$n.err"
+            xvfb-run -a ./cataclysm-launcher --check-mods people_first_engine > "../check$n.out" 2> "../check$n.err"
             code=$?
             set -e
-            echo "run $n: exit $code"; tail -5 "../check$n.err" || true
-            errs=$(grep -c " ERROR " config/debug.log || true)
-            echo "run $n: $errs errors in debug.log"
-            if [ "$code" != "0" ] || [ "$errs" != "0" ]; then grep -n " ERROR " -A3 config/debug.log | head -60; exit 1; fi
+            echo "run $n: exit $code"
+            echo "--- stdout (last 40)"; tail -40 "../check$n.out" || true
+            echo "--- stderr (last 40)"; tail -40 "../check$n.err" || true
+            errs=$(grep -c " ERROR " config/debug.log 2>/dev/null || true)
+            echo "run $n: ${errs:-no log} errors in debug.log"
+            cp config/debug.log "../debug$n.log" 2>/dev/null || true
+            if [ "$code" != "0" ] || [ "${errs:-0}" != "0" ]; then grep -n " ERROR " -A3 config/debug.log | head -60 || true; exit 1; fi
           done
-          head -3 ../check1.err
 
       - name: Title screen (screenshot)
         run: |
           cd "out/cdda-0.I-people-first-${{ github.event.inputs.version }}-linux-x64"
+          mkdir -p config
           Xvfb :99 -screen 0 1280x800x24 & XV=$!
           sleep 2
           DISPLAY=:99 ./cataclysm-launcher & GAME=$!
@@ -151,6 +163,19 @@ jobs:
 
       - name: Pack
         run: cd pf && python3 tools/make_release_linux.py pack "${{ github.event.inputs.version }}" ../out
+
+      - name: Upload the logs (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs-${{ github.run_id }}
+          path: |
+            build.log
+            out/*.out
+            out/*.err
+            out/*.log
+            out/title.png
+          if-no-files-found: ignore
 
       - name: Upload the tarball and the screenshot
         uses: actions/upload-artifact@v4
