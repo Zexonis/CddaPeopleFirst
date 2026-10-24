@@ -183,7 +183,6 @@ jobs:
           key Return;  shot 2-title 10                 # English; the New Game menu opens by itself
           key Home; key Down; key Down; key Down; shot 3-play-now-default 2
           key Return;  shot 4-after-play-now 150      # world and character are created
-          key Return;  shot 5-after-enter 10
           key comma;   shot 6-people-menu 5
           key p;       shot 7-people-nearby 5
           key Escape;  key Escape; shot 8-closed 3
