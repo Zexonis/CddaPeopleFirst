@@ -172,7 +172,6 @@ jobs:
             WID=$(gwin)
             if [ -n "$WID" ]; then
               timeout 5 xdotool windowactivate "$WID" 2>/dev/null || timeout 5 xdotool windowfocus "$WID" 2>/dev/null || true
-              timeout 5 xdotool key --clearmodifiers --window "$WID" "$1" 2>/dev/null || true
               timeout 5 xdotool key --clearmodifiers "$1" || echo "key $1 failed"
             else
               echo "key $1: no game window"; timeout 5 xdotool key "$1" || true
