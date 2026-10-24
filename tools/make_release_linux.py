@@ -119,7 +119,7 @@ def stage(official, binary, version, out):
 def pack(version, out):
     out = pathlib.Path(out)
     st = out / name(version)
-    for d in ("config", "cache", "save", "data/cache"):   # what a check run leaves behind
+    for d in USER_DIRS + ("data/cache",):   # what a check or play-test run leaves behind (worlds, options, logs, caches)
         if (st / d).exists():
             shutil.rmtree(st / d)
     tgz = out / f"{name(version)}.tar.gz"
